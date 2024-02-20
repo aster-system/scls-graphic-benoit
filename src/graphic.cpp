@@ -76,6 +76,12 @@ void HUD_Object::render()
 	}
 }
 
+// Soft reset the graphic HUD
+void HUD_Object::soft_reset()
+{
+	set_is_overflighted(false);
+}
+
 // Update the graphic object
 void HUD_Object::update() {}
 

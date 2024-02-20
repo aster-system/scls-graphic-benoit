@@ -258,6 +258,7 @@ public:
 	inline std::string get_assets_directory_path() { return assets_directory_path; };
 	inline Camera* get_camera() { return &camera; };
 	inline std::string get_config_file_path() { return config_file_path; };
+	inline int get_cursor_state() { return _cursor_state; };
 	inline float get_delta_time() { return delta_time; };
 	inline std::string get_exec_path() { return exec_path; };
 	inline glm::vec3 get_gravity_force() { return gravity_force; };
@@ -326,6 +327,9 @@ public:
 	inline void set_window_height(int height) { window_height = height; };
 	inline void set_window_width(int width) { window_width = width; };
 protected:
+	// State of the cursor
+	int _cursor_state = GLFW_CURSOR_DISABLED;
+
 	// Number of frame during this second
 	unsigned short frame_count = 0;
 

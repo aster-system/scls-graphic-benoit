@@ -55,9 +55,9 @@ public:
 	bool contains_hud(std::string name); // Return if the game contains an HUD Object
 	bool contains_scene(std::string name); // Returns if the game contains a scene
 	// Disable the cursor from the game
-	inline void disable_cursor() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); };
+	inline void disable_cursor() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); _cursor_state = GLFW_CURSOR_DISABLED; };
 	// Enable the cursor from the game
-	inline void enable_cursor() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); };
+	inline void enable_cursor() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); _cursor_state = GLFW_CURSOR_NORMAL; };
 	void load_keys(); // Load the keys in the game
 	void load_from_config_file(std::string path); // Load the game from a config file
 	template <class O = HUD> // Template for adding a type of HUD
@@ -107,6 +107,8 @@ private:
 
 	glm::vec4 background_color = glm::vec4(0.0f, (1.0f/255.0f) * 204.0f, (1.0f / 255.0f) * 204.0f, 1.0f); // Background color of the game
 	std::map < std::string, HUD*> huds = std::map < std::string, HUD*>(); // Each HUD, with their name as key, in the game
+	// HUD_Object overflighted by the cursor
+	HUD_Object* overflighted_object = 0;
 	std::map<std::string, Scene *> scenes = std::map<std::string, Scene *>(); // Each scenes, with their name as key, in the game
 	GLFWwindow* window = 0; // Pointer to the GLFW window
 };

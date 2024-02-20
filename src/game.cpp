@@ -75,6 +75,11 @@ void HUD::render()
 {
     for (int i = 0; i < get_sorted_hud_objects()->size(); i++)
     {
+        (*get_sorted_hud_objects())[i]->soft_reset();
+    }
+
+    for (int i = 0; i < get_sorted_hud_objects()->size(); i++)
+    {
         (*get_sorted_hud_objects())[i]->render();
     }
 }
@@ -446,16 +451,27 @@ void Game::update_event()
         set_right_mouse_button_state(1);
 
     // Check overflied HUD object
-    if (is_cursor_on_window())
+    overflighted_object = 0;
+    if (is_cursor_on_window() && get_cursor_state() == GLFW_CURSOR_NORMAL)
     {
         HUD* current_hud = get_current_hud();
         if (current_hud != 0)
         {
             std::vector<HUD_Object*>* objects = current_hud->get_sorted_hud_objects();
-            for (int i = 0; i < objects->size(); i++) // Check each objects
+            for (int i = objects->size() - 1; i >= 0; i--) // Check each objects
             {
-
+                HUD_Object* object = (*objects)[i];
+                if (object->is_in(glm::vec2(get_mouse_x(), get_mouse_y())))
+                {
+                    overflighted_object = object;
+                    break;
+                }
             }
+        }
+
+        if (overflighted_object != 0)
+        {
+            overflighted_object->set_is_overflighted(true);
         }
     }
 

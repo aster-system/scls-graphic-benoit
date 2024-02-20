@@ -34,6 +34,8 @@ public:
 	HUD_Object(Base_Struct* a_base_struct, std::string a_name, Texture* a_texture, VAO* a_vao); // HUD_Object constructor
 	glm::mat4 get_model_matrix(); // Return the transformation matrix of the object
 	virtual void render(); // Render the graphic HUD
+	// Soft reset the graphic HUD
+	void soft_reset();
 	virtual void update(); // Update the graphic HUD
 	~HUD_Object(); // HUD_Object destructor
 
@@ -49,14 +51,23 @@ public:
 		int x = (((get_position()[0] + 1.0) / 2.0) * get_base_struct()->get_window_width());
 		int y = get_base_struct()->get_window_height() - (((get_position()[1] + 1.0) / 2.0) * get_base_struct()->get_window_height());
 
-		return glm::vec4(width, heigth, x, y);
+		return glm::vec4(x, y, width, heigth);
 	};
 	inline glm::vec3 get_position() { return position; };
 	inline glm::vec3 get_rotation() { return rotation; };
 	inline glm::vec3 get_scale() { return scale * glm::vec3(2, 2, 2); };
 	inline Texture* get_texture() { return texture; };
+	// Return if the position "pos" is in the object
+	inline bool is_in(glm::vec2 pos)
+	{
+		glm::vec4 rect = get_hud_rect_pos();
+		return pos[0] > rect[0] - rect[2] / 2.0 && pos[0] < rect[0] + rect[2] / 2.0 && pos[1] > rect[1] - rect[3] / 2.0 && pos[1] < rect[1] + rect[3] / 2.0;
+	};
+	// Return if the object if overflighted or not
+	inline bool is_overflighted() { return _is_overflighted; };
 	inline void set_border_color(glm::vec4 new_border_color) { a_border_color = new_border_color; };
 	inline void set_border_width(glm::vec4 new_border_width) { a_border_width = new_border_width; };
+	inline void set_is_overflighted(bool is_overflighted) { _is_overflighted = is_overflighted; };
 	inline void set_position(glm::vec3 a_position) { position = a_position; };
 	inline void set_rotation(glm::vec3 a_rotation) { rotation = a_rotation; };
 	inline void set_scale(glm::vec3 a_scale) { scale = a_scale; };
@@ -72,6 +83,8 @@ private:
 	glm::vec4 a_border_color = glm::vec4(0, 0, 0, 1);
 	// Width of the border of the HUD (top, left, bottom, right)
 	glm::vec4 a_border_width = glm::vec4(0, 0, 0, 0);
+	// If the object is overflighted or not
+	bool _is_overflighted = false;
 	glm::vec3 position = glm::vec3(0, 0, 0); // Position of the HUD on the screen
 	glm::vec3 rotation = glm::vec3(0, 0, 0); // Rotation of the HUD on the screen
 	glm::vec3 scale = glm::vec3(1, 1, 1); // Size of the HUD on the screen
