@@ -5,8 +5,14 @@
 #include "../headers/model.h"
 #include "../headers/scene.h"
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height); // Callback function for window resizing
-void mouse_callback(GLFWwindow* window, double xpos, double ypos); // Callback function for mouse moving
+// Callback function for cursor enter in the window
+void cursor_enter_callback(GLFWwindow* window, int entered);
+
+// Callback function for window resizing
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+
+// Callback function for mouse moving
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
 class HUD
 {
@@ -48,6 +54,10 @@ public:
 	void add_scene(std::string name, Scene* scene); // Add an existing scene to the game
 	bool contains_hud(std::string name); // Return if the game contains an HUD Object
 	bool contains_scene(std::string name); // Returns if the game contains a scene
+	// Disable the cursor from the game
+	inline void disable_cursor() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); };
+	// Enable the cursor from the game
+	inline void enable_cursor() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); };
 	void load_keys(); // Load the keys in the game
 	void load_from_config_file(std::string path); // Load the game from a config file
 	template <class O = HUD> // Template for adding a type of HUD
@@ -80,6 +90,7 @@ public:
 	inline std::map<std::string, Scene*> *get_scenes() { return &scenes; };
 	inline int get_window_height() { return window_height; };
 	inline int get_window_width() { return window_width; };
+	inline bool is_cursor_on_window() { return a_cursor_on_window; };
 	inline void set_background_color(glm::vec4 a_background_color) { background_color = a_background_color; };
 	void set_current_hud(std::string a_name);
 	void set_current_scene(std::string a_name);
@@ -87,6 +98,8 @@ public:
 private:
 	std::string current_hud = ""; // Name of the current hud loaded
 	std::string current_scene = ""; // Name of the current scene loaded
+	// Reference to the cursor_on_window bool
+	bool &a_cursor_on_window;
 	bool is_running = true; // If the game should continue running or not
 	float last_frame_time = 0; // Time when the last frame occurs, for calculating delta_time and FPS
 	int& window_height; // Height of the graphic window

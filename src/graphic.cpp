@@ -63,6 +63,8 @@ glm::mat4 HUD_Object::get_model_matrix()
 void HUD_Object::render()
 {
 	texture->bind(); // Bind the texture
+	vao->get_shader_program()->set_uniform4f_value("border_color", get_border_color()); // Write the border color of the HUD in the shader
+	vao->get_shader_program()->set_uniform4f_value("border_width", get_border_width()); // Write the border width of the HUD in the shader
 	vao->get_shader_program()->set_uniform4fv_value("model", get_model_matrix()); // Write some uniform variables into the shader
 	if (texture->use_resize())
 	{

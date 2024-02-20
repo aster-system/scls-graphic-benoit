@@ -1,6 +1,5 @@
 #include "../headers/game.h"
-#include "../mods/headers/lunar_rover.h"
-#include "../mods/headers/player.h"
+#include "../mods/headers/welcome_hud.h"
 
 void cube_3d(std::string exec_path)
 {
@@ -40,9 +39,27 @@ int main(int argc, char* argv[])
 {
     srand(time(0));
 
+    Game* game = new Game(1600, 900, argv[0], false);
+    game->load_from_config_file("../matix_config.cfg");
+    game->load_VAOs();
+
+    welcome_hud::load_base_welcome_hud(game);
+    welcome_hud::set_base_welcome_hud(game);
+
+    while (game->run())
+    {
+        game->update_event();
+        game->update();
+
+        game->render();
+    }
+
+    delete game;
+    game = 0;
+
     // cube_3d(argv[0]);
 
-    Lunar_Rover::run_lunar_rover(argv[0]);
+    // Lunar_Rover::run_lunar_rover(argv[0]);
 
     return 0;
 }

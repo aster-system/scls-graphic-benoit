@@ -1,8 +1,9 @@
 #include "../headers/game.h"
 #include "../headers/model.h"
 
-double global_mouse_x = 500; // Global variable representing the X pos of the mouse
-double global_mouse_y = 500; // Global variable representing the Y pos of the mouse
+bool cursor_on_window = false; // If the cursor is on the window or not
+double global_mouse_x = 100000; // Global variable representing the X pos of the mouse
+double global_mouse_y = 100000; // Global variable representing the Y pos of the mouse
 int global_screen_width = 1280; // Global variable representing the width of the screen
 int global_screen_height = 720; // Global variable representing the height of the screen
 std::map<std::string, unsigned int> keys = std::map<std::string, unsigned int>(); // Map of each keys in the game
@@ -11,6 +12,21 @@ std::map<std::string, unsigned int> keys = std::map<std::string, unsigned int>()
 bool compare_depht_hud_object(HUD_Object* a, HUD_Object* b)
 {
     return a->get_position()[2] < b->get_position()[2];
+}
+
+// Callback function for cursor enter in the window
+void cursor_enter_callback(GLFWwindow* window, int entered)
+{
+    if (entered)
+    {
+        // The cursor entered the content area of the window
+        cursor_on_window = true;
+    }
+    else
+    {
+        // The cursor left the content area of the window
+        cursor_on_window = false;
+    }
 }
 
 // Callback function for window resizing
@@ -104,7 +120,7 @@ HUD::~HUD()
 }
 
 // Game constructor
-Game::Game(int a_window_width, int a_window_height, std::string a_exec_path, bool load_vaos): Advanced_Struct(global_mouse_x, global_mouse_y, a_exec_path), window_height(global_screen_height), window_width(global_screen_width)
+Game::Game(int a_window_width, int a_window_height, std::string a_exec_path, bool load_vaos): Advanced_Struct(global_mouse_x, global_mouse_y, a_exec_path), a_cursor_on_window(cursor_on_window), window_height(global_screen_height), window_width(global_screen_width)
 {
     // Set the screen size
     window_height = a_window_height;
@@ -130,7 +146,6 @@ Game::Game(int a_window_width, int a_window_height, std::string a_exec_path, boo
         glfwTerminate();
     }
     glfwMakeContextCurrent(window);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // Glad loading
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -146,7 +161,9 @@ Game::Game(int a_window_width, int a_window_height, std::string a_exec_path, boo
     glDepthFunc(GL_LESS);
     stbi_set_flip_vertically_on_load(true);
 
+    // Callback functions
     glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetCursorEnterCallback(window, cursor_enter_callback);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     if (load_vaos)
@@ -416,7 +433,9 @@ void Game::update_event()
 
     // Calculate mouse move and button
     double mouse_move_x = get_mouse_x() - get_last_mouse_x();
+    if (get_mouse_x() >= 100000) mouse_move_x = 0;
     double mouse_move_y = get_mouse_y() - get_last_mouse_y();
+    if (get_mouse_y() >= 100000) mouse_move_y = 0;
     set_left_mouse_button_state(0);
     set_mouse_move_x(mouse_move_x);
     set_mouse_move_y(mouse_move_y);
@@ -425,6 +444,20 @@ void Game::update_event()
         set_left_mouse_button_state(1);
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
         set_right_mouse_button_state(1);
+
+    // Check overflied HUD object
+    if (is_cursor_on_window())
+    {
+        HUD* current_hud = get_current_hud();
+        if (current_hud != 0)
+        {
+            std::vector<HUD_Object*>* objects = current_hud->get_sorted_hud_objects();
+            for (int i = 0; i < objects->size(); i++) // Check each objects
+            {
+
+            }
+        }
+    }
 
     // Update the keys
     get_pressed_keys()->clear();
