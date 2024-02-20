@@ -22,7 +22,7 @@ float get_vector_x_angle(glm::vec3 vector, float *x_rotation, unsigned int id)
 
 	if (y < 0)
 	{
-		if (x_rotation == 0 || *x_rotation > 180)
+		if (x_rotation == 0 || *x_rotation > 180 || true)
 		{
 			final_angle = -final_angle;
 		}
@@ -69,7 +69,7 @@ float get_vector_y_angle(glm::vec3 vector, float *x_rotation, unsigned int id)
 
 	if (x_rotation != 0 && *x_rotation < 180)
 	{
-		final_angle = 3.1415 + angle;
+		// final_angle = 3.1415 + angle;
 	}
 
 	return final_angle;
@@ -167,6 +167,11 @@ glm::vec3 rotate_vector(glm::vec3 vector, glm::vec3 rotation, glm::vec3 position
 
 	float x_angle = get_vector_x_angle(vector, protection ? &rotation[0] : 0, id) + glm::radians(rotation[0]);
 	float y_angle = get_vector_y_angle(vector, protection ? &rotation[0] : 0, id) + glm::radians(rotation[1]);
+
+	if (id == 110)
+	{
+		std::cout << "R " << x_angle << " " << y_angle << std::endl;
+	}
 
 	if (rotation_multiplier[1] != 0)
 	{
@@ -304,18 +309,19 @@ glm::vec3 Transform_Object::get_absolute_position(Transform_Object* asker)
 	local_vector += position;
 
 	// Apply anchor rotation
-	glm::vec3 anchor = -get_anchored_position();
+	glm::vec3 anchor = get_anchored_position();
 	if (get_parent() != 0) anchor = rotate_vector(anchor, get_parent()->get_absolute_plan_rotation(), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), false, get_id());
-	glm::vec3 rotated_vector = rotate_vector(-anchor, get_plan_rotation(), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), asker == this ? true : false, get_id());
-	glm::vec3 final_anchor = anchor + rotated_vector;
+	glm::vec3 rotated_vector = rotate_vector(anchor, get_plan_rotation(), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), asker == this ? true : false, get_id() + 100);
+	glm::vec3 final_anchor = rotated_vector - anchor;
 	local_vector += final_anchor;
 
-	if (get_id() == 10)
+	if (get_id() == 11)
 	{
-		// std::cout << "Anchor " << anchor[0] << " " << anchor[1] << " " << anchor[2] << " rotated anchor " << rotated_vector[0] << " " << rotated_vector[1] << " " << rotated_vector[2] << " angle_x " << get_vector_x_angle(vector) << std::endl;
-		// std::cout << "Final anchor " << final_anchor[0] << " " << final_anchor[1] << " " << final_anchor[2] << std::endl;
-		// std::cout << "Plan rotation " << get_plan_rotation()[0] << " " << get_plan_rotation()[1] << " " << get_plan_rotation()[2] << std::endl;
-		// std::cout << "Rotated anchor " << rotated_vector[0] << " " << rotated_vector[1] << " " << rotated_vector[2] << std::endl;
+		std::cout << "11 A " << anchor[0] << " " << anchor[1] << " " << anchor[2] << " ra " << rotated_vector[0] << " " << rotated_vector[1] << " " << rotated_vector[2] << " fa " << final_anchor[0] << " " << final_anchor[1] << " " << final_anchor[2] << " angle " << get_plan_rotation()[0] << std::endl;
+	}
+	else if (get_id() == 10)
+	{
+		std::cout << "10 A " << anchor[0] << " " << anchor[1] << " " << anchor[2] << " ra " << rotated_vector[0] << " " << rotated_vector[1] << " " << rotated_vector[2] << " fa " << final_anchor[0] << " " << final_anchor[1] << " " << final_anchor[2] << " angle " << get_plan_rotation()[0] << std::endl;
 	}
 
 	return vector + local_vector;
@@ -396,9 +402,7 @@ glm::mat4 Transform_Object::get_model_matrix()
 	matrix = apply_parent_position_model_matrix(matrix);
 
 	// Rotate matrix from the plan
-	glm::vec3 rotation = glm::vec3(0, 0, 0);
-	if(get_parent() != 0) rotation = get_parent()->get_absolute_plan_rotation();
-	rotation += get_plan_rotation(true);
+	glm::vec3 rotation = get_absolute_plan_rotation(true);
 	matrix = glm::rotate(matrix, glm::radians(rotation[1]), glm::vec3(0, 1, 0));
 	matrix = glm::rotate(matrix, glm::radians(rotation[0]), glm::vec3(1, 0, 0));
 	matrix = glm::rotate(matrix, glm::radians(rotation[2]), glm::vec3(0, 0, 1));

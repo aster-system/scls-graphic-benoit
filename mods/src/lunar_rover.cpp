@@ -209,7 +209,7 @@ namespace Lunar_Rover
     void Rover::turn_arm(glm::vec3 rotation)
     {
         // Rotate each arm parts
-        for (int i = 0; i < arm_parts.size(); i++)
+        for (int i = 0; i < arm_parts.size() && i < 1; i++)
         {
             // Calculate the variables for the rotation
             Object* part = arm_parts[i];
@@ -401,13 +401,13 @@ namespace Lunar_Rover
         }
         update_camera_view();
 
-        Transform_Object* to_check = arm_parts[1]->get_attached_transform();
+        Transform_Object* to_check = arm_parts[2]->get_attached_transform();
         // cout("Debug", "Camera", "parent rotation offset -> " + std::to_string(a_camera->get_attached_transform()->get_rotation_plan_offset_parent()[1]));
         // cout("Debug", "Camera", "anchor position offset x z -> " + std::to_string(a_camera->get_attached_transform()->get_position_offset_anchor()[0]) + " " + std::to_string(a_camera->get_attached_transform()->get_position_offset_anchor()[2]));
         // cout("Debug", "Camera", "parent position offset x z -> " + std::to_string(a_camera->get_attached_transform()->get_position_offset_parent()[0]) + " " + std::to_string(a_camera->get_attached_transform()->get_position_offset_parent()[2]));
         
-        // cout("Debug", "Camera", std::to_string(to_check->get_absolute_position()[0]) + " " + std::to_string(to_check->get_absolute_position()[1]) + " " + std::to_string(to_check->get_absolute_position()[2]));
-        // cout("Debug", "Camera", "id -> " + std::to_string(to_check->get_id()) + " parent rotation -> " + std::to_string(to_check->get_parent()->get_absolute_plan_rotation()[1]));
+        basix::print("Debug", "Camera", std::to_string(to_check->get_absolute_position()[0]) + " " + std::to_string(to_check->get_absolute_position()[1]) + " " + std::to_string(to_check->get_absolute_position()[2]));
+        basix::print("Debug", "Camera", "id -> " + std::to_string(to_check->get_id()) + " parent rotation -> " + std::to_string(to_check->get_parent()->get_absolute_plan_rotation()[1]));
         
         // std::cout << "Arm 0 id " << arm_parts[0]->get_attached_transform()->get_id() << std::endl; // 9
         // std::cout << "Arm 1 id " << arm_parts[1]->get_attached_transform()->get_id() << std::endl; // 10
