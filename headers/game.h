@@ -69,7 +69,7 @@ public:
 	inline std::string get_current_scene_name() { return current_scene; };
 	inline std::string get_exec_directory()
 	{
-		std::vector<std::string> parts = cut_string(get_exec_path(), "\\");
+		std::vector<std::string> parts = basix::cut_string(get_exec_path(), "\\");
 		std::string result = "";
 		for (int i = 0; i < parts.size() - 1; i++) { result += parts[i] + "/"; }
 		return result;

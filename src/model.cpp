@@ -232,7 +232,7 @@ void VBO::load_from_file(std::string path)
 
 	// Fill the datas
 	datas.clear();
-	std::vector<std::string> cutted = cut_string(content, " ");
+	std::vector<std::string> cutted = basix::cut_string(content, " ");
 	for (int i = 0; i < cutted.size(); i++)
 	{
 		datas.push_back(atof(cutted[i].c_str()));

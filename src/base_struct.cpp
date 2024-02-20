@@ -2,142 +2,6 @@
 
 // To avoid a bug with std::codecvt_utf8<char>, go in the project setting > C/C++ > General > SDL Check and disable it
 
-std::string float_character = "";
-std::string non_float_character = "";
-
-// Return the size of a number
-float sign(float number) { return number < 0 ? -1 : (number == 0 ? 0 : 1); }
-
-// Cout something from the game
-void cout(std::string type, std::string sender, std::string error)
-{
-	if(type == "Debug" && sender == "Camera")std::cout << type << " from \"" << sender << "\" : " << error << std::endl;
-}
-
-// Cout an error in the Game
-void cout_error(std::string sender, std::string error)
-{
-	cout("Error", sender, error);
-}
-
-// Cut a string where there are the "cut"
-std::vector<std::string> cut_string(std::string string, std::string cut, bool erase_blank)
-{
-	std::string last_string = ""; // String since the last cut
-	std::string last_string_cut = ""; // String of the "cut" size which allows to know where to cut
-	std::vector<std::string> result = std::vector<std::string>();
-	for (int i = 0; i < string.size(); i++) // Browse the string char by char
-	{
-		last_string_cut += string[i];
-		if (last_string_cut.size() > cut.size()) // If the string which allows to know where to cut is too long, cut him
-		{
-			last_string_cut = last_string_cut.substr(1, cut.size());
-		}
-
-		if (last_string_cut == cut) // If the string which allows to know where to cut is equal to the part to cut, do a cut
-		{
-			std::string final_string = last_string.substr(0, last_string.size() - (cut.size() - 1));
-			if (erase_blank)
-			{
-				if (final_string != "")
-				{
-					result.push_back(final_string);
-				}
-			}
-			else
-			{
-				result.push_back(final_string);
-			}
-			last_string = "";
-			last_string_cut = "";
-		}
-		else
-		{
-			last_string += string[i];
-		}
-	}
-
-	if (last_string.size() > 0) { result.push_back(last_string); } // Add the last non-cutted element
-	return result;
-}
-
-// Cut a wstring where there are the "cut"
-std::vector<std::wstring> cut_string(std::wstring string, std::wstring cut, bool erase_blank)
-{
-	std::wstring last_string; // String since the last cut
-	std::wstring last_string_cut; // String of the "cut" size which allows to know where to cut
-	std::vector<std::wstring> result = std::vector<std::wstring>();
-	for (int i = 0; i < string.size(); i++) // Browse the string char by char
-	{
-		last_string_cut += string[i];
-		if (last_string_cut.size() > cut.size()) // If the string which allows to know where to cut is too long, cut him
-		{
-			last_string_cut = last_string_cut.substr(1, cut.size());
-		}
-
-		if (last_string_cut == cut) // If the string which allows to know where to cut is equal to the part to cut, do a cut
-		{
-			std::wstring final_string = last_string.substr(0, last_string.size() - (cut.size() - 1));
-			if (erase_blank)
-			{
-				if (!final_string.empty())
-				{
-					result.push_back(final_string);
-				}
-			}
-			else
-			{
-				result.push_back(final_string);
-			}
-			last_string.clear();
-			last_string_cut.clear();
-		}
-		else
-		{
-			last_string += string[i];
-		}
-	}
-
-	if (last_string.size() > 0) { result.push_back(last_string); } // Add the last non-cutted element
-	return result;
-}
-
-// Return the content of a directory
-std::vector<std::string> directory_content(std::string path)
-{
-	std::vector<std::string> result = std::vector<std::string>();
-
-	for (const auto& entry : std::filesystem::directory_iterator(path))
-	{
-		std::string sub_file = entry.path().string();
-
-		std::cout << sub_file << std::endl;
-
-		result.push_back(sub_file);
-	}
-
-	return result;
-}
-
-// Return the datas about a file
-struct stat file_datas(std::string path)
-{
-	struct stat sb;
-
-	bool result = (stat(path.c_str(), &sb) == 0);
-
-	return sb;
-}
-
-// Returns if a file exists
-bool file_exists(std::string path)
-{
-	struct stat sb;
-
-	bool result = (stat(path.c_str(), &sb) == 0);
-
-	return result;
-}
 
 // Return the x angle of a vector
 float get_vector_x_angle(glm::vec3 vector, float *x_rotation, unsigned int id)
@@ -214,7 +78,7 @@ float get_vector_y_angle(glm::vec3 vector, float *x_rotation, unsigned int id)
 // Returns if a path is a directory or not
 bool path_is_directory(std::string path)
 {
-	return ((file_datas(path).st_mode & S_IFDIR) == S_IFDIR);
+	return ((basix::file_datas(path).st_mode & S_IFDIR) == S_IFDIR);
 }
 
 // Normalize an angle and return it
@@ -256,57 +120,6 @@ glm::vec3 normalize_rotation(glm::vec3 rotation)
 	}
 
 	return rotation;
-}
-
-// Return the file
-std::string read_file(std::string path, File_Type type)
-{
-	std::locale current_locale = std::locale("");
-
-	std::string file_content;
-	if (type == File_Type::Text)
-	{
-		std::ifstream file;
-
-		// ensure ifstream objects can throw exceptions:
-		file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-		try
-		{
-			file.imbue(std::locale(std::locale::empty(), new std::codecvt_utf8<char>));
-
-			// open files
-			file.open(path);
-			std::stringstream stream;
-
-			// read file's buffer contents into streams
-			stream << file.rdbuf();
-
-			// close file handlers
-			file.close();
-
-			// convert stream into string
-			file_content = stream.str();
-		}
-		catch (std::ifstream::failure e)
-		{
-			std::cout << "Matrix game : map file \"" << path << "\" unreadable." << std::endl;
-		}
-	}
-
-	// setlocale(LC_ALL, current_locale.name().c_str());
-
-	return file_content;
-}
-
-// Replace a string in an another string
-std::string replace(std::string str, std::string to_replace, std::string new_str)
-{
-	std::vector<std::string> part = cut_string(str, to_replace);
-	std::string final = "";
-
-	for (int i = 0; i < part.size(); i++) { final += part[i] + new_str; }
-
-	return final.substr(0, final.size() - new_str.size());
 }
 
 // Rotate a vector on the y axus
@@ -373,23 +186,6 @@ glm::vec3 rotate_vector(glm::vec3 vector, glm::vec3 rotation, glm::vec3 position
 	return to_return;
 }
 
-// Convert a string to a float
-float string_to_float(std::string str)
-{
-	if (float_character == "")
-	{
-		float_character = ".";
-		non_float_character = ",";
-		if (std::stod("0.25") != 0.25)
-		{
-			float_character = ",";
-			non_float_character = ".";
-		}
-	}
-
-	return std::stod(replace(str, non_float_character, float_character));
-}
-
 // Transform a string to an uppercase string
 std::string to_uppercase(std::string str)
 {
@@ -417,28 +213,6 @@ std::string to_uppercase(std::string str)
 		}
 	}
 	return result;
-}
-
-// Write something in a file
-void write_in_file(std::string path, std::string to_write, std::ios::openmode opening_mode, File_Type type)
-{
-	std::ofstream file;
-	file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
-	try
-	{
-		if (type == File_Type::Text)
-		{
-			file.open(path, std::ios::out | opening_mode);
-
-			file << to_write; // Write a text into the file
-
-			file.close();
-		}
-	}
-	catch (std::ofstream::failure e)
-	{
-		std::cout << "Matrix game : map file \"" << path << "\" unwritable." << std::endl;
-	}
 }
 
 unsigned int Transform_Object::object_count = 0;
@@ -751,15 +525,15 @@ Base_Struct::Base_Struct(double& a_mouse_x, double& a_mouse_y, std::string a_exe
 // Cout an error in the program
 void Base_Struct::error(std::string thrower, std::string error_content)
 {
-	cout_error(thrower, error_content);
+	basix::print("Error", thrower, error_content);
 }
 
 // Return if a file formatted with the struct context
 std::string Base_Struct::file_formatted(std::string path)
 {
-	std::string access = cut_string(path, "/")[0];
+	std::string access = basix::cut_string(path, "/")[0];
 	std::string current_path = (std::filesystem::current_path().string());
-	std::vector<std::string> cutted_path = cut_string(current_path, "\\");
+	std::vector<std::string> cutted_path = basix::cut_string(current_path, "\\");
 	unsigned short point_count = 0;
 	unsigned short size_to_delete = 0;
 

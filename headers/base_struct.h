@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <basix.h>
 #include <codecvt>
 #include <filesystem>
 #include <fstream>
@@ -20,27 +21,15 @@
 #include <sys/stat.h>
 #include <vector>
 
-enum File_Type {Text}; // Every file type
-void cout(std::string type, std::string sender, std::string error); // Cout something from the game
-void cout_error(std::string sender, std::string error); // Cout an error in the Game
-std::vector<std::string> cut_string(std::string string, std::string cut, bool erase_blank = false); // Cut a string where there are the "cut"
-std::vector<std::wstring> cut_string(std::wstring string, std::wstring cut, bool erase_blank = false); // Cut a wstring where there are the "cut"
-std::vector<std::string> directory_content(std::string path); // Return the content of a directory
-struct stat file_datas(std::string path); // Return the datas about a file
-bool file_exists(std::string path); // Returns if a file exists
 float get_vector_x_angle(glm::vec3 vector, float *x_rotation = 0, unsigned int id = 0); // Return the x angle of a vector
 float get_vector_y_angle(glm::vec3 vector, float *x_rotation = 0, unsigned int id = 0); // Return the y angle of a vector
 bool path_is_directory(std::string path); // Returns if a path is a directory or not
 float normalize_angle(float angle); // Normalize an angle and return it
 glm::vec3 normalize_rotation(glm::vec3 rotation); // Normalize a rotation and return it
-std::string read_file(std::string path, File_Type type = File_Type::Text); // Return the file content
 std::string replace(std::string str, std::string to_replace, std::string new_str); // Replace a string in an another string
 glm::vec3 rotate_vector_y(glm::vec3 vector, float rotation, unsigned int id = 0); // Rotate a vector on the y axis
 glm::vec3 rotate_vector(glm::vec3 vector, glm::vec3 rotation, glm::vec3 position = glm::vec3(0, 0, 0), glm::vec3 rotation_multiplier = glm::vec3(1, 1, 1), bool protection = true, unsigned int id = 0); // Rotate a vector around a rotating point
-float sign(float number); // Return the sign of a number
-float string_to_float(std::string str); // Convert a string to a float
 std::string to_uppercase(std::string str); // Transform a string to an uppercase string
-void write_in_file(std::string path, std::string to_write, std::ios::openmode opening_mode = std::ios::trunc, File_Type type = File_Type::Text); // Write something in a file
 
 struct Transform_Animation {
 	// Struct representing a transform object animation
@@ -291,7 +280,7 @@ public:
 	inline void set_assets_directory_path(std::string new_assets_directory_path)
 	{
 		new_assets_directory_path = file_formatted(new_assets_directory_path);
-		if (file_exists(new_assets_directory_path))
+		if (basix::file_exists(new_assets_directory_path))
 		{
 			if (path_is_directory(new_assets_directory_path))
 			{
@@ -310,7 +299,7 @@ public:
 	inline void set_config_file_path(std::string new_config_file_path)
 	{
 		new_config_file_path = file_formatted(new_config_file_path);
-		if (file_exists(new_config_file_path))
+		if (basix::file_exists(new_config_file_path))
 		{
 			if (!path_is_directory(new_config_file_path))
 			{

@@ -373,7 +373,7 @@ std::vector<Map_Level_Collection> Scene::construct_collections(std::vector<std::
 	std::vector<std::vector<bool>> map_vertical_confirmation = std::vector< std::vector<bool>>();
 	for (int j = 0; j < lines.size() - 1; j++) // Fill a temporary generation map
 	{
-		std::vector<std::string> line = cut_string(lines[j + 1], ";");
+		std::vector<std::string> line = basix::cut_string(lines[j + 1], ";");
 		std::vector<bool> map_horizontal_line = std::vector<bool>();
 		std::vector<unsigned short> map_line = std::vector<unsigned short>();
 		std::vector<bool> map_confirmation_line = std::vector<bool>();
@@ -621,9 +621,9 @@ void Scene::load_from_map(std::string map, Map_Opening_Mode mode)
 
 	if (mode == Map_Opening_Mode::Simple) // SImple opening mode
 	{
-		std::vector<std::string> lines = cut_string(map, "\n");
+		std::vector<std::string> lines = basix::cut_string(map, "\n");
 
-		std::vector<std::string> first_line = cut_string(lines[0], ";");
+		std::vector<std::string> first_line = basix::cut_string(lines[0], ";");
 		unsigned short width = std::stoi(first_line[0]); // Get the size of the map
 		unsigned short height = std::stoi(first_line[1]);
 
@@ -641,7 +641,7 @@ void Scene::load_from_map(std::string map, Map_Opening_Mode mode)
 
 		for (int i = 0; i < height; i++)
 		{
-			std::vector<std::string> line = cut_string(lines[i + 1], ";");
+			std::vector<std::string> line = basix::cut_string(lines[i + 1], ";");
 			for (int j = 0; j < width; j++) // Browse the map char by char
 			{
 				unsigned int part_number = std::stoi(line[j]);
@@ -666,11 +666,11 @@ void Scene::load_from_map(std::string map, Map_Opening_Mode mode)
 	}
 	else if (mode == Map_Opening_Mode::Complex) // Complex opening mode
 	{
-		std::vector<std::string> parts = cut_string(map, map_part_delimitation); // Cut the map by parts
+		std::vector<std::string> parts = basix::cut_string(map, map_part_delimitation); // Cut the map by parts
 
 		if (parts.size() <= 1) { std::cout << "Scene \"" << get_name() << "\" : erreur ! The map you want to load is probably corrompted." << std::endl; return; }
 		
-		std::vector<std::string> lines = cut_string(parts[0], "\n", true); // Check the first part
+		std::vector<std::string> lines = basix::cut_string(parts[0], "\n", true); // Check the first part
 		if(lines[0] != "l") { std::cout << "Scene \"" << get_name() << "\" : erreur ! The map you want to load is probably corrompted." << std::endl; return; }
 
 		// Load levels
@@ -679,23 +679,23 @@ void Scene::load_from_map(std::string map, Map_Opening_Mode mode)
 		for (int i = 1; i < lines.size(); i++) // Check each levels of the map
 		{
 			Map_Level level; // Create the level
-			std::vector<std::string> level_count = cut_string(lines[i], ",");
-			std::vector<std::string> level_specifications = cut_string(level_count[0], " ");
+			std::vector<std::string> level_count = basix::cut_string(lines[i], ",");
+			std::vector<std::string> level_specifications = basix::cut_string(level_count[0], " ");
 			unsigned short level_id = std::stoi(level_specifications[0]); // Get and set ID
 			level.id = level_id;
 
 			for (int j = 1; j < level_count.size(); j++) // Browse each level part
 			{
-				std::vector<std::string> level_str = cut_string(level_count[j], " ");
+				std::vector<std::string> level_str = basix::cut_string(level_count[j], " ");
 				unsigned short level_id = std::stoi(level_str[0]);
 
-				float x = string_to_float(level_str[1]); // Get the position of the level
-				float y = string_to_float(level_str[2]);
-				float z = string_to_float(level_str[3]);
+				float x = basix::string_to_float(level_str[1]); // Get the position of the level
+				float y = basix::string_to_float(level_str[2]);
+				float z = basix::string_to_float(level_str[3]);
 
-				float yaw = string_to_float(level_str[5]); // Get the position of the level
-				float pitch = string_to_float(level_str[4]);
-				float roll = string_to_float(level_str[6]);
+				float yaw = basix::string_to_float(level_str[5]); // Get the position of the level
+				float pitch = basix::string_to_float(level_str[4]);
+				float roll = basix::string_to_float(level_str[6]);
 
 				unsigned short length = std::stoi(level_str[9]); // Get the size of the level
 				unsigned short height = std::stoi(level_str[8]);
@@ -707,13 +707,13 @@ void Scene::load_from_map(std::string map, Map_Opening_Mode mode)
 			}
 
 			// Get the level specifications
-			float x = string_to_float(level_specifications[1]);
-			float y = string_to_float(level_specifications[2]);
-			float z = string_to_float(level_specifications[3]);
+			float x = basix::string_to_float(level_specifications[1]);
+			float y = basix::string_to_float(level_specifications[2]);
+			float z = basix::string_to_float(level_specifications[3]);
 
-			float yaw = string_to_float(level_specifications[5]);
-			float pitch = string_to_float(level_specifications[4]);
-			float roll = string_to_float(level_specifications[6]);
+			float yaw = basix::string_to_float(level_specifications[5]);
+			float pitch = basix::string_to_float(level_specifications[4]);
+			float roll = basix::string_to_float(level_specifications[6]);
 
 			unsigned short length = std::stoi(level_specifications[9]);
 			unsigned short height = std::stoi(level_specifications[8]);
@@ -741,13 +741,13 @@ void Scene::load_from_map(std::string map, Map_Opening_Mode mode)
 
 		for (int i = 1; i < parts.size(); i++)
 		{
-			std::vector<std::string> lines = cut_string(parts[i], "\n", true);
+			std::vector<std::string> lines = basix::cut_string(parts[i], "\n", true);
 
 			char part_type = lines[0][0];
 			if (part_type == 'p') { continue; }
 
-			std::vector<std::string> level_str = cut_string(lines[0], ";"); // Get the level id of the part
-			std::vector<std::string> level_id_str = cut_string(level_str[0], " ");
+			std::vector<std::string> level_str = basix::cut_string(lines[0], ";"); // Get the level id of the part
+			std::vector<std::string> level_id_str = basix::cut_string(level_str[0], " ");
 			unsigned short level_id = std::stoi(level_id_str[1]);
 			Map_Level* level = 0;
 			if(level_id != -1)&levels[level_id];
@@ -770,11 +770,11 @@ void Scene::load_from_map(std::string map, Map_Opening_Mode mode)
 				for (int j = 1; j < lines.size(); j++) // Construct each collections
 				{
 					if (lines[j][0] == '#') { continue; } // In-map comment support
-					std::vector<std::string> cutted = cut_string(lines[j], ";");
+					std::vector<std::string> cutted = basix::cut_string(lines[j], ";");
 
 					Map_Level_Collection collection = Map_Level_Collection();
-					collection.set_base_position(glm::vec3(string_to_float(cutted[2]), string_to_float(cutted[3]), string_to_float(cutted[4])));
-					collection.set_final_position(glm::vec3(string_to_float(cutted[5]), string_to_float(cutted[6]), string_to_float(cutted[7])));
+					collection.set_base_position(glm::vec3(basix::string_to_float(cutted[2]), basix::string_to_float(cutted[3]), basix::string_to_float(cutted[4])));
+					collection.set_final_position(glm::vec3(basix::string_to_float(cutted[5]), basix::string_to_float(cutted[6]), basix::string_to_float(cutted[7])));
 					unsigned short level_count = std::stoi(cutted[1]);
 					if (level_count == -1)
 					{
@@ -803,7 +803,7 @@ void Scene::load_from_map(std::string map, Map_Opening_Mode mode)
 // Load the scene from a map file
 void Scene::load_from_file(std::string map_path, Map_Opening_Mode mode)
 {
-	load_from_map(read_file(map_path), mode); // Load the map
+	load_from_map(basix::read_file(map_path), mode); // Load the map
 }
 
 // Return the objects map to string to debug
