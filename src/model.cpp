@@ -407,6 +407,7 @@ Texture::Texture(std::string a_texture_path, bool a_resize): texture_path(a_text
 	int nrChannels = 0;
 	basix::PNG_Image image;
 	image.load_from_path(texture_path);
+	image.flip_x();
 	height = image.get_height();
 	width = image.get_width();
 
