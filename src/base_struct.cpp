@@ -75,12 +75,6 @@ float get_vector_y_angle(glm::vec3 vector, float *x_rotation, unsigned int id)
 	return final_angle;
 }
 
-// Returns if a path is a directory or not
-bool path_is_directory(std::string path)
-{
-	return ((basix::file_datas(path).st_mode & S_IFDIR) == S_IFDIR);
-}
-
 // Normalize an angle and return it
 float normalize_angle(float angle)
 {

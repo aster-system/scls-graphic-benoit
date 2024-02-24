@@ -1,4 +1,5 @@
 #include "../headers/game.h"
+#include "../mods/headers/lunar_rover.h"
 #include "../mods/headers/welcome_hud.h"
 
 void cube_3d(std::string exec_path)
@@ -55,7 +56,7 @@ int main(int argc, char* argv[])
     }
 
     delete game;
-    game = 0;
+    game = 0;//*/
 
     // cube_3d(argv[0]);
 

@@ -405,7 +405,12 @@ Font_VAO::~Font_VAO()
 Texture::Texture(std::string a_texture_path, bool a_resize): texture_path(a_texture_path), resize(a_resize)
 {
 	int nrChannels = 0;
-	unsigned char* texture = stbi_load(texture_path.c_str(), &width, &height, &nrChannels, 0);
+	basix::PNG_Image image;
+	image.load_from_path(texture_path);
+	height = image.get_height();
+	width = image.get_width();
+
+	unsigned char* texture = image.data();
 
 	// Load the texture
 	glGenTextures(1, &texture_id);
@@ -417,7 +422,7 @@ Texture::Texture(std::string a_texture_path, bool a_resize): texture_path(a_text
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	// glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Good
 
-	stbi_image_free(texture);
+	delete[] texture;
 }
 
 // Bind the texture into the GPU memory

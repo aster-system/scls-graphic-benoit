@@ -144,7 +144,7 @@ void Advanced_Struct::load_hud_VAOs()
 	all_vaos["hud"] = new VAO(get_assets_directory_path() + "shaders/hud", hud_attributes, "0");
 
 	// Create base texture
-	textures[get_assets_directory_path() + "fonts/default.png"] = new Font_Texture(get_assets_directory_path() + "fonts/consolas.png");
+	// textures[get_assets_directory_path() + "fonts/default.png"] = new Font_Texture(get_assets_directory_path() + "fonts/consolas.png");
 }
 
 // Loads the VAOs in the advanced struct

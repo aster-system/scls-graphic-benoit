@@ -164,7 +164,6 @@ Game::Game(int a_window_width, int a_window_height, std::string a_exec_path, boo
     glEnable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDepthFunc(GL_LESS);
-    stbi_set_flip_vertically_on_load(true);
 
     // Callback functions
     glfwSetCursorPosCallback(window, mouse_callback);

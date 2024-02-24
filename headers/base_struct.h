@@ -15,7 +15,6 @@
 #include <locale>
 #include <map>
 #include <random>
-#include <stb_image.h>
 #include <string>
 #include <sstream>
 #include <sys/stat.h>
@@ -23,7 +22,6 @@
 
 float get_vector_x_angle(glm::vec3 vector, float *x_rotation = 0, unsigned int id = 0); // Return the x angle of a vector
 float get_vector_y_angle(glm::vec3 vector, float *x_rotation = 0, unsigned int id = 0); // Return the y angle of a vector
-bool path_is_directory(std::string path); // Returns if a path is a directory or not
 float normalize_angle(float angle); // Normalize an angle and return it
 glm::vec3 normalize_rotation(glm::vec3 rotation); // Normalize a rotation and return it
 std::string replace(std::string str, std::string to_replace, std::string new_str); // Replace a string in an another string
@@ -283,7 +281,7 @@ public:
 		new_assets_directory_path = file_formatted(new_assets_directory_path);
 		if (basix::file_exists(new_assets_directory_path))
 		{
-			if (path_is_directory(new_assets_directory_path))
+			if (basix::path_is_directory(new_assets_directory_path))
 			{
 				assets_directory_path = new_assets_directory_path;
 			}
@@ -302,7 +300,7 @@ public:
 		new_config_file_path = file_formatted(new_config_file_path);
 		if (basix::file_exists(new_config_file_path))
 		{
-			if (!path_is_directory(new_config_file_path))
+			if (!basix::path_is_directory(new_config_file_path))
 			{
 				config_file_path = new_config_file_path;
 			}

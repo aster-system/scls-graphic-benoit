@@ -404,3 +404,4 @@ matix/
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
+*.dll
