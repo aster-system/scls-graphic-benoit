@@ -402,28 +402,15 @@ Font_VAO::~Font_VAO()
 }
 
 // Texture constructor
-Texture::Texture(std::string a_texture_path, bool a_resize): texture_path(a_texture_path), resize(a_resize)
+Texture::Texture(std::string a_texture_path, bool a_resize): texture_path(a_texture_path), resize(a_resize), a_image(new basix::PNG_Image())
 {
 	int nrChannels = 0;
-	basix::PNG_Image image;
-	image.load_from_path(texture_path);
-	image.flip_x();
-	height = image.get_height();
-	width = image.get_width();
-
-	unsigned char* texture = image.data();
+	get_image()->load_from_path(texture_path);
+	get_image()->flip_x();
 
 	// Load the texture
 	glGenTextures(1, &texture_id);
-	glBindTexture(GL_TEXTURE_2D, texture_id);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	// glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Good
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	// glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Good
-
-	delete[] texture;
+	change_texture();
 }
 
 // Bind the texture into the GPU memory
@@ -432,10 +419,29 @@ void Texture::bind()
 	glBindTexture(GL_TEXTURE_2D, texture_id);
 }
 
+// Change the texture of the texture according to image
+void Texture::change_texture()
+{
+	height = get_image()->get_height();
+	width = get_image()->get_width();
+
+	unsigned char* texture = get_image()->data();
+
+	// Load the texture
+	glBindTexture(GL_TEXTURE_2D, texture_id);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	// glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Good
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	// glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Good
+}
+
 // Texture destructor
 Texture::~Texture()
 {
-
+	delete get_image();
+	a_image = 0;
 }
 
 // Font_Texture constructor
@@ -515,5 +521,5 @@ glm::vec2 Font_Texture::size(std::string text)
 // Font_Texture destructor
 Font_Texture::~Font_Texture()
 {
-
+	Texture::~Texture();
 }

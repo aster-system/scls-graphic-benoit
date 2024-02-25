@@ -239,14 +239,18 @@ class Texture
 public:
 	Texture(std::string a_texture_path, bool a_resize = true); // Texture constructor
 	void bind(); // Bind the texture into the GPU memory
+	void change_texture(); // Change the texture of the texture according to image
 	~Texture(); // Texture destructor
 
 	// Getters and setters
+	inline basix::PNG_Image* get_image() { return a_image; };
 	inline glm::vec2 get_texture_size() { return glm::vec2(width, height); };
 	inline std::string get_texture_path() { return texture_path; };
 	inline bool use_resize() { return resize; };
 private:
 	int height = 0; // Height of the texture
+	// Basix image of this texture
+	basix::PNG_Image* a_image = 0;
 	bool resize = true; // If the shader resize the texture or not
 	unsigned int texture_id = 0; // Handle to the texture
 	std::string texture_path = ""; // Path of the texture
