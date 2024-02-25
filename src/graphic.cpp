@@ -79,6 +79,16 @@ void HUD_Object::render()
 // Soft reset the graphic HUD
 void HUD_Object::soft_reset()
 {
+	if (is_clicked())
+	{
+		a_was_clicked = true;
+	}
+	else
+	{
+		a_was_clicked = false;
+	}
+
+	set_is_clicked(false);
 	set_is_overflighted(false);
 }
 

@@ -63,11 +63,16 @@ public:
 		glm::vec4 rect = get_hud_rect_pos();
 		return pos[0] > rect[0] - rect[2] / 2.0 && pos[0] < rect[0] + rect[2] / 2.0 && pos[1] > rect[1] - rect[3] / 2.0 && pos[1] < rect[1] + rect[3] / 2.0;
 	};
+	// Return if the object is clicked or not during
+	inline bool is_clicked() { return a_is_clicked; };
+	// Return if the object is clicked or not during this frame
+	inline bool is_clicked_during_this_frame() { return a_is_clicked && !a_was_clicked; };
 	// Return if the object if overflighted or not
-	inline bool is_overflighted() { return _is_overflighted; };
+	inline bool is_overflighted() { return a_is_overflighted; };
 	inline void set_border_color(glm::vec4 new_border_color) { a_border_color = new_border_color; };
 	inline void set_border_width(glm::vec4 new_border_width) { a_border_width = new_border_width; };
-	inline void set_is_overflighted(bool is_overflighted) { _is_overflighted = is_overflighted; };
+	inline void set_is_clicked(bool is_clicked) { a_is_clicked = is_clicked; };
+	inline void set_is_overflighted(bool is_overflighted) { a_is_overflighted = is_overflighted; };
 	inline void set_position(glm::vec3 a_position) { position = a_position; };
 	inline void set_rotation(glm::vec3 a_rotation) { rotation = a_rotation; };
 	inline void set_scale(glm::vec3 a_scale) { scale = a_scale; };
@@ -83,11 +88,15 @@ private:
 	glm::vec4 a_border_color = glm::vec4(0, 0, 0, 1);
 	// Width of the border of the HUD (top, left, bottom, right)
 	glm::vec4 a_border_width = glm::vec4(0, 0, 0, 0);
+	// If the object is clicked or not
+	bool a_is_clicked = false;
 	// If the object is overflighted or not
-	bool _is_overflighted = false;
+	bool a_is_overflighted = false;
 	glm::vec3 position = glm::vec3(0, 0, 0); // Position of the HUD on the screen
 	glm::vec3 rotation = glm::vec3(0, 0, 0); // Rotation of the HUD on the screen
 	glm::vec3 scale = glm::vec3(1, 1, 1); // Size of the HUD on the screen
+	// If the object was clicked before or not
+	bool a_was_clicked = false;
 };
 
 class HUD_Text: public HUD_Object

@@ -33,8 +33,12 @@ namespace turtle
 		inline glm::vec2 get_turtle_position() { return a_turtle_position; };
 		inline float get_turtle_speed() { return a_turtle_speed; };
 		inline unsigned int get_turtle_width() { return a_turtle_width; };
+		inline bool is_drawing() { return a_is_drawing; };
+		inline void set_is_drawing(bool is_drawing) { a_is_drawing = is_drawing; };
 		inline void set_turtle_position(glm::vec2 new_position) { a_turtle_position = new_position; };
 	private:
+		// If the turtle is drawing or not
+		bool a_is_drawing = true;
 		// Last position of the turtle
 		glm::vec2 a_last_turtle_position = glm::vec2(1, 0);
 		// Color of the turtle
@@ -62,10 +66,32 @@ namespace turtle
 		void create();
 		// Update the Turlthe_HUD
 		void update();
+		// Update pen texture
+		inline void update_pen_texture()
+		{
+			if (a_turtle->is_drawing())
+			{
+				a_pen_button->get_texture()->get_image()->load_from_path(a_no_pen_texture);
+			}
+			else
+			{
+				a_pen_button->get_texture()->get_image()->load_from_path(a_pen_texture);
+			}
+			a_pen_button->get_texture()->get_image()->flip_x();
+			a_pen_button->get_texture()->change_texture();
+		};
 	private:
 		// Pointer to the game
 		Game* a_game = 0;
 
+		// Bin button object
+		HUD_Object* a_bin_button = 0;
+		// Pen button object
+		HUD_Object* a_pen_button = 0;
+		// Texture of the pen
+		std::string a_pen_texture = "";
+		// Texture of the no pen
+		std::string a_no_pen_texture = "";
 		// Turtle object
 		Turtle* a_turtle = 0;
 	};

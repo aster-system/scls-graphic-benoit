@@ -470,6 +470,7 @@ void Game::update_event()
 
         if (overflighted_object != 0)
         {
+            if(get_left_mouse_button_state()) overflighted_object->set_is_clicked(true);
             overflighted_object->set_is_overflighted(true);
         }
     }
