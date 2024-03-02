@@ -71,6 +71,7 @@ public:
 	inline bool is_overflighted() { return a_is_overflighted; };
 	inline void set_border_color(glm::vec4 new_border_color) { a_border_color = new_border_color; };
 	inline void set_border_width(glm::vec4 new_border_width) { a_border_width = new_border_width; };
+	inline void set_border_width(unsigned short new_border_width) { a_border_width = glm::vec4(new_border_width, new_border_width, new_border_width, new_border_width); };
 	inline void set_is_clicked(bool is_clicked) { a_is_clicked = is_clicked; };
 	inline void set_is_overflighted(bool is_overflighted) { a_is_overflighted = is_overflighted; };
 	inline void set_position(glm::vec3 a_position) { position = a_position; };

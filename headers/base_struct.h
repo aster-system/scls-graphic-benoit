@@ -20,12 +20,14 @@
 #include <sys/stat.h>
 #include <vector>
 
-float get_vector_x_angle(glm::vec3 vector, float *x_rotation = 0, unsigned int id = 0); // Return the x angle of a vector
-float get_vector_y_angle(glm::vec3 vector, float *x_rotation = 0, unsigned int id = 0); // Return the y angle of a vector
+glm::vec3 calculate_forward(glm::vec3 rotation); // Return the forward position according to a rotation
+float get_vector_x_angle(glm::vec3 vector); // Return the x angle of a vector (without euler angle)
+float get_vector_x_angle(glm::vec3 vector, glm::vec3 forward, float rotation_y, unsigned int id = 0); // Return the x angle of a vector (euler angle)
+float get_vector_y_angle(glm::vec3 vector, unsigned int id = 0); // Return the y angle of a vector
 float normalize_angle(float angle); // Normalize an angle and return it
 glm::vec3 normalize_rotation(glm::vec3 rotation); // Normalize a rotation and return it
-std::string replace(std::string str, std::string to_replace, std::string new_str); // Replace a string in an another string
 glm::vec3 rotate_vector_y(glm::vec3 vector, float rotation, unsigned int id = 0); // Rotate a vector on the y axis
+glm::vec3 rotate_vector_x(glm::vec3 vector, glm::vec3 rotation, glm::vec3 forward, unsigned int id = 0); // Rotate a vector on the x axis
 glm::vec3 rotate_vector(glm::vec3 vector, glm::vec3 rotation, glm::vec3 position = glm::vec3(0, 0, 0), glm::vec3 rotation_multiplier = glm::vec3(1, 1, 1), bool protection = true, unsigned int id = 0); // Rotate a vector around a rotating point
 std::string to_uppercase(std::string str); // Transform a string to an uppercase string
 

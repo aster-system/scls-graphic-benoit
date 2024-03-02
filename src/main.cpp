@@ -1,6 +1,7 @@
 #include "../headers/game.h"
 #include "../mods/headers/lunar_rover.h"
 #include "../mods/headers/turtle.h"
+#include "../mods_hidden/headers/vbo_maker.h"
 
 void cube_3d(std::string exec_path)
 {
@@ -38,7 +39,7 @@ void cube_3d(std::string exec_path)
 
 int main(int argc, char* argv[])
 {
-    srand(time(0));
+    /*srand(time(0));
 
     Game* game = new Game(900, 900, argv[0], false);
     game->load_from_config_file("../matix_config.cfg");
@@ -61,6 +62,15 @@ int main(int argc, char* argv[])
     // cube_3d(argv[0]);
 
     // Lunar_Rover::run_lunar_rover(argv[0]);
+
+    // vbo_maker::run_vbo_maker(argv[0]);
+
+    std::string result = "";
+    std::cout << "Enter m to make and t to test." << std::endl << ">> ";
+    std::cin >> result;
+
+    if(result == "m") vbo_maker::run_vbo_maker(argv[0]);
+    else if(result == "t") vbo_maker::run_vbo_tester(argv[0]);
 
     return 0;
 }

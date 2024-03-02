@@ -123,6 +123,14 @@ Texture* Advanced_Struct::get_texture(std::string texture_path, bool texture_res
 	}
 }
 
+// Returns a texture in the struct
+Texture* Advanced_Struct::get_texture(unsigned short width, unsigned short height, glm::vec4 color)
+{
+	Texture* texture = new Texture(width, height, color);
+	(*get_textures())[std::to_string(get_textures()->size())] = texture;
+	return texture;
+}
+
 // Loads the HUD VAOs in the advanced struct
 void Advanced_Struct::load_hud_VAOs()
 {

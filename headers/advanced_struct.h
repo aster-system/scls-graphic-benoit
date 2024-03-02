@@ -69,6 +69,7 @@ public:
 	Font_Texture* get_font_texture(std::string font_name); // Return a fotn in the struct
 	Part* get_part(unsigned int number); // Returns a part
 	Texture* get_texture(std::string texture_path, bool texture_resize = true); // Returns a texture in the struct
+	Texture* get_texture(unsigned short width, unsigned short height, glm::vec4 color); // Returns a texture in the struct
 	void load_hud_VAOs(); // Loads the HUD VAOs in the advanced struct
 	void load_VAOs(); // Loads the VAOs in the advanced struct
 	template <class O = Object> // Template for adding a type of object

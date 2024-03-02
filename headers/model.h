@@ -238,6 +238,8 @@ class Texture
 	// Class representing a texture interface
 public:
 	Texture(std::string a_texture_path, bool a_resize = true); // Texture constructor
+	// Texture constructor much modulable
+	Texture(unsigned short width, unsigned short height, glm::vec4 color, bool a_resize = true);
 	void bind(); // Bind the texture into the GPU memory
 	void change_texture(); // Change the texture of the texture according to image
 	~Texture(); // Texture destructor

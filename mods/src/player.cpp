@@ -60,7 +60,7 @@ namespace Player
             float sensitivity = get_game_struct()->get_camera()->get_sensitivity();
             float y_rotation = sensitivity * get_game_struct()->get_delta_time() * get_game_struct()->get_mouse_move_y();
             rotate_plan(glm::vec3(0.0, -sensitivity * delta_time * get_game_struct()->get_mouse_move_x(), 0.0));
-            rotate_plan(glm::vec3(-y_rotation, 0.0, 0.0));
+            // rotate_plan(glm::vec3(-y_rotation, 0.0, 0.0));
         }
 
         // Move the Camera_Handler
@@ -72,13 +72,15 @@ namespace Player
             if (get_game_struct()->get_key_state("s") == 1)
                 get_attached_transform()->move(glm::vec3(speed) * -get_attached_transform()->get_forward());
             if (get_game_struct()->get_key_state("q") == 1)
-                get_attached_transform()->move(glm::vec3(speed) * get_attached_transform()->get_right());
-            if (get_game_struct()->get_key_state("d") == 1)
                 get_attached_transform()->move(glm::vec3(speed) * -get_attached_transform()->get_right());
+            if (get_game_struct()->get_key_state("d") == 1)
+                get_attached_transform()->move(glm::vec3(speed) * get_attached_transform()->get_right());
             if (get_game_struct()->get_key_state("space") == 1)
             {
-                glm::vec3 force = glm::vec3(jump_force) * get_attached_transform()->get_up();
-                if (use_physic() && get_attached_physic_object()->is_standing()) get_attached_physic_object()->apply_force(force);
+                get_attached_transform()->move(glm::vec3(speed) * get_attached_transform()->get_up());
+
+                // glm::vec3 force = glm::vec3(jump_force) * get_attached_transform()->get_up();
+                // if (use_physic() && get_attached_physic_object()->is_standing()) get_attached_physic_object()->apply_force(force);
             }
             if (get_game_struct()->get_key_state("left shift") == 1)
                 get_attached_transform()->move(glm::vec3(speed) * -get_attached_transform()->get_up());

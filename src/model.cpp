@@ -404,9 +404,23 @@ Font_VAO::~Font_VAO()
 // Texture constructor
 Texture::Texture(std::string a_texture_path, bool a_resize): texture_path(a_texture_path), resize(a_resize), a_image(new basix::PNG_Image())
 {
-	int nrChannels = 0;
-	get_image()->load_from_path(texture_path);
-	get_image()->flip_x();
+	if (a_texture_path != "")
+	{
+		get_image()->load_from_path(texture_path);
+		get_image()->flip_x();
+
+		// Load the texture
+		glGenTextures(1, &texture_id);
+		change_texture();
+	}
+}
+
+// Texture constructor much modulable
+Texture::Texture(unsigned short width, unsigned short height, glm::vec4 color, bool a_resize) : Texture("", false)
+{
+	// Load the image
+	delete get_image();
+	a_image = new basix::PNG_Image(width, height, color[0], color[1], color[2], color[3]);
 
 	// Load the texture
 	glGenTextures(1, &texture_id);

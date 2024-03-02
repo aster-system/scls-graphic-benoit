@@ -2,44 +2,100 @@
 
 // To avoid a bug with std::codecvt_utf8<char>, go in the project setting > C/C++ > General > SDL Check and disable it
 
+// Return the forward position according to a rotation
+glm::vec3 calculate_forward(glm::vec3 rotation)
+{
+	float x = cos(glm::radians(rotation[1])); // Use trigonometry to calculate forward direction
+	float z = sin(glm::radians(rotation[1]));
 
-// Return the x angle of a vector
-float get_vector_x_angle(glm::vec3 vector, float *x_rotation, unsigned int id)
+	return glm::vec3(x, 0, z);
+}
+
+// Return the x angle of a vector (without euler angle)
+float get_vector_x_angle(glm::vec3 vector)
 {
 	float x = vector[0];
 	float y = vector[1];
 	float z = vector[2];
-	float xz_hypothenus = glm::distance(glm::vec3(glm::abs(x), 0, glm::abs(z)), glm::vec3(0, 0, 0));
-	float xyz_hypothenus = glm::distance(glm::vec3(glm::abs(x), glm::abs(y), glm::abs(z)), glm::vec3(0, 0, 0));
+	float xy_hypothenus = glm::distance(glm::vec2(x, y), glm::vec2(0, 0));
 
-	float angle = glm::acos(xz_hypothenus / (xyz_hypothenus + 0.0001));
+	if (xy_hypothenus == 0) return 0;
+
+	float angle = glm::asin(glm::abs(y) / xy_hypothenus);
 	float final_angle = angle;
 
-	if (x < 0 || z < 0)
+	if (x > 0)
 	{
-		final_angle = (3.1415 - angle);
-	}
-
-	if (y < 0)
-	{
-		if (x_rotation == 0 || *x_rotation > 180 || true)
+		if (y < 0)
 		{
-			final_angle = -final_angle;
+			final_angle = 3.1415 * 2.0 - angle;
+		}
+	}
+	else
+	{
+		if (y < 0)
+		{
+			final_angle = 3.1415 + angle;
 		}
 		else
 		{
-			final_angle = (3.1415 + angle);
+			final_angle = 3.1415 - angle;
 		}
 	}
 
 	return final_angle;
 }
 
-// Return the y angle of a vector
-float get_vector_y_angle(glm::vec3 vector, float *x_rotation, unsigned int id)
+// Return the x angle of a vector (with euler angle)
+float get_vector_x_angle(glm::vec3 vector, glm::vec3 forward, float rotation_y, unsigned int id)
 {
-	float opposite = vector[0];
-	float adjacent = vector[2];
+	float x = vector[0] * forward[0];
+	float y = vector[1];
+	float z = vector[2] * forward[2];
+	float xyz_hypothenus = glm::distance(glm::vec3(x, y, z), glm::vec3(0, 0, 0));
+
+	if (xyz_hypothenus == 0)
+	{
+		if (rotation_y < 180)
+		{
+			return 0;
+		}
+		else
+		{
+			return 3.1415;
+		}
+	}
+
+	float angle = glm::asin(glm::abs(y) / xyz_hypothenus);
+	float final_angle = angle;
+
+	if (rotation_y <= 90 || rotation_y > 270)
+	{
+		if (y < 0)
+		{
+			final_angle = 3.1415 * 2.0 - angle;
+		}
+	}
+	else
+	{
+		if (y < 0)
+		{
+			final_angle = 3.1415 + angle;
+		}
+		else
+		{
+			final_angle = 3.1415 - angle;
+		}
+	}
+
+	return final_angle;
+}
+
+// Return the y angle of a vector (with adjacent = X and opposition = Y)
+float get_vector_y_angle(glm::vec3 vector, unsigned int id)
+{
+	float opposite = vector[2];
+	float adjacent = vector[0];
 	float hypothenus = glm::distance(glm::vec2(opposite, adjacent), glm::vec2(0, 0));
 
 	if (hypothenus == 0)
@@ -50,26 +106,21 @@ float get_vector_y_angle(glm::vec3 vector, float *x_rotation, unsigned int id)
 	float angle = glm::acos(glm::abs(adjacent) / hypothenus);
 	float final_angle = angle;
 
-	if (adjacent <= 0 && opposite >= 0)
+	if (adjacent < 0 && opposite < 0)
+	{
+		final_angle = 3.1415 + angle;
+	}
+	else if (opposite < 0 && adjacent >= 0)
 	{
 		final_angle = 3.1415 * 2.0 - angle;
 	}
-	else if (adjacent <= 0 && opposite <= 0)
-	{
-		final_angle = angle;
-	}
-	else if (opposite <= 0)
+	else if (adjacent < 0)
 	{
 		final_angle = 3.1415 - angle;
 	}
 	else
 	{
-		final_angle = 3.1415 + angle;
-	}
-
-	if (x_rotation != 0 && *x_rotation < 180)
-	{
-		// final_angle = 3.1415 + angle;
+		final_angle = angle;
 	}
 
 	return final_angle;
@@ -116,12 +167,43 @@ glm::vec3 normalize_rotation(glm::vec3 rotation)
 	return rotation;
 }
 
-// Rotate a vector on the y axus
+// Rotate a vector on the x axis in the horary sense
+glm::vec3 rotate_vector_x(glm::vec3 vector, glm::vec3 rotation, glm::vec3 forward, unsigned int id)
+{
+	glm::vec3 to_return = glm::vec3(vector[0] * forward[0], vector[1], vector[2] * forward[2]);
+	const glm::vec3 TO_RETURN_START = to_return;
+
+	// Calculate the angle of the position
+	float hypothenus_xz = glm::distance(glm::vec2(to_return[0], to_return[2]), glm::vec2(0, 0));
+	float hypothenus_xyz = glm::distance(to_return, glm::vec3(0, 0, 0));
+
+	if (hypothenus_xyz == 0) return to_return;
+
+	float angle_y = glm::degrees(get_vector_y_angle(to_return));
+	float angle = get_vector_x_angle(to_return, forward, angle_y);
+
+	// Calculate the position in the local circle
+	float final_angle = angle + glm::radians(rotation[0]);
+	float final_xz = glm::cos(final_angle) * hypothenus_xyz;
+
+	to_return[0] = final_xz * forward[0];
+	to_return[1] = glm::sin(final_angle) * hypothenus_xyz;
+	to_return[2] = final_xz * forward[2];
+
+	std::cout << "E " << final_xz << " " << hypothenus_xyz << " " << forward[0] << " " << forward[2] << " " << glm::degrees(final_angle) << std::endl;
+
+	// Calculate the final position
+	vector[0] += to_return[0] - TO_RETURN_START[0];
+	vector[1] = to_return[1];
+	vector[2] += to_return[2] - TO_RETURN_START[2];
+
+	return vector;
+}
+
+// Rotate a vector on the y axis in the horary sense
 glm::vec3 rotate_vector_y(glm::vec3 vector, float rotation, unsigned int id)
 {
 	glm::vec3 to_return = vector;
-
-	if (rotation == 0 || (vector[0] == 0 && vector[2] == 0)) { return vector; }
 
 	// Calculate the angle in a local XZ circle with Y angle
 	glm::vec2 difference_position = glm::vec2(vector[0], vector[2]);
@@ -133,11 +215,11 @@ glm::vec3 rotate_vector_y(glm::vec3 vector, float rotation, unsigned int id)
 
 	// Calculate the position in the local circle
 	float final_angle = angle + glm::radians(rotation);
-	glm::vec2 final_position = glm::vec2(glm::sin(final_angle) * hypothenus, glm::cos(final_angle) * hypothenus);
+	glm::vec2 final_position = glm::vec2(glm::cos(final_angle) * hypothenus, glm::sin(final_angle) * hypothenus);
 
 	// Calculate the final position
 	to_return[0] = final_position[0];
-	to_return[2] = final_position[1];
+	to_return[2] = final_position[1]; //*/
 
 	return to_return;
 }
@@ -145,42 +227,36 @@ glm::vec3 rotate_vector_y(glm::vec3 vector, float rotation, unsigned int id)
 // Rotate a vector around a rotating point
 glm::vec3 rotate_vector(glm::vec3 vector, glm::vec3 rotation, glm::vec3 position, glm::vec3 rotation_multiplier, bool protection, unsigned int id)
 {
-	if (protection && rotation == glm::vec3(0, 0, 0)) { return vector; }
-
 	rotation = normalize_rotation(rotation);
 
 	vector -= position;
-	glm::vec3 to_return = vector;
+	vector = rotate_vector_y(vector, rotation[1]);
+
+	glm::vec3 forward = calculate_forward(rotation);
+	forward = glm::vec3(1, 0, 0);
+
+	glm::vec3 to_return = rotate_vector_x(vector, rotation, forward);
 
 	// Calculate the angle of the position
-	float x = vector[0];
+	/*float x = vector[0];
 	float y = vector[1];
 	float z = vector[2];
 	float xz_hypothenus = glm::distance(glm::vec3(x, 0, z), glm::vec3(0, 0, 0));
 	float xyz_hypothenus = glm::distance(glm::vec3(x, y, z), glm::vec3(0, 0, 0));
 
-	float x_angle = get_vector_x_angle(vector, protection ? &rotation[0] : 0, id) + glm::radians(rotation[0]);
-	float y_angle = get_vector_y_angle(vector, protection ? &rotation[0] : 0, id) + glm::radians(rotation[1]);
+	float y_angle = get_vector_y_angle(vector);
 
-	if (id == 110)
-	{
-		std::cout << "R " << x_angle << " " << y_angle << std::endl;
-	}
+	glm::vec3 forward = calculate_forward(rotation);
 
-	if (rotation_multiplier[1] != 0)
-	{
-		to_return[0] = glm::sin(y_angle) * xz_hypothenus;
-		to_return[2] = glm::cos(y_angle) * xz_hypothenus;
-	}
+	float x_angle = get_vector_x_angle(to_return, rotation[1]) + glm::radians(rotation[0]);
+	if(x < 0) x_angle = get_vector_x_angle(to_return, rotation[1]) - glm::radians(rotation[0]);
 
-	// Calculate the angle in a local Z circle with X angle
-	if (rotation_multiplier[0] == 1 && rotation[0] != 0 && vector[1] != 0)
-	{
-		// Calculate the final position
-		to_return[0] = glm::sin(y_angle) * glm::cos(x_angle) * xyz_hypothenus;
-		to_return[1] = glm::sin(x_angle) * xyz_hypothenus;
-		to_return[2] = glm::cos(y_angle) * glm::cos(x_angle) * xyz_hypothenus;
-	}
+	// Calculate the X rotation
+	to_return[0] = glm::cos(y_angle) * glm::cos(x_angle) * xyz_hypothenus;
+	to_return[1] = glm::sin(x_angle) * xyz_hypothenus;
+	to_return[2] = glm::sin(y_angle) * glm::cos(x_angle) * xyz_hypothenus;//*/
+
+	if (id == 180) std::cout << "M " << vector[0] << " " << vector[1] << " " << vector[2] << " " << to_return[0] << " " << to_return[1] << " " << to_return[2] << std::endl;
 
 	return to_return;
 }
@@ -299,24 +375,15 @@ glm::vec3 Transform_Object::get_absolute_position(Transform_Object* asker)
 
 	// Move the vector
 	glm::vec3 position = get_position();
-	if (get_parent() != 0) position = rotate_vector(position, get_parent()->get_absolute_plan_rotation(), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), false, get_id());
+	// if (get_parent() != 0) position = rotate_vector(position, get_parent()->get_absolute_plan_rotation(), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), false, get_id());
 	local_vector += position;
 
 	// Apply anchor rotation
-	glm::vec3 anchor = get_anchored_position();
+	/*glm::vec3 anchor = get_anchored_position();
 	if (get_parent() != 0) anchor = rotate_vector(anchor, get_parent()->get_absolute_plan_rotation(), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), false, get_id());
 	glm::vec3 rotated_vector = rotate_vector(anchor, get_plan_rotation(), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), asker == this ? true : false, get_id() + 100);
 	glm::vec3 final_anchor = rotated_vector - anchor;
-	local_vector += final_anchor;
-
-	if (get_id() == 11)
-	{
-		std::cout << "11 A " << anchor[0] << " " << anchor[1] << " " << anchor[2] << " ra " << rotated_vector[0] << " " << rotated_vector[1] << " " << rotated_vector[2] << " fa " << final_anchor[0] << " " << final_anchor[1] << " " << final_anchor[2] << " angle " << get_plan_rotation()[0] << std::endl;
-	}
-	else if (get_id() == 10)
-	{
-		std::cout << "10 A " << anchor[0] << " " << anchor[1] << " " << anchor[2] << " ra " << rotated_vector[0] << " " << rotated_vector[1] << " " << rotated_vector[2] << " fa " << final_anchor[0] << " " << final_anchor[1] << " " << final_anchor[2] << " angle " << get_plan_rotation()[0] << std::endl;
-	}
+	local_vector += final_anchor; //*/
 
 	return vector + local_vector;
 }
@@ -353,7 +420,7 @@ glm::mat4 Transform_Object::apply_parent_rotation_model_matrix(glm::mat4 matrix,
 // Calculate the direction vector of the transform object
 void Transform_Object::calculate_direction()
 {
-	glm::vec3 rotation = get_absolute_plan_rotation(true) * glm::vec3(1, -1, 1);
+	glm::vec3 rotation = get_absolute_plan_rotation() * glm::vec3(1, -1, 1);
 	float x = cos(glm::radians(rotation[1])) * cos(glm::radians(0.0f)); // Use trigonometry to calculate forward direction
 	float y = sin(glm::radians(0.0f));
 	float z = sin(glm::radians(rotation[1])) * cos(glm::radians(0.0f));
@@ -366,6 +433,11 @@ void Transform_Object::calculate_direction()
 	forward = glm::normalize(glm::vec3(x, y, z));
 	up = glm::normalize(glm::vec3(x_r, y_r, z_r));
 	right = glm::normalize(glm::cross(forward, up)); // Use vector calcul to calculate right and up direction
+
+	for (int i = 0; i < get_children()->size(); i++)
+	{
+		(*get_children())[i]->calculate_direction();
+	}
 }
 
 // Return the global up to apply rotation
