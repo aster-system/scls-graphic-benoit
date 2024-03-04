@@ -1,7 +1,19 @@
 #include "../headers/model.h"
 
 // Shader_Program constructor
+Shader_Program::Shader_Program(Built_In_Shader shader_type) : Shader_Program(Shader_Program::get_built_in_vertex_shader(shader_type), Shader_Program::get_built_in_fragment_shader(shader_type))
+{
+
+}
+
+// Shader_Program constructor
 Shader_Program::Shader_Program(std::string a_vertex_shader, std::string a_fragment_shader): fragment_shader(a_fragment_shader), vertex_shader(a_vertex_shader)
+{
+	
+}
+
+// Load the Shader
+void Shader_Program::load_shader()
 {
 	// Convert the fragment and vertex shader (string) to an char*
 	char* char_array_fragment = new char[get_fragment_shader().length() + 1];
@@ -60,6 +72,14 @@ Shader_Program::Shader_Program(std::string a_vertex_shader, std::string a_fragme
 	// Delete useless ressources
 	glDeleteShader(vertex);
 	glDeleteShader(fragment);
+}
+
+// Create a new Shader_Program from this one
+Shader_Program* Shader_Program::new_copy()
+{
+	Shader_Program* copy = new Shader_Program(vertex_shader, fragment_shader);
+
+	return copy;
 }
 
 // Pass variable to the shader program
@@ -252,9 +272,22 @@ VBO::~VBO()
 }
 
 // VAO constructor
-VAO::VAO(std::string shader_path, std::vector<Shader_Program_Variable> a_attributes, std::string vbo_path)
+VAO::VAO(std::string shader_path, std::vector<Shader_Program_Variable> a_attributes, std::string vbo_path) : VAO(load_shader_program(shader_path), a_attributes, vbo_path)
 {
-	shader_program = load_shader_program(shader_path); // Load the shader program
+	
+}
+
+// VAO constructor
+VAO::VAO(Shader_Program* shader_program, std::vector<Shader_Program_Variable> a_attributes, std::string vbo_path) : VAO(*shader_program, a_attributes, vbo_path)
+{
+	
+}
+
+// VAO constructor
+VAO::VAO(Shader_Program shader_program, std::vector<Shader_Program_Variable> a_attributes, std::string vbo_path)
+{
+	a_shader_program = shader_program.new_copy();
+	a_shader_program->load_shader();
 
 	// Create the VAO into the GPU memory
 	glGenVertexArrays(1, &vao);
@@ -277,7 +310,7 @@ VAO::VAO(std::string shader_path, std::vector<Shader_Program_Variable> a_attribu
 	vbo->bind_buffer();
 
 	// Pass the "in" variables into the shader program
-	shader_program->pass_variable(vbo->get_attributes());
+	a_shader_program->pass_variable(vbo->get_attributes());
 
 	// Unbind all
 	vbo->unbind();
@@ -287,13 +320,13 @@ VAO::VAO(std::string shader_path, std::vector<Shader_Program_Variable> a_attribu
 // Bind the VAO into the GPU memory
 void VAO::bind(glm::vec3 scale)
 {
-	shader_program->use();
-	shader_program->set_uniform3f_value("scale", scale.x, scale.y, scale.z);
+	a_shader_program->use();
+	a_shader_program->set_uniform3f_value("scale", scale.x, scale.y, scale.z);
 	glBindVertexArray(vao);
 }
 
 // Load and return a shader
-Shader_Program* VAO::load_shader_program(std::string shader_path)
+Shader_Program VAO::load_shader_program(std::string shader_path)
 {
 	std::string vertex_content;
 	std::string fragment_content;
@@ -329,7 +362,7 @@ Shader_Program* VAO::load_shader_program(std::string shader_path)
 	const char* vertex_code = vertex_content.c_str();
 	const char* fragment_code = fragment_content.c_str();
 
-	Shader_Program* shader = new Shader_Program(vertex_code, fragment_code); // Create the shader program
+	Shader_Program shader = Shader_Program(vertex_code, fragment_code); // Create the shader program
 	return shader;
 }
 
@@ -356,15 +389,15 @@ unsigned int VAO::triangle_number()
 // VAO destructor
 VAO::~VAO()
 {
-	delete shader_program;
-	shader_program = 0;
+	delete a_shader_program;
+	a_shader_program = 0;
 	delete vbo;
 	vbo = 0;
 	glDeleteVertexArrays(1, &vao);
 }
 
 // Font_Vao constructor
-Font_VAO::Font_VAO(std::string shader_path): VAO(shader_path, get_base_attributes(), "0")
+Font_VAO::Font_VAO(Shader_Program shader_program): VAO(shader_program, get_base_attributes(), "0")
 {
 	
 }
@@ -394,15 +427,15 @@ void Font_VAO::render(glm::vec4 rect)
 // Font_VAO destructor
 Font_VAO::~Font_VAO()
 {
-	delete shader_program;
-	shader_program = 0;
+	delete a_shader_program;
+	a_shader_program = 0;
 	delete vbo;
 	vbo = 0;
 	glDeleteVertexArrays(1, &vao);
 }
 
 // Texture constructor
-Texture::Texture(std::string a_texture_path, bool a_resize): texture_path(a_texture_path), resize(a_resize), a_image(new basix::PNG_Image())
+Texture::Texture(std::string a_texture_path, bool a_resize): texture_path(a_texture_path), resize(a_resize), a_image(new basix::Image())
 {
 	if (a_texture_path != "")
 	{
@@ -420,7 +453,7 @@ Texture::Texture(unsigned short width, unsigned short height, glm::vec4 color, b
 {
 	// Load the image
 	delete get_image();
-	a_image = new basix::PNG_Image(width, height, color[0], color[1], color[2], color[3]);
+	a_image = new basix::Image(width, height, color[0], color[1], color[2], color[3]);
 
 	// Load the texture
 	glGenTextures(1, &texture_id);

@@ -31,26 +31,19 @@ Graphic_Scene::Graphic_Scene(Advanced_Struct* a_game_struct, std::string a_name,
 }
 
 // Create a new object into the scene and return it
-Graphic_Object* Graphic_Scene::new_object(std::string name, Transform_Object &transform, std::string type, std::string texture_path, bool texture_resize)
+Graphic_Object* Graphic_Scene::new_object(std::string name, Transform_Object &transform, std::string type, std::string texture_name, bool texture_resize)
 {
 	// Configure variables for creation
-	if (texture_path == "")
+	if (texture_name == "")
 	{
-		if ((*get_game_struct()->get_type())[type] == "cube")
-		{
-			texture_path = get_game_struct()->get_assets_directory_path() + "textures/unknow_cube.png";
-		}
-		else
-		{
-			texture_path = get_game_struct()->get_assets_directory_path() + "textures/unknow.png";
-		}
+		texture_name = "unknow";
 	}
 
 	// Create or get the texture
-	Texture* texture = get_game_struct()->get_texture(texture_path, texture_resize);
+	Texture* texture = get_game_struct()->get_texture(texture_name);
 
 	// Create and add the object
-	VAO* vao = (*get_game_struct()->get_all_vaos())[(*get_game_struct()->get_type())[type]];
+	VAO* vao = (*get_game_struct()->get_all_vaos())[type];
 	Graphic_Object* object = new Graphic_Object(get_game_struct(), transform, texture, vao);
 
 	return object;

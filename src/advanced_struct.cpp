@@ -58,12 +58,12 @@ bool Advanced_Struct::contains_part(unsigned int number)
 }
 
 // Returns if the struct contains a texture
-bool Advanced_Struct::contains_texture(std::string texture_path)
+bool Advanced_Struct::contains_texture(std::string texture_name)
 {
 	std::map<std::string, Texture*>* textures = get_textures();
 	for (std::map<std::string, Texture*>::iterator it = textures->begin(); it != textures->end(); it++)
 	{
-		if (it->first == texture_path) { return true; } // Verify each texture path (first element of map)
+		if (it->first == texture_name) { return true; } // Verify each texture path (first element of map)
 	}
 	return false;
 }
@@ -109,33 +109,23 @@ Part* Advanced_Struct::get_part(unsigned int number)
 }
 
 // Returns a texture in the struct
-Texture* Advanced_Struct::get_texture(std::string texture_path, bool texture_resize)
+Texture* Advanced_Struct::get_texture(std::string texture_name)
 {
-	if (contains_texture(texture_path))
+	if (contains_texture(texture_name))
 	{
-		return (*get_textures())[texture_path];
+		return (*get_textures())[texture_name];
 	}
 	else
 	{
-		Texture *texture = new Texture(texture_path, texture_resize);
-		(*get_textures())[texture_path] = texture;
-		return texture;
+		error("Matix", "The \"" + texture_name + "\" texture you want to use does not exists.");
 	}
-}
-
-// Returns a texture in the struct
-Texture* Advanced_Struct::get_texture(unsigned short width, unsigned short height, glm::vec4 color)
-{
-	Texture* texture = new Texture(width, height, color);
-	(*get_textures())[std::to_string(get_textures()->size())] = texture;
-	return texture;
 }
 
 // Loads the HUD VAOs in the advanced struct
 void Advanced_Struct::load_hud_VAOs()
 {
-	// Create types
-	types["hud"] = "hud";
+	// Create the base shaders
+	a_shaders_programs["hud_default"] = Shader_Program(Shader_Program::HUD_Default);
 
 	// Define attributes for VAOs
 	// Create base Shader_Program_Variable for the shader program
@@ -148,25 +138,19 @@ void Advanced_Struct::load_hud_VAOs()
 	hud_attributes.push_back(v2);
 
 	// Create VAOs
-	all_vaos["default_font"] = new Font_VAO(get_assets_directory_path() + "shaders/font");
-	all_vaos["hud"] = new VAO(get_assets_directory_path() + "shaders/hud", hud_attributes, "0");
+	all_vaos["default_font"] = new Font_VAO(a_shaders_programs["hud_default"]);
+	all_vaos["hud"] = new VAO(a_shaders_programs["hud_default"], hud_attributes, "0");
 
 	// Create base texture
-	textures[get_assets_directory_path() + "fonts/default.png"] = new Font_Texture(get_assets_directory_path() + "fonts/consolas.png");
+	std::string texture_path = get_assets_directory_path() + "fonts/consolas.png";
+	textures["default_font"] = new Font_Texture(texture_path);
 }
 
 // Loads the VAOs in the advanced struct
 void Advanced_Struct::load_VAOs()
 {
-	// Create types
-	types["chair"] = "chair";
-	types["circle"] = "circle";
-	types["cube"] = "cube";
-	types["cylinder"] = "cylinder";
-	types["one_faced_cube"] = "one_faced_cube";
-	types["player"] = "cube";
-	types["square"] = "triangle";
-	types["table"] = "table";
+	// Create the base shaders
+	a_shaders_programs["default"] = Shader_Program();
 
 	// Define attributes for VAOs
 	// Create base Shader_Program_Variable for the shader program
@@ -188,15 +172,45 @@ void Advanced_Struct::load_VAOs()
 	hud_attributes.push_back(v2);
 
 	// Create VAOs
-	all_vaos["chair"] = new VAO(get_assets_directory_path() +  "shaders/default", base_3d_attributes, get_assets_directory_path() + "vbos/chair.vbo");
-	all_vaos["circle"] = new VAO(get_assets_directory_path() +  "shaders/default", base_3d_attributes, get_assets_directory_path() + "vbos/polygon50.vbo");
-	all_vaos["cylinder"] = new VAO(get_assets_directory_path() + "shaders/default", base_3d_attributes, get_assets_directory_path() + "vbos/polygon_3d50.vbo");
-	all_vaos["cube"] = new VAO(get_assets_directory_path() +  "shaders/default", base_3d_attributes, get_assets_directory_path() + "vbos/cube.vbo");
-	all_vaos["one_faced_cube"] = new VAO(get_assets_directory_path() + "shaders/default", base_3d_attributes, get_assets_directory_path() + "vbos/one_faced_cube.vbo");
-	all_vaos["table"] = new VAO(get_assets_directory_path() +  "shaders/default", base_3d_attributes, get_assets_directory_path() + "vbos/table.vbo");
-	all_vaos["triangle"] = new VAO(get_assets_directory_path() +  "shaders/default", base_3d_attributes, "0");
+	all_vaos["chair"] = new VAO(a_shaders_programs["default"], base_3d_attributes, get_assets_directory_path() + "vbos/chair.vbo");
+	all_vaos["circle"] = new VAO(a_shaders_programs["default"], base_3d_attributes, get_assets_directory_path() + "vbos/polygon50.vbo");
+	all_vaos["cylinder"] = new VAO(a_shaders_programs["default"], base_3d_attributes, get_assets_directory_path() + "vbos/polygon_3d50.vbo");
+	all_vaos["cube"] = new VAO(a_shaders_programs["default"], base_3d_attributes, get_assets_directory_path() + "vbos/cube.vbo");
+	all_vaos["one_faced_cube"] = new VAO(a_shaders_programs["default"], base_3d_attributes, get_assets_directory_path() + "vbos/one_faced_cube.vbo");
+	all_vaos["table"] = new VAO(a_shaders_programs["default"], base_3d_attributes, get_assets_directory_path() + "vbos/table.vbo");
+	all_vaos["triangle"] = new VAO(a_shaders_programs["default"], base_3d_attributes, "0");
 
 	load_hud_VAOs();
+}
+
+// Add a texture to the game
+Texture* Advanced_Struct::new_texture(std::string name, std::string path, bool texture_resize)
+{
+	if (!contains_texture(name))
+	{
+		Texture* texture = new Texture(path, texture_resize);
+		(*get_textures())[name] = texture;
+		return texture;
+	}
+	else
+	{
+		error("Matix", "The \"" + name + "\" texture you want to add already exists.");
+	}
+}
+
+// Returns a texture in the struct
+Texture* Advanced_Struct::new_texture(std::string texture_name, unsigned short width, unsigned short height, glm::vec4 color)
+{
+	if (!contains_texture(texture_name))
+	{
+		Texture* texture = new Texture(width, height, color);
+		(*get_textures())[texture_name] = texture;
+		return texture;
+	}
+	else
+	{
+		error("Matix", "The \"" + texture_name + "\" texture you want to add already exists.");
+	}
 }
 
 // Create a new VAO into the game
@@ -224,7 +238,6 @@ VAO* Advanced_Struct::new_vao(std::string path, std::string type, std::string sh
 	base_3d_attributes.push_back(v3);
 	base_3d_attributes.push_back(v4);
 
-	types[type] = type;
 	all_vaos[type] = new VAO(shader_path, base_3d_attributes, path);
 	return all_vaos[type];
 }

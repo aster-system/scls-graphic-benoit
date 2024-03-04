@@ -64,16 +64,17 @@ public:
 	void assign_part(unsigned int number, Part* part); // Assign to a number a part
 	bool contains_font(std::string font_name); // Returns if the struct contains a textures
 	bool contains_part(unsigned int number); // Returns if the struct contains a part
-	bool contains_texture(std::string texture_path); // Returns if the struct contains a textures
+	bool contains_texture(std::string texture_name); // Returns if the struct contains a textures
 	bool contains_vao(std::string type); // Returns if the struct contains a VAO
 	Font_Texture* get_font_texture(std::string font_name); // Return a fotn in the struct
 	Part* get_part(unsigned int number); // Returns a part
-	Texture* get_texture(std::string texture_path, bool texture_resize = true); // Returns a texture in the struct
-	Texture* get_texture(unsigned short width, unsigned short height, glm::vec4 color); // Returns a texture in the struct
+	Texture* get_texture(std::string texture_name); // Returns a texture in the struct
 	void load_hud_VAOs(); // Loads the HUD VAOs in the advanced struct
 	void load_VAOs(); // Loads the VAOs in the advanced struct
 	template <class O = Object> // Template for adding a type of object
 	Part* new_part(unsigned int number, std::string type, glm::vec3 position = glm::vec3(0, 0, 0), glm::vec3 rotation = glm::vec3(0, 0, 0), glm::vec3 scale = glm::vec3(0, 0, 0), std::string texture_path = ""); // Create a new part into the struct and return it
+	Texture* new_texture(std::string name, std::string path, bool texture_resize = false); // Add a texture to the game
+	Texture* new_texture(std::string texture_name, unsigned short width, unsigned short height, glm::vec4 color); // Returns a texture in the struct
 	VAO* new_vao(std::string path, std::string type, std::string shader_path = "-1"); // Create a new VAO into the game
 	void unload_fonts(); // Unload all the textures
 	void unload_textures(); // Unload all the textures
@@ -85,13 +86,13 @@ public:
 	inline std::map<std::string, Font_VAO*>* get_fonts_vaos() { return &all_fonts_vaos; };
 	inline std::map<unsigned int, Part*>* get_parts() { return &parts; };
 	inline std::map<std::string, Texture*>* get_textures() { return &textures; };
-	inline std::map<std::string, std::string>* get_type() { return &types; };
 	inline std::map<std::string, VAO*>* get_vaos() { return &all_vaos; };
 private:
+	// Each shaders, with their name as key, in the game
+	std::map<std::string, Shader_Program> a_shaders_programs = std::map<std::string, Shader_Program>();
 	std::map<std::string, Font_Texture*> fonts_textures = std::map<std::string, Font_Texture*>(); // Each texture, with their texture path as key, in the game
 	std::map<unsigned int, Part*> parts = std::map<unsigned int, Part*>(); // Each parts, with their number as key, in the game
-	std::map<std::string, Texture*> textures = std::map<std::string, Texture*>(); // Each texture, with their texture path as key, in the game
-	std::map<std::string, std::string> types = std::map<std::string, std::string>(); // Each types, with their main type as key, in the game
+	std::map<std::string, Texture*> textures = std::map<std::string, Texture*>(); // Each texture, with their name as key, in the game
 	std::map<std::string, Font_VAO*> all_fonts_vaos = std::map<std::string, Font_VAO*>(); // Each vaos, with their type as key, in the game
 	std::map<std::string, VAO*> all_vaos = std::map<std::string, VAO*>(); // Each vaos, with their type as key, in the game
 };

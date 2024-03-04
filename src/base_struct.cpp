@@ -190,8 +190,6 @@ glm::vec3 rotate_vector_x(glm::vec3 vector, glm::vec3 rotation, glm::vec3 forwar
 	to_return[1] = glm::sin(final_angle) * hypothenus_xyz;
 	to_return[2] = final_xz * forward[2];
 
-	std::cout << "E " << final_xz << " " << hypothenus_xyz << " " << forward[0] << " " << forward[2] << " " << glm::degrees(final_angle) << std::endl;
-
 	// Calculate the final position
 	vector[0] += to_return[0] - TO_RETURN_START[0];
 	vector[1] = to_return[1];
@@ -236,27 +234,6 @@ glm::vec3 rotate_vector(glm::vec3 vector, glm::vec3 rotation, glm::vec3 position
 	forward = glm::vec3(1, 0, 0);
 
 	glm::vec3 to_return = rotate_vector_x(vector, rotation, forward);
-
-	// Calculate the angle of the position
-	/*float x = vector[0];
-	float y = vector[1];
-	float z = vector[2];
-	float xz_hypothenus = glm::distance(glm::vec3(x, 0, z), glm::vec3(0, 0, 0));
-	float xyz_hypothenus = glm::distance(glm::vec3(x, y, z), glm::vec3(0, 0, 0));
-
-	float y_angle = get_vector_y_angle(vector);
-
-	glm::vec3 forward = calculate_forward(rotation);
-
-	float x_angle = get_vector_x_angle(to_return, rotation[1]) + glm::radians(rotation[0]);
-	if(x < 0) x_angle = get_vector_x_angle(to_return, rotation[1]) - glm::radians(rotation[0]);
-
-	// Calculate the X rotation
-	to_return[0] = glm::cos(y_angle) * glm::cos(x_angle) * xyz_hypothenus;
-	to_return[1] = glm::sin(x_angle) * xyz_hypothenus;
-	to_return[2] = glm::sin(y_angle) * glm::cos(x_angle) * xyz_hypothenus;//*/
-
-	if (id == 180) std::cout << "M " << vector[0] << " " << vector[1] << " " << vector[2] << " " << to_return[0] << " " << to_return[1] << " " << to_return[2] << std::endl;
 
 	return to_return;
 }
@@ -612,16 +589,18 @@ std::string Base_Struct::file_formatted(std::string path)
 		if (path[i] == '.')
 		{
 			point_count++;
-			size_to_delete += cutted_path[cutted_path.size() - (i + 1)].size() + 1;
+			size_to_delete += cutted_path[cutted_path.size() - i].size() + 1;
 		}
 		else
 		{
-			if (path[i] == '/' || path[i] == '\\')
-			{
-				point_count += 1;
-			}
 			break;
 		}
+	}
+
+	if (path[0] == '.')
+	{
+		point_count++;
+		if (path[point_count] == '/' || path[point_count] == '\\') point_count++;
 	}
 
 	path = current_path.substr(0, current_path.size() - size_to_delete) + "/" + path.substr(point_count, path.size() - point_count);

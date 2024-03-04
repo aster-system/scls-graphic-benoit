@@ -14,7 +14,18 @@ class Shader_Program
 {
 	// Class representing a shader program interface
 public:
+	// Every type of built-in shaders
+	enum Built_In_Shader {
+		Default,
+		HUD_Default
+	};
+
+	Shader_Program(Built_In_Shader shader_type = Default); // Shader_Program constructor
 	Shader_Program(std::string a_vertex_shader, std::string a_fragment_shader); // Shader_Program constructor
+	// Load the Shader
+	void load_shader();
+	// Create a new Shader_Program from this one
+	Shader_Program* new_copy();
 	void pass_variable(std::vector<Shader_Program_Variable> *variables); // Pass variable to the shader program
 	void set_uniform1f_value(std::string name, float v1); // Change the value of a uniform float value
 	void set_uniform2f_value(std::string name, float v1, float v2); // Change the value of a uniform vec2 float value
@@ -28,6 +39,46 @@ public:
 	// Getters and setters
 	inline std::string get_fragment_shader() const { return fragment_shader; };
 	inline std::string get_vertex_shader() const { return vertex_shader; };
+
+	// Return the default shaders
+	static std::string get_built_in_fragment_shader(Built_In_Shader shader_type)
+	{
+		if (shader_type == Default)
+		{
+			return get_default_fragment_shader();
+		}
+		else if (shader_type == HUD_Default)
+		{
+			return get_default_hud_fragment_shader();
+		}
+	};
+	static std::string get_built_in_vertex_shader(Built_In_Shader shader_type)
+	{
+		if (shader_type == Default)
+		{
+			return get_default_vertex_shader();
+		}
+		else if (shader_type == HUD_Default)
+		{
+			return get_default_hud_vertex_shader();
+		}
+	};
+	static std::string get_default_fragment_shader()
+	{
+		return "#version 330 core\nin vec3 tex_multiplier;in vec2 tex_pos;in vec4 tex_rect;out vec4 FragColor;uniform vec3 scale;uniform sampler2D texture_0;void main(){vec2 final_tex_pos = (tex_pos - tex_rect.xy);if (tex_multiplier.x == 0)final_tex_pos.x = final_tex_pos.x * scale.x;else if (tex_multiplier.x == 1)final_tex_pos.y = final_tex_pos.y * scale.x;if (tex_multiplier.y == 0)final_tex_pos.x = final_tex_pos.x * scale.y;else if (tex_multiplier.y == 1)final_tex_pos.y = final_tex_pos.y * scale.y;if (tex_multiplier.z == 0)final_tex_pos.x = final_tex_pos.x * scale.z;else if (tex_multiplier.z == 1)final_tex_pos.y = final_tex_pos.y * scale.z;while (final_tex_pos.x > tex_rect[2])final_tex_pos.x -= tex_rect[2];while (final_tex_pos.y > tex_rect[3])final_tex_pos.y -= tex_rect[3];FragColor = texture(texture_0, tex_rect.xy + final_tex_pos);}";
+	};
+	static std::string get_default_hud_fragment_shader()
+	{
+		return "#version 330 core\nin vec2 tex_pos;out vec4 FragColor;uniform sampler2D texture_0;void main(){vec4 color = texture(texture_0, tex_pos);FragColor = color;}";
+	};
+	static std::string get_default_vertex_shader()
+	{
+		return "#version 330 core\nlayout(location = 0) in vec3 aPos;layout(location = 1) in vec2 in_tex_pos;layout(location = 2) in vec4 in_tex_rect;layout(location = 3) in vec3 in_tex_multiplier;out vec3 tex_multiplier;out vec2 tex_pos;out vec4 tex_rect;uniform mat4 model;uniform mat4 projection;uniform mat4 view;void main(){tex_multiplier = in_tex_multiplier;tex_pos = in_tex_pos;tex_rect = in_tex_rect;gl_Position = projection * view * model * vec4(aPos.xyz, 1.0);}";
+	};
+	static std::string get_default_hud_vertex_shader()
+	{
+		return "#version 330 core\nlayout(location = 0) in vec3 position;layout(location = 1) in vec2 texture_position;out vec2 tex_pos;uniform mat4 model;void main(){tex_pos = texture_position;gl_Position = model * vec4(position.xyz, 1.0);}";
+	};
 private:
 	unsigned int shader_program = 0; // Handle to the shader program
 
@@ -190,21 +241,26 @@ class VAO
 	// Class representing a VAO interface
 public:
 	VAO(std::string shader_path, std::vector<Shader_Program_Variable> a_attributes, std::string vbo_path = ""); // VAO constructor
+	// VAO constructor
+	VAO(Shader_Program* shader_program, std::vector<Shader_Program_Variable> a_attributes, std::string vbo_path = "");
+	// VAO constructor
+	VAO(Shader_Program shader_program, std::vector<Shader_Program_Variable> a_attributes, std::string vbo_path = "");
 	virtual void bind(glm::vec3 scale = glm::vec3(1.0, 1.0, 1.0)); // Bind the VAO into the GPU memory
-	Shader_Program *load_shader_program(std::string shader_path); // Load and return a shader
+	Shader_Program load_shader_program(std::string shader_path); // Load and return a shader
 	virtual void render(glm::vec3 scale = glm::vec3(1.0, 1.0, 1.0)); // Render the VAO
 	unsigned int triangle_number(); // Returns the number of triangle to draw
 	~VAO(); // VAO destructor
 
 
 	// Getters and setters
-	inline Shader_Program* get_shader_program() { return shader_program; };
+	inline Shader_Program* get_shader_program() { return a_shader_program; };
 	inline unsigned int& get_vao() { return vao; };
 	inline VBO* get_vbo() { return vbo; };
 protected:
 	unsigned int vao; // Handle to the VAO
 
-	Shader_Program *shader_program = 0; // Pointer to the shader program
+	// Pointer to the shader program
+	Shader_Program *a_shader_program = 0;
 	VBO *vbo = 0; // Pointer to the VBO
 };
 
@@ -212,7 +268,7 @@ class Font_VAO: public VAO
 {
 	// Class representing a VAO of a font
 public:
-	Font_VAO(std::string shader_path); // Font_VAO constructor
+	Font_VAO(Shader_Program shader_program); // Font_VAO constructor
 	void bind(glm::vec4 rect); // Bind the font VAO into the GPU memory
 	void render(glm::vec4 rect); // Render the Font_VAO
 	~Font_VAO(); // Font_VAO constructor
@@ -245,14 +301,14 @@ public:
 	~Texture(); // Texture destructor
 
 	// Getters and setters
-	inline basix::PNG_Image* get_image() { return a_image; };
+	inline basix::Image* get_image() { return a_image; };
 	inline glm::vec2 get_texture_size() { return glm::vec2(width, height); };
 	inline std::string get_texture_path() { return texture_path; };
 	inline bool use_resize() { return resize; };
 private:
 	int height = 0; // Height of the texture
 	// Basix image of this texture
-	basix::PNG_Image* a_image = 0;
+	basix::Image* a_image = 0;
 	bool resize = true; // If the shader resize the texture or not
 	unsigned int texture_id = 0; // Handle to the texture
 	std::string texture_path = ""; // Path of the texture
