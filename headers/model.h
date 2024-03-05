@@ -5,8 +5,7 @@
 struct Shader_Program_Variable
 {
 	// Struct representing the values for a "in" variable in the shader program
-	bool normalized = false;
-	unsigned short type = 0; // 0 = GL_FLOAT
+	unsigned short type = GL_FLOAT; // 0 = GL_FLOAT
 	unsigned short vector_size = 1;
 };
 
@@ -90,18 +89,24 @@ class VBO
 {
 	// Class representing a VBO interface
 public:
-	VBO(std::vector<Shader_Program_Variable> a_attributes, std::vector<float> a_datas, bool a_use_ebo = true); // VBO complete constructor
-	VBO(std::vector<Shader_Program_Variable> a_attributes, bool fill_datas = true, bool a_use_ebo = true); // VBO constructor
+	// Most basic VBO constructor
+	VBO();
+	VBO(std::vector<Shader_Program_Variable> attributes, std::vector<float> datas, bool use_ebo = true); // VBO complete constructor
+	VBO(std::vector<Shader_Program_Variable> attributes, bool fill_datas = true, bool use_ebo = true); // VBO constructor
 	void bind(); // Bind the VBO into the GPU memory
 	void bind_buffer(); // Bind the buffer data of the VBO
 	unsigned int get_vertice_number(); // Returns the number of vertices into the VBO
+	// Load the VBO from binary
+	void load_from_binary(char* binary);
 	void load_from_file(std::string path); // Load the vertices from a file
+	// Load the VBO into the GPU memory
+	void load_vbo();
 	void unbind(); // Unbind the VBO from the GPU memory
 	~VBO(); // VBO destructor
 
 	// Getters and setters
-	inline std::vector<Shader_Program_Variable> *get_attributes() { return &attributes; };
-	inline std::vector<float> get_base_datas(std::vector<Shader_Program_Variable> a_attributes)
+	inline std::vector<Shader_Program_Variable> *get_attributes() { return &a_attributes; };
+	inline std::vector<float> get_base_datas(std::vector<Shader_Program_Variable> attributes)
 	{
 		std::vector<float> a_datas = std::vector<float>();
 		a_datas.push_back(0.5f);
@@ -111,7 +116,7 @@ public:
 		a_datas.push_back(1.0f);
 		a_datas.push_back(1.0f);
 
-		if (a_attributes.size() > 2)
+		if (attributes.size() > 2)
 		{
 			a_datas.push_back(0.0f);
 			a_datas.push_back(0.0f);
@@ -130,7 +135,7 @@ public:
 		a_datas.push_back(1.0f);
 		a_datas.push_back(0.0f);
 
-		if (a_attributes.size() > 2)
+		if (attributes.size() > 2)
 		{
 			a_datas.push_back(0.0f);
 			a_datas.push_back(0.0f);
@@ -149,7 +154,7 @@ public:
 		a_datas.push_back(0.0f);
 		a_datas.push_back(1.0f);
 
-		if (a_attributes.size() > 2)
+		if (attributes.size() > 2)
 		{
 			a_datas.push_back(0.0f);
 			a_datas.push_back(0.0f);
@@ -168,7 +173,7 @@ public:
 		a_datas.push_back(1.0f);
 		a_datas.push_back(0.0f);
 
-		if (a_attributes.size() > 2)
+		if (attributes.size() > 2)
 		{
 			a_datas.push_back(0.0f);
 			a_datas.push_back(0.0f);
@@ -187,7 +192,7 @@ public:
 		a_datas.push_back(0.0f);
 		a_datas.push_back(0.0f);
 
-		if (a_attributes.size() > 2)
+		if (attributes.size() > 2)
 		{
 			a_datas.push_back(0.0f);
 			a_datas.push_back(0.0f);
@@ -206,7 +211,7 @@ public:
 		a_datas.push_back(0.0f);
 		a_datas.push_back(1.0f);
 
-		if (a_attributes.size() > 2)
+		if (attributes.size() > 2)
 		{
 			a_datas.push_back(0.0f);
 			a_datas.push_back(0.0f);
@@ -220,20 +225,21 @@ public:
 
 		return a_datas;
 	}
-	inline std::vector<float> get_datas() { return datas; };
-	inline std::vector<unsigned int> get_indices() { return indices; };
-	inline unsigned int* get_indices_in_array() { return indices.data(); };
+	inline std::vector<float> get_datas() { return a_datas; };
+	inline std::vector<unsigned int> get_indices() { return a_indices; };
+	inline unsigned int* get_indices_in_array() { return a_indices.data(); };
 	inline unsigned int& get_vbo() { return vbo; };
-	inline bool is_using_vbo() { return use_ebo; };
+	inline bool is_using_vbo() { return a_use_ebo; };
+	inline void set_attributes(std::vector<Shader_Program_Variable> attributes) { a_attributes = attributes; };
 private:
 	unsigned int ebo = 0; // Handle to the EBO
 	unsigned int vbo = 0; // Handle to the VBO
 
-	bool use_ebo = true; // If the VBO use EBO
-	std::vector<Shader_Program_Variable> attributes = std::vector<Shader_Program_Variable>(); // Each Shader_Program_Variable in the VBO
+	bool a_use_ebo = true; // If the VBO use EBO
+	std::vector<Shader_Program_Variable> a_attributes = std::vector<Shader_Program_Variable>(); // Each Shader_Program_Variable in the VBO
 protected:
-	std::vector<unsigned int> indices = std::vector<unsigned int>(); // Each EBOs in the VBO
-	std::vector<float> datas = std::vector<float>(); // Each vertices in the VBO
+	std::vector<unsigned int> a_indices = std::vector<unsigned int>(); // Each EBOs in the VBO
+	std::vector<float> a_datas = std::vector<float>(); // Each vertices in the VBO
 };
 
 class VAO
@@ -296,6 +302,8 @@ public:
 	Texture(std::string a_texture_path, bool a_resize = true); // Texture constructor
 	// Texture constructor much modulable
 	Texture(unsigned short width, unsigned short height, glm::vec4 color, bool a_resize = true);
+	// Most basic texture constructor
+	Texture();
 	void bind(); // Bind the texture into the GPU memory
 	void change_texture(); // Change the texture of the texture according to image
 	~Texture(); // Texture destructor

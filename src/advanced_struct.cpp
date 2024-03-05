@@ -213,6 +213,21 @@ Texture* Advanced_Struct::new_texture(std::string texture_name, unsigned short w
 	}
 }
 
+// Add a texture to the game with the most basic constructor
+Texture* Advanced_Struct::new_texture(std::string name, bool texture_resize)
+{
+	if (!contains_texture(name))
+	{
+		Texture* texture = new Texture();
+		(*get_textures())[name] = texture;
+		return texture;
+	}
+	else
+	{
+		error("Matix", "The \"" + name + "\" texture you want to add already exists.");
+	}
+}
+
 // Create a new VAO into the game
 VAO* Advanced_Struct::new_vao(std::string path, std::string type, std::string shader_path)
 {

@@ -90,7 +90,7 @@ void Shader_Program::pass_variable(std::vector<Shader_Program_Variable> *variabl
 	for (std::vector<Shader_Program_Variable>::iterator it = variables->begin(); it != variables->end(); it++)
 	{
 		unsigned int type_size = 0;
-		if (it->type == 0) { type_size = sizeof(float); }
+		if (it->type == GL_FLOAT) { type_size = sizeof(float); }
 		total_size += it->vector_size * type_size;
 	}
 	unsigned int current_size = 0;
@@ -100,7 +100,7 @@ void Shader_Program::pass_variable(std::vector<Shader_Program_Variable> *variabl
 	for (std::vector<Shader_Program_Variable>::iterator it = variables->begin(); it != variables->end(); it++)
 	{
 		unsigned int type_size = 0;
-		if (it->type == 0) { type_size = sizeof(float); }
+		if (it->type == GL_FLOAT) { type_size = sizeof(float); }
 
 		glVertexAttribPointer(variable_number, it->vector_size, GL_FLOAT, GL_FALSE, total_size, (void*)current_size);
 		glEnableVertexAttribArray(variable_number); // Pass each variables to the shader
@@ -167,18 +167,23 @@ Shader_Program::~Shader_Program()
 	glDeleteProgram(shader_program);
 }
 
-VBO::VBO(std::vector<Shader_Program_Variable> a_attributes, std::vector<float> a_datas, bool a_use_ebo): attributes(a_attributes), datas(a_datas), use_ebo(a_use_ebo) // VBO complete constructor
+// Most basic VBO constructor
+VBO::VBO()
 {
-	// Generate the VBO into the GPU memory
-	glGenBuffers(1, &vbo);
-	if (use_ebo)
-	{
-		glGenBuffers(1, &ebo);
-	}
+
+}
+
+VBO::VBO(std::vector<Shader_Program_Variable> attributes, std::vector<float> datas, bool use_ebo): VBO() // VBO complete constructor
+{
+	a_attributes = attributes;
+	a_datas = datas;
+	a_use_ebo = use_ebo;
+
+	load_vbo();
 }
 
 // VBO constructor
-VBO::VBO(std::vector<Shader_Program_Variable> a_attributes, bool fill_datas, bool a_use_ebo): VBO(a_attributes, get_base_datas(a_attributes), a_use_ebo)
+VBO::VBO(std::vector<Shader_Program_Variable> attributes, bool fill_datas, bool use_ebo): VBO(attributes, get_base_datas(a_attributes), use_ebo)
 {
 	
 }
@@ -199,7 +204,7 @@ void VBO::bind_buffer()
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * datas.size(), arr, GL_STATIC_DRAW);
 
-	if(use_ebo) // Bind the EBO if the VBO use them
+	if(a_use_ebo) // Bind the EBO if the VBO use them
 	{
 		unsigned int* arr_2 = get_indices_in_array();
 
@@ -216,10 +221,16 @@ unsigned int VBO::get_vertice_number()
 	for(int i = 0;i<get_attributes()->size();i++)
 	{
 		unsigned int type_size = 0;
-		if ((*get_attributes())[i].type == 0) { type_size = sizeof(float); }
+		if ((*get_attributes())[i].type == GL_FLOAT) { type_size = sizeof(float); }
 		attribute_size += (*get_attributes())[i].vector_size * type_size; // Get the total size of the datas
 	}
 	return (datas.size() * sizeof(float)) / attribute_size; // Divise the total size with the size of one float
+}
+
+// Load the VBO from binary
+void VBO::load_from_binary(char* binary)
+{
+
 }
 
 // Load the vertices from a file
@@ -251,11 +262,22 @@ void VBO::load_from_file(std::string path)
 	}
 
 	// Fill the datas
-	datas.clear();
+	a_datas.clear();
 	std::vector<std::string> cutted = basix::cut_string(content, " ");
 	for (int i = 0; i < cutted.size(); i++)
 	{
-		datas.push_back(atof(cutted[i].c_str()));
+		a_datas.push_back(atof(cutted[i].c_str()));
+	}
+}
+
+// Load the VBO into the GPU memory
+void VBO::load_vbo()
+{
+	// Generate the VBO into the GPU memory
+	glGenBuffers(1, &vbo);
+	if (a_use_ebo)
+	{
+		glGenBuffers(1, &ebo);
 	}
 }
 
@@ -459,6 +481,9 @@ Texture::Texture(unsigned short width, unsigned short height, glm::vec4 color, b
 	glGenTextures(1, &texture_id);
 	change_texture();
 }
+
+// Most basic texture constructor
+Texture::Texture() : Texture("", false) {}
 
 // Bind the texture into the GPU memory
 void Texture::bind()

@@ -75,6 +75,7 @@ public:
 	Part* new_part(unsigned int number, std::string type, glm::vec3 position = glm::vec3(0, 0, 0), glm::vec3 rotation = glm::vec3(0, 0, 0), glm::vec3 scale = glm::vec3(0, 0, 0), std::string texture_path = ""); // Create a new part into the struct and return it
 	Texture* new_texture(std::string name, std::string path, bool texture_resize = false); // Add a texture to the game
 	Texture* new_texture(std::string texture_name, unsigned short width, unsigned short height, glm::vec4 color); // Returns a texture in the struct
+	Texture* new_texture(std::string name, bool texture_resize = false); // Add a texture to the game with the most basic constructor
 	VAO* new_vao(std::string path, std::string type, std::string shader_path = "-1"); // Create a new VAO into the game
 	void unload_fonts(); // Unload all the textures
 	void unload_textures(); // Unload all the textures

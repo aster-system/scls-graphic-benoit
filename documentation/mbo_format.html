@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <link rel="stylesheet" href="../style.css">
+        <meta charset="utf-8">
+        <title>Matix</title>
+    </head>
+    <body>
+        <h1>Matix</h1>
+        <h2>MBO file format</h2>
+        <div>
+            Each MBOs are stored into MBO file. Each files should be read in binary and cutted into chunks.</br>
+            This is how MBOs file are organized. The current version of the format is 0.
+        </div>
+        <h3>Chunks</h3>
+        <div>
+            Each files are cutted into chunks. A chunk start with 1 byte representing the type of the chunk.
+            Here the implemented chunks types :</br>
+            -0, representing the include chunk.</br>
+            -1, representing the data chunk.</br>
+        </div>
+        <h3>Include chunk</h3>
+        <div>
+            The include chunk starts with a byte corresponding to the number of path to include.
+            Each path is represented by one byte for his type (only "0" is defined currently), one byte for the size of the path, and the path, in ASCII.
+        </div>
+        <h3>Data chunk</h3>
+        <div>
+            The data chunk starts with a byte corresponding to the number of data in the chunk.
+            Each data is represented by two byte for his type, one byte for the size of the data, and the data.</br>
+            The type and the data (if it's a number) SHOULD be encoded in big-endian.</br>
+            Here are some of the type implemented :</br>
+            -0, the version of the MBO format use, stored in an unsigned short.</br>
+            -1, the name of the author, stored in a variable size char*.</br>
+        </div>
+    </body>
+</html>
