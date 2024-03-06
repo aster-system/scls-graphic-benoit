@@ -34,6 +34,8 @@ namespace mob_loader
 		// Create the include data
 		Include_Data data; data.type = include_type; data.path = path;
 		a_included_data.push_back(data);
+
+		std::cout << "Include " << path << " from type " << (int)include_type << std::endl;
 	}
 
 	// Load a MOB from a path
