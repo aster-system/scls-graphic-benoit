@@ -101,6 +101,8 @@ public:
 	void load_from_file(std::string path); // Load the vertices from a file
 	// Load the VBO into the GPU memory
 	void load_vbo();
+	// Create a new VBO from this one
+	VBO* new_copy();
 	void unbind(); // Unbind the VBO from the GPU memory
 	~VBO(); // VBO destructor
 
@@ -229,13 +231,13 @@ public:
 	inline std::vector<unsigned int> get_indices() { return a_indices; };
 	inline unsigned int* get_indices_in_array() { return a_indices.data(); };
 	inline unsigned int& get_vbo() { return vbo; };
-	inline bool is_using_vbo() { return a_use_ebo; };
+	inline bool is_using_ebo() { return a_use_ebo; };
 	inline void set_attributes(std::vector<Shader_Program_Variable> attributes) { a_attributes = attributes; };
 private:
 	unsigned int ebo = 0; // Handle to the EBO
 	unsigned int vbo = 0; // Handle to the VBO
 
-	bool a_use_ebo = true; // If the VBO use EBO
+	bool a_use_ebo = false; // If the VBO use EBO
 	std::vector<Shader_Program_Variable> a_attributes = std::vector<Shader_Program_Variable>(); // Each Shader_Program_Variable in the VBO
 protected:
 	std::vector<unsigned int> a_indices = std::vector<unsigned int>(); // Each EBOs in the VBO
@@ -246,13 +248,19 @@ class VAO
 {
 	// Class representing a VAO interface
 public:
-	VAO(std::string shader_path, std::vector<Shader_Program_Variable> a_attributes, std::string vbo_path = ""); // VAO constructor
+	// Most basic VAO constructor
+	VAO();
+	// Most usefull VAO constructor
+	VAO(Shader_Program* shader_program, VBO* vbo);
+	VAO(std::string shader_path, std::vector<Shader_Program_Variable> a_attributes, VBO* vbo); // VAO constructor
 	// VAO constructor
-	VAO(Shader_Program* shader_program, std::vector<Shader_Program_Variable> a_attributes, std::string vbo_path = "");
+	VAO(Shader_Program* shader_program, std::vector<Shader_Program_Variable> a_attributes, VBO* vbo);
 	// VAO constructor
-	VAO(Shader_Program shader_program, std::vector<Shader_Program_Variable> a_attributes, std::string vbo_path = "");
+	VAO(Shader_Program shader_program, std::vector<Shader_Program_Variable> a_attributes, VBO* vbo);
 	virtual void bind(glm::vec3 scale = glm::vec3(1.0, 1.0, 1.0)); // Bind the VAO into the GPU memory
 	Shader_Program load_shader_program(std::string shader_path); // Load and return a shader
+	// Load the VAO into the GPU memory
+	void load_vao();
 	virtual void render(glm::vec3 scale = glm::vec3(1.0, 1.0, 1.0)); // Render the VAO
 	unsigned int triangle_number(); // Returns the number of triangle to draw
 	~VAO(); // VAO destructor
@@ -261,20 +269,21 @@ public:
 	// Getters and setters
 	inline Shader_Program* get_shader_program() { return a_shader_program; };
 	inline unsigned int& get_vao() { return vao; };
-	inline VBO* get_vbo() { return vbo; };
+	inline VBO* get_vbo() { return a_vbo; };
 protected:
-	unsigned int vao; // Handle to the VAO
+	unsigned int vao = 0; // Handle to the VAO
 
 	// Pointer to the shader program
 	Shader_Program *a_shader_program = 0;
-	VBO *vbo = 0; // Pointer to the VBO
+	VBO *a_vbo = 0; // Pointer to the VBO
 };
 
 class Font_VAO: public VAO
 {
 	// Class representing a VAO of a font
 public:
-	Font_VAO(Shader_Program shader_program); // Font_VAO constructor
+	// Font_VAO constructor
+	Font_VAO(Shader_Program* shader_program, VBO* vbo);
 	void bind(glm::vec4 rect); // Bind the font VAO into the GPU memory
 	void render(glm::vec4 rect); // Render the Font_VAO
 	~Font_VAO(); // Font_VAO constructor

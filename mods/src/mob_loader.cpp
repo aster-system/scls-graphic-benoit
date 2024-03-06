@@ -77,7 +77,7 @@ namespace mob_loader
 			// Read the type of the chunk
 			char* type_chunk_input = new char[1];
 			basix::read_file_binary(path, type_chunk_input, 1, current_pos);
-			unsigned int type_chunk = (unsigned int)type_chunk_input[0];
+			unsigned char type_chunk = (unsigned char)type_chunk_input[0];
 			delete[] type_chunk_input; type_chunk_input = 0;
 			current_pos++;
 
@@ -238,12 +238,30 @@ namespace mob_loader
 						texture->change_texture();
 						delete[] texture_input; texture_input = 0;
 					}
-					current_pos += size;
 				}
 				else if (type_chunk == get_vbo_number()) // Load a VBO
 				{
-
+					if (type == 0)
+					{
+						// Get the data of the VBO
+						char* vbo_input = new char[size];
+						basix::read_file_binary(path, vbo_input, size, current_pos);
+						VBO* vbo = game->new_vbo(name);
+						vbo->load_from_binary(vbo_input);
+						delete[] vbo_input; vbo_input = 0;
+					}
 				}
+				else if (type_chunk == get_vao_number()) // Load a VAO
+				{
+					if (type == 0)
+					{
+						// Get the data of the VAO
+						char* vao_input = new char[size];
+						basix::read_file_binary(path, vao_input, size, current_pos);
+						delete[] vao_input; vao_input = 0;
+					}
+				}
+				current_pos += size;
 
 				for (std::map<unsigned short, Data_Chunk_Data>::iterator it = datas.begin(); it != datas.end(); it++)
 				{

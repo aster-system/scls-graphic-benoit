@@ -230,7 +230,24 @@ unsigned int VBO::get_vertice_number()
 // Load the VBO from binary
 void VBO::load_from_binary(char* binary)
 {
+	unsigned int cursor_pos = 0;
+	unsigned char attribute_number = binary[0]; cursor_pos++;
+	for (int i = 0; i < attribute_number; i++)
+	{
+		unsigned short type = basix::extract_2bytes_from_char_array(binary, cursor_pos, true); cursor_pos += 2;
+		unsigned short vector_size = basix::extract_2bytes_from_char_array(binary, cursor_pos, true); cursor_pos += 2;
 
+		Shader_Program_Variable variable; variable.type = type; variable.vector_size = vector_size;
+		a_attributes.push_back(variable);
+	}
+
+	unsigned int size = basix::extract_4bytes_from_char_array(binary, cursor_pos, true); cursor_pos += 4;
+	for (int i = 0; i < size; i++)
+	{
+		double data = basix::extract_double_from_char_array(binary, cursor_pos);
+		cursor_pos += 8;
+		a_datas.push_back(static_cast<float>(data));
+	}
 }
 
 // Load the vertices from a file
@@ -281,6 +298,19 @@ void VBO::load_vbo()
 	}
 }
 
+// Create a new VBO from this one
+VBO* VBO::new_copy()
+{
+	VBO* vbo = new VBO();
+
+	vbo->a_attributes = a_attributes;
+	vbo->a_datas = a_datas;
+	vbo->a_indices = a_indices;
+	vbo->a_use_ebo = a_use_ebo;
+
+	return vbo;
+}
+
 // Unbind the VBO from the GPU memory
 void VBO::unbind()
 {
@@ -293,50 +323,36 @@ VBO::~VBO()
 	glDeleteBuffers(1, &vbo);
 }
 
+// Most basic VAO constructor
+VAO::VAO()
+{
+
+}
+
+// Most usefull VAO constructor
+VAO::VAO(Shader_Program* shader_program, VBO* vbo) : VAO()
+{
+	a_shader_program = shader_program->new_copy();
+	a_vbo = vbo->new_copy();
+}
+
 // VAO constructor
-VAO::VAO(std::string shader_path, std::vector<Shader_Program_Variable> a_attributes, std::string vbo_path) : VAO(load_shader_program(shader_path), a_attributes, vbo_path)
+VAO::VAO(std::string shader_path, std::vector<Shader_Program_Variable> a_attributes, VBO* vbo) : VAO(load_shader_program(shader_path), a_attributes, vbo)
 {
 	
 }
 
 // VAO constructor
-VAO::VAO(Shader_Program* shader_program, std::vector<Shader_Program_Variable> a_attributes, std::string vbo_path) : VAO(*shader_program, a_attributes, vbo_path)
+VAO::VAO(Shader_Program* shader_program, std::vector<Shader_Program_Variable> a_attributes, VBO* vbo) : VAO(*shader_program, a_attributes, vbo)
 {
 	
 }
 
 // VAO constructor
-VAO::VAO(Shader_Program shader_program, std::vector<Shader_Program_Variable> a_attributes, std::string vbo_path)
+VAO::VAO(Shader_Program shader_program, std::vector<Shader_Program_Variable> a_attributes, VBO* vbo) : VAO()
 {
 	a_shader_program = shader_program.new_copy();
-	a_shader_program->load_shader();
-
-	// Create the VAO into the GPU memory
-	glGenVertexArrays(1, &vao);
-	if (vbo_path == "0")
-	{
-		vbo = new VBO(a_attributes, true, false);
-	}
-	else if (vbo_path != "") // Create the VBO for this VAO
-	{
-		vbo = new VBO(a_attributes, false, false);
-		vbo->load_from_file(vbo_path);
-	}
-	else
-	{
-		vbo = new VBO(a_attributes);
-	}
-
-	// Bind the VAO and the VBO
-	glBindVertexArray(vao);
-	vbo->bind_buffer();
-
-	// Pass the "in" variables into the shader program
-	a_shader_program->pass_variable(vbo->get_attributes());
-
-	// Unbind all
-	vbo->unbind();
-	glBindVertexArray(0);
+	a_vbo = vbo->new_copy();
 }
 
 // Bind the VAO into the GPU memory
@@ -388,13 +404,34 @@ Shader_Program VAO::load_shader_program(std::string shader_path)
 	return shader;
 }
 
+// Load the VAO
+void VAO::load_vao()
+{
+	a_shader_program->load_shader();
+
+	// Create the VAO into the GPU memory
+	glGenVertexArrays(1, &vao);
+	a_vbo->load_vbo();
+
+	// Bind the VAO and the VBO
+	glBindVertexArray(vao);
+	a_vbo->bind_buffer();
+
+	// Pass the "in" variables into the shader program
+	a_shader_program->pass_variable(a_vbo->get_attributes());
+
+	// Unbind all
+	a_vbo->unbind();
+	glBindVertexArray(0);
+}
+
 // Render the VAO
 void VAO::render(glm::vec3 scale)
 {
 	bind(scale);
-	if (get_vbo()->is_using_vbo()) // Render the VAO with a different function if the VBO use EBOs or not
+	if (get_vbo()->is_using_ebo()) // Render the VAO with a different function if the VBO use EBOs or not
 	{
-		glDrawElements(GL_TRIANGLES, vbo->get_indices().size(), GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, get_vbo()->get_indices().size(), GL_UNSIGNED_INT, 0);
 	}
 	else
 	{
@@ -411,15 +448,15 @@ unsigned int VAO::triangle_number()
 // VAO destructor
 VAO::~VAO()
 {
-	delete a_shader_program;
+	delete get_shader_program();
 	a_shader_program = 0;
-	delete vbo;
-	vbo = 0;
+	delete get_vbo();
+	a_vbo = 0;
 	glDeleteVertexArrays(1, &vao);
 }
 
 // Font_Vao constructor
-Font_VAO::Font_VAO(Shader_Program shader_program): VAO(shader_program, get_base_attributes(), "0")
+Font_VAO::Font_VAO(Shader_Program* shader_program, VBO* vbo) : VAO(shader_program, vbo)
 {
 	
 }
@@ -436,7 +473,7 @@ void Font_VAO::bind(glm::vec4 rect)
 void Font_VAO::render(glm::vec4 rect)
 {
 	bind(rect);
-	if (get_vbo()->is_using_vbo()) // Render the VAO with a different function if the VBO use EBOs or not
+	if (get_vbo()->is_using_ebo()) // Render the VAO with a different function if the VBO use EBOs or not
 	{
 		glDrawElements(GL_TRIANGLES, get_vbo()->get_indices().size(), GL_UNSIGNED_INT, 0);
 	}
@@ -449,11 +486,7 @@ void Font_VAO::render(glm::vec4 rect)
 // Font_VAO destructor
 Font_VAO::~Font_VAO()
 {
-	delete a_shader_program;
-	a_shader_program = 0;
-	delete vbo;
-	vbo = 0;
-	glDeleteVertexArrays(1, &vao);
+	VAO::~VAO();
 }
 
 // Texture constructor

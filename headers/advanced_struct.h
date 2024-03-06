@@ -5,6 +5,42 @@
 #include "../headers/model.h"
 #include "../headers/physic.h"
 
+// Returns the base shader program variable for an HUD form
+inline std::vector<Shader_Program_Variable> get_base_hud_shader_program_variables()
+{
+	// Create base Shader_Program_Variable for the shader program
+	std::vector<Shader_Program_Variable> hud_attributes = std::vector<Shader_Program_Variable>();
+	Shader_Program_Variable v1 = Shader_Program_Variable();
+	Shader_Program_Variable v2 = Shader_Program_Variable();
+	v1.vector_size = 3;
+	v2.vector_size = 2;
+	hud_attributes.push_back(v1);
+	hud_attributes.push_back(v2);
+
+	return hud_attributes;
+};
+
+// Returns the base shader program variable for a 3D form
+inline std::vector<Shader_Program_Variable> get_base_3d_shader_program_variables()
+{
+	// Create base Shader_Program_Variable for the shader program
+	std::vector<Shader_Program_Variable> base_3d_attributes = std::vector<Shader_Program_Variable>();
+	Shader_Program_Variable v1 = Shader_Program_Variable();
+	Shader_Program_Variable v2 = Shader_Program_Variable();
+	Shader_Program_Variable v3 = Shader_Program_Variable();
+	Shader_Program_Variable v4 = Shader_Program_Variable();
+	v1.vector_size = 3;
+	v2.vector_size = 2;
+	v3.vector_size = 4;
+	v4.vector_size = 3;
+	base_3d_attributes.push_back(v1);
+	base_3d_attributes.push_back(v2);
+	base_3d_attributes.push_back(v3);
+	base_3d_attributes.push_back(v4);
+
+	return base_3d_attributes;
+};
+
 class Part
 {
 	// Class representing a part of a map to load into a scene
@@ -61,11 +97,15 @@ class Advanced_Struct : public Base_Struct
 	// Class representing the advanced struct in the game
 public:
 	Advanced_Struct(double& a_mouse_x, double& a_mouse_y, std::string a_exec_path); // Advanced_Struct constructor
+	// Add an existing VBO into the game
+	void add_vbo(std::string name, VBO* vbo);
 	void assign_part(unsigned int number, Part* part); // Assign to a number a part
 	bool contains_font(std::string font_name); // Returns if the struct contains a textures
 	bool contains_part(unsigned int number); // Returns if the struct contains a part
 	bool contains_texture(std::string texture_name); // Returns if the struct contains a textures
 	bool contains_vao(std::string type); // Returns if the struct contains a VAO
+	// Returns if the struct contains a VBO
+	bool contains_vbo(std::string name);
 	Font_Texture* get_font_texture(std::string font_name); // Return a fotn in the struct
 	Part* get_part(unsigned int number); // Returns a part
 	Texture* get_texture(std::string texture_name); // Returns a texture in the struct
@@ -76,7 +116,10 @@ public:
 	Texture* new_texture(std::string name, std::string path, bool texture_resize = false); // Add a texture to the game
 	Texture* new_texture(std::string texture_name, unsigned short width, unsigned short height, glm::vec4 color); // Returns a texture in the struct
 	Texture* new_texture(std::string name, bool texture_resize = false); // Add a texture to the game with the most basic constructor
-	VAO* new_vao(std::string path, std::string type, std::string shader_path = "-1"); // Create a new VAO into the game
+	// Create a new VAO into the game
+	VAO* new_vao(std::string name, std::string vbo, std::string shader = "default");
+	// Create a new VBO into the game
+	VBO* new_vbo(std::string name);
 	void unload_fonts(); // Unload all the textures
 	void unload_textures(); // Unload all the textures
 	~Advanced_Struct(); // Advanced_Struct destructor
@@ -88,9 +131,12 @@ public:
 	inline std::map<unsigned int, Part*>* get_parts() { return &parts; };
 	inline std::map<std::string, Texture*>* get_textures() { return &textures; };
 	inline std::map<std::string, VAO*>* get_vaos() { return &all_vaos; };
+	inline std::map<std::string, VBO*>* get_vbos() { return &a_vbos; };
 private:
 	// Each shaders, with their name as key, in the game
 	std::map<std::string, Shader_Program> a_shaders_programs = std::map<std::string, Shader_Program>();
+	// Each VBOs base, with their name as key, in the game
+	std::map<std::string, VBO*> a_vbos = std::map<std::string, VBO*>();
 	std::map<std::string, Font_Texture*> fonts_textures = std::map<std::string, Font_Texture*>(); // Each texture, with their texture path as key, in the game
 	std::map<unsigned int, Part*> parts = std::map<unsigned int, Part*>(); // Each parts, with their number as key, in the game
 	std::map<std::string, Texture*> textures = std::map<std::string, Texture*>(); // Each texture, with their name as key, in the game

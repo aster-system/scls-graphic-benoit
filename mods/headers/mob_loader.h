@@ -17,6 +17,7 @@ namespace mob_loader
 	inline char get_data_number() { return 1; };
 	inline char get_include_number() { return 0; };
 	inline char get_texture_number() { return 2; };
+	inline char get_vao_number() { return 4; };
 	inline char get_vbo_number() { return 3; };
 	// Returns the number of each datas into the data chunk
 	inline unsigned short get_author_data_number() { return 1; };
@@ -29,6 +30,24 @@ namespace mob_loader
 
 	// Returns the signature of a mob file
 	inline std::string get_mob_signature() { return "MATIX3DO"; };
+
+	// Returns a char array of a vector of Shader_Attributes in the MOB format
+	inline char* shader_program_variable_to_char_array(std::vector<Shader_Program_Variable> variables, unsigned int &size)
+	{
+		unsigned int current_pos = 0;
+		char* result = new char[variables.size() * 4 + 1];
+		result[0] = static_cast<char>(variables.size()); current_pos++;
+
+		for (int i = 0; i < variables.size(); i++)
+		{
+			basix::put_2bytes_to_char_array(variables[i].type, result, current_pos, true); current_pos += 2;
+			basix::put_2bytes_to_char_array(variables[i].vector_size, result, current_pos, true); current_pos += 2;
+		}
+
+		size = variables.size() * 4 + 1;
+
+		return result;
+	};
 
 	struct Data_Chunk_Data {
 		// Datas about a data into the data chunk in a MOB.
@@ -45,6 +64,12 @@ namespace mob_loader
 
 	struct Texture_Chunk {
 		// Datas about a texture chunk.
+		std::string name = "";
+		unsigned char type = 0;
+	};
+
+	struct VBO_Chunk {
+		// Datas about a VBO chunk.
 		std::string name = "";
 		unsigned char type = 0;
 	};
