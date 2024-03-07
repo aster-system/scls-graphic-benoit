@@ -67,13 +67,14 @@ namespace mob_loader
 		}
 
 		// Get the size of the path
-		char* size_chunk_input = new char[1];
-		basix::read_file_binary(path, size_chunk_input, 1, 8);
-		unsigned int size_chunk = (unsigned int)size_chunk_input[0];
+		char* size_chunk_input = new char[2];
+		basix::read_file_binary(path, size_chunk_input, 2, 8);
+		unsigned int size_chunk = 0;
+		size_chunk = basix::extract_2bytes_from_char_array(size_chunk_input, 0, true);
 		delete[] size_chunk_input; size_chunk_input = 0;
 
 		// Analyze each chunks
-		unsigned int current_pos = 9;
+		unsigned int current_pos = 10;
 		for (int i = 0; i < size_chunk; i++)
 		{
 			// Read the type of the chunk
@@ -260,6 +261,7 @@ namespace mob_loader
 						// Get the data of the VAO
 						char* vao_input = new char[size];
 						basix::read_file_binary(path, vao_input, size, current_pos);
+						VAO* vao = game->new_vao(name, vao_input);
 						delete[] vao_input; vao_input = 0;
 					}
 				}

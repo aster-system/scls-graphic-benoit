@@ -116,6 +116,8 @@ public:
 	Texture* new_texture(std::string name, std::string path, bool texture_resize = false); // Add a texture to the game
 	Texture* new_texture(std::string texture_name, unsigned short width, unsigned short height, glm::vec4 color); // Returns a texture in the struct
 	Texture* new_texture(std::string name, bool texture_resize = false); // Add a texture to the game with the most basic constructor
+	// Create a new VAO into the game with the most basic constructor
+	VAO* new_vao(std::string name, char* binary);
 	// Create a new VAO into the game
 	VAO* new_vao(std::string name, std::string vbo, std::string shader = "default");
 	// Create a new VBO into the game

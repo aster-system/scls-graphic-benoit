@@ -68,8 +68,17 @@ namespace mob_loader
 		unsigned char type = 0;
 	};
 
+	struct VAO_Chunk {
+		// Datas about a VAO chunk.
+		std::string name = "";
+		std::string shader_name = "";
+		unsigned char type = 0;
+		std::string vbo_name = "";
+	};
+
 	struct VBO_Chunk {
 		// Datas about a VBO chunk.
+		unsigned int datas_size = 0;
 		std::string name = "";
 		unsigned char type = 0;
 	};

@@ -238,6 +238,33 @@ Texture* Advanced_Struct::new_texture(std::string name, bool texture_resize)
 	}
 }
 
+// Create a new VAO into the game with the most basic constructor
+VAO* Advanced_Struct::new_vao(std::string name, char* binary)
+{
+	if (contains_vao(name))
+	{
+		std::cout << "Matrix game : error ! The \"" << name << "\" VAO already exists." << std::endl;
+		return 0;
+	}
+
+	unsigned int current_pos = 0;
+	unsigned char shader_size = binary[current_pos]; current_pos++;
+	std::string shader = "";
+	for (int i = 0; i < shader_size; i++)
+	{
+		shader += binary[current_pos]; current_pos++;
+	}
+
+	unsigned char vbo_size = binary[current_pos]; current_pos++;
+	std::string vbo = "";
+	for (int i = 0; i < vbo_size; i++)
+	{
+		vbo += binary[current_pos]; current_pos++;
+	}
+
+	return new_vao(name, vbo, shader);
+}
+
 // Create a new VAO into the game
 VAO* Advanced_Struct::new_vao(std::string name, std::string vbo, std::string shader)
 {
