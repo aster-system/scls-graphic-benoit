@@ -238,7 +238,7 @@ namespace mob_loader
 						}
 						Texture* texture = game->new_texture(name);
 						texture->get_image()->load_from_binary_PNG(texture_input, size);
-						texture->change_texture();
+						texture->load_texture();
 						delete[] texture_input; texture_input = 0;
 					}
 				}

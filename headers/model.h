@@ -315,6 +315,8 @@ public:
 	Texture();
 	void bind(); // Bind the texture into the GPU memory
 	void change_texture(); // Change the texture of the texture according to image
+	// Load the texture into the GPU memory
+	void load_texture();
 	~Texture(); // Texture destructor
 
 	// Getters and setters

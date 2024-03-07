@@ -498,8 +498,7 @@ Texture::Texture(std::string a_texture_path, bool a_resize): texture_path(a_text
 		get_image()->flip_x();
 
 		// Load the texture
-		glGenTextures(1, &texture_id);
-		change_texture();
+		load_texture();
 	}
 }
 
@@ -511,8 +510,7 @@ Texture::Texture(unsigned short width, unsigned short height, glm::vec4 color, b
 	a_image = new basix::Image(width, height, color[0], color[1], color[2], color[3]);
 
 	// Load the texture
-	glGenTextures(1, &texture_id);
-	change_texture();
+	load_texture();
 }
 
 // Most basic texture constructor
@@ -540,6 +538,13 @@ void Texture::change_texture()
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	// glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Good
+}
+
+// Load the texture into the GPU memory
+void Texture::load_texture()
+{
+	glGenTextures(1, &texture_id);
+	change_texture();
 }
 
 // Texture destructor
