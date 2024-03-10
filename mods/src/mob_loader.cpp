@@ -231,13 +231,19 @@ namespace mob_loader
 						// Get the data of the texture
 						char* texture_input = new char[size];
 						basix::read_file_binary(path, texture_input, size, current_pos);
+						bool flip_y = false;
 						bool resize = false;
 						if (datas[get_resize_texture_data_number()].data != 0)
 						{
 							resize = datas[get_resize_texture_data_number()].data[0];
 						}
+						if (datas[get_flip_y_texture_data_number()].data != 0)
+						{
+							flip_y = datas[get_flip_y_texture_data_number()].data[0];
+						}
 						Texture* texture = game->new_texture(name);
 						texture->get_image()->load_from_binary_PNG(texture_input, size);
+						if (flip_y) texture->get_image()->flip_y();
 						texture->load_texture();
 						delete[] texture_input; texture_input = 0;
 					}

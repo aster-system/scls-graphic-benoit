@@ -49,9 +49,9 @@ float get_vector_x_angle(glm::vec3 vector)
 // Return the x angle of a vector (with euler angle)
 float get_vector_x_angle(glm::vec3 vector, glm::vec3 forward, float rotation_y, unsigned int id)
 {
-	float x = vector[0] * forward[0];
+	float x = vector[0];
 	float y = vector[1];
-	float z = vector[2] * forward[2];
+	float z = vector[2];
 	float xyz_hypothenus = glm::distance(glm::vec3(x, y, z), glm::vec3(0, 0, 0));
 
 	if (xyz_hypothenus == 0)
@@ -228,12 +228,13 @@ glm::vec3 rotate_vector(glm::vec3 vector, glm::vec3 rotation, glm::vec3 position
 	rotation = normalize_rotation(rotation);
 
 	vector -= position;
-	vector = rotate_vector_y(vector, rotation[1]);
 
 	glm::vec3 forward = calculate_forward(rotation);
 	forward = glm::vec3(1, 0, 0);
 
-	glm::vec3 to_return = rotate_vector_x(vector, rotation, forward);
+	glm::vec3 to_return = rotate_vector_x(vector, rotation, forward, id);
+
+	to_return = rotate_vector_y(to_return, rotation[1]);
 
 	return to_return;
 }
@@ -274,6 +275,8 @@ Transform_Object::Transform_Object(Transform_Object *a_parent, glm::vec3 a_posit
 {
 	set_parent(a_parent);
 	calculate_direction();
+
+	parent_rotation_multiplier = glm::vec3(1.0, -1.0, 1.0);
 
 	// Handle the id
 	id = Transform_Object::object_count;
@@ -352,7 +355,10 @@ glm::vec3 Transform_Object::get_absolute_position(Transform_Object* asker)
 
 	// Move the vector
 	glm::vec3 position = get_position();
-	// if (get_parent() != 0) position = rotate_vector(position, get_parent()->get_absolute_plan_rotation(), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), false, get_id());
+	if (get_parent() != 0)
+	{
+		position = rotate_vector(position, get_parent()->get_absolute_plan_rotation(), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), false, get_id());
+	}
 	local_vector += position;
 
 	// Apply anchor rotation
@@ -447,8 +453,8 @@ glm::mat4 Transform_Object::get_model_matrix()
 	// Rotate matrix from the plan
 	glm::vec3 rotation = get_absolute_plan_rotation(true);
 	matrix = glm::rotate(matrix, glm::radians(rotation[1]), glm::vec3(0, 1, 0));
-	matrix = glm::rotate(matrix, glm::radians(rotation[0]), glm::vec3(1, 0, 0));
-	matrix = glm::rotate(matrix, glm::radians(rotation[2]), glm::vec3(0, 0, 1));
+	matrix = glm::rotate(matrix, glm::radians(rotation[2]), glm::vec3(1, 0, 0));
+	matrix = glm::rotate(matrix, glm::radians(rotation[0]), glm::vec3(0, 0, 1));
 
 	rotation = get_rotation();
 	matrix = glm::rotate(matrix, glm::radians(rotation[1]), glm::vec3(0, 1, 0));

@@ -26,6 +26,7 @@ namespace mob_loader
 	inline unsigned char get_path_texture_number() { return 0; };
 	inline unsigned char get_png_texture_number() { return 1; };
 	// Returns the number of each sub data chunks
+	inline unsigned char get_flip_y_texture_data_number() { return 1; };
 	inline unsigned char get_resize_texture_data_number() { return 0; };
 
 	// Returns the signature of a mob file
@@ -64,6 +65,7 @@ namespace mob_loader
 
 	struct Texture_Chunk {
 		// Datas about a texture chunk.
+		bool flip_y = false;
 		std::string name = "";
 		unsigned char type = 0;
 	};
