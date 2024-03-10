@@ -1,5 +1,6 @@
 #include "../headers/game.h"
 #include "../mods/headers/lunar_rover.h"
+#include "../mods/p_army/headers/p_army.h"
 #include "../mods/headers/turtle.h"
 #include "../mods_hidden/headers/mob_maker.h"
 
@@ -41,29 +42,12 @@ int main(int argc, char* argv[])
 {
     srand(time(0));
 
-    /*Game* game = new Game(900, 900, argv[0], false);
-    game->load_from_config_file("../matix_config.cfg");
-    game->load_VAOs();
+    p_army::P_Army* p_army_handler = new p_army::P_Army(argv[0]);
+    p_army_handler->add_tank("matt's tank", p_army::P_Tank);
 
-    turtle::load_turtle_hud(game);
-    turtle::set_turtle_hud(game);
+    p_army_handler->run();
 
-    while (game->run())
-    {
-        game->update_event();
-        game->update();
-
-        game->render();
-    }
-
-    delete game;
-    game = 0;//*/
-
-    // cube_3d(argv[0]);
-
-    // Lunar_Rover::run_lunar_rover(argv[0]);
-
-    mob_maker::run_mob_tester(argv[0]);
+    delete p_army_handler; p_army_handler;
 
     return 0;
 }
