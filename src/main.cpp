@@ -42,6 +42,8 @@ int main(int argc, char* argv[])
 {
     srand(time(0));
 
+    // mob_maker::run_mob_tester(argv[0]);
+
     p_army::P_Army* p_army_handler = new p_army::P_Army(argv[0]);
     p_army_handler->add_tank("matt's tank", p_army::P_Tank);
 

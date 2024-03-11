@@ -682,13 +682,13 @@ void Scene::load_from_map(std::string map, Map_Opening_Mode mode)
 				std::vector<std::string> level_str = basix::cut_string(level_count[j], " ");
 				unsigned short level_id = std::stoi(level_str[0]);
 
-				float x = basix::string_to_float(level_str[1]); // Get the position of the level
-				float y = basix::string_to_float(level_str[2]);
-				float z = basix::string_to_float(level_str[3]);
+				float x = basix::string_to_double(level_str[1]); // Get the position of the level
+				float y = basix::string_to_double(level_str[2]);
+				float z = basix::string_to_double(level_str[3]);
 
-				float yaw = basix::string_to_float(level_str[5]); // Get the position of the level
-				float pitch = basix::string_to_float(level_str[4]);
-				float roll = basix::string_to_float(level_str[6]);
+				float yaw = basix::string_to_double(level_str[5]); // Get the position of the level
+				float pitch = basix::string_to_double(level_str[4]);
+				float roll = basix::string_to_double(level_str[6]);
 
 				unsigned short length = std::stoi(level_str[9]); // Get the size of the level
 				unsigned short height = std::stoi(level_str[8]);
@@ -700,13 +700,13 @@ void Scene::load_from_map(std::string map, Map_Opening_Mode mode)
 			}
 
 			// Get the level specifications
-			float x = basix::string_to_float(level_specifications[1]);
-			float y = basix::string_to_float(level_specifications[2]);
-			float z = basix::string_to_float(level_specifications[3]);
+			float x = basix::string_to_double(level_specifications[1]);
+			float y = basix::string_to_double(level_specifications[2]);
+			float z = basix::string_to_double(level_specifications[3]);
 
-			float yaw = basix::string_to_float(level_specifications[5]);
-			float pitch = basix::string_to_float(level_specifications[4]);
-			float roll = basix::string_to_float(level_specifications[6]);
+			float yaw = basix::string_to_double(level_specifications[5]);
+			float pitch = basix::string_to_double(level_specifications[4]);
+			float roll = basix::string_to_double(level_specifications[6]);
 
 			unsigned short length = std::stoi(level_specifications[9]);
 			unsigned short height = std::stoi(level_specifications[8]);
@@ -766,8 +766,8 @@ void Scene::load_from_map(std::string map, Map_Opening_Mode mode)
 					std::vector<std::string> cutted = basix::cut_string(lines[j], ";");
 
 					Map_Level_Collection collection = Map_Level_Collection();
-					collection.set_base_position(glm::vec3(basix::string_to_float(cutted[2]), basix::string_to_float(cutted[3]), basix::string_to_float(cutted[4])));
-					collection.set_final_position(glm::vec3(basix::string_to_float(cutted[5]), basix::string_to_float(cutted[6]), basix::string_to_float(cutted[7])));
+					collection.set_base_position(glm::vec3(basix::string_to_double(cutted[2]), basix::string_to_double(cutted[3]), basix::string_to_double(cutted[4])));
+					collection.set_final_position(glm::vec3(basix::string_to_double(cutted[5]), basix::string_to_double(cutted[6]), basix::string_to_double(cutted[7])));
 					unsigned short level_count = std::stoi(cutted[1]);
 					if (level_count == -1)
 					{
