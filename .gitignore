@@ -406,3 +406,6 @@ mods_hidden/
 *.vcxproj.filters
 *.vcxproj.user
 *.dll
+*.cbp
+*.depend
+*.layout

@@ -12,7 +12,7 @@
 
 #define PTANK_CANON_NAME "canon"
 #define PTANK_COMMANDER_VIEW_NAME "commander_view"
-#define PTANK_MOB_PATH (game()->file_formatted("../mods/p_army/mobs/p_tank.mob"))
+#define PTANK_MOB_PATH (game()->file_formatted("./mods/p_army/mobs/p_tank.mob"))
 #define PTANK_TURRET_SUPPORT_NAME "turret_support"
 
 namespace p_army

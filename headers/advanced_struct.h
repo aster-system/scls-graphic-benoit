@@ -111,7 +111,7 @@ public:
 	Texture* get_texture(std::string texture_name); // Returns a texture in the struct
 	void load_hud_VAOs(); // Loads the HUD VAOs in the advanced struct
 	void load_VAOs(); // Loads the VAOs in the advanced struct
-	template <class O = Object> // Template for adding a type of object
+	template <class O> // Template for adding a type of object
 	Part* new_part(unsigned int number, std::string type, glm::vec3 position = glm::vec3(0, 0, 0), glm::vec3 rotation = glm::vec3(0, 0, 0), glm::vec3 scale = glm::vec3(0, 0, 0), std::string texture_path = ""); // Create a new part into the struct and return it
 	Texture* new_texture(std::string name, std::string path, bool texture_resize = false); // Add a texture to the game
 	Texture* new_texture(std::string texture_name, unsigned short width, unsigned short height, glm::vec4 color); // Returns a texture in the struct
@@ -237,7 +237,7 @@ private:
 };
 
 // Create a new part into the struct and return it
-template <class O> // Template for adding a type of object
+template <class O = Object> // Template for adding a type of object
 Part* Advanced_Struct::new_part(unsigned int number, std::string type, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale, std::string texture_path)
 {
 	if (contains_part(number)) { std::cout << "Matrix game : error ! The part \"" << number << "\" you want to create already exist." << std::endl; }

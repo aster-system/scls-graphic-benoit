@@ -1,13 +1,11 @@
 #include "../headers/game.h"
-#include "../mods/headers/lunar_rover.h"
 #include "../mods/p_army/headers/p_army.h"
-#include "../mods/headers/turtle.h"
 #include "../mods_hidden/headers/mob_maker.h"
 
 void cube_3d(std::string exec_path)
 {
     Game* game = new Game(1600, 900, exec_path, false);
-    game->load_from_config_file("../matix_config.cfg");
+    game->load_from_config_file("./matix_config.cfg");
     game->load_VAOs();
 
     Camera* camera = game->get_camera();

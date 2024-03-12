@@ -2,8 +2,6 @@
 
 #include <algorithm>
 #include <basix.h>
-#include <codecvt>
-#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -12,12 +10,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <locale>
 #include <map>
 #include <random>
 #include <string>
 #include <sstream>
-#include <sys/stat.h>
 #include <vector>
 
 glm::vec3 calculate_forward(glm::vec3 rotation); // Return the forward position according to a rotation

@@ -242,7 +242,7 @@ namespace mob_loader
 							flip_y = datas[get_flip_y_texture_data_number()].data[0];
 						}
 						Texture* texture = game->new_texture(name);
-						texture->get_image()->load_from_binary_PNG(texture_input, size);
+						texture->get_image()->_load_from_binary_PNG(texture_input, size);
 						if (flip_y) texture->get_image()->flip_y();
 						texture->load_texture();
 						delete[] texture_input; texture_input = 0;
@@ -279,6 +279,7 @@ namespace mob_loader
 				}
 			}
 		}
+		return 0;
 	}
 
 	// MOB_Loader destructor

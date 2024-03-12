@@ -139,7 +139,7 @@ O* HUD::new_hud_object(std::string name, unsigned short texture_width, unsigned 
 	if (contains_hud_object(name)) { std::cout << "HUD \"" << get_name() << "\" error ! The objects \"" << name << "\" you want to create already exists." << std::endl; return 0; }
 
 	bool texture_resize = false; // Load the texture
-	Texture* texture = get_advanced_struct()->get_texture(texture_width, texture_height, texture_color);
+	Texture* texture = get_advanced_struct()->new_texture(name, texture_width, texture_height, texture_color);
 
 	// Load the VAO
 	VAO* vao = (*get_advanced_struct()->get_all_vaos())[vao_name];
