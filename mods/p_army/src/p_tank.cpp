@@ -7,7 +7,7 @@ namespace p_army
 	{
 		if (type == P_Tank) // Load the tank as a P_Tank
 		{
-			Scene* scene = game()->get_current_scene();
+			Scene* scene = game()->get_scene(P_ARMY_SCENE_NAME);
 
 			mob_loader::MOB_Loader loader;
 			loader.load_from_mob(PTANK_MOB_PATH, scene);

@@ -108,8 +108,7 @@ public:
 
 	// Getters and setters
 	inline std::vector<Shader_Program_Variable> *get_attributes() { return &a_attributes; };
-	inline std::vector<float> get_base_datas(std::vector<Shader_Program_Variable> attributes)
-	{
+	static std::vector<float> get_base_hud_vbo(std::vector<Shader_Program_Variable> attributes) {
 		std::vector<float> a_datas = std::vector<float>();
 		a_datas.push_back(0.5f);
 		a_datas.push_back(0.5f);
@@ -130,12 +129,12 @@ public:
 			a_datas.push_back(1.0f);
 		}
 
-		a_datas.push_back(0.5f);
 		a_datas.push_back(-0.5f);
+		a_datas.push_back(0.5f);
 		a_datas.push_back(0.0f);
 
-		a_datas.push_back(1.0f);
 		a_datas.push_back(0.0f);
+		a_datas.push_back(1.0f);
 
 		if (attributes.size() > 2)
 		{
@@ -149,12 +148,12 @@ public:
 			a_datas.push_back(1.0f);
 		}
 
-		a_datas.push_back(-0.5f);
 		a_datas.push_back(0.5f);
+		a_datas.push_back(-0.5f);
 		a_datas.push_back(0.0f);
 
-		a_datas.push_back(0.0f);
 		a_datas.push_back(1.0f);
+		a_datas.push_back(0.0f);
 
 		if (attributes.size() > 2)
 		{
@@ -278,32 +277,6 @@ protected:
 	VBO *a_vbo = 0; // Pointer to the VBO
 };
 
-class Font_VAO: public VAO
-{
-	// Class representing a VAO of a font
-public:
-	// Font_VAO constructor
-	Font_VAO(Shader_Program* shader_program, VBO* vbo);
-	void bind(glm::vec4 rect); // Bind the font VAO into the GPU memory
-	void render(glm::vec4 rect); // Render the Font_VAO
-	~Font_VAO(); // Font_VAO constructor
-
-	// Getters and setters
-	inline std::vector<Shader_Program_Variable> get_base_attributes()
-	{
-		std::vector<Shader_Program_Variable> hud_attributes = std::vector<Shader_Program_Variable>();
-		Shader_Program_Variable v1 = Shader_Program_Variable();
-		Shader_Program_Variable v2 = Shader_Program_Variable();
-		v1.vector_size = 3;
-		v2.vector_size = 2;
-		hud_attributes.push_back(v1);
-		hud_attributes.push_back(v2);
-
-		return hud_attributes;
-	};
-private:
-};
-
 class Texture
 {
 	// Class representing a texture interface
@@ -323,6 +296,7 @@ public:
 	inline basix::Image* get_image() { return a_image; };
 	inline glm::vec2 get_texture_size() { return glm::vec2(width, height); };
 	inline std::string get_texture_path() { return texture_path; };
+	inline void set_image(basix::Image* new_image) {delete a_image;a_image = new_image; a_image->flip_x(); change_texture();};
 	inline bool use_resize() { return resize; };
 private:
 	int height = 0; // Height of the texture
@@ -332,21 +306,4 @@ private:
 	unsigned int texture_id = 0; // Handle to the texture
 	std::string texture_path = ""; // Path of the texture
 	int width = 0; // Width of the texture
-};
-
-class Font_Texture: public Texture
-{
-	// Class representing a font
-public:
-	Font_Texture(std::string a_font_texture_path); // Font_Texture constructor
-	std::vector<float> get_character_data(char character); // Return the VBO datas for a character
-	short get_character_place(char character); // Return the place of a character into the characters string
-	glm::vec4 get_character_rect(char character); // Return the rect of the character on the texture
-	glm::vec2 size(std::string text); // Return the size of the text
-	~Font_Texture(); // Font_Texture destructor
-
-	// Getters and setters
-	static std::string get_characters() { return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-*/,;:!?./§\\éèàçù^¨#{]()}|<*%¨> =\'\"_@"; };
-	static glm::vec2 get_character_size() { return glm::vec2(105, 200); };
-private:
 };

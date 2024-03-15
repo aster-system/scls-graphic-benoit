@@ -12,6 +12,8 @@
 #include "../../headers/mob_loader.h"
 #include "../../headers/player.h"
 
+#define P_ARMY_SCENE_NAME "p_army_scene"
+
 namespace p_army
 {
 	// Each types of tanks in the army
@@ -52,12 +54,16 @@ namespace p_army
 		inline Player::Camera_Handler* camera() { return a_camera; };
 		inline Game* game() { return a_game; };
 		inline std::map<std::string, _P_Army_Core_Object*>& objects() { return a_objects; };
+		inline Scene* scene() {return a_scene;};
 	private:
 		// Pointer to the P_Army camera handler
 		Player::Camera_Handler* a_camera = 0;
 
 		// Pointer to the P_Army game
 		Game* a_game = 0;
+
+		// Pointer to the P_Army scene
+		Scene* a_scene = 0;
 
 		// Object in the P_Army
 		std::map<std::string, _P_Army_Core_Object*> a_objects = std::map<std::string, _P_Army_Core_Object*>();
@@ -78,6 +84,6 @@ namespace p_army
 		inline _P_Army_Core* core() { return static_cast<_P_Army_Core*>(a_core); };
 		inline Game* game() { return core()->game(); };
 	private:
-		
+
 	};
 }

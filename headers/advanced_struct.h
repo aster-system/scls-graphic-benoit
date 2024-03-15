@@ -100,13 +100,11 @@ public:
 	// Add an existing VBO into the game
 	void add_vbo(std::string name, VBO* vbo);
 	void assign_part(unsigned int number, Part* part); // Assign to a number a part
-	bool contains_font(std::string font_name); // Returns if the struct contains a textures
 	bool contains_part(unsigned int number); // Returns if the struct contains a part
 	bool contains_texture(std::string texture_name); // Returns if the struct contains a textures
 	bool contains_vao(std::string type); // Returns if the struct contains a VAO
 	// Returns if the struct contains a VBO
 	bool contains_vbo(std::string name);
-	Font_Texture* get_font_texture(std::string font_name); // Return a fotn in the struct
 	Part* get_part(unsigned int number); // Returns a part
 	Texture* get_texture(std::string texture_name); // Returns a texture in the struct
 	void load_hud_VAOs(); // Loads the HUD VAOs in the advanced struct
@@ -122,16 +120,14 @@ public:
 	VAO* new_vao(std::string name, std::string vbo, std::string shader = "default");
 	// Create a new VBO into the game
 	VBO* new_vbo(std::string name);
-	void unload_fonts(); // Unload all the textures
 	void unload_textures(); // Unload all the textures
 	~Advanced_Struct(); // Advanced_Struct destructor
 
 	// Getters and setters
 	inline std::map<std::string, VAO*> *get_all_vaos() { return &all_vaos; };
-	inline std::map<std::string, Font_Texture*>* get_fonts_textures() { return &fonts_textures; };
-	inline std::map<std::string, Font_VAO*>* get_fonts_vaos() { return &all_fonts_vaos; };
 	inline std::map<unsigned int, Part*>* get_parts() { return &parts; };
 	inline std::map<std::string, Texture*>* get_textures() { return &textures; };
+	inline VAO* get_vao(std::string vao_name) {if(!contains_vao(vao_name)) return 0; return all_vaos[vao_name];};
 	inline std::map<std::string, VAO*>* get_vaos() { return &all_vaos; };
 	inline std::map<std::string, VBO*>* get_vbos() { return &a_vbos; };
 private:
@@ -139,10 +135,8 @@ private:
 	std::map<std::string, Shader_Program> a_shaders_programs = std::map<std::string, Shader_Program>();
 	// Each VBOs base, with their name as key, in the game
 	std::map<std::string, VBO*> a_vbos = std::map<std::string, VBO*>();
-	std::map<std::string, Font_Texture*> fonts_textures = std::map<std::string, Font_Texture*>(); // Each texture, with their texture path as key, in the game
 	std::map<unsigned int, Part*> parts = std::map<unsigned int, Part*>(); // Each parts, with their number as key, in the game
 	std::map<std::string, Texture*> textures = std::map<std::string, Texture*>(); // Each texture, with their name as key, in the game
-	std::map<std::string, Font_VAO*> all_fonts_vaos = std::map<std::string, Font_VAO*>(); // Each vaos, with their type as key, in the game
 	std::map<std::string, VAO*> all_vaos = std::map<std::string, VAO*>(); // Each vaos, with their type as key, in the game
 };
 

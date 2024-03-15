@@ -9,7 +9,7 @@ Shader_Program::Shader_Program(Built_In_Shader shader_type) : Shader_Program(Sha
 // Shader_Program constructor
 Shader_Program::Shader_Program(std::string a_vertex_shader, std::string a_fragment_shader): fragment_shader(a_fragment_shader), vertex_shader(a_vertex_shader)
 {
-	
+
 }
 
 // Load the Shader
@@ -183,9 +183,9 @@ VBO::VBO(std::vector<Shader_Program_Variable> attributes, std::vector<float> dat
 }
 
 // VBO constructor
-VBO::VBO(std::vector<Shader_Program_Variable> attributes, bool fill_datas, bool use_ebo): VBO(attributes, get_base_datas(a_attributes), use_ebo)
+VBO::VBO(std::vector<Shader_Program_Variable> attributes, bool fill_datas, bool use_ebo): VBO(attributes, get_base_hud_vbo(a_attributes), use_ebo)
 {
-	
+
 }
 
 // Bind the VBO into the GPU memory
@@ -214,8 +214,7 @@ void VBO::bind_buffer()
 }
 
 // Returns the number of vertices into the VBO
-unsigned int VBO::get_vertice_number()
-{
+unsigned int VBO::get_vertice_number() {
 	std::vector<float> datas = get_datas();
 	unsigned int attribute_size = 0;
 	for(int i = 0;i<get_attributes()->size();i++)
@@ -228,8 +227,7 @@ unsigned int VBO::get_vertice_number()
 }
 
 // Load the VBO from binary
-void VBO::load_from_binary(char* binary)
-{
+void VBO::load_from_binary(char* binary) {
 	unsigned int cursor_pos = 0;
 	unsigned char attribute_number = binary[0]; cursor_pos++;
 	for (int i = 0; i < attribute_number; i++)
@@ -251,8 +249,7 @@ void VBO::load_from_binary(char* binary)
 }
 
 // Load the vertices from a file
-void VBO::load_from_file(std::string path)
-{
+void VBO::load_from_file(std::string path) {
 	std::string content;
 	std::ifstream file;
 
@@ -288,8 +285,7 @@ void VBO::load_from_file(std::string path)
 }
 
 // Load the VBO into the GPU memory
-void VBO::load_vbo()
-{
+void VBO::load_vbo() {
 	// Generate the VBO into the GPU memory
 	glGenBuffers(1, &vbo);
 	if (a_use_ebo)
@@ -299,8 +295,7 @@ void VBO::load_vbo()
 }
 
 // Create a new VBO from this one
-VBO* VBO::new_copy()
-{
+VBO* VBO::new_copy() {
 	VBO* vbo = new VBO();
 
 	vbo->a_attributes = a_attributes;
@@ -312,60 +307,51 @@ VBO* VBO::new_copy()
 }
 
 // Unbind the VBO from the GPU memory
-void VBO::unbind()
-{
+void VBO::unbind() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 // VBO destructor
-VBO::~VBO()
-{
+VBO::~VBO() {
 	glDeleteBuffers(1, &vbo);
 }
 
 // Most basic VAO constructor
-VAO::VAO()
-{
+VAO::VAO() {
 
 }
 
 // Most usefull VAO constructor
-VAO::VAO(Shader_Program* shader_program, VBO* vbo) : VAO()
-{
+VAO::VAO(Shader_Program* shader_program, VBO* vbo) : VAO() {
 	a_shader_program = shader_program->new_copy();
 	a_vbo = vbo->new_copy();
 }
 
 // VAO constructor
-VAO::VAO(std::string shader_path, std::vector<Shader_Program_Variable> a_attributes, VBO* vbo) : VAO(load_shader_program(shader_path), a_attributes, vbo)
-{
-	
+VAO::VAO(std::string shader_path, std::vector<Shader_Program_Variable> a_attributes, VBO* vbo) : VAO(load_shader_program(shader_path), a_attributes, vbo) {
+
 }
 
 // VAO constructor
-VAO::VAO(Shader_Program* shader_program, std::vector<Shader_Program_Variable> a_attributes, VBO* vbo) : VAO(*shader_program, a_attributes, vbo)
-{
-	
+VAO::VAO(Shader_Program* shader_program, std::vector<Shader_Program_Variable> a_attributes, VBO* vbo) : VAO(*shader_program, a_attributes, vbo) {
+
 }
 
 // VAO constructor
-VAO::VAO(Shader_Program shader_program, std::vector<Shader_Program_Variable> a_attributes, VBO* vbo) : VAO()
-{
+VAO::VAO(Shader_Program shader_program, std::vector<Shader_Program_Variable> a_attributes, VBO* vbo) : VAO() {
 	a_shader_program = shader_program.new_copy();
 	a_vbo = vbo->new_copy();
 }
 
 // Bind the VAO into the GPU memory
-void VAO::bind(glm::vec3 scale)
-{
+void VAO::bind(glm::vec3 scale) {
 	a_shader_program->use();
 	a_shader_program->set_uniform3f_value("scale", scale.x, scale.y, scale.z);
 	glBindVertexArray(vao);
 }
 
 // Load and return a shader
-Shader_Program VAO::load_shader_program(std::string shader_path)
-{
+Shader_Program VAO::load_shader_program(std::string shader_path) {
 	std::string vertex_content;
 	std::string fragment_content;
 	std::ifstream vertex_file;
@@ -405,8 +391,7 @@ Shader_Program VAO::load_shader_program(std::string shader_path)
 }
 
 // Load the VAO
-void VAO::load_vao()
-{
+void VAO::load_vao() {
 	a_shader_program->load_shader();
 
 	// Create the VAO into the GPU memory
@@ -426,12 +411,11 @@ void VAO::load_vao()
 }
 
 // Render the VAO
-void VAO::render(glm::vec3 scale)
-{
+void VAO::render(glm::vec3 scale) {
 	bind(scale);
 	if (get_vbo()->is_using_ebo()) // Render the VAO with a different function if the VBO use EBOs or not
 	{
-		glDrawElements(GL_TRIANGLES, get_vbo()->get_indices().size(), GL_UNSIGNED_INT, 0);
+	    glDrawElements(GL_TRIANGLES, get_vbo()->get_indices().size(), GL_UNSIGNED_INT, 0);
 	}
 	else
 	{
@@ -440,53 +424,17 @@ void VAO::render(glm::vec3 scale)
 }
 
 // Returns the number of triangle to draw
-unsigned int VAO::triangle_number()
-{
+unsigned int VAO::triangle_number() {
 	return get_vbo()->get_vertice_number() / 3.0;
 }
 
 // VAO destructor
-VAO::~VAO()
-{
+VAO::~VAO() {
 	delete get_shader_program();
 	a_shader_program = 0;
 	delete get_vbo();
 	a_vbo = 0;
 	glDeleteVertexArrays(1, &vao);
-}
-
-// Font_Vao constructor
-Font_VAO::Font_VAO(Shader_Program* shader_program, VBO* vbo) : VAO(shader_program, vbo)
-{
-	
-}
-
-// Bind the VAO into the GPU memory
-void Font_VAO::bind(glm::vec4 rect)
-{
-	get_shader_program()->use();
-	get_shader_program()->set_uniform4f_value("texture_rect", rect[0], rect[1], rect[2], rect[3]);
-	glBindVertexArray(get_vao());
-}
-
-// Render the Font_VAO
-void Font_VAO::render(glm::vec4 rect)
-{
-	bind(rect);
-	if (get_vbo()->is_using_ebo()) // Render the VAO with a different function if the VBO use EBOs or not
-	{
-		glDrawElements(GL_TRIANGLES, get_vbo()->get_indices().size(), GL_UNSIGNED_INT, 0);
-	}
-	else
-	{
-		glDrawArrays(GL_TRIANGLES, 0, triangle_number() * 3.0);
-	}
-}
-
-// Font_VAO destructor
-Font_VAO::~Font_VAO()
-{
-	VAO::~VAO();
 }
 
 // Texture constructor
@@ -503,8 +451,7 @@ Texture::Texture(std::string a_texture_path, bool a_resize): texture_path(a_text
 }
 
 // Texture constructor much modulable
-Texture::Texture(unsigned short width, unsigned short height, glm::vec4 color, bool a_resize) : Texture("", false)
-{
+Texture::Texture(unsigned short width, unsigned short height, glm::vec4 color, bool a_resize) : Texture("", false) {
 	// Load the image
 	delete get_image();
 	a_image = new basix::Image(width, height, color[0], color[1], color[2], color[3]);
@@ -517,14 +464,12 @@ Texture::Texture(unsigned short width, unsigned short height, glm::vec4 color, b
 Texture::Texture() : Texture("", false) {}
 
 // Bind the texture into the GPU memory
-void Texture::bind()
-{
+void Texture::bind() {
 	glBindTexture(GL_TEXTURE_2D, texture_id);
 }
 
 // Change the texture of the texture according to image
-void Texture::change_texture()
-{
+void Texture::change_texture() {
 	height = get_image()->get_height();
 	width = get_image()->get_width();
 
@@ -541,95 +486,13 @@ void Texture::change_texture()
 }
 
 // Load the texture into the GPU memory
-void Texture::load_texture()
-{
+void Texture::load_texture() {
 	glGenTextures(1, &texture_id);
 	change_texture();
 }
 
 // Texture destructor
-Texture::~Texture()
-{
+Texture::~Texture() {
 	delete get_image();
 	a_image = 0;
-}
-
-// Font_Texture constructor
-Font_Texture::Font_Texture(std::string a_font_texture_path): Texture(a_font_texture_path, false)
-{
-
-}
-
-// Return the VBO datas for a character
-std::vector<float> Font_Texture::get_character_data(char character)
-{
-	glm::vec4 rect = get_character_rect(character);
-
-	std::vector<float> a_datas = std::vector<float>();
-	a_datas.push_back(0.5f);
-	a_datas.push_back(0.5f);
-	a_datas.push_back(0.0f);
-
-	a_datas.push_back(rect[0] + rect[2]);
-	a_datas.push_back(rect[1] + rect[3]);
-
-	a_datas.push_back(0.5f);
-	a_datas.push_back(-0.5f);
-	a_datas.push_back(0.0f);
-
-	a_datas.push_back(rect[0] + rect[2]);
-	a_datas.push_back(rect[1]);
-
-	a_datas.push_back(-0.5f);
-	a_datas.push_back(-0.5f);
-	a_datas.push_back(0.0f);
-
-	a_datas.push_back(rect[0]);
-	a_datas.push_back(rect[1]);
-
-	a_datas.push_back(-0.5f);
-	a_datas.push_back(0.5f);
-	a_datas.push_back(0.0f);
-
-	a_datas.push_back(rect[0]);
-	a_datas.push_back(rect[1] + rect[3]);
-
-	return a_datas;
-}
-
-// Return the place of a character into the characters string
-short Font_Texture::get_character_place(char character)
-{
-	std::string characters = get_characters();
-	// Browse each characters
-	for (int i = 0; i < characters.size(); i++) { if (characters[i] == character) return i; }
-	return -1; // If the character isn't here
-}
-
-// Return the rect of the character on the texture
-glm::vec4 Font_Texture::get_character_rect(char character)
-{
-	short place = get_character_place(character);
-	if (place == -1)
-	{
-		std::cout << "Matix game : error ! The character \"" << character << "\" doesn't exists in the font \"" << get_texture_path() << "\"." << std::endl;
-		return glm::vec4(0, 0, 0, 0);
-	}
-
-	glm::vec4 result = glm::vec4((place % (int)glm::round(get_texture_size()[0] / get_character_size()[0])) * get_character_size()[0], glm::floor(place / (get_texture_size()[1] / get_character_size()[1])) * get_character_size()[1], get_character_size()[0], get_character_size()[1]);
-	result /= glm::vec4(get_texture_size()[0], get_texture_size()[1], get_texture_size()[0], get_texture_size()[1]);
-	result = glm::vec4(result[0], 1.0 - (result[1] + 0.1), result[2], result[3]);
-	return result;
-}
-
-// Return the size of the text
-glm::vec2 Font_Texture::size(std::string text)
-{
-	return glm::vec2(get_character_size()[0] * text.size(), get_character_size()[1]);
-}
-
-// Font_Texture destructor
-Font_Texture::~Font_Texture()
-{
-	Texture::~Texture();
 }

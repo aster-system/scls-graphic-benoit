@@ -14,7 +14,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 // Callback function for mouse moving
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
-class HUD
+class HUD : public HUD_Object
 {
 	// Class representing an HUD
 public:
@@ -23,11 +23,10 @@ public:
 	bool contains_hud_object(std::string name); // Return if the game contains an HUD Object
 	virtual void load() {}; // Load the CLI after being selected as new current HUD
 	template <class O = HUD_Object> // Template for adding a type of HUD object
-	O* new_hud_object(std::string name, std::string texture_name = "", std::string vao_name = "hud"); // Create a new HUD Object into the game
+	O* new_hud_object(std::string name, HUD_Object* parent, std::string texture_name, std::string vao_name = "hud_default"); // Create a new HUD Object into the game
 	template <class O = HUD_Object> // Template for adding a type of HUD object
-	O* new_hud_object(std::string name, unsigned short texture_width, unsigned short texture_height, glm::vec4 texture_color, std::string vao_name = "hud"); // Create a new HUD Object into the game
+	O* new_hud_object(std::string name, HUD_Object* parent, unsigned short texture_width, unsigned short texture_height, glm::vec4 texture_color, std::string vao_name = "hud"); // Create a new HUD Object into the game
 	void render(); // Render the HUD
-	void sort_objects(); // Sort the HUD for a good render
 	void unload(); // Unload the objects in the HUD
 	virtual void update(); // Update the HUD
 	void update_object(); // Update all the objects in the HUD
@@ -38,13 +37,11 @@ public:
 	inline HUD_Object* get_hud_object(std::string a_name) { return hud_objects[a_name]; };
 	inline std::map < std::string, HUD_Object*>* get_hud_objects() { return &hud_objects; };
 	inline std::string get_name() { return name; };
-	inline std::vector<HUD_Object*>* get_sorted_hud_objects() { return &sorted_hud_objects; };
 private:
 	std::string name; // Name of the HUD
 
 	Advanced_Struct* advanced_struct = 0;
 	std::map < std::string, HUD_Object*> hud_objects = std::map < std::string, HUD_Object*>(); // Each HUD_Object, with their name as key, in the HUD
-	std::vector<HUD_Object*> sorted_hud_objects = std::vector<HUD_Object*>(); // Each HUD_Object, shorted for rendering
 };
 
 class Game: public Advanced_Struct
@@ -79,8 +76,7 @@ public:
 	inline Scene* get_current_scene() { if (get_current_scene_name() == "") return 0; return (*get_scenes())[get_current_scene_name()]; };
 	inline std::string get_current_hud_name() { return current_hud; };
 	inline std::string get_current_scene_name() { return current_scene; };
-	inline std::string get_exec_directory()
-	{
+	inline std::string get_exec_directory() {
 		std::vector<std::string> parts = basix::cut_string(get_exec_path(), "\\");
 		std::string result = "";
 		for (int i = 0; i < parts.size() - 1; i++) { result += parts[i] + "/"; }
@@ -105,7 +101,7 @@ private:
 	bool is_running = true; // If the game should continue running or not
 	float last_frame_time = 0; // Time when the last frame occurs, for calculating delta_time and FPS
 	int& window_height; // Height of the graphic window
-	int& window_width; // Widt of the graphic window
+	int& window_width; // Width of the graphic window
 
 	glm::vec4 background_color = glm::vec4(0.0f, (1.0f/255.0f) * 204.0f, (1.0f / 255.0f) * 204.0f, 1.0f); // Background color of the game
 	std::map < std::string, HUD*> huds = std::map < std::string, HUD*>(); // Each HUD, with their name as key, in the game
@@ -117,7 +113,7 @@ private:
 
 // Create a new HUD Object into the HUD
 template <class O> // Template for adding a type of HUD object
-O* HUD::new_hud_object(std::string name, std::string texture_name, std::string vao_name)
+O* HUD::new_hud_object(std::string name, HUD_Object* parent, std::string texture_name, std::string vao_name)
 {
 	if (contains_hud_object(name)) { std::cout << "HUD \"" << get_name() << "\" error ! The objects \"" << name << "\" you want to create already exists." << std::endl; return 0; }
 
@@ -127,14 +123,14 @@ O* HUD::new_hud_object(std::string name, std::string texture_name, std::string v
 	// Load the VAO
 	VAO* vao = (*get_advanced_struct()->get_all_vaos())[vao_name];
 
-	O* new_object = new O(get_advanced_struct(), name, texture, vao);
+	O* new_object = new O(get_advanced_struct(), name, parent, texture, vao);
 	add_hud_object(name, new_object);
 	return new_object;
 }
 
 // Create a new HUD Object into the HUD
 template <class O> // Template for adding a type of HUD object
-O* HUD::new_hud_object(std::string name, unsigned short texture_width, unsigned short texture_height, glm::vec4 texture_color, std::string vao_name)
+O* HUD::new_hud_object(std::string name, HUD_Object* parent, unsigned short texture_width, unsigned short texture_height, glm::vec4 texture_color, std::string vao_name)
 {
 	if (contains_hud_object(name)) { std::cout << "HUD \"" << get_name() << "\" error ! The objects \"" << name << "\" you want to create already exists." << std::endl; return 0; }
 
@@ -144,7 +140,7 @@ O* HUD::new_hud_object(std::string name, unsigned short texture_width, unsigned 
 	// Load the VAO
 	VAO* vao = (*get_advanced_struct()->get_all_vaos())[vao_name];
 
-	O* new_object = new O(get_advanced_struct(), name, texture, vao);
+	O* new_object = new O(get_advanced_struct(), name, parent, texture, vao);
 	add_hud_object(name, new_object);
 	return new_object;
 }

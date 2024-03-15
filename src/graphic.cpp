@@ -2,15 +2,18 @@
 #include "../headers/graphic.h"
 #include "../headers/model.h"
 
+// Compare the 2 objects with their depths
+bool compare_depht_hud_object(HUD_Object* a, HUD_Object* b) {
+    return a->get_position()[2] < b->get_position()[2];
+}
+
 // Graphic_Object contructor
-Graphic_Object::Graphic_Object(Base_Struct* a_base_struct, Transform_Object& a_attached_transform, Texture *a_texture, VAO* a_vao) : base_struct(a_base_struct), attached_transform(a_attached_transform), texture(a_texture), vao(a_vao)
-{
+Graphic_Object::Graphic_Object(Base_Struct* a_base_struct, Transform_Object& a_attached_transform, Texture *a_texture, VAO* a_vao) : base_struct(a_base_struct), attached_transform(a_attached_transform), texture(a_texture), vao(a_vao) {
 
 }
 
 // Render the graphic object
-void Graphic_Object::render()
-{
+void Graphic_Object::render() {
 	texture->bind(); // Bind the texture
 	vao->get_shader_program()->set_uniform4fv_value("model", attached_transform.get_model_matrix()); // Write some uniform variables into the shader
 	vao->get_shader_program()->set_uniform4fv_value("projection", get_base_struct()->get_projection());
@@ -29,20 +32,36 @@ void Graphic_Object::render()
 void Graphic_Object::update() {}
 
 // Graphic_Object destructor
-Graphic_Object::~Graphic_Object()
-{
+Graphic_Object::~Graphic_Object() {
 
 }
 
 // HUD_Object constructor
-HUD_Object::HUD_Object(Base_Struct* a_base_struct, std::string a_name, Texture* a_texture, VAO* a_vao) : base_struct(a_base_struct), name(a_name), texture(a_texture), vao(a_vao)
-{
+HUD_Object::HUD_Object(Base_Struct* a_base_struct, std::string a_name, HUD_Object* parent, Texture* a_texture, VAO* a_vao) : base_struct(a_base_struct), name(a_name), texture(a_texture), vao(a_vao) {
+    set_parent(parent);
+}
 
+// Add a children to the object
+void HUD_Object::add_children(HUD_Object* object) {
+    if(!contains_children(object))
+    {
+        children().push_back(object);
+
+        sort_children();
+    }
+}
+
+// Returns if the object contains a children
+bool HUD_Object::contains_children(HUD_Object* object) {
+    for(int i = 0;i<static_cast<int>(children().size());i++)
+    {
+        if(children()[i] == object) return true;
+    }
+    return false;
 }
 
 // Return the transformation matrix of the HUD
-glm::mat4 HUD_Object::get_model_matrix()
-{
+glm::mat4 HUD_Object::get_model_matrix() {
 	glm::mat4 matrix = glm::mat4(1.0f);
 
 	// Move matrix
@@ -59,10 +78,21 @@ glm::mat4 HUD_Object::get_model_matrix()
 	return matrix;
 }
 
+// Remove a children from the object
+void HUD_Object::remove_children(HUD_Object* object) {
+    for(int i = 0;i<static_cast<int>(children().size());i++)
+    {
+        if(children()[i] == object)
+        {
+            children().erase(children().begin() + i, children().begin() + i + 1);
+            return;
+        }
+    }
+}
+
 // Render the HUD object
-void HUD_Object::render()
-{
-	texture->bind(); // Bind the texture
+void HUD_Object::render() {
+    texture->bind(); // Bind the texture
 	vao->get_shader_program()->set_uniform4f_value("border_color", get_border_color()); // Write the border color of the HUD in the shader
 	vao->get_shader_program()->set_uniform4f_value("border_width", get_border_width()); // Write the border width of the HUD in the shader
 	vao->get_shader_program()->set_uniform4fv_value("model", get_model_matrix()); // Write some uniform variables into the shader
@@ -74,11 +104,41 @@ void HUD_Object::render()
 	{
 		vao->render(glm::vec3(1.0, 1.0, 1.0)); // Render the object without scaling
 	}
+
+	// Render all the childrens
+	for(int i = 0;i<sorted_children().size();i++)
+    {
+        if(sorted_children()[i]->visible())
+        {
+            sorted_children()[i]->render();
+        }
+    }
+}
+
+// Set the parent of the object
+void HUD_Object::set_parent(HUD_Object* new_parent) {
+    // Reset the old parent
+	if(parent() != 0)
+    {
+        parent()->remove_children(this);
+    }
+
+    a_parent = new_parent;
+
+    if(parent() != 0)
+    {
+        parent()->add_children(this);
+    }
+}
+
+// Sort the children according to their depht
+void HUD_Object::sort_children() {
+    a_sorted_children = a_children;
+    std::sort(sorted_children().begin(), sorted_children().end(), compare_depht_hud_object);
 }
 
 // Soft reset the graphic HUD
-void HUD_Object::soft_reset()
-{
+void HUD_Object::soft_reset() {
 	if (is_clicked())
 	{
 		a_was_clicked = true;
@@ -96,66 +156,23 @@ void HUD_Object::soft_reset()
 void HUD_Object::update() {}
 
 // HUD_Object destructor
-HUD_Object::~HUD_Object()
-{
+HUD_Object::~HUD_Object() {
 
 }
 
 // HUD_Text constructor
-HUD_Text::HUD_Text(Base_Struct* a_base_struct, std::string a_name, Texture* a_texture, VAO* a_vao) : HUD_Object(a_base_struct, a_name, a_texture, a_vao)
-{
+HUD_Text::HUD_Text(Base_Struct* a_base_struct, std::string a_name, HUD_Object* parent, Texture* a_texture, VAO* a_vao) : HUD_Object(a_base_struct, a_name, parent, a_texture, a_vao) {
 
 }
 
-// Render the text for HUD
-void HUD_Text::render()
-{
-	texture->bind(); // Bind the texture
-	glm::mat4 model = get_model_matrix();
-
-	std::string final_text = get_text(true);
-	unsigned short text_length = final_text.size();
-	glm::vec2 text_size = get_texture()->size("a");
-	float ratio = text_size[0] / text_size[1];
-	glm::vec3 scale = glm::vec3(ratio / 2.0, 1.0, 1); // Calculate the necessary scale
-	scale /= glm::vec3(text_length, text_length, text_length);
-	scale = glm::normalize(scale) * glm::vec3(get_font_size(), get_font_size(), get_font_size());;
-
-	glm::mat4 model_scaled_y = glm::scale(model, scale); // Calculate the scale of the character without changing anything other than the Y pos
-	glm::mat4 model_scaled = model_scaled_y; // Calculate the scale of the character
-
-	for (int i = 0; i < text_length; i++) // Generate each char one by one
-	{
-		char chr = final_text[i];
-
-		if (chr == '\n') // Jump a line
-		{
-			model_scaled_y = glm::translate(model_scaled_y, glm::vec3(0, -1, 0));
-			model_scaled = model_scaled_y;
-		}
-		else
-		{
-			vao->get_shader_program()->set_uniform4f_value("background_color", get_background_color()); // Write some uniform variables into the shader
-			vao->get_shader_program()->set_uniform4f_value("text_color", get_font_color()); // Write some uniform variables into the shader
-			vao->get_shader_program()->set_uniform4fv_value("model", model_scaled); // Write some uniform variables into the shader
-			vao->get_shader_program()->set_uniform4f_value("texture_rect", ((Font_Texture*)texture)->get_character_rect(chr)); // Write some uniform variables into the shader
-
-			((Font_VAO*)vao)->render(((Font_Texture*)texture)->get_character_rect(chr)); // Render the object
-			model_scaled = glm::translate(model_scaled, glm::vec3(1, 0, 0));
-		}
-	}
+// Update the text texture
+void HUD_Text::update_text() {
+    basix::Text_Image_Data datas; datas.font = basix::get_system_font("arial"); datas.font_size = 40;
+    texture->set_image(basix::text_image(get_text(), datas));
 }
 
-// Update the text HUD
-void HUD_Text::update()
-{
-	update_cursor();
-	update_text_input();
-}
-
-// Update the cursor of the text
-void HUD_Text::update_cursor()
-{
+/*// Update the cursor of the text
+void HUD_Text::update_cursor() {
 	if (is_using_cursor())
 	{
 		time_since_last_cursor_display += get_base_struct()->get_delta_time();
@@ -174,8 +191,7 @@ void HUD_Text::update_cursor()
 }
 
 // Apply the text input to the text
-void HUD_Text::update_text_input()
-{
+void HUD_Text::update_text_input() {
 	if (is_focused() && can_take_input())
 	{
 		std::string authorized_text = get_input_text();
@@ -212,10 +228,9 @@ void HUD_Text::update_text_input()
 			}
 		}
 	}
-}
+}//*/
 
 // HUD_Text destructor
-HUD_Text::~HUD_Text()
-{
-
+HUD_Text::~HUD_Text() {
+    HUD_Object::~HUD_Object();
 }

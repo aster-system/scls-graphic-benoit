@@ -8,15 +8,9 @@ int global_screen_width = 1280; // Global variable representing the width of the
 int global_screen_height = 720; // Global variable representing the height of the screen
 std::map<std::string, unsigned int> keys = std::map<std::string, unsigned int>(); // Map of each keys in the game
 
-// Compare the 2 objects with their depths
-bool compare_depht_hud_object(HUD_Object* a, HUD_Object* b)
-{
-    return a->get_position()[2] < b->get_position()[2];
-}
 
 // Callback function for cursor enter in the window
-void cursor_enter_callback(GLFWwindow* window, int entered)
-{
+void cursor_enter_callback(GLFWwindow* window, int entered) {
     if (entered)
     {
         // The cursor entered the content area of the window
@@ -30,38 +24,33 @@ void cursor_enter_callback(GLFWwindow* window, int entered)
 }
 
 // Callback function for window resizing
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
     global_screen_height = height;
     global_screen_width = width;
 }
 
 // Callback function for mouse moving
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
-{
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     global_mouse_x = xpos;
     global_mouse_y = ypos;
 }
 
 // HUD constructor
-HUD::HUD(Advanced_Struct* a_advanced_struct, std::string a_name): advanced_struct(a_advanced_struct), name(a_name)
-{
+HUD::HUD(Advanced_Struct* a_advanced_struct, std::string a_name): HUD_Object(reinterpret_cast<Base_Struct*>(a_advanced_struct), a_name, 0, a_advanced_struct->get_texture("transparent"), a_advanced_struct->get_vao("hud_default")) {
+    advanced_struct = a_advanced_struct;name = a_name;
 
+    set_position(glm::vec3(0, 0, -10));
 }
 
 // Add an existing HUD to the hud
-void HUD::add_hud_object(std::string name, HUD_Object* object)
-{
+void HUD::add_hud_object(std::string name, HUD_Object* object) {
     if (contains_hud_object(name)) { std::cout << "HUD \"" << get_name() << "\" : error ! The HUD object \"" << name << "\" you want to add already exists." << std::endl; return; }
     (*get_hud_objects())[name] = object;
-    get_sorted_hud_objects()->push_back(object);
-    sort_objects();
 }
 
 // Return if the HUD contains an HUD Object
-bool HUD::contains_hud_object(std::string name)
-{
+bool HUD::contains_hud_object(std::string name) {
     std::map < std::string, HUD_Object*>* objects = get_hud_objects();
     for (std::map<std::string, HUD_Object*>::iterator it = objects->begin(); it != objects->end(); it++)
     {
@@ -71,23 +60,14 @@ bool HUD::contains_hud_object(std::string name)
 }
 
 // Render the HUD
-void HUD::render()
-{
-    for (int i = 0; i < get_sorted_hud_objects()->size(); i++)
+void HUD::render() {
+
+    for (std::map<std::string, HUD_Object*>::iterator it = get_hud_objects()->begin(); it != get_hud_objects()->end(); it++)
     {
-        (*get_sorted_hud_objects())[i]->soft_reset();
+        it->second->soft_reset();
     }
 
-    for (int i = 0; i < get_sorted_hud_objects()->size(); i++)
-    {
-        (*get_sorted_hud_objects())[i]->render();
-    }
-}
-
-// Sort the HUD objects for a good render
-void HUD::sort_objects()
-{
-    std::sort(sorted_hud_objects.begin(), sorted_hud_objects.end(), compare_depht_hud_object); //*/
+    HUD_Object::render();
 }
 
 // Update the HUD
@@ -99,16 +79,15 @@ void HUD::update()
 // Update all the objects in the HUD
 void HUD::update_object()
 {
-    for (int i = 0; i < get_sorted_hud_objects()->size(); i++)
+    for (std::map<std::string, HUD_Object*>::iterator it = get_hud_objects()->begin(); it != get_hud_objects()->end(); it++)
     {
-        (*get_sorted_hud_objects())[i]->update();
+        it->second->update();
     }
 }
 
 // Unload the objects in the HUD
 void HUD::unload()
 {
-    get_sorted_hud_objects()->clear();
     std::map < std::string, HUD_Object*>* objects = get_hud_objects();
     for (std::map<std::string, HUD_Object*>::iterator it = objects->begin(); it != objects->end(); it++)
     {
@@ -125,8 +104,7 @@ HUD::~HUD()
 }
 
 // Game constructor
-Game::Game(int a_window_width, int a_window_height, std::string a_exec_path, bool load_vaos): Advanced_Struct(global_mouse_x, global_mouse_y, a_exec_path), a_cursor_on_window(cursor_on_window), window_height(global_screen_height), window_width(global_screen_width)
-{
+Game::Game(int a_window_width, int a_window_height, std::string a_exec_path, bool load_vaos): Advanced_Struct(global_mouse_x, global_mouse_y, a_exec_path), a_cursor_on_window(cursor_on_window), window_height(global_screen_height), window_width(global_screen_width) {
     // Set the screen size
     window_height = a_window_height;
     window_width = a_window_width;
@@ -177,22 +155,19 @@ Game::Game(int a_window_width, int a_window_height, std::string a_exec_path, boo
 }
 
 // Add an existing HUD to the game
-void Game::add_hud(std::string name, HUD* hud)
-{
+void Game::add_hud(std::string name, HUD* hud) {
     if (contains_hud(name)) { std::cout << "Matix game : error ! The HUD \"" << name << "\" you want to add already exists." << std::endl; return; }
     (*get_huds())[name] = hud;
 }
 
 // Add an existing scene to the game
-void Game::add_scene(std::string name, Scene* scene)
-{
+void Game::add_scene(std::string name, Scene* scene) {
     if (contains_scene(name)) { std::cout << "Matix game : error ! The scene \"" << name << "\" you want to add already exists." << std::endl; return; }
     (*get_scenes())[name] = scene;
 }
 
 // Return if the game contains an HUD Object
-bool Game::contains_hud(std::string name)
-{
+bool Game::contains_hud(std::string name) {
     std::map < std::string, HUD*>* objects = get_huds();
     for (std::map<std::string, HUD*>::iterator it = objects->begin(); it != objects->end(); it++)
     {
@@ -202,8 +177,7 @@ bool Game::contains_hud(std::string name)
 }
 
 // Returns if the game contains a scene
-bool Game::contains_scene(std::string name)
-{
+bool Game::contains_scene(std::string name) {
     std::map<std::string, Scene*> *scenes = get_scenes();
     for (std::map<std::string, Scene*>::iterator it = scenes->begin(); it != scenes->end(); it++)
     {
@@ -213,8 +187,7 @@ bool Game::contains_scene(std::string name)
 }
 
 // Load the keys in the game
-void Game::load_keys()
-{
+void Game::load_keys() {
     // Alphabet
     keys["a"] = GLFW_KEY_Q;
     keys["b"] = GLFW_KEY_B;
@@ -274,8 +247,7 @@ void Game::load_keys()
 }
 
 // Load the game from a config file
-void Game::load_from_config_file(std::string path)
-{
+void Game::load_from_config_file(std::string path) {
     std::string last_config_file_path = get_config_file_path();
     set_config_file_path(path);
 
@@ -303,8 +275,7 @@ void Game::load_from_config_file(std::string path)
 }
 
 // Create a scene into the game and return it
-Scene* Game::new_scene(std::string name, std::string map_path, Map_Opening_Mode mode, bool use_graphic, bool use_physic)
-{
+Scene* Game::new_scene(std::string name, std::string map_path, Map_Opening_Mode mode, bool use_graphic, bool use_physic) {
     if (contains_scene(name)) { std::cout << "Matix game : error ! The scene \"" << name << "\" you want to create already exists." << std::endl; return 0; }
 
     Scene* new_scene = new Scene(this, name, map_path, use_graphic, use_physic, mode);
@@ -313,12 +284,12 @@ Scene* Game::new_scene(std::string name, std::string map_path, Map_Opening_Mode 
 }
 
 // Render the scene
-void Game::render()
-{
+void Game::render() {
     // Clear OpenGL window
     glClearColor(get_background_color()[0], get_background_color()[1], get_background_color()[2], get_background_color()[3]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    glDepthFunc(GL_LESS);
     if (get_current_scene_name() != "" && contains_scene(get_current_scene_name()))
     {
         Scene* scene = get_current_scene();
@@ -328,6 +299,7 @@ void Game::render()
         }
     }
 
+    glDepthFunc(GL_ALWAYS);
     if (get_current_hud_name() != "" && contains_hud(get_current_hud_name()))
     {
         HUD* hud = get_current_hud();
@@ -343,14 +315,12 @@ void Game::render()
 }
 
 // Properly resize the window
-void Game::resize(unsigned int width, unsigned int height)
-{
+void Game::resize(unsigned int width, unsigned int height) {
     glfwSetWindowSize(window, width, height);
 }
 
 // Run the game by doing multiples call to update
-bool Game::run()
-{
+bool Game::run() {
     bool to_return = glfwWindowShouldClose(window);
     if (!continue_running()) { to_return = true; }
 
@@ -360,8 +330,7 @@ bool Game::run()
 }
 
 // Set the current HUD in the game
-void Game::set_current_hud(std::string a_name)
-{
+void Game::set_current_hud(std::string a_name) {
     if (contains_hud(a_name))
     {
         current_hud = a_name;
@@ -374,8 +343,7 @@ void Game::set_current_hud(std::string a_name)
 };
 
 // Set the current scene in the game
-void Game::set_current_scene(std::string a_name)
-{
+void Game::set_current_scene(std::string a_name) {
     if (contains_scene(a_name))
     {
         current_scene = a_name;
@@ -392,8 +360,7 @@ void Game::set_current_scene(std::string a_name)
 };
 
 // Update one frame of the game
-void Game::update()
-{
+void Game::update() {
     if (get_current_scene_name() != "" && contains_scene(get_current_scene_name()))
     {
         Scene* scene = get_current_scene();
@@ -421,7 +388,7 @@ void Game::update_event()
     last_frame_time = glfwGetTime();
 
     if (get_delta_time() > 0.1) set_delta_time(0);
-    
+
     // FPS calculation
     time_since_last_fps_calculation += get_delta_time();
     if (time_since_last_fps_calculation >= 1)
@@ -456,10 +423,10 @@ void Game::update_event()
         HUD* current_hud = get_current_hud();
         if (current_hud != 0)
         {
-            std::vector<HUD_Object*>* objects = current_hud->get_sorted_hud_objects();
-            for (int i = objects->size() - 1; i >= 0; i--) // Check each objects
+            std::vector<HUD_Object*>& objects = current_hud->sorted_children();
+            for (int i = objects.size() - 1; i >= 0; i--) // Check each objects
             {
-                HUD_Object* object = (*objects)[i];
+                HUD_Object* object = objects[i];
                 if (object->is_in(glm::vec2(get_mouse_x(), get_mouse_y())))
                 {
                     overflighted_object = object;

@@ -3,13 +3,13 @@
 // Part constructor
 Part::Part(glm::vec3 a_position, glm::vec3 a_rotation, glm::vec3 a_scale, std::string a_type, std::string a_texture_path, void* a_base_object) : position(a_position), rotation(a_rotation), scale(a_scale), type(a_type), texture_path(a_texture_path), base_object(a_base_object)
 {
-	
+
 }
 
 // Part copy constructor
 Part::Part(const Part& copy) : Part(copy.position, copy.rotation, copy.scale, copy.type, copy.texture_path, copy.base_object)
 {
-	
+
 }
 
 // Part destructor
@@ -25,7 +25,7 @@ Part::~Part()
 // Advanced_Struct constructor
 Advanced_Struct::Advanced_Struct(double& a_mouse_x, double& a_mouse_y, std::string a_exec_path): Base_Struct(a_mouse_x, a_mouse_y, a_exec_path)
 {
-	
+
 }
 
 // Add an existing VBO into the game
@@ -48,16 +48,6 @@ void Advanced_Struct::assign_part(unsigned int number, Part* part)
 	(*get_parts())[number] = part;
 }
 
-// Returns if the struct contains a font
-bool Advanced_Struct::contains_font(std::string font_name)
-{
-	std::map<std::string, Font_Texture*>* textures = get_fonts_textures();
-	for (std::map<std::string, Font_Texture*>::iterator it = textures->begin(); it != textures->end(); it++)
-	{
-		if (it->first == font_name) { return true; } // Verify each font name (first element of map)
-	}
-	return false;
-}
 
 // Returns if the struct contains a part
 bool Advanced_Struct::contains_part(unsigned int number)
@@ -103,21 +93,6 @@ bool Advanced_Struct::contains_vbo(std::string name)
 	return false;
 }
 
-// Returns a texture in the struct
-Font_Texture* Advanced_Struct::get_font_texture(std::string font_name)
-{
-	if (contains_font(font_name))
-	{
-		return (*get_fonts_textures())[font_name];
-	}
-	else
-	{
-		Font_Texture* texture = new Font_Texture(font_name);
-		(*get_textures())[font_name] = texture;
-		return texture;
-	}
-}
-
 // Returns a part
 Part* Advanced_Struct::get_part(unsigned int number)
 {
@@ -152,22 +127,11 @@ void Advanced_Struct::load_hud_VAOs()
 	a_shaders_programs["hud_default"] = Shader_Program(Shader_Program::HUD_Default);
 
 	// Define attributes for VAOs
-	// Create base Shader_Program_Variable for the shader program
-	std::vector<Shader_Program_Variable> hud_attributes = std::vector<Shader_Program_Variable>();
-	Shader_Program_Variable v1 = Shader_Program_Variable();
-	Shader_Program_Variable v2 = Shader_Program_Variable();
-	v1.vector_size = 3;
-	v2.vector_size = 2;
-	hud_attributes.push_back(v1);
-	hud_attributes.push_back(v2);
+	std::vector<Shader_Program_Variable> hud_attributes = get_base_hud_shader_program_variables();
 
 	// Create VAOs
-	// all_vaos["default_font"] = new Font_VAO(a_shaders_programs["hud_default"]);
-	// all_vaos["hud"] = new VAO(a_shaders_programs["hud_default"], hud_attributes, "0");
-
-	// Create base texture
-	std::string texture_path = get_assets_directory_path() + "fonts/consolas.png";
-	textures["default_font"] = new Font_Texture(texture_path);
+	VBO hud_vbo = VBO(hud_attributes, VBO::get_base_hud_vbo(hud_attributes), false);
+	all_vaos["hud_default"] = new VAO(a_shaders_programs["hud_default"], hud_attributes, &hud_vbo); all_vaos["hud_default"]->load_vao();
 }
 
 // Loads the VAOs in the advanced struct
@@ -176,19 +140,9 @@ void Advanced_Struct::load_VAOs()
 	// Create the base shaders
 	a_shaders_programs["default"] = Shader_Program();
 
-	// Define attributes for VAOs
-	// Create base Shader_Program_Variable for the shader program
-	std::vector<Shader_Program_Variable> base_3d_attributes = get_base_3d_shader_program_variables();
-	std::vector<Shader_Program_Variable> hud_attributes = get_base_hud_shader_program_variables();
-
-	// Create VAOs
-	// all_vaos["chair"] = new VAO(a_shaders_programs["default"], base_3d_attributes, get_assets_directory_path() + "vbos/chair.vbo");
-	// all_vaos["circle"] = new VAO(a_shaders_programs["default"], base_3d_attributes, get_assets_directory_path() + "vbos/polygon50.vbo");
-	// all_vaos["cylinder"] = new VAO(a_shaders_programs["default"], base_3d_attributes, get_assets_directory_path() + "vbos/polygon_3d50.vbo");
-	// all_vaos["cube"] = new VAO(a_shaders_programs["default"], base_3d_attributes, get_assets_directory_path() + "vbos/cube.vbo");
-	// all_vaos["one_faced_cube"] = new VAO(a_shaders_programs["default"], base_3d_attributes, get_assets_directory_path() + "vbos/one_faced_cube.vbo");
-	// all_vaos["table"] = new VAO(a_shaders_programs["default"], base_3d_attributes, get_assets_directory_path() + "vbos/table.vbo");
-	// all_vaos["triangle"] = new VAO(a_shaders_programs["default"], base_3d_attributes, "0");
+	// Create a base texture
+	(*get_textures())["transparent"] = new Texture(5, 5, glm::vec4(0.0, 0.0, 0.0, 0.0));
+	(*get_textures())["white"] = new Texture(5, 5, glm::vec4(1.0, 1.0, 1.0, 1.0));
 
 	load_hud_VAOs();
 }
@@ -301,17 +255,6 @@ VBO* Advanced_Struct::new_vbo(std::string name)
 	return 0;
 }
 
-// Unload all the fonts
-void Advanced_Struct::unload_fonts()
-{
-	std::map<std::string, Font_Texture*>* fonts = get_fonts_textures();
-	for (std::map<std::string, Font_Texture*>::iterator it = fonts->begin(); it != fonts->end(); it++)
-	{
-		delete it->second; // Delete fonts
-		it->second = 0;
-	}
-}
-
 // Unload all the textures
 void Advanced_Struct::unload_textures()
 {
@@ -333,7 +276,6 @@ Advanced_Struct::~Advanced_Struct()
 		it->second = 0;
 	}
 
-	unload_fonts();
 	unload_textures();
 
 	std::map<std::string, VBO*>* vbos = get_vbos();
@@ -373,7 +315,7 @@ Collision_Result::~Collision_Result()
 // Object constructor
 Object::Object(Advanced_Struct* a_game_struct, std::string a_name, std::string a_scene_name, Transform_Object* a_attached_transform, Graphic_Object* a_attached_graphic, Physic_Object* a_attached_physic) : game_struct(a_game_struct), name(a_name), attached_transform(a_attached_transform), attached_graphic(a_attached_graphic), attached_physic(a_attached_physic), scene_name(a_scene_name), collision_result(this)
 {
-	
+
 }
 
 // Clone the object
@@ -477,7 +419,7 @@ std::vector<glm::vec3> Object::get_all_map_pos(glm::vec3 movement_use, bool add_
 			max_z = (int)glm::ceil((map_pos[2] + scale2 / 2.0) + get_attached_transform()->get_movement()[2] * movement_use[2]);
 		}
 	}
-	
+
 	if (movement_use == glm::vec3(0, 0, 0) || movement_use[2] != 0)
 	{
 		for (int i = min_x; i < max_x; i++) // Create each positions
@@ -522,7 +464,7 @@ void Object::last_update()
 		if (collision->axis_multiplier[0] != 0 && glm::abs(difference_x_movement) < glm::abs(difference_collision_width) && basix::sign(difference_x_movement) != basix::sign(new_movement[0]))
 		{
 			if (basix::sign(new_movement[0]) == basix::sign(new_velocity[0])) new_velocity[0] *= -1 * get_attached_physic_object()->get_elasticity();
-			new_movement[0] = 0;		
+			new_movement[0] = 0;
 		}
 
 		if (collision->axis_multiplier[1] != 0 && new_movement[1] != 0 && glm::abs(difference_y_movement) < glm::abs(difference_collision_height) && basix::sign(difference_y_movement) != basix::sign(new_movement[1]))
