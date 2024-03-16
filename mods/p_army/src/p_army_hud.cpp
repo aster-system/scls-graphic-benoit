@@ -29,8 +29,22 @@ namespace p_army {
         a_credit->set_text(basix::to_utf_8("By Aster Système, founded by Matt Code"));
         // Load the information button
         a_information_button = base_hud()->new_hud_object<HUD_Button>(name + ";information_button", this, 1, 1, glm::vec4(0, 0, 0, 0), "hud_default");
+        a_information_button->set_background_color(glm::vec4(255, 255, 255, 130));
+        a_information_button->set_border_width(0.05);
+        a_information_button->set_font_family("arial");
+        a_information_button->set_ouf_offset(15);
+        a_information_button->set_position(glm::vec3(-0.25, 0, 0));
         a_information_button->set_scale(0.2);
         a_information_button->set_text("Information");
+        // Load the launch button
+        a_launch_button = base_hud()->new_hud_object<HUD_Button>(name + ";launch_button", this, 1, 1, glm::vec4(0, 0, 0, 0), "hud_default");
+        a_launch_button->set_background_color(glm::vec4(255, 255, 255, 130));
+        a_launch_button->set_border_width(0.04);
+        a_launch_button->set_font_family("arial");
+        a_launch_button->set_ouf_offset(15);
+        a_launch_button->set_position(glm::vec3(0.25, 0, 0));
+        a_launch_button->set_scale(0.2);
+        a_launch_button->set_text("Launch");
         // Load the logo
         a_logo = base_hud()->new_hud_object(name + ";logo", this, "matix_logo", "hud_default");
         a_logo->set_position(glm::vec3(-0.65, 0.7, 0));

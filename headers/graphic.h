@@ -109,7 +109,7 @@ public:
 	inline HUD_Object* parent() {return a_parent;};
 	inline void set_border_color(glm::vec4 new_border_color) { a_border_color = new_border_color; };
 	inline void set_border_width(glm::vec4 new_border_width) { a_border_width = new_border_width; };
-	inline void set_border_width(unsigned short new_border_width) { a_border_width = glm::vec4(new_border_width, new_border_width, new_border_width, new_border_width); };
+	inline void set_border_width(double new_border_width) { a_border_width = glm::vec4(new_border_width); };
 	inline void set_is_clicked(bool is_clicked) { a_is_clicked = is_clicked; };
 	inline void set_is_overflighted(bool is_overflighted) { a_is_overflighted = is_overflighted; };
 	inline void set_position(glm::vec3 a_position) { position = a_position; };
@@ -169,9 +169,9 @@ public:
 	// Getters and setters (ONLY WITHOUT ATTRIBUTES)
 
 	// Getters and setters (ONLY WITH ATTRIBUTES)
+	inline glm::vec4 background_color() { return a_background_color; };
 	inline bool can_take_input() { return input; };
 	inline std::string font_family() {return a_font_family;};
-	inline glm::vec4 get_background_color() { return background_color; };
 	inline std::string get_cursor_character() { return cursor_character; };
 	inline float get_cursor_display_time() { return cursor_display_time; };
 	inline glm::vec4 get_font_color() { return font_color; };
@@ -184,7 +184,8 @@ public:
 	};
 	inline bool is_focused() { return focused; };
 	inline bool is_using_cursor() { return use_cursor; };
-	inline void set_background_color(glm::vec4 a_background_color) { background_color = a_background_color; };
+	inline glm::vec4 out_offset() {return a_out_offset;};
+	inline void set_background_color(glm::vec4 new_background_color) { a_background_color = new_background_color; };
 	inline void set_cursor_character(std::string new_cursor_character) { cursor_character = new_cursor_character; };
 	inline void set_focused(bool a_focused) { focused = a_focused; };
 	inline void set_font_color(glm::vec4 a_font_color) { font_color = a_font_color; };
@@ -192,11 +193,13 @@ public:
 	inline void set_font_size(unsigned short new_size) { a_font_size = new_size; };
 	inline void set_input(bool a_input) { input = a_input; };
 	inline void set_input_text(std::string a_input_text) { input_text = a_input_text; };
+	inline void set_ouf_offset(glm::vec4 new_out_offset) {a_out_offset = new_out_offset;};
+	inline void set_ouf_offset(double new_out_offset) {set_ouf_offset(glm::vec4(new_out_offset));};
 	inline void set_text(std::string a_text) { text = a_text; update_text(); };
 	inline void set_use_cursor(bool a_use_cursor) { use_cursor = a_use_cursor; };
 private:
     // Background color of the object
-	glm::vec4 background_color = glm::vec4(0, 0, 0, 0);
+	glm::vec4 a_background_color = glm::vec4(0, 0, 0, 0);
     // Return the character representing the cursor
 	std::string cursor_character = "_";
 	// Number of second the cursor is displayed and hide
@@ -209,6 +212,8 @@ private:
 	bool input = false;
 	// Text that can be took in input
 	std::string input_text = "";
+	// Ouf offset of the text
+	glm::vec4 a_out_offset = glm::vec4(0, 0, 0, 0);
 	// Time passed since the last cursor displaying
 	float time_since_last_cursor_display = 0;
 	// If the text use a cursor

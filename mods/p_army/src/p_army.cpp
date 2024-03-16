@@ -21,6 +21,7 @@ namespace p_army
 	void P_Army::run()
 	{
 	    set_welcome_hud();
+	    // game()->set_current_scene(P_ARMY_SCENE_NAME);
 		while (game()->run())
 		{
 			// Update the game

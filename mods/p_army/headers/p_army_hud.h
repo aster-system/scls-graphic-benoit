@@ -40,6 +40,8 @@ namespace p_army
         HUD_Text* a_credit = 0;
         // Button to go to the information page from the first page
         HUD_Button* a_information_button = 0;
+        // Button to launch the mod from the first page
+        HUD_Button* a_launch_button = 0;
         // Matix logo
         HUD_Object* a_logo = 0;
         // Title of the HUD

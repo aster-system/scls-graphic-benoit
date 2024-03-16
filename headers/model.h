@@ -68,7 +68,7 @@ public:
 	};
 	static std::string get_default_hud_fragment_shader()
 	{
-		return "#version 330 core\nin vec2 tex_pos;out vec4 FragColor;uniform sampler2D texture_0;void main(){vec4 color = texture(texture_0, tex_pos);FragColor = color;}";
+		return "#version 330 core\nin vec2 tex_pos;out vec4 FragColor;uniform vec4 border_color;uniform vec4 border_width;uniform sampler2D texture_0;void main(){vec4 color = border_color;if(tex_pos[0] >= border_width[1] && tex_pos[0] <= 1.0 - border_width[3] && tex_pos[1] >= border_width[0] && tex_pos[1] <= 1.0 - border_width[2]){vec2 texture_pos = tex_pos;texture_pos[0]-=border_width[1];texture_pos[1]-=border_width[0];texture_pos[0]*=(1.0+(border_width[1]+border_width[3]));texture_pos[1]*=(1.0+(border_width[0]+border_width[2]));color = texture(texture_0, texture_pos);}FragColor = color;}";
 	};
 	static std::string get_default_vertex_shader()
 	{
