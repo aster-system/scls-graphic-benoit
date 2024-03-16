@@ -75,6 +75,20 @@ public:
 
 		return glm::vec4(x, y, width, heigth);
 	};
+    inline glm::vec3 get_scale_for_rendering(glm::vec3 scale_to_render) {
+        double texture_ratio = get_texture()->image_ratio();
+        double x_multiplier = 1; double y_multiplier = 1;
+        if(texture_ratio < 1) {x_multiplier = texture_ratio;}
+        else { y_multiplier /= texture_ratio; }
+
+        double window_ratio = get_base_struct()->window_ratio();
+        if(window_ratio < 1) {y_multiplier /= 1.0 / window_ratio;}
+        else { x_multiplier /= window_ratio; }
+
+        glm::vec3 final_scale = scale_to_render * glm::vec3(2, 2, 2) * glm::vec3(x_multiplier, y_multiplier, 1);
+
+        return final_scale;
+    };
     inline bool is_clicked_during_this_frame() { return a_is_clicked && !a_was_clicked; };
     inline bool is_in(glm::vec2 pos) {
 		glm::vec4 rect = get_hud_rect_pos();
@@ -88,7 +102,7 @@ public:
 	inline glm::vec4 get_border_width() { return a_border_width; };
 	inline glm::vec3 get_position() { return position; };
 	inline glm::vec3 get_rotation() { return rotation; };
-	inline glm::vec3 get_scale() { return scale * glm::vec3(2, 2, 2); };
+	inline glm::vec3 get_scale() { return scale; };
 	inline Texture* get_texture() { return texture; };
 	inline bool is_clicked() { return a_is_clicked; };
 	inline bool is_overflighted() { return a_is_overflighted; };
@@ -100,9 +114,12 @@ public:
 	inline void set_is_overflighted(bool is_overflighted) { a_is_overflighted = is_overflighted; };
 	inline void set_position(glm::vec3 a_position) { position = a_position; };
 	inline void set_rotation(glm::vec3 a_rotation) { rotation = a_rotation; };
+	inline void set_scale(double a_scale) {scale = glm::vec3(a_scale, a_scale, a_scale);};
 	inline void set_scale(glm::vec3 a_scale) { scale = a_scale; };
+	inline void set_sized_according_to_ratio(bool new_sized_according_to_ratio) {a_sized_according_to_ratio = new_sized_according_to_ratio;};
 	inline void set_texture(Texture* a_texture) { texture = a_texture; };
 	inline void set_visible(bool new_visible) {a_visible = new_visible;};
+	inline bool sized_according_to_ratio() {return a_sized_according_to_ratio;};
 	inline std::vector<HUD_Object*>& sorted_children() {return a_sorted_children;};
 	inline bool visible() {return a_visible;};
 
@@ -128,6 +145,8 @@ private:
 	glm::vec3 position = glm::vec3(0, 0, 0); // Position of the HUD on the screen
 	glm::vec3 rotation = glm::vec3(0, 0, 0); // Rotation of the HUD on the screen
 	glm::vec3 scale = glm::vec3(1, 1, 1); // Size of the HUD on the screen
+	// If the object use a relative or an absolute size
+	bool a_sized_according_to_ratio = true;
 	// Children sorted according to their depht
 	std::vector<HUD_Object*> a_sorted_children = std::vector<HUD_Object*>();
 	// If the object is visible or not
@@ -151,11 +170,12 @@ public:
 
 	// Getters and setters (ONLY WITH ATTRIBUTES)
 	inline bool can_take_input() { return input; };
+	inline std::string font_family() {return a_font_family;};
 	inline glm::vec4 get_background_color() { return background_color; };
 	inline std::string get_cursor_character() { return cursor_character; };
 	inline float get_cursor_display_time() { return cursor_display_time; };
 	inline glm::vec4 get_font_color() { return font_color; };
-	inline float get_font_size() { return font_size; };
+	inline unsigned short font_size() { return a_font_size; };
 	inline std::string get_input_text() { return input_text; };
 	inline std::string get_text(bool with_cursor = false) {
 		std::string cursor = "";
@@ -168,7 +188,8 @@ public:
 	inline void set_cursor_character(std::string new_cursor_character) { cursor_character = new_cursor_character; };
 	inline void set_focused(bool a_focused) { focused = a_focused; };
 	inline void set_font_color(glm::vec4 a_font_color) { font_color = a_font_color; };
-	inline void set_font_size(float size) { font_size = size; };
+	inline void set_font_family(std::string new_font_family) {a_font_family = new_font_family;};
+	inline void set_font_size(unsigned short new_size) { a_font_size = new_size; };
 	inline void set_input(bool a_input) { input = a_input; };
 	inline void set_input_text(std::string a_input_text) { input_text = a_input_text; };
 	inline void set_text(std::string a_text) { text = a_text; update_text(); };
@@ -196,10 +217,23 @@ private:
 	// Datas about the text
 	// Color of the font of the text
 	glm::vec4 font_color = glm::vec4(0, 0, 0, 1);
+	// Font family of the text
+	std::string a_font_family = "arial";
 	// Size of the font of the text
-	float font_size = 1.0f;
+	unsigned short a_font_size = 50;
 	// Text in the HUD
 	std::string text = "Matix";
+};
+
+class HUD_Button : public HUD_Text {
+    // Class representing an HUD button object
+public:
+    // HUD_Button constructor
+	HUD_Button(Base_Struct* a_base_struct, std::string a_name, HUD_Object* parent, Texture* a_texture, VAO* a_vao);
+	// HUD_Button destructor
+	~HUD_Button();
+private:
+
 };
 
 #endif // MATIX_GRAPHIC

@@ -296,6 +296,7 @@ public:
 	inline basix::Image* get_image() { return a_image; };
 	inline glm::vec2 get_texture_size() { return glm::vec2(width, height); };
 	inline std::string get_texture_path() { return texture_path; };
+	inline double image_ratio() {return static_cast<double>(get_image()->get_width()) / static_cast<double>(get_image()->get_height());};
 	inline void set_image(basix::Image* new_image) {delete a_image;a_image = new_image; a_image->flip_x(); change_texture();};
 	inline bool use_resize() { return resize; };
 private:

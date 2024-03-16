@@ -104,17 +104,13 @@ HUD::~HUD()
 }
 
 // Game constructor
-Game::Game(int a_window_width, int a_window_height, std::string a_exec_path, bool load_vaos): Advanced_Struct(global_mouse_x, global_mouse_y, a_exec_path), a_cursor_on_window(cursor_on_window), window_height(global_screen_height), window_width(global_screen_width) {
-    // Set the screen size
-    window_height = a_window_height;
-    window_width = a_window_width;
-
+Game::Game(int a_window_width, int a_window_height, std::string a_exec_path, bool load_vaos): Advanced_Struct(global_mouse_x, global_mouse_y, global_screen_width, global_screen_height, a_exec_path), a_cursor_on_window(cursor_on_window) {
     load_keys();
     // Configurate base_struct
     get_camera()->set_position(glm::vec3(0.0, 0.0, 0.0));
     get_camera()->set_rotation(glm::vec3(0.0, 0.0, 0.0));
-    set_window_height(window_height);
-    set_window_width(window_width);
+    set_window_height(a_window_height);
+    set_window_width(a_window_width);
 
     // GLFW Window generation
     glfwInit();

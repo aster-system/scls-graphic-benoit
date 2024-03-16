@@ -2,8 +2,7 @@
 #include "../mods/p_army/headers/p_army.h"
 #include "../mods_hidden/headers/mob_maker.h"
 
-void cube_3d(std::string exec_path)
-{
+void cube_3d(std::string exec_path) {
     Game* game = new Game(1600, 900, exec_path, false);
     game->load_from_config_file("./matix_config.cfg");
     game->load_VAOs();
@@ -36,8 +35,7 @@ void cube_3d(std::string exec_path)
     game = 0;
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
     srand(time(0));
 
     // mob_maker::run_mob_tester(argv[0]);

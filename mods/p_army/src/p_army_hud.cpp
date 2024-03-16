@@ -19,16 +19,29 @@ namespace p_army {
         a_game = reinterpret_cast<Game*>(game);
 
         set_position(glm::vec3(0, 0, 0));
+        set_scale(glm::vec3(1, 1, 1));
+        set_sized_according_to_ratio(false);
 
-        // Load the credi
-        a_credit = base_hud()->new_hud_object<HUD_Text>(name + ";credit", this, 1, 1, glm::vec4(0, 0, 0, 1), "hud_default");
-        a_credit->set_position(glm::vec3(0, -0.5, 0));
-        a_credit->set_scale(glm::vec3(0.5, 0.1, 1));
+        // Load the credit
+        a_credit = base_hud()->new_hud_object<HUD_Text>(name + ";credit", this, 1, 1, glm::vec4(0, 0, 0, 0), "hud_default");
+        a_credit->set_position(glm::vec3(0, -0.9, 0));
+        a_credit->set_scale(0.5);
         a_credit->set_text(basix::to_utf_8("By Aster Système, founded by Matt Code"));
+        // Load the information button
+        a_information_button = base_hud()->new_hud_object<HUD_Button>(name + ";information_button", this, 1, 1, glm::vec4(0, 0, 0, 0), "hud_default");
+        a_information_button->set_scale(0.2);
+        a_information_button->set_text("Information");
         // Load the logo
         a_logo = base_hud()->new_hud_object(name + ";logo", this, "matix_logo", "hud_default");
-        a_logo->set_position(glm::vec3(0, 0, 0));
-        a_logo->set_scale(glm::vec3(0.1, 0.1, 1));
+        a_logo->set_position(glm::vec3(-0.65, 0.7, 0));
+        a_logo->set_scale(0.2);
+        // Load the title
+        a_title = base_hud()->new_hud_object<HUD_Text>(name + ";title", this, 1, 1, glm::vec4(0, 0, 0, 0), "hud_default");
+        a_title->set_font_family("arialbi");
+        a_title->set_font_size(250);
+        a_title->set_position(glm::vec3(0.3, 0.65, 0));
+        a_title->set_scale(0.5);
+        a_title->set_text("P-Army");
     }
 
     // _P_Army_Welcome_HUD_Object destructor

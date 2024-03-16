@@ -86,8 +86,6 @@ public:
 	inline std::map < std::string, HUD*>* get_huds() { return &huds; };
 	inline Scene* get_scene(std::string name) { if (contains_scene(name) && name != "") { return scenes[name]; } std::cout << "Matrix game : error ! The scene \"" << name << "\" does not exist." << std::endl; return 0; }
 	inline std::map<std::string, Scene*> *get_scenes() { return &scenes; };
-	inline int get_window_height() { return window_height; };
-	inline int get_window_width() { return window_width; };
 	inline bool is_cursor_on_window() { return a_cursor_on_window; };
 	inline void set_background_color(glm::vec4 a_background_color) { background_color = a_background_color; };
 	void set_current_hud(std::string a_name);
@@ -100,8 +98,6 @@ private:
 	bool &a_cursor_on_window;
 	bool is_running = true; // If the game should continue running or not
 	float last_frame_time = 0; // Time when the last frame occurs, for calculating delta_time and FPS
-	int& window_height; // Height of the graphic window
-	int& window_width; // Width of the graphic window
 
 	glm::vec4 background_color = glm::vec4(0.0f, (1.0f/255.0f) * 204.0f, (1.0f / 255.0f) * 204.0f, 1.0f); // Background color of the game
 	std::map < std::string, HUD*> huds = std::map < std::string, HUD*>(); // Each HUD, with their name as key, in the game

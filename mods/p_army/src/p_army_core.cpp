@@ -19,7 +19,7 @@ namespace p_army
 	{
 	    // Create and configurate the game
 		a_game = new Game(window_width, window_height, exec_path, false);
-		a_game->load_from_config_file("matix_config.cfg");
+		// a_game->load_from_config_file("matix_config.cfg");
 		a_game->load_VAOs();
 
 		// Create a scene

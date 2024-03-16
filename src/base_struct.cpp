@@ -205,7 +205,7 @@ glm::vec3 rotate_vector_y(glm::vec3 vector, float rotation, unsigned int id)
 
 	// Calculate the angle in a local XZ circle with Y angle
 	glm::vec2 difference_position = glm::vec2(vector[0], vector[2]);
-	
+
 	// Calculate the angle of the position
 	float hypothenus = glm::distance(difference_position, glm::vec2(0, 0));
 
@@ -570,9 +570,9 @@ Camera::~Camera()
 }
 
 // Base_Struct constructor
-Base_Struct::Base_Struct(double& a_mouse_x, double& a_mouse_y, std::string a_exec_path): exec_path(a_exec_path), mouse_x(a_mouse_x), mouse_y(a_mouse_y), last_mouse_x(a_mouse_x), last_mouse_y(a_mouse_y)
+Base_Struct::Base_Struct(double& a_mouse_x, double& a_mouse_y, int& a_window_width, int& a_window_height, std::string a_exec_path): exec_path(a_exec_path), mouse_x(a_mouse_x), mouse_y(a_mouse_y), last_mouse_x(a_mouse_x), last_mouse_y(a_mouse_y), window_height(a_window_height), window_width(a_window_width)
 {
-	
+
 }
 
 // Cout an error in the program

@@ -38,7 +38,12 @@ namespace p_army
         // Each HUD parts of the HUD_Object
         // Credit of the P_Army_Mod
         HUD_Text* a_credit = 0;
+        // Button to go to the information page from the first page
+        HUD_Button* a_information_button = 0;
+        // Matix logo
         HUD_Object* a_logo = 0;
+        // Title of the HUD
+        HUD_Text* a_title = 0;
 
         // Pointer to the game
         Game* a_game = 0;

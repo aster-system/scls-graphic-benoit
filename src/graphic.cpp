@@ -73,7 +73,14 @@ glm::mat4 HUD_Object::get_model_matrix() {
 	matrix = glm::rotate(matrix, glm::radians(get_rotation()[2]), glm::vec3(0, 0, 1));
 
 	// Scale matrix
-	matrix = glm::scale(matrix, get_scale());
+	if(sized_according_to_ratio())
+    {
+        matrix = glm::scale(matrix, get_scale_for_rendering(get_scale()));
+    }
+    else
+    {
+        matrix = glm::scale(matrix, get_scale() * glm::vec3(2.0, 2.0, 2.0));
+    }
 
 	return matrix;
 }
@@ -96,23 +103,37 @@ void HUD_Object::render() {
 	vao->get_shader_program()->set_uniform4f_value("border_color", get_border_color()); // Write the border color of the HUD in the shader
 	vao->get_shader_program()->set_uniform4f_value("border_width", get_border_width()); // Write the border width of the HUD in the shader
 	vao->get_shader_program()->set_uniform4fv_value("model", get_model_matrix()); // Write some uniform variables into the shader
-	if (texture->use_resize())
-	{
-		vao->render(get_scale()); // Render the object with scaling
-	}
-	else
-	{
-		vao->render(glm::vec3(1.0, 1.0, 1.0)); // Render the object without scaling
-	}
-
-	// Render all the childrens
-	for(int i = 0;i<sorted_children().size();i++)
+	if(sized_according_to_ratio())
     {
-        if(sorted_children()[i]->visible())
+        if (texture->use_resize())
         {
-            sorted_children()[i]->render();
+            vao->render(get_scale_for_rendering(get_scale())); // Render the object with scaling
+        }
+        else
+        {
+            vao->render(get_scale_for_rendering(glm::vec3(1.0, 1.0, 1.0))); // Render the object without scaling
         }
     }
+    else
+    {
+        if (texture->use_resize())
+        {
+            vao->render(get_scale()); // Render the object with scaling
+        }
+        else
+        {
+            vao->render(glm::vec3(1)); // Render the object without scaling
+        }
+    }
+
+    // Render all the childrens
+        for(int i = 0;i<sorted_children().size();i++)
+        {
+            if(sorted_children()[i]->visible())
+            {
+                sorted_children()[i]->render();
+            }
+        }
 }
 
 // Set the parent of the object
@@ -167,8 +188,10 @@ HUD_Text::HUD_Text(Base_Struct* a_base_struct, std::string a_name, HUD_Object* p
 
 // Update the text texture
 void HUD_Text::update_text() {
-    basix::Text_Image_Data datas; datas.font = basix::get_system_font("arial"); datas.font_size = 40;
-    texture->set_image(basix::text_image(get_text(), datas));
+    basix::Text_Image_Data datas; datas.font = basix::get_system_font(font_family()); datas.font_size = font_size();
+
+    basix::Image* new_texture = basix::text_image(get_text(), datas);
+    texture->set_image(new_texture);
 }
 
 /*// Update the cursor of the text
@@ -233,4 +256,14 @@ void HUD_Text::update_text_input() {
 // HUD_Text destructor
 HUD_Text::~HUD_Text() {
     HUD_Object::~HUD_Object();
+}
+
+// HUD_Button constructor
+HUD_Button::HUD_Button(Base_Struct* a_base_struct, std::string a_name, HUD_Object* parent, Texture* a_texture, VAO* a_vao) : HUD_Text(a_base_struct, a_name, parent, a_texture, a_vao) {
+    set_border_width(0.2);
+}
+
+// HUD_Button destructor
+HUD_Button::~HUD_Button() {
+    HUD_Text::~HUD_Text();
 }

@@ -244,7 +244,7 @@ enum Key_State { Nothing, Pressed, Already_Pressed }; // Differents orientations
 class Base_Struct
 {
 public:
-	Base_Struct(double& a_mouse_x, double& a_mouse_y, std::string a_exec_path); // Base_Struct constructor
+	Base_Struct(double& a_mouse_x, double& a_mouse_y, int& a_window_width, int& a_window_height, std::string a_exec_path); // Base_Struct constructor
 	void error(std::string thrower, std::string error_content); // Cout an error in the program
 	std::string file_formatted(std::string path); // Return if a file formatted with the struct context
 	glm::mat4 get_projection(); // Return the projection matrix
@@ -274,8 +274,7 @@ public:
 	inline unsigned short get_right_mouse_button_state() { return right_mouse_button_state; };
 	inline int get_window_height() { return window_height; };
 	inline int get_window_width() { return window_width; };
-	inline void set_assets_directory_path(std::string new_assets_directory_path)
-	{
+	inline void set_assets_directory_path(std::string new_assets_directory_path) {
 		new_assets_directory_path = file_formatted(new_assets_directory_path);
 		if (basix::file_exists(new_assets_directory_path))
 		{
@@ -293,8 +292,7 @@ public:
 			error("Matix game", "The path \"" + new_assets_directory_path + "\" you want to set as the game assets directory does not exist.");
 		}
 	}
-	inline void set_config_file_path(std::string new_config_file_path)
-	{
+	inline void set_config_file_path(std::string new_config_file_path) {
 		new_config_file_path = file_formatted(new_config_file_path);
 		if (basix::file_exists(new_config_file_path))
 		{
@@ -322,6 +320,7 @@ public:
 	inline void set_right_mouse_button_state(unsigned short new_state) { right_mouse_button_state = new_state; };
 	inline void set_window_height(int height) { window_height = height; };
 	inline void set_window_width(int width) { window_width = width; };
+	inline double window_ratio() {return static_cast<double>(get_window_width()) / static_cast<double>(get_window_height());};
 protected:
 	// State of the cursor
 	int _cursor_state = GLFW_CURSOR_DISABLED;
@@ -348,8 +347,8 @@ private:
 	double& mouse_x; // Reference towards the mouse X pos
 	double& mouse_y; // Reference towards the mouse Y pos
 
-	int window_height = 0; // Height of the graphic window
-	int window_width = 0; // Width of the graphic window
+	int& window_height; // Height of the graphic window
+	int& window_width; // Width of the graphic window
 
 	Camera camera = Camera(); // Camera of the game
 	glm::vec3 gravity_force = glm::vec3(0, -9.80665, 0); // Value of the gravity

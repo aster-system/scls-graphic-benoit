@@ -96,7 +96,7 @@ class Advanced_Struct : public Base_Struct
 {
 	// Class representing the advanced struct in the game
 public:
-	Advanced_Struct(double& a_mouse_x, double& a_mouse_y, std::string a_exec_path); // Advanced_Struct constructor
+	Advanced_Struct(double& a_mouse_x, double& a_mouse_y, int& a_window_width, int& a_window_height, std::string a_exec_path); // Advanced_Struct constructor
 	// Add an existing VBO into the game
 	void add_vbo(std::string name, VBO* vbo);
 	void assign_part(unsigned int number, Part* part); // Assign to a number a part
