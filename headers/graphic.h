@@ -42,7 +42,7 @@ class HUD_Object
 	// Class representing a HUD object
 public:
     // HUD_Object constructor
-	HUD_Object(Base_Struct* a_base_struct, std::string a_name, HUD_Object* parent, Texture* a_texture, VAO* a_vao);
+	HUD_Object(Base_Struct* a_base_struct, std::string name, HUD_Object* parent, Texture* a_texture, VAO* a_vao);
 	// Return the transformation matrix of the object
 	glm::mat4 get_model_matrix();
 	// Render the graphic HUD
@@ -67,15 +67,21 @@ public:
 	void sort_children();
 
 	// Getters and setters (ONLY WITHOUT ATTRIBUTES)
+	inline glm::vec2 absolute_position() { if(parent() == 0) return position(); return parent()->position() + position() * parent()->absolute_scale(); };
+	inline glm::vec2 absolute_scale() {
+        if(parent() != 0) return scale() * parent()->absolute_scale();
+        return scale();
+	};
 	inline glm::vec4 get_hud_rect_pos() {
-		int heigth = (get_scale()[1] / 2.0) * get_base_struct()->get_window_height();
-		int width = (get_scale()[0] / 2.0) * get_base_struct()->get_window_width();
-		int x = (((get_position()[0] + 1.0) / 2.0) * get_base_struct()->get_window_width());
-		int y = get_base_struct()->get_window_height() - (((get_position()[1] + 1.0) / 2.0) * get_base_struct()->get_window_height());
+	    glm::vec2 final_scale = scale_for_rendering(absolute_scale()) * glm::vec2(0.5);
+		int heigth = final_scale[1] * get_base_struct()->get_window_height();
+		int width = final_scale[0] * get_base_struct()->get_window_width();
+		int x = (((absolute_position()[0] + 1.0) / 2.0) * get_base_struct()->get_window_width());
+		int y = get_base_struct()->get_window_height() - (((absolute_position()[1] + 1.0) / 2.0) * get_base_struct()->get_window_height());
 
 		return glm::vec4(x, y, width, heigth);
 	};
-    inline glm::vec3 get_scale_for_rendering(glm::vec3 scale_to_render) {
+    inline glm::vec2 scale_for_rendering(glm::vec2 scale_to_render) {
         double texture_ratio = get_texture()->image_ratio();
         double x_multiplier = 1; double y_multiplier = 1;
         if(texture_ratio < 1) {x_multiplier = texture_ratio;}
@@ -85,7 +91,7 @@ public:
         if(window_ratio < 1) {y_multiplier /= 1.0 / window_ratio;}
         else { x_multiplier /= window_ratio; }
 
-        glm::vec3 final_scale = scale_to_render * glm::vec3(2, 2, 2) * glm::vec3(x_multiplier, y_multiplier, 1);
+        glm::vec2 final_scale = scale_to_render * glm::vec2(2) * glm::vec2(x_multiplier, y_multiplier);
 
         return final_scale;
     };
@@ -97,25 +103,28 @@ public:
 
 	// Getters and setters (ONLY WITH ATTRIBUTES)
 	inline std::vector<HUD_Object*>& children() {return a_children;};
+	inline unsigned short depht() {return a_depht;};
 	inline Base_Struct* get_base_struct() { return base_struct; };
 	inline glm::vec4 get_border_color() { return a_border_color; };
 	inline glm::vec4 get_border_width() { return a_border_width; };
-	inline glm::vec3 get_position() { return position; };
 	inline glm::vec3 get_rotation() { return rotation; };
-	inline glm::vec3 get_scale() { return scale; };
 	inline Texture* get_texture() { return texture; };
 	inline bool is_clicked() { return a_is_clicked; };
 	inline bool is_overflighted() { return a_is_overflighted; };
+	inline std::string name() {return a_name;};
 	inline HUD_Object* parent() {return a_parent;};
+	inline glm::vec2 position() { return a_position; };
+	inline glm::vec2 scale() { return a_scale; };
 	inline void set_border_color(glm::vec4 new_border_color) { a_border_color = new_border_color; };
 	inline void set_border_width(glm::vec4 new_border_width) { a_border_width = new_border_width; };
 	inline void set_border_width(double new_border_width) { a_border_width = glm::vec4(new_border_width); };
+	inline void set_depht(unsigned short new_depht) {a_depht = new_depht;};
 	inline void set_is_clicked(bool is_clicked) { a_is_clicked = is_clicked; };
 	inline void set_is_overflighted(bool is_overflighted) { a_is_overflighted = is_overflighted; };
-	inline void set_position(glm::vec3 a_position) { position = a_position; };
+	inline void set_position(glm::vec2 new_position) { a_position = new_position; };
 	inline void set_rotation(glm::vec3 a_rotation) { rotation = a_rotation; };
-	inline void set_scale(double a_scale) {scale = glm::vec3(a_scale, a_scale, a_scale);};
-	inline void set_scale(glm::vec3 a_scale) { scale = a_scale; };
+	inline void set_scale(double new_scale) {a_scale = glm::vec2(new_scale, new_scale);};
+	inline void set_scale(glm::vec2 new_scale) { a_scale = new_scale; };
 	inline void set_sized_according_to_ratio(bool new_sized_according_to_ratio) {a_sized_according_to_ratio = new_sized_according_to_ratio;};
 	inline void set_texture(Texture* a_texture) { texture = a_texture; };
 	inline void set_visible(bool new_visible) {a_visible = new_visible;};
@@ -128,7 +137,7 @@ protected:
 	VAO* vao = 0; // Pointer to the VAO used to render the object
 	Texture* texture = 0; // Pointer to the Texture used to render the object
 private:
-	std::string name; // Name of the object
+	std::string a_name = ""; // Name of the object
 
 	// Color of the border of the HUD
 	glm::vec4 a_border_color = glm::vec4(0, 0, 0, 1);
@@ -136,15 +145,19 @@ private:
 	glm::vec4 a_border_width = glm::vec4(0, 0, 0, 0);
 	// Children of the object
 	std::vector<HUD_Object*> a_children = std::vector<HUD_Object*>();
+	// Depht of the object in his parent
+	unsigned short a_depht = 0;
 	// If the object is clicked or not
 	bool a_is_clicked = false;
 	// If the object is overflighted or not
 	bool a_is_overflighted = false;
 	// Parent of this object
 	HUD_Object* a_parent = 0;
-	glm::vec3 position = glm::vec3(0, 0, 0); // Position of the HUD on the screen
+	// Position of the HUD on the screen
+	glm::vec2 a_position = glm::vec2(0, 0);
 	glm::vec3 rotation = glm::vec3(0, 0, 0); // Rotation of the HUD on the screen
-	glm::vec3 scale = glm::vec3(1, 1, 1); // Size of the HUD on the screen
+	// Size of the HUD on the screen
+	glm::vec2 a_scale = glm::vec2(1, 1);
 	// If the object use a relative or an absolute size
 	bool a_sized_according_to_ratio = true;
 	// Children sorted according to their depht

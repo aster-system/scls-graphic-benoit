@@ -419,14 +419,15 @@ void Game::update_event()
         HUD* current_hud = get_current_hud();
         if (current_hud != 0)
         {
-            std::vector<HUD_Object*>& objects = current_hud->sorted_children();
-            for (int i = objects.size() - 1; i >= 0; i--) // Check each objects
+            std::vector<HUD_Object*>* objects = (&current_hud->sorted_children());
+            for (int i = static_cast<int>(objects->size()) - 1; i >= 0; i--) // Check each objects
             {
-                HUD_Object* object = objects[i];
+                HUD_Object* object = (*objects)[i];
                 if (object->is_in(glm::vec2(get_mouse_x(), get_mouse_y())))
                 {
                     overflighted_object = object;
-                    break;
+                    objects = &object->sorted_children();
+                    i = static_cast<int>(objects->size());
                 }
             }
         }

@@ -4,7 +4,7 @@
 
 // Compare the 2 objects with their depths
 bool compare_depht_hud_object(HUD_Object* a, HUD_Object* b) {
-    return a->get_position()[2] < b->get_position()[2];
+    return a->depht() < b->depht();
 }
 
 // Graphic_Object contructor
@@ -37,7 +37,7 @@ Graphic_Object::~Graphic_Object() {
 }
 
 // HUD_Object constructor
-HUD_Object::HUD_Object(Base_Struct* a_base_struct, std::string a_name, HUD_Object* parent, Texture* a_texture, VAO* a_vao) : base_struct(a_base_struct), name(a_name), texture(a_texture), vao(a_vao) {
+HUD_Object::HUD_Object(Base_Struct* a_base_struct, std::string name, HUD_Object* parent, Texture* a_texture, VAO* a_vao) : base_struct(a_base_struct), a_name(name), texture(a_texture), vao(a_vao) {
     set_parent(parent);
 }
 
@@ -65,7 +65,7 @@ glm::mat4 HUD_Object::get_model_matrix() {
 	glm::mat4 matrix = glm::mat4(1.0f);
 
 	// Move matrix
-	matrix = glm::translate(matrix, get_position());
+	matrix = glm::translate(matrix, glm::vec3(absolute_position()[0], absolute_position()[1], 0));
 
 	// Rotate matrix
 	matrix = glm::rotate(matrix, glm::radians(get_rotation()[1]), glm::vec3(0, 1, 0));
@@ -73,14 +73,16 @@ glm::mat4 HUD_Object::get_model_matrix() {
 	matrix = glm::rotate(matrix, glm::radians(get_rotation()[2]), glm::vec3(0, 0, 1));
 
 	// Scale matrix
+	glm::vec2 final_scale = glm::vec2(1);
 	if(sized_according_to_ratio())
     {
-        matrix = glm::scale(matrix, get_scale_for_rendering(get_scale()));
+        final_scale = scale_for_rendering(absolute_scale());
     }
     else
     {
-        matrix = glm::scale(matrix, get_scale() * glm::vec3(2.0, 2.0, 2.0));
+        final_scale = absolute_scale() * glm::vec2(2);
     }
+    matrix = glm::scale(matrix, glm::vec3(final_scale[0], final_scale[1], 1));
 
 	return matrix;
 }
@@ -103,37 +105,34 @@ void HUD_Object::render() {
 	vao->get_shader_program()->set_uniform4f_value("border_color", get_border_color()); // Write the border color of the HUD in the shader
 	vao->get_shader_program()->set_uniform4f_value("border_width", get_border_width()); // Write the border width of the HUD in the shader
 	vao->get_shader_program()->set_uniform4fv_value("model", get_model_matrix()); // Write some uniform variables into the shader
+
+	// Get the scale for the VAO
+	glm::vec2 final_scale = glm::vec2(1);
 	if(sized_according_to_ratio())
     {
         if (texture->use_resize())
         {
-            vao->render(get_scale_for_rendering(get_scale())); // Render the object with scaling
+            final_scale = scale_for_rendering(absolute_scale()); // Render the object with scaling
         }
         else
         {
-            vao->render(get_scale_for_rendering(glm::vec3(1.0, 1.0, 1.0))); // Render the object without scaling
+            final_scale = scale_for_rendering(glm::vec2(1)); // Render the object without scaling
         }
     }
-    else
+    else if (texture->use_resize())
     {
-        if (texture->use_resize())
-        {
-            vao->render(get_scale()); // Render the object with scaling
-        }
-        else
-        {
-            vao->render(glm::vec3(1)); // Render the object without scaling
-        }
+        final_scale = absolute_scale(); // Render the object with scaling
     }
+    vao->render(glm::vec3(final_scale[0], final_scale[1], 1)); // Render the object
 
     // Render all the childrens
-        for(int i = 0;i<sorted_children().size();i++)
+    for(int i = 0;i<static_cast<int>(sorted_children().size());i++)
+    {
+        if(sorted_children()[i]->visible())
         {
-            if(sorted_children()[i]->visible())
-            {
-                sorted_children()[i]->render();
-            }
+            sorted_children()[i]->render();
         }
+    }
 }
 
 // Set the parent of the object

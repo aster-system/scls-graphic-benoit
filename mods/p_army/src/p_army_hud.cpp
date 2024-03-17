@@ -19,7 +19,7 @@ namespace p_army {
         a_game = reinterpret_cast<Game*>(game);
 
         set_position(glm::vec3(0, 0, 0));
-        set_scale(glm::vec3(1, 1, 1));
+        set_scale(1);
         set_sized_according_to_ratio(false);
 
         // Load the credit
@@ -56,6 +56,14 @@ namespace p_army {
         a_title->set_position(glm::vec3(0.3, 0.65, 0));
         a_title->set_scale(0.5);
         a_title->set_text("P-Army");
+    }
+
+    // Update the HUD
+    void _P_Army_Welcome_HUD_Object::update() {
+        if(a_information_button->is_clicked_during_this_frame())
+        {
+            std::cout << "A" << std::endl;
+        }
     }
 
     // _P_Army_Welcome_HUD_Object destructor

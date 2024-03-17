@@ -29,6 +29,9 @@ namespace p_army
         // _P_Army_Welcome_HUD_Object destructor
         ~_P_Army_Welcome_HUD_Object();
 
+        // Update the HUD
+        void update();
+
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         inline HUD* base_hud() {return reinterpret_cast<HUD*>(parent());};
 
