@@ -103,6 +103,7 @@ public:
 
 	// Getters and setters (ONLY WITH ATTRIBUTES)
 	inline std::vector<HUD_Object*>& children() {return a_children;};
+	inline unsigned long cursor_overflighted() {return a_cursor_overflighted;};
 	inline unsigned short depht() {return a_depht;};
 	inline Base_Struct* get_base_struct() { return base_struct; };
 	inline glm::vec4 get_border_color() { return a_border_color; };
@@ -118,6 +119,7 @@ public:
 	inline void set_border_color(glm::vec4 new_border_color) { a_border_color = new_border_color; };
 	inline void set_border_width(glm::vec4 new_border_width) { a_border_width = new_border_width; };
 	inline void set_border_width(double new_border_width) { a_border_width = glm::vec4(new_border_width); };
+	inline void set_cursor_overflighted(unsigned long new_cursor_overflighted) {a_cursor_overflighted = new_cursor_overflighted;};
 	inline void set_depht(unsigned short new_depht) {a_depht = new_depht;};
 	inline void set_is_clicked(bool is_clicked) { a_is_clicked = is_clicked; };
 	inline void set_is_overflighted(bool is_overflighted) { a_is_overflighted = is_overflighted; };
@@ -145,6 +147,8 @@ private:
 	glm::vec4 a_border_width = glm::vec4(0, 0, 0, 0);
 	// Children of the object
 	std::vector<HUD_Object*> a_children = std::vector<HUD_Object*>();
+	// Cursor to apply when the object is overflighted
+	unsigned long a_cursor_overflighted = GLFW_ARROW_CURSOR;
 	// Depht of the object in his parent
 	unsigned short a_depht = 0;
 	// If the object is clicked or not

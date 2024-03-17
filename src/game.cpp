@@ -481,11 +481,32 @@ void Game::update_event()
     // Update last mouse pos for future mouse pos calcul
     set_last_mouse_x(get_mouse_x());
     set_last_mouse_y(get_mouse_y());
+
+    // Update the cursor texture
+    if(overflighted_object != 0)
+    {
+        if(current_cursor() != overflighted_object->cursor_overflighted())
+        {
+            if(a_cursor != 0) glfwDestroyCursor(a_cursor);
+            a_cursor = glfwCreateStandardCursor(overflighted_object->cursor_overflighted());
+            glfwSetCursor(window, a_cursor);
+            a_current_cursor = overflighted_object->cursor_overflighted();
+        }
+    }
+    else if(a_cursor == 0)
+    {
+        a_cursor = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
+        glfwSetCursor(window, a_cursor);
+        a_current_cursor = GLFW_ARROW_CURSOR;
+    }
 }
 
 // Game destructor
 Game::~Game()
 {
+    // Destroy the cursor
+    if(a_cursor != 0) glfwDestroyCursor(a_cursor);
+
     std::map<std::string, Scene*> *scenes = get_scenes();
     for (std::map<std::string, Scene*>::iterator it = scenes->begin(); it != scenes->end(); it++)
     {

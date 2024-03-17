@@ -71,6 +71,7 @@ public:
 
 	// Getters and setters
 	inline bool continue_running() { return is_running; };
+	inline unsigned long current_cursor() const {return a_current_cursor;};
 	inline glm::vec4 get_background_color() { return background_color; };
 	inline HUD* get_current_hud() { if (get_current_hud_name() == "") return 0; return (*get_huds())[get_current_hud_name()]; };
 	inline Scene* get_current_scene() { if (get_current_scene_name() == "") return 0; return (*get_scenes())[get_current_scene_name()]; };
@@ -92,6 +93,10 @@ public:
 	void set_current_scene(std::string a_name);
 	inline void set_is_running(bool a_run) { is_running = a_run; };
 private:
+    // Current displayed cursor
+    unsigned long a_current_cursor = GLFW_ARROW_CURSOR;
+    // Pointer to the cursor
+    GLFWcursor* a_cursor = 0;
 	std::string current_hud = ""; // Name of the current hud loaded
 	std::string current_scene = ""; // Name of the current scene loaded
 	// Reference to the cursor_on_window bool

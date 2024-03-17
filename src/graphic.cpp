@@ -263,6 +263,7 @@ HUD_Text::~HUD_Text() {
 // HUD_Button constructor
 HUD_Button::HUD_Button(Base_Struct* a_base_struct, std::string a_name, HUD_Object* parent, Texture* a_texture, VAO* a_vao) : HUD_Text(a_base_struct, a_name, parent, a_texture, a_vao) {
     set_border_width(0.2);
+    set_cursor_overflighted(GLFW_HAND_CURSOR);
 }
 
 // HUD_Button destructor
