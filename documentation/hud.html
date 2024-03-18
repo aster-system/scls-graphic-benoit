@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <link rel="stylesheet" href="../style.css">
+        <meta charset="utf-8">
+        <title>Matix - HUD</title>
+    </head>
+    <body>
+        <h1>Matix - HUD</h1>
+        <h2>Presentation</h2>
+        <div>
+            An HUD represents the 2D interface directly drawn on the screen, without 3D interference.
+        </div>
+        <h2>Transformation system</h2>
+        <div>
+            The HUD transformation system uses positioning, rotating then scaling.</br>
+            <h3>
+                Hierarchy
+            </h3>
+            <div>
+                Each HUD objects has a parent. The parent position corresponds to the origin of the child transformation plane.</br>
+                The scale of the parent represents the (1, 1) of the position of the child.</br>
+                The absolute position of the child is the addition of each absolutes positions of every parents of it, considering the scaling.</br>
+                So, it represents the REAL position of the object in the global window.</br>
+            </div>
+            <h3>
+                Positioning
+            </h3>
+            <div>
+                The positioning system take as units a purcentage of the screen size as units.</br>
+                The exact position of the object is the CENTER of the object.</br>
+                However, a function can return a more-UI like pixel rect.</br>
+                It is possible to convert pixel to purcentage of the screen and use pixels to locate an object, then converted to purcentage.</br>
+                However, it is MANDATORY that the state of the window when the function is used represents the correct position of the object.</br>
+                So, it's recommended to use this functions after every start windows modification.</br>
+            </div>
+        </div>
+    </body>
+</html>

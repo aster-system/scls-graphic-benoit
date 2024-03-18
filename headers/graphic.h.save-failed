@@ -119,7 +119,7 @@ public:
         // More complete scale for rendering function
         if(vao && !texture->use_resize()) return scale_for_rendering(glm::vec2(1));
 
-        glm::vec2 absolute = absolute_scale();
+        glm::vec2 absolute = absolute_scale() + border_offset();
         if(scale_format() == Scale_Format::Purcentage && sized_according_to_ratio())
         {
             return scale_for_rendering(absolute);
@@ -148,17 +148,8 @@ public:
 		glm::vec4 rect = get_hud_rect_pos();
 		return pos[0] > rect[0] - rect[2] / 2.0 && pos[0] < rect[0] + rect[2] / 2.0 && pos[1] > rect[1] - rect[3] / 2.0 && pos[1] < rect[1] + rect[3] / 2.0;
 	};
-    inline glm::vec4 texture_rect_for_rendering() {
-        if(is_texture_moldable())
-        {
-            glm::vec4 applied_border_width = final_border_width();
-            glm::vec4 to_return = glm::vec4(applied_border_width[1], applied_border_width[0], 1.0 - (applied_border_width[1] + applied_border_width[3]), 1.0 - (applied_border_width[0] + applied_border_width[2]));
-            return to_return;
-        }
-    };
 
 	// Getters and setters (ONLY WITH ATTRIBUTES)
-	inline glm::vec4 background_color() {return a_background_color;};
 	inline std::vector<HUD_Object*>& children() {return a_children;};
 	inline unsigned long cursor_overflighted() {return a_cursor_overflighted;};
 	inline unsigned short depht() {return a_depht;};
@@ -169,7 +160,6 @@ public:
 	inline Texture* get_texture() { return texture; };
 	inline bool is_clicked() { return a_is_clicked; };
 	inline bool is_overflighted() { return a_is_overflighted; };
-	inline bool is_texture_moldable() {return a_is_texture_moldable;};
 	inline std::string name() {return a_name;};
 	inline HUD_Object* parent() {return a_parent;};
 	inline glm::vec2 position() { return a_position; };
@@ -177,10 +167,9 @@ public:
 	inline Scale_Format scale_format() {return a_scale_format;};
 	inline glm::vec2 scale_pixel() {return a_scale_pixel;};
 	inline Scale_Referential scale_referential() {return a_scale_referential;};
-	inline void set_background_color(glm::vec4 new_background_color) {a_background_color = new_background_color;};
 	inline void set_border_color(glm::vec4 new_border_color) { a_border_color = new_border_color; };
-	inline virtual void set_border_width(glm::vec4 new_border_width) { a_border_width = new_border_width; };
-	inline virtual void set_border_width(double new_border_width) { a_border_width = glm::vec4(new_border_width); };
+	inline void set_border_width(glm::vec4 new_border_width) { a_border_width = new_border_width; };
+	inline void set_border_width(double new_border_width) { a_border_width = glm::vec4(new_border_width); };
 	inline void set_cursor_overflighted(unsigned long new_cursor_overflighted) {a_cursor_overflighted = new_cursor_overflighted;};
 	inline void set_depht(unsigned short new_depht) {a_depht = new_depht;};
 	inline void set_is_clicked(bool is_clicked) { a_is_clicked = is_clicked; };
@@ -194,7 +183,6 @@ public:
 	inline void set_scale_referential(Scale_Referential new_scale_referential) {a_scale_referential = new_scale_referential;};
 	inline void set_sized_according_to_ratio(bool new_sized_according_to_ratio) {a_sized_according_to_ratio = new_sized_according_to_ratio;};
 	inline void set_texture(Texture* a_texture) { texture = a_texture; };
-	inline void set_is_texture_moldable(bool new_is_texture_moldable) {a_is_texture_moldable = new_is_texture_moldable;};
 	inline void set_visible(bool new_visible) {a_visible = new_visible;};
 	inline bool sized_according_to_ratio() {return a_sized_according_to_ratio;};
 	inline std::vector<HUD_Object*>& sorted_children() {return a_sorted_children;};
@@ -207,8 +195,6 @@ protected:
 private:
 	std::string a_name = ""; // Name of the object
 
-	// Color of the background of the HUD
-	glm::vec4 a_background_color = glm::vec4(1, 1, 1, 1);
 	// Color of the border of the HUD
 	glm::vec4 a_border_color = glm::vec4(0, 0, 0, 1);
 	// Width of the border of the HUD (top, left, bottom, right)
@@ -225,10 +211,6 @@ private:
 	bool a_visible = true;
 	// If the object was clicked before or not
 	bool a_was_clicked = false;
-
-	// Texture attributes
-	// If the texture is moldable or not
-	bool a_is_texture_moldable = true;
 
 	// Transformation attributes
 	// Children of the object
@@ -261,7 +243,7 @@ public:
 	HUD_Text(Base_Struct* a_base_struct, std::string a_name, HUD_Object* parent, Texture* a_texture, VAO* a_vao);
 	// Update the text texture
 	void update_text();
-	// HUD_Text destructor
+	// HUD_Object destructor
 	~HUD_Text();
 
 	// Getters and setters (ONLY WITHOUT ATTRIBUTES)

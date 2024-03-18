@@ -95,20 +95,12 @@ void HUD_Object::remove_children(HUD_Object* object) {
 void HUD_Object::render() {
     texture->bind(); // Bind the texture
 	vao->get_shader_program()->set_uniform4f_value("border_color", get_border_color()); // Write the border color of the HUD in the shader
-	vao->get_shader_program()->set_uniform4f_value("border_width", get_border_width()); // Write the border width of the HUD in the shader
 	vao->get_shader_program()->set_uniform4fv_value("model", get_model_matrix()); // Write some uniform variables into the shader
+	vao->get_shader_program()->set_uniform4f_value("texture_rect", texture_rect_for_rendering()); // Write the border width of the HUD in the shader
 
 	// Get the scale for the VAO
-	glm::vec2 final_scale = glm::vec2(1);
-	if(sized_according_to_ratio())
-    {
-        final_scale = scale_for_rendering(true); // Render the object with size ratio
-    }
-    else if (texture->use_resize())
-    {
-        final_scale = absolute_scale(); // Render the object with scaling
-    }
-    vao->render(glm::vec3(final_scale[0], final_scale[1], 1)); // Render the object
+	glm::vec2 final_scale = scale_for_rendering(true);
+	vao->render(glm::vec3(final_scale[0], final_scale[1], 1)); // Render the object
 
     // Render all the childrens
     for(int i = 0;i<static_cast<int>(sorted_children().size());i++)
@@ -285,7 +277,6 @@ HUD_Text::~HUD_Text() {
 
 // HUD_Button constructor
 HUD_Button::HUD_Button(Base_Struct* a_base_struct, std::string a_name, HUD_Object* parent, Texture* a_texture, VAO* a_vao) : HUD_Text(a_base_struct, a_name, parent, a_texture, a_vao) {
-    set_border_width(0.2);
     set_cursor_overflighted(GLFW_HAND_CURSOR);
 }
 
