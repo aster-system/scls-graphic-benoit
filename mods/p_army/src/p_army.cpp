@@ -28,10 +28,21 @@ namespace p_army
 			game()->update_event();
 			game()->update();
 
+			if(hud() != 0 && hud()->launch_clicked()) {
+                set_simulation();
+			}
+
 			// Render the game
 			game()->render();
 		}
 	}
+
+	// Set the 3D simulation
+    void P_Army::set_simulation() {
+        game()->disable_cursor();
+        game()->set_current_hud("");
+        game()->set_current_scene(P_ARMY_SCENE_NAME);
+    }
 
 	// Change the P_Army state
 	void P_Army::set_welcome_hud() {

@@ -41,6 +41,18 @@ class HUD_Object
 {
 	// Class representing a HUD object
 public:
+    // Format of the scaling system
+    enum Scale_Format {
+        Pixel,
+        Purcentage
+    };
+
+    // Referential to scale an object
+    enum Scale_Referential {
+        Horizontal,
+        Vertical
+    };
+
     // HUD_Object constructor
 	HUD_Object(Base_Struct* a_base_struct, std::string name, HUD_Object* parent, Texture* a_texture, VAO* a_vao);
 	// Return the transformation matrix of the object
@@ -53,6 +65,16 @@ public:
 	virtual void update();
 	// HUD_Object destructor
 	~HUD_Object();
+
+	// Advanced transformation manipulation
+	// Resize the object from the height in pixels
+	void set_height_pixel(double height, bool resize_width = true);
+	// Resize the object from the height in purcentage with pixels
+	void set_height_purcentage_from_pixel(double height, bool resize_width = true);
+	// Resize the object in pixel
+	void set_size_pixel(double width, double height);
+	// Resize the object from the width in pixels
+	void set_width_pixel(double width, bool resize_height = true);
 
 	// Hierarchy manipulation
 	// Add a children to the object
@@ -69,11 +91,15 @@ public:
 	// Getters and setters (ONLY WITHOUT ATTRIBUTES)
 	inline glm::vec2 absolute_position() { if(parent() == 0) return position(); return parent()->position() + position() * parent()->absolute_scale(); };
 	inline glm::vec2 absolute_scale() {
-        if(parent() != 0) return scale() * parent()->absolute_scale();
-        return scale();
-	};
+	    if(scale_format() == Scale_Format::Purcentage)
+        {
+            if(parent() != 0) return scale() * parent()->absolute_scale();
+            return scale();
+        }
+        return glm::vec2((scale_pixel()[0] / static_cast<double>(get_base_struct()->get_window_width())) * 2.0, (scale_pixel()[1] / static_cast<double>(get_base_struct()->get_window_height())) * 2.0);
+    };
 	inline glm::vec4 get_hud_rect_pos() {
-	    glm::vec2 final_scale = scale_for_rendering(absolute_scale()) * glm::vec2(0.5);
+	    glm::vec2 final_scale = scale_for_rendering() * glm::vec2(0.5);
 		int heigth = final_scale[1] * get_base_struct()->get_window_height();
 		int width = final_scale[0] * get_base_struct()->get_window_width();
 		int x = (((absolute_position()[0] + 1.0) / 2.0) * get_base_struct()->get_window_width());
@@ -81,11 +107,25 @@ public:
 
 		return glm::vec4(x, y, width, heigth);
 	};
+    inline glm::vec2 scale_for_rendering(bool vao = false) {
+        // More complete scale for rendering function
+        if(vao && !texture->use_resize()) return scale_for_rendering(glm::vec2(1));
+
+        glm::vec2 absolute = absolute_scale();
+        if(scale_format() == Scale_Format::Purcentage && sized_according_to_ratio())
+        {
+            return scale_for_rendering(glm::vec2(absolute));
+        }
+
+        return absolute * glm::vec2(2);
+    };
     inline glm::vec2 scale_for_rendering(glm::vec2 scale_to_render) {
         double texture_ratio = get_texture()->image_ratio();
-        double x_multiplier = 1; double y_multiplier = 1;
-        if(texture_ratio < 1) {x_multiplier = texture_ratio;}
-        else { y_multiplier /= texture_ratio; }
+        double x_multiplier = texture_ratio; double y_multiplier = 1;
+        if(scale_referential() == Scale_Referential::Horizontal)
+        {
+            x_multiplier = 1; y_multiplier = 1.0 / texture_ratio;
+        }
 
         double window_ratio = get_base_struct()->window_ratio();
         if(window_ratio < 1) {y_multiplier /= 1.0 / window_ratio;}
@@ -116,6 +156,9 @@ public:
 	inline HUD_Object* parent() {return a_parent;};
 	inline glm::vec2 position() { return a_position; };
 	inline glm::vec2 scale() { return a_scale; };
+	inline Scale_Format scale_format() {return a_scale_format;};
+	inline glm::vec2 scale_pixel() {return a_scale_pixel;};
+	inline Scale_Referential scale_referential() {return a_scale_referential;};
 	inline void set_border_color(glm::vec4 new_border_color) { a_border_color = new_border_color; };
 	inline void set_border_width(glm::vec4 new_border_width) { a_border_width = new_border_width; };
 	inline void set_border_width(double new_border_width) { a_border_width = glm::vec4(new_border_width); };
@@ -125,8 +168,11 @@ public:
 	inline void set_is_overflighted(bool is_overflighted) { a_is_overflighted = is_overflighted; };
 	inline void set_position(glm::vec2 new_position) { a_position = new_position; };
 	inline void set_rotation(glm::vec3 a_rotation) { rotation = a_rotation; };
-	inline void set_scale(double new_scale) {a_scale = glm::vec2(new_scale, new_scale);};
 	inline void set_scale(glm::vec2 new_scale) { a_scale = new_scale; };
+	inline void set_scale(double new_scale) { set_scale(glm::vec2(new_scale, new_scale)); };
+	inline void set_scale_format(Scale_Format new_scale_format) {a_scale_format = new_scale_format;};
+	inline void set_scale_pixel(glm::vec3 new_scale_pixel) {a_scale_pixel = new_scale_pixel;};
+	inline void set_scale_referential(Scale_Referential new_scale_referential) {a_scale_referential = new_scale_referential;};
 	inline void set_sized_according_to_ratio(bool new_sized_according_to_ratio) {a_sized_according_to_ratio = new_sized_according_to_ratio;};
 	inline void set_texture(Texture* a_texture) { texture = a_texture; };
 	inline void set_visible(bool new_visible) {a_visible = new_visible;};
@@ -145,8 +191,6 @@ private:
 	glm::vec4 a_border_color = glm::vec4(0, 0, 0, 1);
 	// Width of the border of the HUD (top, left, bottom, right)
 	glm::vec4 a_border_width = glm::vec4(0, 0, 0, 0);
-	// Children of the object
-	std::vector<HUD_Object*> a_children = std::vector<HUD_Object*>();
 	// Cursor to apply when the object is overflighted
 	unsigned long a_cursor_overflighted = GLFW_ARROW_CURSOR;
 	// Depht of the object in his parent
@@ -155,21 +199,32 @@ private:
 	bool a_is_clicked = false;
 	// If the object is overflighted or not
 	bool a_is_overflighted = false;
-	// Parent of this object
-	HUD_Object* a_parent = 0;
-	// Position of the HUD on the screen
-	glm::vec2 a_position = glm::vec2(0, 0);
-	glm::vec3 rotation = glm::vec3(0, 0, 0); // Rotation of the HUD on the screen
-	// Size of the HUD on the screen
-	glm::vec2 a_scale = glm::vec2(1, 1);
-	// If the object use a relative or an absolute size
-	bool a_sized_according_to_ratio = true;
-	// Children sorted according to their depht
-	std::vector<HUD_Object*> a_sorted_children = std::vector<HUD_Object*>();
 	// If the object is visible or not
 	bool a_visible = true;
 	// If the object was clicked before or not
 	bool a_was_clicked = false;
+
+	// Transformation attributes
+	// Children of the object
+	std::vector<HUD_Object*> a_children = std::vector<HUD_Object*>();
+	// Parent of this object
+	HUD_Object* a_parent = 0;
+	// Referential to scale the object
+	Scale_Referential a_scale_referential = Scale_Referential::Horizontal;
+	// Position of the HUD on the screen
+	glm::vec2 a_position = glm::vec2(0, 0);
+	// Rotation of the HUD on the screen
+	glm::vec3 rotation = glm::vec3(0, 0, 0);
+	// Size of the HUD on the screen
+	glm::vec2 a_scale = glm::vec2(1, 1);
+	// Size in pixel of the object
+	glm::vec2 a_scale_pixel = glm::vec2(100);
+	// Used scale format used by the object
+	Scale_Format a_scale_format = Scale_Format::Purcentage;
+	// If the object use a relative or an absolute size
+	bool a_sized_according_to_ratio = true;
+	// Children sorted according to their depht
+	std::vector<HUD_Object*> a_sorted_children = std::vector<HUD_Object*>();
 };
 
 class HUD_Text: public HUD_Object

@@ -31,6 +31,9 @@ namespace p_army
 		void add_tank(std::string name, Tank_Types type);
 
 		// Change the P_Army state
+		// Set the 3D simulation
+		void set_simulation();
+		// Set the welcome HUD
 		void set_welcome_hud();
 
 		// Run the P_Army game

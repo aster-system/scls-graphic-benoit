@@ -332,6 +332,11 @@ void Game::set_current_hud(std::string a_name) {
         current_hud = a_name;
         get_current_hud()->load();
     }
+    else if(a_name == "")
+    {
+
+        current_hud = "";
+    }
     else
     {
         std::cout << "Matrix game : error ! The current hud \"" << a_name << "\" does not exist." << std::endl;

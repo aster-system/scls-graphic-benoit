@@ -34,6 +34,7 @@ namespace p_army
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         inline HUD* base_hud() {return reinterpret_cast<HUD*>(parent());};
+        inline bool launch_clicked() {if(a_launch_button == 0) return false;return a_launch_button->is_clicked_during_this_frame();};
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline Game* game() {return a_game;};
@@ -67,6 +68,9 @@ namespace p_army
         void set_welcome_hud();
         // Unset all the pages
         void unset_all();
+
+        // Getters and setters (ONLY WITHOUT ATTRIBUTES)
+        inline bool launch_clicked() {if(a_welcome_hud == 0) return false;return a_welcome_hud->launch_clicked();};
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline Game* game() {return a_game;};
