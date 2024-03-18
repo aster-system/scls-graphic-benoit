@@ -26,7 +26,7 @@ namespace p_army {
         a_credit = base_hud()->new_hud_object<HUD_Text>(name + ";credit", this, 1, 1, glm::vec4(0, 0, 0, 0), "hud_default");
         a_credit->set_position(glm::vec3(0, -0.9, 0));
         a_credit->set_scale(0.8);
-        a_credit->set_text(basix::to_utf_8("By Aster Système, founded by Matt Code and Yassine le puant qui pue"));
+        a_credit->set_text(basix::to_utf_8("By Aster Système, founded by Matt Code"));
         // Load the information button
         a_information_button = base_hud()->new_hud_object<HUD_Button>(name + ";information_button", this, 1, 1, glm::vec4(0, 0, 0, 0), "hud_default");
         a_information_button->set_background_color(glm::vec4(255, 255, 255, 130));
