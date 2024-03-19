@@ -177,7 +177,7 @@ glm::vec3 rotate_vector_x(glm::vec3 vector, glm::vec3 rotation, glm::vec3 forwar
 	float hypothenus_xz = glm::distance(glm::vec2(to_return[0], to_return[2]), glm::vec2(0, 0));
 	float hypothenus_xyz = glm::distance(to_return, glm::vec3(0, 0, 0));
 
-	if (hypothenus_xyz == 0) return to_return;
+	if (hypothenus_xyz == 0) return vector;
 
 	float angle_y = glm::degrees(get_vector_y_angle(to_return));
 	float angle = get_vector_x_angle(to_return, forward, angle_y);

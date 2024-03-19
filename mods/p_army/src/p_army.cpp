@@ -20,8 +20,8 @@ namespace p_army
 	// Run the P_Army game
 	void P_Army::run()
 	{
-	    // set_simulation();
-	    set_welcome_hud();
+	    set_simulation();
+	    // set_welcome_hud();
 		while (game()->run())
 		{
 			// Update the game
