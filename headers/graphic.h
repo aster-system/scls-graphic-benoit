@@ -68,13 +68,11 @@ public:
 
 	// Advanced transformation manipulation
 	// Resize the object from the height in pixels
-	void set_height_pixel(double height, bool resize_width = true);
+	void set_height(double height, bool resize_width = true);
 	// Resize the object from the height in purcentage with pixels
-	void set_height_purcentage_from_pixel(double height, bool resize_width = true);
-	// Resize the object in pixel
-	void set_size_pixel(double width, double height);
+	void set_height_from_pixel(double height, bool resize_width = true);
 	// Resize the object from the width in pixels
-	void set_width_pixel(double width, bool resize_height = true);
+	void set_width(double width, bool resize_height = true);
 
 	// Hierarchy manipulation
 	// Add a children to the object
@@ -90,14 +88,7 @@ public:
 
 	// Getters and setters (ONLY WITHOUT ATTRIBUTES)
 	inline glm::vec2 absolute_position() { if(parent() == 0) return position(); return parent()->position() + position() * parent()->absolute_scale(); };
-	inline glm::vec2 absolute_scale() {
-	    if(scale_format() == Scale_Format::Purcentage)
-        {
-            if(parent() != 0) return (scale()) * parent()->absolute_scale();
-            return scale();
-        }
-        return glm::vec2((scale_pixel()[0] / static_cast<double>(get_base_struct()->get_window_width())) * 2.0, (scale_pixel()[1] / static_cast<double>(get_base_struct()->get_window_height())) * 2.0);
-    };
+	inline glm::vec2 absolute_scale() { if(parent() != 0) return (scale()) * parent()->absolute_scale(); return scale(); };
 	inline glm::vec2 border_offset() {
 	    glm::vec2 result = glm::vec2(0, static_cast<double>((final_border_width()[0] + final_border_width()[2]) - (get_border_width()[0] + get_border_width()[2])));
         result *= glm::vec2(absolute_scale()[0], absolute_scale()[1]);
@@ -115,34 +106,34 @@ public:
 
 		return glm::vec4(x, y, width, heigth);
 	};
+    virtual bool is_hud() {return false;};
     inline glm::vec2 scale_for_rendering(bool vao = false) {
-        // More complete scale for rendering function
-        if(vao && !texture->use_resize()) return scale_for_rendering(glm::vec2(1));
-
         glm::vec2 absolute = absolute_scale();
-        if(scale_format() == Scale_Format::Purcentage && sized_according_to_ratio())
+        if(vao && !texture->use_resize())
         {
-            return scale_for_rendering(absolute);
+            return glm::vec2(1, 1);
         }
 
+        double x_multiplier = 1; double y_multiplier = 1;
+
+        if(parent() != 0 && use_parent_rescaling())
+        {
+            HUD_Object* current_parent = parent();
+            double parent_ratio = 0;
+            do
+            {
+                current_parent = current_parent->parent();
+                if(current_parent != 0)parent_ratio = current_parent->scale_rendered_ratio();
+            } while(current_parent != 0 && !current_parent->use_parent_rescaling());
+
+            if(parent_ratio < 1) {y_multiplier /= 1.0 / parent_ratio;}
+            else { x_multiplier /= parent_ratio; }
+        }
+
+        absolute *= glm::vec2(x_multiplier, y_multiplier);
         return absolute * glm::vec2(2);
     };
-    inline glm::vec2 scale_for_rendering(glm::vec2 scale_to_render) {
-        double texture_ratio = get_texture()->image_ratio();
-        double x_multiplier = texture_ratio; double y_multiplier = 1;
-        if(scale_referential() == Scale_Referential::Horizontal)
-        {
-            x_multiplier = 1; y_multiplier = 1.0 / texture_ratio;
-        }
-
-        double window_ratio = get_base_struct()->window_ratio();
-        if(window_ratio < 1) {y_multiplier /= 1.0 / window_ratio;}
-        else { x_multiplier /= window_ratio; }
-
-        glm::vec2 final_scale = scale_to_render * glm::vec2(2) * glm::vec2(x_multiplier, y_multiplier);
-
-        return final_scale;
-    };
+    virtual double scale_rendered_ratio() {glm::vec2 to_return = scale_for_rendering() / absolute_scale();return to_return[0] / to_return[1]; };
     inline bool is_clicked_during_this_frame() { return a_is_clicked && !a_was_clicked; };
     inline bool is_in(glm::vec2 pos) {
 		glm::vec4 rect = get_hud_rect_pos();
@@ -174,9 +165,6 @@ public:
 	inline HUD_Object* parent() {return a_parent;};
 	inline glm::vec2 position() { return a_position; };
 	inline glm::vec2 scale() { return a_scale; };
-	inline Scale_Format scale_format() {return a_scale_format;};
-	inline glm::vec2 scale_pixel() {return a_scale_pixel;};
-	inline Scale_Referential scale_referential() {return a_scale_referential;};
 	inline void set_background_color(glm::vec4 new_background_color) {a_background_color = new_background_color;};
 	inline void set_border_color(glm::vec4 new_border_color) { a_border_color = new_border_color; };
 	inline virtual void set_border_width(glm::vec4 new_border_width) { a_border_width = new_border_width; };
@@ -188,16 +176,14 @@ public:
 	inline void set_position(glm::vec2 new_position) { a_position = new_position; };
 	inline void set_rotation(glm::vec3 a_rotation) { rotation = a_rotation; };
 	inline void set_scale(glm::vec2 new_scale) { a_scale = new_scale; };
-	inline void set_scale(double new_scale) { set_scale(glm::vec2(new_scale, new_scale)); };
-	inline void set_scale_format(Scale_Format new_scale_format) {a_scale_format = new_scale_format;};
-	inline void set_scale_pixel(glm::vec3 new_scale_pixel) {a_scale_pixel = new_scale_pixel;};
-	inline void set_scale_referential(Scale_Referential new_scale_referential) {a_scale_referential = new_scale_referential;};
 	inline void set_sized_according_to_ratio(bool new_sized_according_to_ratio) {a_sized_according_to_ratio = new_sized_according_to_ratio;};
 	inline void set_texture(Texture* a_texture) { texture = a_texture; };
 	inline void set_is_texture_moldable(bool new_is_texture_moldable) {a_is_texture_moldable = new_is_texture_moldable;};
+	inline void set_use_parent_rescaling(bool new_use_parent_rescaling) {a_use_parent_rescaling = new_use_parent_rescaling;};
 	inline void set_visible(bool new_visible) {a_visible = new_visible;};
 	inline bool sized_according_to_ratio() {return a_sized_according_to_ratio;};
 	inline std::vector<HUD_Object*>& sorted_children() {return a_sorted_children;};
+	inline bool use_parent_rescaling() {return a_use_parent_rescaling;};
 	inline bool visible() {return a_visible;};
 
 protected:
@@ -235,22 +221,18 @@ private:
 	std::vector<HUD_Object*> a_children = std::vector<HUD_Object*>();
 	// Parent of this object
 	HUD_Object* a_parent = 0;
-	// Referential to scale the object
-	Scale_Referential a_scale_referential = Scale_Referential::Horizontal;
 	// Position of the HUD on the screen
 	glm::vec2 a_position = glm::vec2(0, 0);
 	// Rotation of the HUD on the screen
 	glm::vec3 rotation = glm::vec3(0, 0, 0);
 	// Size of the HUD on the screen
 	glm::vec2 a_scale = glm::vec2(1, 1);
-	// Size in pixel of the object
-	glm::vec2 a_scale_pixel = glm::vec2(100);
-	// Used scale format used by the object
-	Scale_Format a_scale_format = Scale_Format::Purcentage;
 	// If the object use a relative or an absolute size
 	bool a_sized_according_to_ratio = true;
 	// Children sorted according to their depht
 	std::vector<HUD_Object*> a_sorted_children = std::vector<HUD_Object*>();
+	// If the object can be rescaled according to the parent size
+	bool a_use_parent_rescaling = true;
 };
 
 class HUD_Text: public HUD_Object

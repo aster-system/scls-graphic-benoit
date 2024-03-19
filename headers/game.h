@@ -21,12 +21,14 @@ public:
 	HUD(Advanced_Struct* a_advanced_struct, std::string a_name); // HUD constructor
 	void add_hud_object(std::string name, HUD_Object* object); // Add an existing HUD to the game
 	bool contains_hud_object(std::string name); // Return if the game contains an HUD Object
+	bool is_hud() {return true;};
 	virtual void load() {}; // Load the CLI after being selected as new current HUD
 	template <class O = HUD_Object> // Template for adding a type of HUD object
 	O* new_hud_object(std::string name, HUD_Object* parent, std::string texture_name, std::string vao_name = "hud_default"); // Create a new HUD Object into the game
 	template <class O = HUD_Object> // Template for adding a type of HUD object
 	O* new_hud_object(std::string name, HUD_Object* parent, unsigned short texture_width, unsigned short texture_height, glm::vec4 texture_color, std::string vao_name = "hud"); // Create a new HUD Object into the game
 	void render(); // Render the HUD
+	inline double scale_rendered_ratio() {return get_advanced_struct()->window_ratio();};
 	void unload(); // Unload the objects in the HUD
 	virtual void update(); // Update the HUD
 	void update_object(); // Update all the objects in the HUD
@@ -88,7 +90,7 @@ public:
 	inline Scene* get_scene(std::string name) { if (contains_scene(name) && name != "") { return scenes[name]; } std::cout << "Matrix game : error ! The scene \"" << name << "\" does not exist." << std::endl; return 0; }
 	inline std::map<std::string, Scene*> *get_scenes() { return &scenes; };
 	inline bool is_cursor_on_window() { return a_cursor_on_window; };
-	inline void set_background_color(glm::vec4 a_background_color) { background_color = a_background_color; };
+    inline void set_background_color(glm::vec4 a_background_color) { background_color = a_background_color; };
 	void set_current_hud(std::string a_name);
 	void set_current_scene(std::string a_name);
 	inline void set_is_running(bool a_run) { is_running = a_run; };

@@ -112,20 +112,20 @@ void HUD_Object::render() {
     }
 }
 
-// Resize the object from the height in pixels
-void HUD_Object::set_height_pixel(double height, bool resize_width) {
-    double final_width = a_scale_pixel[0];
+// Resize the object from the height
+void HUD_Object::set_height(double height, bool resize_width) {
+    double final_width = a_scale[0];
     if(resize_width) final_width = height * get_texture()->image_ratio();
-    a_scale_pixel = glm::vec2(final_width, height);
+    a_scale = glm::vec2(final_width, height);
 }
 
 // Resize the object from the height in purcentage with pixels
-void HUD_Object::set_height_purcentage_from_pixel(double height, bool resize_width) {
+void HUD_Object::set_height_from_pixel(double height, bool resize_width) {
     double absolute_height = (height / static_cast<double>(get_base_struct()->get_window_height()));
-    if(parent() != 0) absolute_height /= parent()->absolute_scale()[0];
+    if(parent() != 0) absolute_height /= parent()->absolute_scale()[1];
 
     double absolute_width = a_scale[0];
-    if(resize_width) absolute_width = absolute_height;
+    if(resize_width) absolute_width = absolute_height * get_texture()->image_ratio();
 
     a_scale = glm::vec2(absolute_width, absolute_height);
 }
@@ -146,24 +146,11 @@ void HUD_Object::set_parent(HUD_Object* new_parent) {
     }
 }
 
-// Resize the object in pixel
-void HUD_Object::set_size_pixel(double width, double height) {
-    set_height_pixel(height, false);
-    set_width_pixel(width, false);
-}
-
-// Resize the object from the width in pixels
-void HUD_Object::set_width_pixel(double width, bool resize_height) {
-    double final_height = a_scale_pixel[1];
+// Resize the object from the width
+void HUD_Object::set_width(double width, bool resize_height) {
+    double final_height = a_scale[1];
     if(resize_height) final_height = width / get_texture()->image_ratio();
-    a_scale_pixel = glm::vec2(width, final_height);
-    /*double texture_ratio = get_texture()->image_ratio();
-    double one_scale_height_in_pixels = static_cast<double>(get_base_struct()->get_window_width());
-    if(texture_ratio > 1) one_scale_height_in_pixels /= 1.0 / texture_ratio;
-
-    double final_scale = (height / one_scale_height_in_pixels);
-    a_scale_pixel = glm::vec2(a_scale_pixel[0], final_scale);
-    if(resize_width) set_width_pixel(final_scale, false);//*/
+    a_scale = glm::vec2(width, final_height);
 }
 
 // Sort the children according to their depht
