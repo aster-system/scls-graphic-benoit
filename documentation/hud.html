@@ -11,6 +11,25 @@
         <div>
             An HUD represents the 2D interface directly drawn on the screen, without 3D interference.
         </div>
+        <h2>Displaying</h2>
+        <div>
+            The displaying of each objects is clearly defined.
+            <h3>
+                Texturing
+            </h3>
+            <div>
+                Each object can have (or not have) a texture to display on the screen.</br>
+                If the object has not any texture, it should be create from Scratch by the object.</br>
+                The texture can be moldable or not, and can have it's own transformation.</br>
+            </div>
+            <h3>
+                Border
+            </h3>
+            <div>
+                An object can have a border, by shrinking the texture if moldable.</br>
+                The border can have any RGBA color.</br>
+            </div>
+        </div>
         <h2>Transformation system</h2>
         <div>
             The HUD transformation system uses positioning, rotating then scaling.</br>
@@ -22,6 +41,8 @@
                 The scale of the parent represents the (1, 1) of the position of the child.</br>
                 The absolute position of the child is the addition of each absolutes positions of every parents of it, considering the scaling.</br>
                 So, it represents the REAL position of the object in the global window.</br>
+                The absolute scale of the child is the addition of each absolutes scales of every parents of it.</br>
+                So, it represents the REAL scale of the object in the global window.</br>
             </div>
             <h3>
                 Positioning
@@ -33,6 +54,24 @@
                 It is possible to convert pixel to purcentage of the screen and use pixels to locate an object, then converted to purcentage.</br>
                 However, it is MANDATORY that the state of the window when the function is used represents the correct position of the object.</br>
                 So, it's recommended to use this functions after every start windows modification.</br>
+            </div>
+            <h3>
+                Rotating
+            </h3>
+            <div>
+                The rotating system take as units an angle in degrees.</br>
+                The objects can rotate around the 3 axes, even if it's not very usefull.</br>
+            </div>
+            <h3>
+                Scaling
+            </h3>
+            <div>
+                The scaling system take as units a purcentage of the screen size as units.</br>
+                For a 16/9 parent, the scale (16/9, 1) represents the entire parent covered.</br>
+                The width correspond to the parent ratio and the height is always one.</br>
+                If the texture is moldable, it fits perfectly in the scaled object.</br>
+                If it's not, it stays at the center of the object unchanged.</br>
+                Anything can change the purcentage of the texture other that the exterior of the object.</br>
             </div>
         </div>
     </body>
