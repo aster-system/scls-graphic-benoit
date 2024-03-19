@@ -285,6 +285,8 @@ public:
 	Texture(std::string a_texture_path, bool a_resize = true); // Texture constructor
 	// Texture constructor much modulable
 	Texture(unsigned short width, unsigned short height, glm::vec4 color, bool a_resize = true);
+	// Texture copy constructor
+	Texture(Texture& texture_to_copy);
 	// Most basic texture constructor
 	Texture();
 	void bind(); // Bind the texture into the GPU memory
@@ -293,14 +295,19 @@ public:
 	void load_texture();
 	~Texture(); // Texture destructor
 
-	// Getters and setters
+	// Getters and setters (ONLY WITHOUT ATTRIBUTES)
+	inline double image_ratio() {return static_cast<double>(get_image()->get_width()) / static_cast<double>(get_image()->get_height());};
+
+	// Getters and setters (ONLY WITH ATTRIBUTES)
+	inline unsigned short copy_count() {return a_copy_count;};
 	inline basix::Image* get_image() { return a_image; };
 	inline glm::vec2 get_texture_size() { return glm::vec2(width, height); };
 	inline std::string get_texture_path() { return texture_path; };
-	inline double image_ratio() {return static_cast<double>(get_image()->get_width()) / static_cast<double>(get_image()->get_height());};
 	inline void set_image(basix::Image* new_image) {delete a_image;a_image = new_image; a_image->flip_x(); change_texture();};
 	inline bool use_resize() { return resize; };
 private:
+    // Number of copy of this texture
+    unsigned short a_copy_count = 0;
 	int height = 0; // Height of the texture
 	// Basix image of this texture
 	basix::Image* a_image = 0;

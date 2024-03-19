@@ -106,7 +106,7 @@ public:
 	// Returns if the struct contains a VBO
 	bool contains_vbo(std::string name);
 	Part* get_part(unsigned int number); // Returns a part
-	Texture* get_texture(std::string texture_name); // Returns a texture in the struct
+	Texture* get_texture(std::string texture_name, bool copy_texture = false); // Returns a texture in the struct
 	void load_hud_VAOs(); // Loads the HUD VAOs in the advanced struct
 	void load_VAOs(); // Loads the VAOs in the advanced struct
 	template <class O> // Template for adding a type of object

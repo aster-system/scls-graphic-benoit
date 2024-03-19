@@ -438,8 +438,7 @@ VAO::~VAO() {
 }
 
 // Texture constructor
-Texture::Texture(std::string a_texture_path, bool a_resize): texture_path(a_texture_path), resize(a_resize), a_image(new basix::Image())
-{
+Texture::Texture(std::string a_texture_path, bool a_resize): texture_path(a_texture_path), resize(a_resize), a_image(new basix::Image()) {
 	if (a_texture_path != "")
 	{
 		get_image()->load_from_path(texture_path);
@@ -462,6 +461,12 @@ Texture::Texture(unsigned short width, unsigned short height, glm::vec4 color, b
 
 // Most basic texture constructor
 Texture::Texture() : Texture("", false) {}
+
+// Texture copy constructor
+Texture::Texture(Texture& texture_to_copy) : Texture(texture_to_copy.width, texture_to_copy.height, glm::vec4(0, 0, 0, 0), texture_to_copy.use_resize()) {
+    get_image()->paste(texture_to_copy.get_image(), 0, 0, 1.0, true); change_texture();
+    texture_to_copy.a_copy_count++;
+}
 
 // Bind the texture into the GPU memory
 void Texture::bind() {

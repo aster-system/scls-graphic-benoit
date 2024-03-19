@@ -34,22 +34,22 @@ namespace p_army
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         inline HUD* base_hud() {return reinterpret_cast<HUD*>(parent());};
-        inline bool launch_clicked() {if(a_launch_button == 0) return false;return a_launch_button->is_clicked_during_this_frame();};
+        inline bool launch_clicked() {return false;}; //{if(a_launch_button == 0) return false;return a_launch_button->is_clicked_during_this_frame();};
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline Game* game() {return a_game;};
     private:
         // Each HUD parts of the HUD_Object
-        // Credit of the P_Army_Mod
-        HUD_Text* a_credit = 0;
-        // Button to go to the information page from the first page
-        HUD_Button* a_information_button = 0;
-        // Button to launch the mod from the first page
-        HUD_Button* a_launch_button = 0;
-        // Matix logo
-        HUD_Object* a_logo = 0;
-        // Title of the HUD
-        HUD_Text* a_title = 0;
+        // Footer of the HUD
+        HUD_Object* a_footer = 0;
+        // Header of the HUD
+        HUD_Object* a_header = 0;
+        // Media part of the HUD
+        HUD_Object* a_medias = 0;
+        // News of the HUD
+        HUD_Object* a_news = 0;
+        // Others part of the HUD
+        HUD_Object* a_others = 0;
 
         // Pointer to the game
         Game* a_game = 0;

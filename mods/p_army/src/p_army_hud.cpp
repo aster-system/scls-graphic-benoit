@@ -19,54 +19,38 @@ namespace p_army {
         a_game = reinterpret_cast<Game*>(game);
 
         set_position(glm::vec3(0, 0, 0));
-        set_width(1);
+        set_height(1, false);
+        set_width(1, false);
         set_sized_according_to_ratio(false);
         set_use_parent_rescaling(false);
 
-        // Load the credit
-        a_credit = base_hud()->new_hud_object<HUD_Text>(name + ";credit", this, 1, 1, glm::vec4(0, 0, 0, 0), "hud_default");
-        a_credit->set_text(basix::to_utf_8("By Aster Système, founded by Matt Code"));
-        a_credit->set_position(glm::vec3(0, -0.9, 0));
-        a_credit->set_width(0.8);
-        // Load the information button
-        a_information_button = base_hud()->new_hud_object<HUD_Button>(name + ";information_button", this, 1, 1, glm::vec4(0, 0, 0, 0), "hud_default");
-        a_information_button->set_background_color(glm::vec4(255, 255, 255, 130));
-        a_information_button->set_font_size(50);
-        a_information_button->set_font_family("arial");
-        a_information_button->set_border_width(0.01);
-        a_information_button->set_ouf_offset(15);
-        a_information_button->set_position(glm::vec3(-0.25, 0, 0));
-        a_information_button->set_text("Information");
-        a_information_button->set_height_from_pixel(40);
-        // Load the launch button
-        a_launch_button = base_hud()->new_hud_object<HUD_Button>(name + ";launch_button", this, 1, 1, glm::vec4(0, 0, 0, 0), "hud_default");
-        a_launch_button->set_background_color(glm::vec4(255, 255, 255, 130));
-        a_launch_button->set_font_size(50);
-        a_launch_button->set_font_family("arial");
-        a_launch_button->set_border_width(0.015);
-        a_launch_button->set_ouf_offset(15);
-        a_launch_button->set_position(glm::vec3(0.25, 0, 0));
-        a_launch_button->set_text("Launch");
-        a_launch_button->set_height_from_pixel(40);
-        // Load the logo
-        a_logo = base_hud()->new_hud_object(name + ";logo", this, "matix_logo", "hud_default");
-        a_logo->set_position(glm::vec3(-0.65, 0.7, 0));
-        a_logo->set_width(0.2);
-        // Load the title
-        a_title = base_hud()->new_hud_object<HUD_Text>(name + ";title", this, 1, 1, glm::vec4(0, 0, 0, 0), "hud_default");
-        a_title->set_font_family("arialbi");
-        a_title->set_font_size(250);
-        a_title->set_text("P-Army");
-        a_title->set_position(glm::vec3(0.3, 0.65, 0));
-        a_title->set_width(0.5);
+        // Load the footer
+        a_footer = base_hud()->new_hud_object<HUD_Object>(name + ";footer", this, 1, 1, glm::vec4(0, 0, 0, 255), "hud_default");
+        a_footer->set_scale(glm::vec2(16.0 - 9.0, 0.04));
+        a_footer->set_position(glm::vec2(0, -0.96));
+        // Load the header
+        a_header = base_hud()->new_hud_object<HUD_Object>(name + ";header", this, game->get_texture("p_army_welcome_hud", true), "hud_default");
+        a_header->set_position(glm::vec2(0, 1.0 - 125.0/900.0));
+        a_header->set_scale(glm::vec2(16.0/9.0, 125.0/900.0));
+        a_header->set_use_parent_rescaling(false);
+        a_header->get_texture()->get_image()->flip_y(); a_header->get_texture()->change_texture();
+        // Load the media
+        a_medias = base_hud()->new_hud_object<HUD_Object>(name + ";medias", this, "p_army_media_hud", "hud_default");
+        a_medias->set_position(glm::vec2(0.45, -0.52));
+        a_medias->set_scale(glm::vec2(0.8, 0.3));
+        // Load the news
+        a_news = base_hud()->new_hud_object<HUD_Object>(name + ";news", this, 1, 1, glm::vec4(115, 115, 115, 255), "hud_default");
+        a_news->set_position(glm::vec2(-0.5, -0.22));
+        a_news->set_width(0.7);
+        // Load the other part
+        a_others = base_hud()->new_hud_object<HUD_Object>(name + ";others", this, "p_army_other_hud", "hud_default");
+        a_others->set_position(glm::vec2(0.45, 0.18));
+        a_others->set_scale(glm::vec2(0.8, 0.3));
     }
 
     // Update the HUD
     void _P_Army_Welcome_HUD_Object::update() {
-        if(a_information_button->is_clicked_during_this_frame())
-        {
-            std::cout << "A" << std::endl;
-        }
+
     }
 
     // _P_Army_Welcome_HUD_Object destructor

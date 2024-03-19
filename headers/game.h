@@ -24,6 +24,8 @@ public:
 	bool is_hud() {return true;};
 	virtual void load() {}; // Load the CLI after being selected as new current HUD
 	template <class O = HUD_Object> // Template for adding a type of HUD object
+	O* new_hud_object(std::string name, HUD_Object* parent, Texture* texture, std::string vao_name = "hud_default"); // Create a new HUD Object into the game
+	template <class O = HUD_Object> // Template for adding a type of HUD object
 	O* new_hud_object(std::string name, HUD_Object* parent, std::string texture_name, std::string vao_name = "hud_default"); // Create a new HUD Object into the game
 	template <class O = HUD_Object> // Template for adding a type of HUD object
 	O* new_hud_object(std::string name, HUD_Object* parent, unsigned short texture_width, unsigned short texture_height, glm::vec4 texture_color, std::string vao_name = "hud"); // Create a new HUD Object into the game
@@ -118,10 +120,13 @@ private:
 template <class O> // Template for adding a type of HUD object
 O* HUD::new_hud_object(std::string name, HUD_Object* parent, std::string texture_name, std::string vao_name)
 {
-	if (contains_hud_object(name)) { std::cout << "HUD \"" << get_name() << "\" error ! The objects \"" << name << "\" you want to create already exists." << std::endl; return 0; }
+	return new_hud_object<O>(name, parent, get_advanced_struct()->get_texture(texture_name), vao_name);
+}
 
-	// Load the texture
-	Texture* texture = get_advanced_struct()->get_texture(texture_name);
+// Create a new HUD Object into the game
+template <class O> // Template for adding a type of HUD object
+O* HUD::new_hud_object(std::string name, HUD_Object* parent, Texture* texture, std::string vao_name) {
+    if (contains_hud_object(name)) { std::cout << "HUD \"" << get_name() << "\" error ! The objects \"" << name << "\" you want to create already exists." << std::endl; return 0; }
 
 	// Load the VAO
 	VAO* vao = (*get_advanced_struct()->get_all_vaos())[vao_name];

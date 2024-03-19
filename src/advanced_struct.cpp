@@ -108,10 +108,17 @@ Part* Advanced_Struct::get_part(unsigned int number)
 }
 
 // Returns a texture in the struct
-Texture* Advanced_Struct::get_texture(std::string texture_name)
+Texture* Advanced_Struct::get_texture(std::string texture_name, bool copy_texture)
 {
 	if (contains_texture(texture_name))
 	{
+	    if(copy_texture)
+        {
+            Texture* to_copy = (*get_textures())[texture_name];
+            Texture* to_return = new Texture(*to_copy);
+            (*get_textures())[texture_name + ";copy" + std::to_string(to_copy->copy_count())] = to_return;
+            return to_return;
+        }
 		return (*get_textures())[texture_name];
 	}
 	else
