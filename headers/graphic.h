@@ -97,14 +97,24 @@ public:
 	inline glm::vec4 final_border_width() {
 	    return get_border_width() * glm::vec4(texture->image_ratio(), 1, texture->image_ratio(), 1);
 	};
-	inline glm::vec4 get_hud_rect_pos() {
-	    glm::vec2 final_scale = scale_for_rendering() * glm::vec2(0.5);
-		int heigth = final_scale[1] * get_base_struct()->get_window_height();
-		int width = final_scale[0] * get_base_struct()->get_window_width();
-		int x = (((absolute_position()[0] + 1.0) / 2.0) * get_base_struct()->get_window_width());
+	inline glm::vec2 hud_pos() {
+	    int x = (((absolute_position()[0] + 1.0) / 2.0) * get_base_struct()->get_window_width());
 		int y = get_base_struct()->get_window_height() - (((absolute_position()[1] + 1.0) / 2.0) * get_base_struct()->get_window_height());
 
-		return glm::vec4(x, y, width, heigth);
+		return glm::vec2(x, y);
+	};
+	inline glm::vec4 hud_rect() {
+	    glm::vec2 pos = hud_pos();
+	    glm::vec2 size = hud_size();
+
+		return glm::vec4(pos[0], pos[1], size[0], size[1]);
+	};
+	inline glm::vec2 hud_size() {
+	    glm::vec2 final_scale = scale_for_rendering() * glm::vec2(0.5);
+		int height = final_scale[1] * get_base_struct()->get_window_height();
+		int width = final_scale[0] * get_base_struct()->get_window_width();
+
+		return glm::vec2(width, height);
 	};
     virtual bool is_hud() {return false;};
     inline glm::vec2 scale_for_rendering(bool vao = false) {
@@ -136,16 +146,21 @@ public:
     virtual double scale_rendered_ratio() {glm::vec2 to_return = scale_for_rendering() / absolute_scale();return to_return[0] / to_return[1]; };
     inline bool is_clicked_during_this_frame() { return a_is_clicked && !a_was_clicked; };
     inline bool is_in(glm::vec2 pos) {
-		glm::vec4 rect = get_hud_rect_pos();
+		glm::vec4 rect = hud_rect();
 		return pos[0] > rect[0] - rect[2] / 2.0 && pos[0] < rect[0] + rect[2] / 2.0 && pos[1] > rect[1] - rect[3] / 2.0 && pos[1] < rect[1] + rect[3] / 2.0;
 	};
-    inline glm::vec4 texture_rect_for_rendering() {
+    virtual glm::vec4 texture_rect_for_rendering() {
         if(is_texture_moldable())
         {
             glm::vec4 applied_border_width = final_border_width();
             glm::vec4 to_return = glm::vec4(applied_border_width[1], applied_border_width[0], 1.0 - (applied_border_width[1] + applied_border_width[3]), 1.0 - (applied_border_width[0] + applied_border_width[2]));
             return to_return;
         }
+        glm::vec2 size_in_pixel = hud_size();
+        double texture_height = get_texture()->get_image()->get_height();
+        double texture_width = get_texture()->get_image()->get_width();
+        glm::vec4 to_return = glm::vec4(0, 0, texture_width / size_in_pixel[0], texture_height / size_in_pixel[1]);
+        return to_return;
     };
 
 	// Getters and setters (ONLY WITH ATTRIBUTES)
@@ -194,7 +209,7 @@ private:
 	std::string a_name = ""; // Name of the object
 
 	// Color of the background of the HUD
-	glm::vec4 a_background_color = glm::vec4(1, 1, 1, 1);
+	glm::vec4 a_background_color = glm::vec4(0, 0, 0, 1);
 	// Color of the border of the HUD
 	glm::vec4 a_border_color = glm::vec4(0, 0, 0, 1);
 	// Width of the border of the HUD (top, left, bottom, right)
@@ -247,14 +262,22 @@ public:
 	~HUD_Text();
 
 	// Getters and setters (ONLY WITHOUT ATTRIBUTES)
+	glm::vec4 texture_rect_for_rendering() {
+        glm::vec4 to_return = HUD_Object::texture_rect_for_rendering();
+        glm::vec4 offset = out_offset();
+        to_return[0] += offset[1];
+        to_return[1] += offset[0];
+        to_return[2] *= 1.0 - (offset[1] + offset[3]);
+        to_return[3] *= 1.0 - (offset[0] + offset[2]);
+        return to_return;
+    };
 
 	// Getters and setters (ONLY WITH ATTRIBUTES)
-	inline glm::vec4 background_color() { return a_background_color; };
 	inline bool can_take_input() { return input; };
 	inline std::string font_family() {return a_font_family;};
 	inline std::string get_cursor_character() { return cursor_character; };
 	inline float get_cursor_display_time() { return cursor_display_time; };
-	inline glm::vec4 get_font_color() { return font_color; };
+	inline glm::vec4 font_color() { return a_font_color; };
 	inline unsigned short font_size() { return a_font_size; };
 	inline std::string get_input_text() { return input_text; };
 	inline std::string get_text(bool with_cursor = false) {
@@ -265,10 +288,9 @@ public:
 	inline bool is_focused() { return focused; };
 	inline bool is_using_cursor() { return use_cursor; };
 	inline glm::vec4 out_offset() {return a_out_offset;};
-	inline void set_background_color(glm::vec4 new_background_color) { a_background_color = new_background_color; };
 	inline void set_cursor_character(std::string new_cursor_character) { cursor_character = new_cursor_character; };
 	inline void set_focused(bool a_focused) { focused = a_focused; };
-	inline void set_font_color(glm::vec4 a_font_color) { font_color = a_font_color; };
+	inline void set_font_color(glm::vec4 new_font_color) { a_font_color = new_font_color; };
 	inline void set_font_family(std::string new_font_family) {a_font_family = new_font_family;};
 	inline void set_font_size(unsigned short new_size) { a_font_size = new_size; };
 	inline void set_input(bool a_input) { input = a_input; };
@@ -278,8 +300,6 @@ public:
 	inline void set_text(std::string a_text) { text = a_text; update_text(); };
 	inline void set_use_cursor(bool a_use_cursor) { use_cursor = a_use_cursor; };
 private:
-    // Background color of the object
-	glm::vec4 a_background_color = glm::vec4(0, 0, 0, 0);
     // Return the character representing the cursor
 	std::string cursor_character = "_";
 	// Number of second the cursor is displayed and hide
@@ -301,7 +321,7 @@ private:
 
 	// Datas about the text
 	// Color of the font of the text
-	glm::vec4 font_color = glm::vec4(0, 0, 0, 1);
+	glm::vec4 a_font_color = glm::vec4(0, 0, 0, 1);
 	// Font family of the text
 	std::string a_font_family = "arial";
 	// Size of the font of the text

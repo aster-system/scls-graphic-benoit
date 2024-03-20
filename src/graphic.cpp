@@ -94,7 +94,9 @@ void HUD_Object::remove_children(HUD_Object* object) {
 // Render the HUD object
 void HUD_Object::render() {
     texture->bind(); // Bind the texture
+    vao->get_shader_program()->set_uniform4f_value("background_color", background_color()); // Write the background color of the HUD in the shader
 	vao->get_shader_program()->set_uniform4f_value("border_color", get_border_color()); // Write the border color of the HUD in the shader
+	vao->get_shader_program()->set_uniform4f_value("border_width", get_border_width()); // Write the border width of the HUD in the shader
 	vao->get_shader_program()->set_uniform4fv_value("model", get_model_matrix()); // Write some uniform variables into the shader
 	vao->get_shader_program()->set_uniform4f_value("texture_rect", texture_rect_for_rendering()); // Write the border width of the HUD in the shader
 
@@ -115,7 +117,11 @@ void HUD_Object::render() {
 // Resize the object from the height
 void HUD_Object::set_height(double height, bool resize_width) {
     double final_width = a_scale[0];
-    if(resize_width) final_width = height * get_texture()->image_ratio();
+    if(resize_width) {
+        double parent_offset = 1;
+        if(parent()!= 0) parent_offset = parent()->scale()[1] / parent()->scale()[0];
+        final_width = height * parent_offset * get_texture()->image_ratio();
+    }
     a_scale = glm::vec2(final_width, height);
 }
 
@@ -149,7 +155,11 @@ void HUD_Object::set_parent(HUD_Object* new_parent) {
 // Resize the object from the width
 void HUD_Object::set_width(double width, bool resize_height) {
     double final_height = a_scale[1];
-    if(resize_height) final_height = width / get_texture()->image_ratio();
+    if(resize_height) {
+        double parent_offset = 1;
+        if(parent()!= 0) parent_offset = parent()->scale()[0] / parent()->scale()[1];
+        final_height = (width * parent_offset) / get_texture()->image_ratio();
+    }
     a_scale = glm::vec2(width, final_height);
 }
 
@@ -190,8 +200,8 @@ HUD_Text::HUD_Text(Base_Struct* a_base_struct, std::string a_name, HUD_Object* p
 // Update the text texture
 void HUD_Text::update_text() {
     basix::Text_Image_Data datas; datas.font = basix::get_system_font(font_family()); datas.font_size = font_size();
-    datas.background_alpha = background_color()[3]; datas.background_blue = background_color()[2]; datas.background_green = background_color()[1]; datas.background_red = background_color()[0];
-    datas.out_offset_top_width = out_offset()[0]; datas.out_offset_left_width = out_offset()[1]; datas.out_offset_bottom_width = out_offset()[2]; datas.out_offset_right_width = out_offset()[3];
+    datas.background_alpha = background_color()[3] * 255; datas.background_blue = background_color()[2] * 255; datas.background_green = background_color()[1] * 255; datas.background_red = background_color()[0] * 255;
+    datas.alpha = font_color()[3];datas.blue = font_color()[2];datas.green = font_color()[1];datas.red = font_color()[0];
     datas.alignment = basix::Center;
 
     basix::Image* new_texture = basix::text_image(get_text(), datas);

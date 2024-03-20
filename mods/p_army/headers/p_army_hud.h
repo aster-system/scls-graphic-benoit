@@ -34,20 +34,28 @@ namespace p_army
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         inline HUD* base_hud() {return reinterpret_cast<HUD*>(parent());};
-        inline bool launch_clicked() {return false;}; //{if(a_launch_button == 0) return false;return a_launch_button->is_clicked_during_this_frame();};
+        inline bool launch_clicked() {if(a_launch_button == 0) return false;return a_launch_button->is_clicked_during_this_frame();};
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline Game* game() {return a_game;};
     private:
         // Each HUD parts of the HUD_Object
+        // Credits of the HUD
+        HUD_Text* a_credits = 0;
         // Footer of the HUD
         HUD_Object* a_footer = 0;
         // Header of the HUD
         HUD_Object* a_header = 0;
+        // Information button of the HUD
+        HUD_Button* a_information_button = 0;
+        // Launch button of the HUD
+        HUD_Button* a_launch_button = 0;
         // Media part of the HUD
         HUD_Object* a_medias = 0;
         // News of the HUD
         HUD_Object* a_news = 0;
+        // Title of the news of the HUD
+        HUD_Text* a_news_title = 0;
         // Others part of the HUD
         HUD_Object* a_others = 0;
 
