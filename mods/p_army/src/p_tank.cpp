@@ -16,8 +16,11 @@ namespace p_army
 			float support_height = 0.55f;
 			float support_width = 3.5f;
 			float canon_support_length = 1.0f;
+			float turret_support_x = -0.6f;
+			float turret_support_y = 0.825f;
 
-			Object* turret_support = scene->new_object(name + ";turret_support", "ptank_turret", 0, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), false, "turret", false, true, false);
+			Object* chassis_support = scene->new_object(name + ";chassis_support", "ptank_chassis", 0, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), false, "turret", false, true, false);
+			Object* turret_support = scene->new_object(name + ";turret_support", "ptank_turret", 0, glm::vec3(turret_support_x, turret_support_y, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), false, "turret", false, true, false);
 			Object* canon = scene->new_object(name + ";canon", "ptank_canon", turret_support->get_attached_transform(), glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), false, "canon", false, true, false);
 			Object* commander_view = scene->new_object(name + ";commander_view", "ptank_commander_view", turret_support->get_attached_transform(), glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), false, "commander_view", false, true, false);
 

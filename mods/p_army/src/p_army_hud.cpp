@@ -1,6 +1,6 @@
 //******************
 //
-// p_army_hud.h
+// p_army_hud.cpp
 //
 //******************
 // Presentation :

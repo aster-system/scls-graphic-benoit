@@ -5,7 +5,7 @@ namespace p_army
 	// P_Army constructor
 	P_Army::P_Army(std::string exec_path) : a_core(new _P_Army_Core(1600, 900, exec_path))
 	{
-	    mob_maker::create_p_army_mob(game());
+	    create_p_army_mob(game());
 
 	    a_hud = game()->new_hud<_P_Army_HUD>(P_ARMY_HUD_NAME);
 	}

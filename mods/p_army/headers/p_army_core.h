@@ -10,6 +10,7 @@
 
 #include "../../../headers/game.h"
 #include "../../headers/mob_loader.h"
+#include "../../../mods_hidden/p_army/headers/p_army_maker.h"
 #include "../../headers/player.h"
 
 #define P_ARMY_SCENE_NAME "p_army_scene"
