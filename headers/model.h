@@ -300,17 +300,17 @@ public:
 
 	// Getters and setters (ONLY WITH ATTRIBUTES)
 	inline unsigned short copy_count() {return a_copy_count;};
-	inline basix::Image* get_image() { return a_image; };
+	inline scls::Image* get_image() { return a_image; };
 	inline glm::vec2 get_texture_size() { return glm::vec2(width, height); };
 	inline std::string get_texture_path() { return texture_path; };
-	inline void set_image(basix::Image* new_image) {delete a_image;a_image = new_image; a_image->flip_x(); change_texture();};
+	inline void set_image(scls::Image* new_image) {delete a_image;a_image = new_image; a_image->flip_x(); change_texture();};
 	inline bool use_resize() { return resize; };
 private:
     // Number of copy of this texture
     unsigned short a_copy_count = 0;
 	int height = 0; // Height of the texture
-	// Basix image of this texture
-	basix::Image* a_image = 0;
+	// SCLS image of this texture
+	scls::Image* a_image = 0;
 	bool resize = true; // If the shader resize the texture or not
 	unsigned int texture_id = 0; // Handle to the texture
 	std::string texture_path = ""; // Path of the texture

@@ -33,7 +33,7 @@ namespace p_army {
         a_credits = base_hud()->new_hud_object<HUD_Text>(name + ";credits", a_footer, 1, 1, glm::vec4(0, 0, 0, 0), "hud_default");
         a_credits->set_font_color(glm::vec4(255, 255, 255, 255));
         a_credits->set_font_size(50);
-        a_credits->set_text(basix::to_utf_8("By Aster Système, founded by Matt Code and Xonix")); // By Aster Système, founded by Matt Code and Xonix
+        a_credits->set_text(scls::to_utf_8("By Aster Système, founded by Matt Code and Xonix")); // By Aster Système, founded by Matt Code and Xonix
         a_credits->set_height(0.8);
         a_credits->set_position(glm::vec2(16.0/9.0 * (-0.15), 0));
         // Load the header
@@ -48,7 +48,7 @@ namespace p_army {
         a_information_button->set_font_color(glm::vec4(255, 255, 255, 255));
         a_information_button->set_font_size(250);
         a_information_button->set_ouf_offset(0.25);
-        a_information_button->set_text(basix::to_utf_8("INFORMATION"));
+        a_information_button->set_text(scls::to_utf_8("INFORMATION"));
         a_information_button->set_position(glm::vec2(-0.35, 0));
         a_information_button->set_height(0.5);
         // Load the launch button
@@ -57,7 +57,7 @@ namespace p_army {
         a_launch_button->set_font_color(glm::vec4(255, 255, 255, 255));
         a_launch_button->set_font_size(250);
         a_launch_button->set_ouf_offset(0.25);
-        a_launch_button->set_text(basix::to_utf_8("LAUNCH"));
+        a_launch_button->set_text(scls::to_utf_8("LAUNCH"));
         a_launch_button->set_position(glm::vec2(0, 0));
         a_launch_button->set_height(0.5);
         // Load the media

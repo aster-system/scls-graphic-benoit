@@ -1,7 +1,7 @@
 #pragma once
 
 #include <algorithm>
-#include <basix.h>
+#include <scls_foundation.h>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -276,9 +276,9 @@ public:
 	inline int get_window_width() { return window_width; };
 	inline void set_assets_directory_path(std::string new_assets_directory_path) {
 		new_assets_directory_path = file_formatted(new_assets_directory_path);
-		if (basix::file_exists(new_assets_directory_path))
+		if (scls::file_exists(new_assets_directory_path))
 		{
-			if (basix::path_is_directory(new_assets_directory_path))
+			if (scls::path_is_directory(new_assets_directory_path))
 			{
 				assets_directory_path = new_assets_directory_path;
 			}
@@ -294,9 +294,9 @@ public:
 	}
 	inline void set_config_file_path(std::string new_config_file_path) {
 		new_config_file_path = file_formatted(new_config_file_path);
-		if (basix::file_exists(new_config_file_path))
+		if (scls::file_exists(new_config_file_path))
 		{
-			if (!basix::path_is_directory(new_config_file_path))
+			if (!scls::path_is_directory(new_config_file_path))
 			{
 				config_file_path = new_config_file_path;
 			}

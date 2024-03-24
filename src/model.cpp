@@ -232,17 +232,17 @@ void VBO::load_from_binary(char* binary) {
 	unsigned char attribute_number = binary[0]; cursor_pos++;
 	for (int i = 0; i < attribute_number; i++)
 	{
-		unsigned short type = basix::extract_2bytes_from_char_array(binary, cursor_pos, true); cursor_pos += 2;
-		unsigned short vector_size = basix::extract_2bytes_from_char_array(binary, cursor_pos, true); cursor_pos += 2;
+		unsigned short type = scls::extract_2bytes_from_char_array(binary, cursor_pos, true); cursor_pos += 2;
+		unsigned short vector_size = scls::extract_2bytes_from_char_array(binary, cursor_pos, true); cursor_pos += 2;
 
 		Shader_Program_Variable variable; variable.type = type; variable.vector_size = vector_size;
 		a_attributes.push_back(variable);
 	}
 
-	unsigned int size = basix::extract_4bytes_from_char_array(binary, cursor_pos, true); cursor_pos += 4;
+	unsigned int size = scls::extract_4bytes_from_char_array(binary, cursor_pos, true); cursor_pos += 4;
 	for (int i = 0; i < size; i++)
 	{
-		double data = basix::extract_double_from_char_array(binary, cursor_pos);
+		double data = scls::extract_double_from_char_array(binary, cursor_pos);
 		cursor_pos += 8;
 		a_datas.push_back(static_cast<float>(data));
 	}
@@ -277,7 +277,7 @@ void VBO::load_from_file(std::string path) {
 
 	// Fill the datas
 	a_datas.clear();
-	std::vector<std::string> cutted = basix::cut_string(content, " ");
+	std::vector<std::string> cutted = scls::cut_string(content, " ");
 	for (int i = 0; i < cutted.size(); i++)
 	{
 		a_datas.push_back(atof(cutted[i].c_str()));
@@ -438,7 +438,7 @@ VAO::~VAO() {
 }
 
 // Texture constructor
-Texture::Texture(std::string a_texture_path, bool a_resize): texture_path(a_texture_path), resize(a_resize), a_image(new basix::Image()) {
+Texture::Texture(std::string a_texture_path, bool a_resize): texture_path(a_texture_path), resize(a_resize), a_image(new scls::Image()) {
 	if (a_texture_path != "")
 	{
 		get_image()->load_from_path(texture_path);
@@ -453,7 +453,7 @@ Texture::Texture(std::string a_texture_path, bool a_resize): texture_path(a_text
 Texture::Texture(unsigned short width, unsigned short height, glm::vec4 color, bool a_resize) : Texture("", false) {
 	// Load the image
 	delete get_image();
-	a_image = new basix::Image(width, height, color[0], color[1], color[2], color[3]);
+	a_image = new scls::Image(width, height, color[0], color[1], color[2], color[3]);
 
 	// Load the texture
 	load_texture();

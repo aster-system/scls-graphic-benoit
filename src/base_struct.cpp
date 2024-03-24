@@ -578,15 +578,15 @@ Base_Struct::Base_Struct(double& a_mouse_x, double& a_mouse_y, int& a_window_wid
 // Cout an error in the program
 void Base_Struct::error(std::string thrower, std::string error_content)
 {
-	basix::print("Error", thrower, error_content);
+	scls::print("Error", thrower, error_content);
 }
 
 // Return if a file formatted with the struct context
 std::string Base_Struct::file_formatted(std::string path)
 {
-	std::string access = basix::cut_string(path, "/")[0];
+	std::string access = scls::cut_string(path, "/")[0];
 	std::string current_path = (std::filesystem::current_path().string());
-	std::vector<std::string> cutted_path = basix::cut_string(current_path, "\\");
+	std::vector<std::string> cutted_path = scls::cut_string(current_path, "\\");
 	unsigned short point_count = 0;
 	unsigned short size_to_delete = 0;
 

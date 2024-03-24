@@ -249,17 +249,17 @@ void Game::load_from_config_file(std::string path) {
 
     if (last_config_file_path != get_config_file_path()) // If the path is correct
     {
-        std::vector<std::string> content = basix::cut_string(basix::read_file(get_config_file_path()), "\n");
+        std::vector<std::string> content = scls::cut_string(scls::read_file(get_config_file_path()), "\n");
 
         for (int i = 0; i < content.size(); i++) // Analyze each lines
         {
-            std::vector<std::string> line = basix::cut_string(content[i], ":");
+            std::vector<std::string> line = scls::cut_string(content[i], ":");
             std::string all_variables = "";
             for (int j = 1; j < line.size(); j++) { all_variables += line[j]; }
 
             if (line[0] == "screen_size") // If the line represents the size of the screen
             {
-                std::vector<std::string> variables = basix::cut_string(all_variables, ";");
+                std::vector<std::string> variables = scls::cut_string(all_variables, ";");
                 resize(std::stoi(variables[0]), std::stoi(variables[1]));
             }
             else if (line[0] == "assets_path_directory") // If the line represents the assets path

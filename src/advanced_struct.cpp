@@ -41,7 +41,7 @@ void Advanced_Struct::add_vbo(std::string name, VBO* vbo)
 	}
 }
 
-// Asbasix::sign to a number a part
+// Asscls::sign to a number a part
 void Advanced_Struct::assign_part(unsigned int number, Part* part)
 {
 	if (contains_part(number)) { std::cout << "Matrix game : error ! The part \"" << number << "\" you want to add already exist." << std::endl; return; }
@@ -468,21 +468,21 @@ void Object::last_update()
 
 		glm::vec3 new_movement = get_attached_transform()->get_movement();
 		glm::vec3 new_velocity = get_attached_physic_object()->get_velocity();
-		if (collision->axis_multiplier[0] != 0 && glm::abs(difference_x_movement) < glm::abs(difference_collision_width) && basix::sign(difference_x_movement) != basix::sign(new_movement[0]))
+		if (collision->axis_multiplier[0] != 0 && glm::abs(difference_x_movement) < glm::abs(difference_collision_width) && scls::sign(difference_x_movement) != scls::sign(new_movement[0]))
 		{
-			if (basix::sign(new_movement[0]) == basix::sign(new_velocity[0])) new_velocity[0] *= -1 * get_attached_physic_object()->get_elasticity();
+			if (scls::sign(new_movement[0]) == scls::sign(new_velocity[0])) new_velocity[0] *= -1 * get_attached_physic_object()->get_elasticity();
 			new_movement[0] = 0;
 		}
 
-		if (collision->axis_multiplier[1] != 0 && new_movement[1] != 0 && glm::abs(difference_y_movement) < glm::abs(difference_collision_height) && basix::sign(difference_y_movement) != basix::sign(new_movement[1]))
+		if (collision->axis_multiplier[1] != 0 && new_movement[1] != 0 && glm::abs(difference_y_movement) < glm::abs(difference_collision_height) && scls::sign(difference_y_movement) != scls::sign(new_movement[1]))
 		{
-			if (basix::sign(new_movement[1]) == basix::sign(new_velocity[1])) new_velocity[1] *= -1 * get_attached_physic_object()->get_elasticity();
+			if (scls::sign(new_movement[1]) == scls::sign(new_velocity[1])) new_velocity[1] *= -1 * get_attached_physic_object()->get_elasticity();
 			new_movement[1] = 0;
 		}
 
-		if (collision->axis_multiplier[2] != 0 && glm::abs(difference_z_movement) < glm::abs(difference_collision_length) && basix::sign(difference_z_movement) != basix::sign(new_movement[2]))
+		if (collision->axis_multiplier[2] != 0 && glm::abs(difference_z_movement) < glm::abs(difference_collision_length) && scls::sign(difference_z_movement) != scls::sign(new_movement[2]))
 		{
-			if (basix::sign(new_movement[2]) == basix::sign(new_velocity[2])) new_velocity[2] *= -1 * get_attached_physic_object()->get_elasticity();
+			if (scls::sign(new_movement[2]) == scls::sign(new_velocity[2])) new_velocity[2] *= -1 * get_attached_physic_object()->get_elasticity();
 			new_movement[2] = 0;
 		}
 

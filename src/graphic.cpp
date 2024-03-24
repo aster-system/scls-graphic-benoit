@@ -199,12 +199,12 @@ HUD_Text::HUD_Text(Base_Struct* a_base_struct, std::string a_name, HUD_Object* p
 
 // Update the text texture
 void HUD_Text::update_text() {
-    basix::Text_Image_Data datas; datas.font = basix::get_system_font(font_family()); datas.font_size = font_size();
+    scls::Text_Image_Data datas; datas.font = scls::get_system_font(font_family()); datas.font_size = font_size();
     datas.background_alpha = background_color()[3] * 255; datas.background_blue = background_color()[2] * 255; datas.background_green = background_color()[1] * 255; datas.background_red = background_color()[0] * 255;
     datas.alpha = font_color()[3];datas.blue = font_color()[2];datas.green = font_color()[1];datas.red = font_color()[0];
-    datas.alignment = basix::Center;
+    datas.alignment = scls::Center;
 
-    basix::Image* new_texture = basix::text_image(get_text(), datas);
+    scls::Image* new_texture = scls::text_image(get_text(), datas);
     texture->set_image(new_texture);
 }
 

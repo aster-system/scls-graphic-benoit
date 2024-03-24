@@ -44,7 +44,7 @@ namespace mob_loader
 		Game* game = (Game*)scene->get_game_struct();
 
 		// Check if the path exists
-		if (!basix::file_exists(path))
+		if (!scls::file_exists(path))
 		{
 			game->error("MOB Loader", "The path \"" + path + "\" does not exists.");
 			return 0;
@@ -52,7 +52,7 @@ namespace mob_loader
 
 		// Get the signature of the path
 		char* signature_input = new char[8];
-		basix::read_file_binary(path, signature_input, 8);
+		scls::read_file_binary(path, signature_input, 8);
 		std::string signature = ""; for (int i = 0; i < 8; i++)
 		{
 			signature += signature_input[i];
@@ -68,9 +68,9 @@ namespace mob_loader
 
 		// Get the size of the path
 		char* size_chunk_input = new char[2];
-		basix::read_file_binary(path, size_chunk_input, 2, 8);
+		scls::read_file_binary(path, size_chunk_input, 2, 8);
 		unsigned int size_chunk = 0;
-		size_chunk = basix::extract_2bytes_from_char_array(size_chunk_input, 0, true);
+		size_chunk = scls::extract_2bytes_from_char_array(size_chunk_input, 0, true);
 		delete[] size_chunk_input; size_chunk_input = 0;
 
 		// Analyze each chunks
@@ -79,7 +79,7 @@ namespace mob_loader
 		{
 			// Read the type of the chunk
 			char* type_chunk_input = new char[1];
-			basix::read_file_binary(path, type_chunk_input, 1, current_pos);
+			scls::read_file_binary(path, type_chunk_input, 1, current_pos);
 			unsigned char type_chunk = (unsigned char)type_chunk_input[0];
 			delete[] type_chunk_input; type_chunk_input = 0;
 			current_pos++;
@@ -88,7 +88,7 @@ namespace mob_loader
 			{
 				// Read the number of include path
 				char* include_size_input = new char[1];
-				basix::read_file_binary(path, include_size_input, 1, current_pos);
+				scls::read_file_binary(path, include_size_input, 1, current_pos);
 				unsigned char include_size = (unsigned char)include_size_input[0];
 				delete[] include_size_input; include_size_input = 0;
 				current_pos++;
@@ -98,14 +98,14 @@ namespace mob_loader
 				{
 					// Read the type of the include
 					char* type_input = new char[1];
-					basix::read_file_binary(path, type_input, 1, current_pos);
+					scls::read_file_binary(path, type_input, 1, current_pos);
 					unsigned char type = (unsigned char)type_input[0];
 					delete[] type_input; type_input = 0;
 					current_pos++;
 
 					// Read the size of the include path
 					char* path_size_input = new char[1];
-					basix::read_file_binary(path, path_size_input, 1, current_pos);
+					scls::read_file_binary(path, path_size_input, 1, current_pos);
 					unsigned char path_length = (unsigned char)path_size_input[0];
 					delete[] path_size_input; path_size_input = 0;
 					current_pos++;
@@ -113,7 +113,7 @@ namespace mob_loader
 					// Read the path of the include
 					char* path_input = new char[path_length];
 					std::vector<unsigned int> path_size = std::vector<unsigned int>();
-					basix::read_file_binary(path, path_input, path_length, current_pos);
+					scls::read_file_binary(path, path_input, path_length, current_pos);
 					std::string path_to_include = ""; for (int i = 0; i < path_length; i++) path_to_include += path_input[i];
 					delete[] path_input; path_input = 0;
 					current_pos += path_length;
@@ -126,8 +126,8 @@ namespace mob_loader
 			{
 				// Read the number of datas
 				char* include_size_input = new char[2];
-				basix::read_file_binary(path, include_size_input, 2, current_pos);
-				unsigned short include_size = basix::extract_2bytes_from_char_array(include_size_input, 0, true);
+				scls::read_file_binary(path, include_size_input, 2, current_pos);
+				unsigned short include_size = scls::extract_2bytes_from_char_array(include_size_input, 0, true);
 				delete[] include_size_input; include_size_input = 0;
 				current_pos += 2;
 
@@ -136,21 +136,21 @@ namespace mob_loader
 				{
 					// Read the number of the data
 					char* data_number_input = new char[2];
-					basix::read_file_binary(path, data_number_input, 2, current_pos);
-					unsigned short data_number = basix::extract_2bytes_from_char_array(data_number_input, 0, true);
+					scls::read_file_binary(path, data_number_input, 2, current_pos);
+					unsigned short data_number = scls::extract_2bytes_from_char_array(data_number_input, 0, true);
 					delete[] data_number_input; data_number_input = 0;
 					current_pos += 2;
 
 					// Read the size of the data
 					char* data_size_input = new char[1];
-					basix::read_file_binary(path, data_size_input, 1, current_pos);
+					scls::read_file_binary(path, data_size_input, 1, current_pos);
 					unsigned char data_length = (unsigned char)data_size_input[0];
 					delete[] data_size_input; data_size_input = 0;
 					current_pos++;
 
 					// Read the path of the include
 					char* data_input = new char[data_length];
-					basix::read_file_binary(path, data_input, data_length, current_pos);
+					scls::read_file_binary(path, data_input, data_length, current_pos);
 					current_pos += data_length;
 
 					// Set the data
@@ -164,8 +164,8 @@ namespace mob_loader
 
 				// Read the number of datas
 				char* include_size_input = new char[2];
-				basix::read_file_binary(path, include_size_input, 2, current_pos);
-				unsigned short include_size = basix::extract_2bytes_from_char_array(include_size_input, 0, true);
+				scls::read_file_binary(path, include_size_input, 2, current_pos);
+				unsigned short include_size = scls::extract_2bytes_from_char_array(include_size_input, 0, true);
 				delete[] include_size_input; include_size_input = 0;
 				current_pos += 2;
 
@@ -174,21 +174,21 @@ namespace mob_loader
 				{
 					// Read the number of the data
 					char* data_number_input = new char[2];
-					basix::read_file_binary(path, data_number_input, 2, current_pos);
-					unsigned short data_number = basix::extract_2bytes_from_char_array(data_number_input, 0, true);
+					scls::read_file_binary(path, data_number_input, 2, current_pos);
+					unsigned short data_number = scls::extract_2bytes_from_char_array(data_number_input, 0, true);
 					delete[] data_number_input; data_number_input = 0;
 					current_pos += 2;
 
 					// Read the size of the data
 					char* data_size_input = new char[1];
-					basix::read_file_binary(path, data_size_input, 1, current_pos);
+					scls::read_file_binary(path, data_size_input, 1, current_pos);
 					unsigned char data_length = (unsigned char)data_size_input[0];
 					delete[] data_size_input; data_size_input = 0;
 					current_pos++;
 
 					// Read the path of the include
 					char* data_input = new char[data_length];
-					basix::read_file_binary(path, data_input, data_length, current_pos);
+					scls::read_file_binary(path, data_input, data_length, current_pos);
 					current_pos += data_length;
 
 					// Set the data
@@ -198,29 +198,29 @@ namespace mob_loader
 
 				// Read size of the name of the object
 				char* name_size_input = new char[1];
-				basix::read_file_binary(path, name_size_input, 1, current_pos);
+				scls::read_file_binary(path, name_size_input, 1, current_pos);
 				unsigned char name_size = name_size_input[0];
 				delete[] name_size_input; name_size_input = 0;
 				current_pos++;
 
 				// Get the name of the object
 				char* name_input = new char[name_size];
-				basix::read_file_binary(path, name_input, name_size, current_pos);
+				scls::read_file_binary(path, name_input, name_size, current_pos);
 				std::string name = ""; for (int i = 0; i < name_size; i++) name += name_input[i];
 				delete[] name_input; name_input = 0;
 				current_pos += name_size;
 
 				// Get the type of the object
 				char* type_input = new char[1];
-				basix::read_file_binary(path, type_input, 1, current_pos);
+				scls::read_file_binary(path, type_input, 1, current_pos);
 				unsigned char type = type_input[0];
 				delete[] type_input; type_input = 0;
 				current_pos++;
 
 				// Get the size of the object
 				char* size_input = new char[4];
-				basix::read_file_binary(path, size_input, 4, current_pos);
-				unsigned int size = basix::extract_4bytes_from_char_array(size_input, 0, true);
+				scls::read_file_binary(path, size_input, 4, current_pos);
+				unsigned int size = scls::extract_4bytes_from_char_array(size_input, 0, true);
 				delete[] size_input; size_input = 0;
 				current_pos += 4;
 
@@ -230,7 +230,7 @@ namespace mob_loader
 					{
 						// Get the data of the texture
 						char* texture_input = new char[size];
-						basix::read_file_binary(path, texture_input, size, current_pos);
+						scls::read_file_binary(path, texture_input, size, current_pos);
 						bool flip_y = false;
 						bool resize = false;
 						if (datas[get_resize_texture_data_number()].data != 0)
@@ -254,7 +254,7 @@ namespace mob_loader
 					{
 						// Get the data of the VBO
 						char* vbo_input = new char[size];
-						basix::read_file_binary(path, vbo_input, size, current_pos);
+						scls::read_file_binary(path, vbo_input, size, current_pos);
 						VBO* vbo = game->new_vbo(name);
 						vbo->load_from_binary(vbo_input);
 						delete[] vbo_input; vbo_input = 0;
@@ -266,7 +266,7 @@ namespace mob_loader
 					{
 						// Get the data of the VAO
 						char* vao_input = new char[size];
-						basix::read_file_binary(path, vao_input, size, current_pos);
+						scls::read_file_binary(path, vao_input, size, current_pos);
 						VAO* vao = game->new_vao(name, vao_input);
 						delete[] vao_input; vao_input = 0;
 					}

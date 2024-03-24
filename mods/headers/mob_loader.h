@@ -41,8 +41,8 @@ namespace mob_loader
 
 		for (int i = 0; i < variables.size(); i++)
 		{
-			basix::put_2bytes_to_char_array(variables[i].type, result, current_pos, true); current_pos += 2;
-			basix::put_2bytes_to_char_array(variables[i].vector_size, result, current_pos, true); current_pos += 2;
+			scls::put_2bytes_to_char_array(variables[i].type, result, current_pos, true); current_pos += 2;
+			scls::put_2bytes_to_char_array(variables[i].vector_size, result, current_pos, true); current_pos += 2;
 		}
 
 		size = variables.size() * 4 + 1;
@@ -135,7 +135,7 @@ namespace mob_loader
 
 			if (version_array == 0) return -1;
 
-			return basix::extract_2bytes_from_char_array(version_array);
+			return scls::extract_2bytes_from_char_array(version_array);
 		};
 		inline void set_data(unsigned short data_number, unsigned char size, char* data)
 		{
