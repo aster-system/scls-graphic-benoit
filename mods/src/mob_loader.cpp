@@ -44,7 +44,7 @@ namespace mob_loader
 		Game* game = (Game*)scene->get_game_struct();
 
 		// Check if the path exists
-		if (!scls::file_exists(path))
+		if (!std::filesystem::exists(path))
 		{
 			game->error("MOB Loader", "The path \"" + path + "\" does not exists.");
 			return 0;
