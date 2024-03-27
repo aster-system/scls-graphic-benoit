@@ -1,7 +1,6 @@
 #pragma once
 
 #include <algorithm>
-#include <scls_foundation.h>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -12,6 +11,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <map>
 #include <random>
+#include <scls_foundation.h>
+#include <scls_image.h>
 #include <string>
 #include <sstream>
 #include <vector>
