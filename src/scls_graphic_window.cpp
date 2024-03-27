@@ -1,4 +1,20 @@
-#include "../headers/game.h"
+//******************
+//
+// scls_graphic_window.cpp
+//
+//******************
+// Presentation :
+//
+// SCLS is a project containing base functions for C++.
+// It can also be use in any projects.
+//
+// The Graphic "Benoit" part allows the user to simply display a graphic window.
+// It is named after the Mandelbrot fractal discoverer, Benoit Mandelbrot.
+//
+// This file contains the source code allowing to display the window on the screen
+//
+
+#include "../headers/scls_graphic_window.h"
 #include "../headers/model.h"
 
 bool cursor_on_window = false; // If the cursor is on the window or not
@@ -103,8 +119,8 @@ HUD::~HUD()
     unload();
 }
 
-// Game constructor
-Game::Game(int a_window_width, int a_window_height, std::string a_exec_path, bool load_vaos): Advanced_Struct(global_mouse_x, global_mouse_y, global_screen_width, global_screen_height, a_exec_path), a_cursor_on_window(cursor_on_window) {
+// Window constructor
+Window::Window(int a_window_width, int a_window_height, std::string a_exec_path, bool load_vaos): Advanced_Struct(global_mouse_x, global_mouse_y, global_screen_width, global_screen_height, a_exec_path), a_cursor_on_window(cursor_on_window) {
     load_keys();
     // Configurate base_struct
     get_camera()->set_position(glm::vec3(0.0, 0.0, 0.0));
@@ -151,19 +167,19 @@ Game::Game(int a_window_width, int a_window_height, std::string a_exec_path, boo
 }
 
 // Add an existing HUD to the game
-void Game::add_hud(std::string name, HUD* hud) {
+void Window::add_hud(std::string name, HUD* hud) {
     if (contains_hud(name)) { std::cout << "Matix game : error ! The HUD \"" << name << "\" you want to add already exists." << std::endl; return; }
     (*get_huds())[name] = hud;
 }
 
 // Add an existing scene to the game
-void Game::add_scene(std::string name, Scene* scene) {
+void Window::add_scene(std::string name, Scene* scene) {
     if (contains_scene(name)) { std::cout << "Matix game : error ! The scene \"" << name << "\" you want to add already exists." << std::endl; return; }
     (*get_scenes())[name] = scene;
 }
 
 // Return if the game contains an HUD Object
-bool Game::contains_hud(std::string name) {
+bool Window::contains_hud(std::string name) {
     std::map < std::string, HUD*>* objects = get_huds();
     for (std::map<std::string, HUD*>::iterator it = objects->begin(); it != objects->end(); it++)
     {
@@ -173,7 +189,7 @@ bool Game::contains_hud(std::string name) {
 }
 
 // Returns if the game contains a scene
-bool Game::contains_scene(std::string name) {
+bool Window::contains_scene(std::string name) {
     std::map<std::string, Scene*> *scenes = get_scenes();
     for (std::map<std::string, Scene*>::iterator it = scenes->begin(); it != scenes->end(); it++)
     {
@@ -183,7 +199,7 @@ bool Game::contains_scene(std::string name) {
 }
 
 // Load the keys in the game
-void Game::load_keys() {
+void Window::load_keys() {
     // Alphabet
     keys["a"] = GLFW_KEY_Q;
     keys["b"] = GLFW_KEY_B;
@@ -243,7 +259,7 @@ void Game::load_keys() {
 }
 
 // Load the game from a config file
-void Game::load_from_config_file(std::string path) {
+void Window::load_from_config_file(std::string path) {
     std::string last_config_file_path = get_config_file_path();
     set_config_file_path(path);
 
@@ -271,7 +287,7 @@ void Game::load_from_config_file(std::string path) {
 }
 
 // Create a scene into the game and return it
-Scene* Game::new_scene(std::string name, std::string map_path, Map_Opening_Mode mode, bool use_graphic, bool use_physic) {
+Scene* Window::new_scene(std::string name, std::string map_path, Map_Opening_Mode mode, bool use_graphic, bool use_physic) {
     if (contains_scene(name)) { std::cout << "Matix game : error ! The scene \"" << name << "\" you want to create already exists." << std::endl; return 0; }
 
     Scene* new_scene = new Scene(this, name, map_path, use_graphic, use_physic, mode);
@@ -280,7 +296,7 @@ Scene* Game::new_scene(std::string name, std::string map_path, Map_Opening_Mode 
 }
 
 // Render the scene
-void Game::render() {
+void Window::render() {
     // Clear OpenGL window
     glClearColor(get_background_color()[0], get_background_color()[1], get_background_color()[2], get_background_color()[3]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -311,12 +327,12 @@ void Game::render() {
 }
 
 // Properly resize the window
-void Game::resize(unsigned int width, unsigned int height) {
+void Window::resize(unsigned int width, unsigned int height) {
     glfwSetWindowSize(window, width, height);
 }
 
 // Run the game by doing multiples call to update
-bool Game::run() {
+bool Window::run() {
     bool to_return = glfwWindowShouldClose(window);
     if (!continue_running()) { to_return = true; }
 
@@ -326,7 +342,7 @@ bool Game::run() {
 }
 
 // Set the current HUD in the game
-void Game::set_current_hud(std::string a_name) {
+void Window::set_current_hud(std::string a_name) {
     if (contains_hud(a_name))
     {
         current_hud = a_name;
@@ -344,7 +360,7 @@ void Game::set_current_hud(std::string a_name) {
 };
 
 // Set the current scene in the game
-void Game::set_current_scene(std::string a_name) {
+void Window::set_current_scene(std::string a_name) {
     if (contains_scene(a_name))
     {
         current_scene = a_name;
@@ -361,7 +377,7 @@ void Game::set_current_scene(std::string a_name) {
 };
 
 // Update one frame of the game
-void Game::update() {
+void Window::update() {
     if (get_current_scene_name() != "" && contains_scene(get_current_scene_name()))
     {
         Scene* scene = get_current_scene();
@@ -382,7 +398,7 @@ void Game::update() {
 }
 
 // Update the event of the game during this frame
-void Game::update_event()
+void Window::update_event()
 {
     // Calculate delta time
     set_delta_time(glfwGetTime() - last_frame_time);
@@ -506,8 +522,8 @@ void Game::update_event()
     }
 }
 
-// Game destructor
-Game::~Game()
+// Window destructor
+Window::~Window()
 {
     // Destroy the cursor
     if(a_cursor != 0) glfwDestroyCursor(a_cursor);

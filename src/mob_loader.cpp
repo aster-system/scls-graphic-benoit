@@ -41,12 +41,12 @@ namespace mob_loader
 	// Load a MOB from a path
 	Object* MOB_Loader::load_from_mob(std::string path, Scene* scene)
 	{
-		Game* game = (Game*)scene->get_game_struct();
+		Window* window = (Window*)scene->get_game_struct();
 
 		// Check if the path exists
 		if (!std::filesystem::exists(path))
 		{
-			game->error("MOB Loader", "The path \"" + path + "\" does not exists.");
+			window->error("MOB Loader", "The path \"" + path + "\" does not exists.");
 			return 0;
 		}
 
@@ -62,7 +62,7 @@ namespace mob_loader
 		// Check the signature of the file
 		if (signature != "MATIX3DO")
 		{
-			game->error("MOB Loader", "The path \"" + path + "\" is not a MOB file (its signature is \"" + signature + "\" but the \"MATIX3DO\" signature is wanted).");
+			window->error("MOB Loader", "The path \"" + path + "\" is not a MOB file (its signature is \"" + signature + "\" but the \"MATIX3DO\" signature is wanted).");
 			return 0;
 		}
 
@@ -241,7 +241,7 @@ namespace mob_loader
 						{
 							flip_y = datas[get_flip_y_texture_data_number()].data[0];
 						}
-						Texture* texture = game->new_texture(name);
+						Texture* texture = window->new_texture(name);
 						texture->get_image()->_load_from_binary_PNG(texture_input, size);
 						if (flip_y) texture->get_image()->flip_y();
 						texture->load_texture();
@@ -255,7 +255,7 @@ namespace mob_loader
 						// Get the data of the VBO
 						char* vbo_input = new char[size];
 						scls::read_file_binary(path, vbo_input, size, current_pos);
-						VBO* vbo = game->new_vbo(name);
+						VBO* vbo = window->new_vbo(name);
 						vbo->load_from_binary(vbo_input);
 						delete[] vbo_input; vbo_input = 0;
 					}
@@ -267,7 +267,7 @@ namespace mob_loader
 						// Get the data of the VAO
 						char* vao_input = new char[size];
 						scls::read_file_binary(path, vao_input, size, current_pos);
-						VAO* vao = game->new_vao(name, vao_input);
+						VAO* vao = window->new_vao(name, vao_input);
 						delete[] vao_input; vao_input = 0;
 					}
 				}

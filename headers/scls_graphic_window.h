@@ -1,4 +1,21 @@
-#pragma once
+//******************
+//
+// scls_graphic_window.h
+//
+//******************
+// Presentation :
+//
+// SCLS is a project containing base functions for C++.
+// It can also be use in any projects.
+//
+// The Graphic "Benoit" part allows the user to simply display a graphic window.
+// It is named after the Mandelbrot fractal discoverer, Benoit Mandelbrot.
+//
+// This file contains the features allowing to display the window on the screen
+//
+
+#ifndef SCLS_WINDOW
+#define SCLS_WINDOW
 
 #include "../headers/advanced_struct.h"
 #include "../headers/base_struct.h"
@@ -14,8 +31,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 // Callback function for mouse moving
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
-class HUD : public HUD_Object
-{
+class HUD : public HUD_Object {
 	// Class representing an HUD
 public:
 	HUD(Advanced_Struct* a_advanced_struct, std::string a_name); // HUD constructor
@@ -48,11 +64,10 @@ private:
 	std::map < std::string, HUD_Object*> hud_objects = std::map < std::string, HUD_Object*>(); // Each HUD_Object, with their name as key, in the HUD
 };
 
-class Game: public Advanced_Struct
-{
+class Window: public Advanced_Struct {
 	// Class representing the game
 public:
-	Game(int a_window_width, int a_window_height, std::string a_exec_path, bool load_vaos = true); // Game constructor
+	Window(int a_window_width, int a_window_height, std::string a_exec_path, bool load_vaos = true); // Window constructor
 	void add_hud(std::string name, HUD* object); // Add an existing HUD to the game
 	void add_scene(std::string name, Scene* scene); // Add an existing scene to the game
 	bool contains_hud(std::string name); // Return if the game contains an HUD Object
@@ -71,7 +86,7 @@ public:
 	bool run(); // Run the game by doing multiples call to update
 	void update(); // Update one frame of the game
 	void update_event(); // Update the event of the game during this frame
-	~Game(); // Game destructor
+	~Window(); // Window destructor
 
 	// Getters and setters
 	inline bool continue_running() { return is_running; };
@@ -118,8 +133,7 @@ private:
 
 // Create a new HUD Object into the HUD
 template <class O> // Template for adding a type of HUD object
-O* HUD::new_hud_object(std::string name, HUD_Object* parent, std::string texture_name, std::string vao_name)
-{
+O* HUD::new_hud_object(std::string name, HUD_Object* parent, std::string texture_name, std::string vao_name) {
 	return new_hud_object<O>(name, parent, get_advanced_struct()->get_texture(texture_name), vao_name);
 }
 
@@ -138,8 +152,7 @@ O* HUD::new_hud_object(std::string name, HUD_Object* parent, Texture* texture, s
 
 // Create a new HUD Object into the HUD
 template <class O> // Template for adding a type of HUD object
-O* HUD::new_hud_object(std::string name, HUD_Object* parent, unsigned short texture_width, unsigned short texture_height, glm::vec4 texture_color, std::string vao_name)
-{
+O* HUD::new_hud_object(std::string name, HUD_Object* parent, unsigned short texture_width, unsigned short texture_height, glm::vec4 texture_color, std::string vao_name) {
 	if (contains_hud_object(name)) { std::cout << "HUD \"" << get_name() << "\" error ! The objects \"" << name << "\" you want to create already exists." << std::endl; return 0; }
 
 	bool texture_resize = false; // Load the texture
@@ -155,11 +168,12 @@ O* HUD::new_hud_object(std::string name, HUD_Object* parent, unsigned short text
 
 // Create a new HUD Object into the game
 template <class O> // Template for adding a type of HUD
-O* Game::new_hud(std::string name)
-{
+O* Window::new_hud(std::string name) {
 	if (contains_scene(name)) { std::cout << "Matix game : error ! The objects \"" << name << "\" you want to create already exists." << std::endl; return 0; }
 
 	O* new_object = new O(this, name);
 	add_hud(name, new_object);
 	return new_object;
 }
+
+#endif // SCLS_WINDOW

@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "../../headers/game.h"
+#include "scls_graphic_window.h"
 
 namespace mob_loader
 {
