@@ -37,11 +37,11 @@ namespace wisim {
         inline bool run() {return window()->run();};
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
-        inline Window* window() {return a_window;};
+        inline scls::Window* window() {return a_window;};
     private:
         // Window attributes
         // Pointer to the main Window
-        Window* a_window = 0;
+        scls::Window* a_window = 0;
     };
 
     // Create a simple WiSim window

@@ -17,528 +17,530 @@
 #include "../headers/scls_graphic_window.h"
 #include "../headers/model.h"
 
-bool cursor_on_window = false; // If the cursor is on the window or not
-double global_mouse_x = 100000; // Global variable representing the X pos of the mouse
-double global_mouse_y = 100000; // Global variable representing the Y pos of the mouse
-int global_screen_width = 1280; // Global variable representing the width of the screen
-int global_screen_height = 720; // Global variable representing the height of the screen
-std::map<std::string, unsigned int> keys = std::map<std::string, unsigned int>(); // Map of each keys in the game
+// Using of the "scls" namespace to simplify the programmation
+namespace scls {
+    bool cursor_on_window = false; // If the cursor is on the window or not
+    double global_mouse_x = 100000; // Global variable representing the X pos of the mouse
+    double global_mouse_y = 100000; // Global variable representing the Y pos of the mouse
+    int global_screen_width = 1280; // Global variable representing the width of the screen
+    int global_screen_height = 720; // Global variable representing the height of the screen
+    std::map<std::string, unsigned int> keys = std::map<std::string, unsigned int>(); // Map of each keys in the game
 
-
-// Callback function for cursor enter in the window
-void cursor_enter_callback(GLFWwindow* window, int entered) {
-    if (entered)
-    {
-        // The cursor entered the content area of the window
-        cursor_on_window = true;
-    }
-    else
-    {
-        // The cursor left the content area of the window
-        cursor_on_window = false;
-    }
-}
-
-// Callback function for window resizing
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    glViewport(0, 0, width, height);
-    global_screen_height = height;
-    global_screen_width = width;
-}
-
-// Callback function for mouse moving
-void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-    global_mouse_x = xpos;
-    global_mouse_y = ypos;
-}
-
-// HUD constructor
-HUD::HUD(Advanced_Struct* a_advanced_struct, std::string a_name): HUD_Object(reinterpret_cast<Base_Struct*>(a_advanced_struct), a_name, 0, a_advanced_struct->get_texture("transparent"), a_advanced_struct->get_vao("hud_default")) {
-    advanced_struct = a_advanced_struct;name = a_name;
-
-    set_position(glm::vec3(0, 0, -10));
-}
-
-// Add an existing HUD to the hud
-void HUD::add_hud_object(std::string name, HUD_Object* object) {
-    if (contains_hud_object(name)) { std::cout << "HUD \"" << get_name() << "\" : error ! The HUD object \"" << name << "\" you want to add already exists." << std::endl; return; }
-    (*get_hud_objects())[name] = object;
-}
-
-// Return if the HUD contains an HUD Object
-bool HUD::contains_hud_object(std::string name) {
-    std::map < std::string, HUD_Object*>* objects = get_hud_objects();
-    for (std::map<std::string, HUD_Object*>::iterator it = objects->begin(); it != objects->end(); it++)
-    {
-        if (it->first == name) { return true; } // Verify each hud object name (first element of map)
-    }
-    return false;
-}
-
-// Render the HUD
-void HUD::render() {
-
-    for (std::map<std::string, HUD_Object*>::iterator it = get_hud_objects()->begin(); it != get_hud_objects()->end(); it++)
-    {
-        it->second->soft_reset();
-    }
-
-    HUD_Object::render();
-}
-
-// Update the HUD
-void HUD::update()
-{
-    update_object();
-}
-
-// Update all the objects in the HUD
-void HUD::update_object()
-{
-    for (std::map<std::string, HUD_Object*>::iterator it = get_hud_objects()->begin(); it != get_hud_objects()->end(); it++)
-    {
-        it->second->update();
-    }
-}
-
-// Unload the objects in the HUD
-void HUD::unload()
-{
-    std::map < std::string, HUD_Object*>* objects = get_hud_objects();
-    for (std::map<std::string, HUD_Object*>::iterator it = objects->begin(); it != objects->end(); it++)
-    {
-        delete it->second; // Delete each HUD_Object
-        it->second = 0;
-    }
-    objects->clear();
-}
-
-// HUD destructor
-HUD::~HUD()
-{
-    unload();
-}
-
-// Window constructor
-Window::Window(int a_window_width, int a_window_height, std::string a_exec_path, bool load_vaos): Advanced_Struct(global_mouse_x, global_mouse_y, global_screen_width, global_screen_height, a_exec_path), a_cursor_on_window(cursor_on_window) {
-    load_keys();
-    // Configurate base_struct
-    get_camera()->set_position(glm::vec3(0.0, 0.0, 0.0));
-    get_camera()->set_rotation(glm::vec3(0.0, 0.0, 0.0));
-    set_window_height(a_window_height);
-    set_window_width(a_window_width);
-
-    // GLFW Window generation
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    window = glfwCreateWindow(get_window_width(), get_window_height(), "Fenêtre OpenGL", NULL, NULL);
-    if (window == NULL)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-    }
-    glfwMakeContextCurrent(window);
-
-    // Glad loading
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        glfwTerminate();
-    }
-
-    // Texture setting
-    glEnable(GL_BLEND);
-    glEnable(GL_DEPTH_TEST);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glDepthFunc(GL_LESS);
-
-    // Callback functions
-    glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetCursorEnterCallback(window, cursor_enter_callback);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-    if (load_vaos)
-    {
-        load_VAOs();
-    }
-}
-
-// Add an existing HUD to the game
-void Window::add_hud(std::string name, HUD* hud) {
-    if (contains_hud(name)) { std::cout << "Matix game : error ! The HUD \"" << name << "\" you want to add already exists." << std::endl; return; }
-    (*get_huds())[name] = hud;
-}
-
-// Add an existing scene to the game
-void Window::add_scene(std::string name, Scene* scene) {
-    if (contains_scene(name)) { std::cout << "Matix game : error ! The scene \"" << name << "\" you want to add already exists." << std::endl; return; }
-    (*get_scenes())[name] = scene;
-}
-
-// Return if the game contains an HUD Object
-bool Window::contains_hud(std::string name) {
-    std::map < std::string, HUD*>* objects = get_huds();
-    for (std::map<std::string, HUD*>::iterator it = objects->begin(); it != objects->end(); it++)
-    {
-        if (it->first == name) { return true; } // Verify each hud object name (first element of map)
-    }
-    return false;
-}
-
-// Returns if the game contains a scene
-bool Window::contains_scene(std::string name) {
-    std::map<std::string, Scene*> *scenes = get_scenes();
-    for (std::map<std::string, Scene*>::iterator it = scenes->begin(); it != scenes->end(); it++)
-    {
-        if (it->first == name) { return true; } // Verify each scene name (first element of map)
-    }
-    return false;
-}
-
-// Load the keys in the game
-void Window::load_keys() {
-    // Alphabet
-    keys["a"] = GLFW_KEY_Q;
-    keys["b"] = GLFW_KEY_B;
-    keys["c"] = GLFW_KEY_C;
-    keys["d"] = GLFW_KEY_D;
-    keys["e"] = GLFW_KEY_E;
-    keys["f"] = GLFW_KEY_F;
-    keys["g"] = GLFW_KEY_G;
-    keys["h"] = GLFW_KEY_H;
-    keys["i"] = GLFW_KEY_I;
-    keys["j"] = GLFW_KEY_J;
-    keys["k"] = GLFW_KEY_K;
-    keys["l"] = GLFW_KEY_L;
-    keys["m"] = GLFW_KEY_SEMICOLON;
-    keys["n"] = GLFW_KEY_N;
-    keys["o"] = GLFW_KEY_O;
-    keys["p"] = GLFW_KEY_P;
-    keys["q"] = GLFW_KEY_A;
-    keys["r"] = GLFW_KEY_R;
-    keys["s"] = GLFW_KEY_S;
-    keys["t"] = GLFW_KEY_T;
-    keys["u"] = GLFW_KEY_U;
-    keys["v"] = GLFW_KEY_V;
-    keys["w"] = GLFW_KEY_Z;
-    keys["x"] = GLFW_KEY_X;
-    keys["y"] = GLFW_KEY_Y;
-    keys["z"] = GLFW_KEY_W;
-
-    // Numbers
-    keys["0"] = GLFW_KEY_KP_0;
-    keys["1"] = GLFW_KEY_KP_1;
-    keys["2"] = GLFW_KEY_KP_2;
-    keys["3"] = GLFW_KEY_KP_3;
-    keys["4"] = GLFW_KEY_KP_4;
-    keys["5"] = GLFW_KEY_KP_5;
-    keys["6"] = GLFW_KEY_KP_6;
-    keys["7"] = GLFW_KEY_KP_7;
-    keys["8"] = GLFW_KEY_KP_8;
-    keys["9"] = GLFW_KEY_KP_9;
-
-    // Poncutation
-    keys["_"] = GLFW_KEY_8;
-    keys[":"] = GLFW_KEY_PERIOD;
-    keys[";"] = GLFW_KEY_COMMA;
-
-    // Other
-    keys["backspace"] = GLFW_KEY_BACKSPACE;
-    keys["down arrow"] = GLFW_KEY_DOWN;
-    keys["enter"] = GLFW_KEY_ENTER;
-    keys["left arrow"] = GLFW_KEY_LEFT;
-    keys["left shift"] = GLFW_KEY_LEFT_SHIFT;
-    keys["right arrow"] = GLFW_KEY_RIGHT;
-    keys["right shift"] = GLFW_KEY_RIGHT_SHIFT;
-    keys["space"] = GLFW_KEY_SPACE;
-    keys["tab"] = GLFW_KEY_TAB;
-    keys["up arrow"] = GLFW_KEY_UP;
-}
-
-// Load the game from a config file
-void Window::load_from_config_file(std::string path) {
-    std::string last_config_file_path = get_config_file_path();
-    set_config_file_path(path);
-
-    if (last_config_file_path != get_config_file_path()) // If the path is correct
-    {
-        std::vector<std::string> content = scls::cut_string(scls::read_file(get_config_file_path()), "\n");
-
-        for (int i = 0; i < content.size(); i++) // Analyze each lines
+    // Callback function for cursor enter in the window
+    void _cursor_enter_callback(GLFWwindow* window, int entered) {
+        if (entered)
         {
-            std::vector<std::string> line = scls::cut_string(content[i], ":");
-            std::string all_variables = "";
-            for (int j = 1; j < line.size(); j++) { all_variables += line[j]; }
-
-            if (line[0] == "screen_size") // If the line represents the size of the screen
-            {
-                std::vector<std::string> variables = scls::cut_string(all_variables, ";");
-                resize(std::stoi(variables[0]), std::stoi(variables[1]));
-            }
-            else if (line[0] == "assets_path_directory") // If the line represents the assets path
-            {
-                set_assets_directory_path(all_variables);
-            }
-        }
-    }
-}
-
-// Create a scene into the game and return it
-Scene* Window::new_scene(std::string name, std::string map_path, Map_Opening_Mode mode, bool use_graphic, bool use_physic) {
-    if (contains_scene(name)) { std::cout << "Matix game : error ! The scene \"" << name << "\" you want to create already exists." << std::endl; return 0; }
-
-    Scene* new_scene = new Scene(this, name, map_path, use_graphic, use_physic, mode);
-    add_scene(name, new_scene);
-    return new_scene;
-}
-
-// Render the scene
-void Window::render() {
-    // Clear OpenGL window
-    glClearColor(get_background_color()[0], get_background_color()[1], get_background_color()[2], get_background_color()[3]);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glDepthFunc(GL_LESS);
-    if (get_current_scene_name() != "" && contains_scene(get_current_scene_name()))
-    {
-        Scene* scene = get_current_scene();
-        if (scene != 0)
-        {
-            scene->render();
-        }
-    }
-
-    glDepthFunc(GL_ALWAYS);
-    if (get_current_hud_name() != "" && contains_hud(get_current_hud_name()))
-    {
-        HUD* hud = get_current_hud();
-        if (hud != 0)
-        {
-            hud->render();
-        }
-    }
-
-    // Update OpenGL
-    glfwSwapBuffers(window);
-    glfwPollEvents();
-}
-
-// Properly resize the window
-void Window::resize(unsigned int width, unsigned int height) {
-    glfwSetWindowSize(window, width, height);
-}
-
-// Run the game by doing multiples call to update
-bool Window::run() {
-    bool to_return = glfwWindowShouldClose(window);
-    if (!continue_running()) { to_return = true; }
-
-    if(to_return)
-        glfwTerminate();
-    return !to_return;
-}
-
-// Set the current HUD in the game
-void Window::set_current_hud(std::string a_name) {
-    if (contains_hud(a_name))
-    {
-        current_hud = a_name;
-        get_current_hud()->load();
-    }
-    else if(a_name == "")
-    {
-
-        current_hud = "";
-    }
-    else
-    {
-        std::cout << "Matrix game : error ! The current hud \"" << a_name << "\" does not exist." << std::endl;
-    }
-};
-
-// Set the current scene in the game
-void Window::set_current_scene(std::string a_name) {
-    if (contains_scene(a_name))
-    {
-        current_scene = a_name;
-        get_current_scene()->load();
-    }
-    else if (a_name == "")
-    {
-        current_scene = "";
-    }
-    else
-    {
-        std::cout << "Matrix game : error ! The current scene \"" << a_name << "\" does not exist." << std::endl;
-    }
-};
-
-// Update one frame of the game
-void Window::update() {
-    if (get_current_scene_name() != "" && contains_scene(get_current_scene_name()))
-    {
-        Scene* scene = get_current_scene();
-        if (scene != 0)
-        {
-            scene->update();
-        }
-    }
-
-    if (get_current_hud_name() != "" && contains_hud(get_current_hud_name()))
-    {
-        HUD* hud = get_current_hud();
-        if (hud != 0)
-        {
-            hud->update();
-        }
-    }
-}
-
-// Update the event of the game during this frame
-void Window::update_event()
-{
-    // Calculate delta time
-    set_delta_time(glfwGetTime() - last_frame_time);
-    last_frame_time = glfwGetTime();
-
-    if (get_delta_time() > 0.1) set_delta_time(0);
-
-    // FPS calculation
-    time_since_last_fps_calculation += get_delta_time();
-    if (time_since_last_fps_calculation >= 1)
-    {
-        std::cout << "FPS " << frame_count << std::endl;
-        frame_count = 0;
-        time_since_last_fps_calculation = 0;
-    }
-    else
-    {
-        frame_count++;
-    }
-
-    // Calculate mouse move and button
-    double mouse_move_x = get_mouse_x() - get_last_mouse_x();
-    if (get_mouse_x() >= 100000) mouse_move_x = 0;
-    double mouse_move_y = get_mouse_y() - get_last_mouse_y();
-    if (get_mouse_y() >= 100000) mouse_move_y = 0;
-    set_left_mouse_button_state(0);
-    set_mouse_move_x(mouse_move_x);
-    set_mouse_move_y(mouse_move_y);
-    set_right_mouse_button_state(0);
-    if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-        set_left_mouse_button_state(1);
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
-        set_right_mouse_button_state(1);
-
-    // Check overflied HUD object
-    overflighted_object = 0;
-    if (is_cursor_on_window() && get_cursor_state() == GLFW_CURSOR_NORMAL)
-    {
-        HUD* current_hud = get_current_hud();
-        if (current_hud != 0)
-        {
-            std::vector<HUD_Object*>* objects = (&current_hud->sorted_children());
-            for (int i = static_cast<int>(objects->size()) - 1; i >= 0; i--) // Check each objects
-            {
-                HUD_Object* object = (*objects)[i];
-                if (object->is_in(glm::vec2(get_mouse_x(), get_mouse_y())))
-                {
-                    overflighted_object = object;
-                    objects = &object->sorted_children();
-                    i = static_cast<int>(objects->size());
-                }
-            }
-        }
-
-        if (overflighted_object != 0)
-        {
-            if(get_left_mouse_button_state()) overflighted_object->set_is_clicked(true);
-            overflighted_object->set_is_overflighted(true);
-        }
-    }
-
-    // Update the keys
-    get_pressed_keys()->clear();
-    get_pressed_keys_frame()->clear();
-    for (std::map<std::string, Key_State>::iterator it = get_keys_state()->begin(); it != get_keys_state()->end(); it++)
-    {
-        it->second = Key_State::Nothing; // Reset keys
-    }
-
-    for (std::map<std::string, unsigned int>::iterator it = keys.begin(); it != keys.end(); it++)
-    {
-        if (glfwGetKey(window, it->second) == GLFW_PRESS)
-        {
-            (*get_keys_state())[it->first] = Key_State::Pressed;
-            get_pressed_keys()->push_back(it->first);
-        }
-    }
-
-    // Update key frame
-    for (std::map<std::string, Key_State>::iterator it = get_keys_state()->begin(); it != get_keys_state()->end(); it++)
-    {
-        Key_State state = it->second;
-        if (state != Key_State::Nothing)
-        {
-            if ((*get_keys_state_frame())[it->first] != state && (*get_keys_state_frame())[it->first] != Key_State::Already_Pressed)
-            {
-                (*get_keys_state_frame())[it->first] = Key_State::Pressed;
-                get_pressed_keys_frame()->push_back(it->first);
-            }
-            else
-            {
-                (*get_keys_state_frame())[it->first] = Key_State::Already_Pressed;
-            }
+            // The cursor entered the content area of the window
+            cursor_on_window = true;
         }
         else
         {
-            (*get_keys_state_frame())[it->first] = Key_State::Nothing; // Reset keys
+            // The cursor left the content area of the window
+            cursor_on_window = false;
         }
     }
 
-    // Update last mouse pos for future mouse pos calcul
-    set_last_mouse_x(get_mouse_x());
-    set_last_mouse_y(get_mouse_y());
+    // Callback function for window resizing
+    void _framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+        glViewport(0, 0, width, height);
+        global_screen_height = height;
+        global_screen_width = width;
+    }
 
-    // Update the cursor texture
-    if(overflighted_object != 0)
-    {
-        if(current_cursor() != overflighted_object->cursor_overflighted())
+    // Callback function for mouse moving
+    void _mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+        global_mouse_x = xpos;
+        global_mouse_y = ypos;
+    }
+
+    // HUD constructor
+    HUD::HUD(Advanced_Struct* a_advanced_struct, std::string a_name): HUD_Object(reinterpret_cast<Base_Struct*>(a_advanced_struct), a_name, 0, a_advanced_struct->get_texture("transparent"), a_advanced_struct->get_vao("hud_default")) {
+        advanced_struct = a_advanced_struct;name = a_name;
+
+        set_position(glm::vec3(0, 0, -10));
+    }
+
+    // Add an existing HUD to the hud
+    void HUD::add_hud_object(std::string name, HUD_Object* object) {
+        if (contains_hud_object(name)) { std::cout << "HUD \"" << get_name() << "\" : error ! The HUD object \"" << name << "\" you want to add already exists." << std::endl; return; }
+        (*get_hud_objects())[name] = object;
+    }
+
+    // Return if the HUD contains an HUD Object
+    bool HUD::contains_hud_object(std::string name) {
+        std::map < std::string, HUD_Object*>* objects = get_hud_objects();
+        for (std::map<std::string, HUD_Object*>::iterator it = objects->begin(); it != objects->end(); it++)
         {
-            if(a_cursor != 0) glfwDestroyCursor(a_cursor);
-            a_cursor = glfwCreateStandardCursor(overflighted_object->cursor_overflighted());
-            glfwSetCursor(window, a_cursor);
-            a_current_cursor = overflighted_object->cursor_overflighted();
+            if (it->first == name) { return true; } // Verify each hud object name (first element of map)
+        }
+        return false;
+    }
+
+    // Render the HUD
+    void HUD::render() {
+
+        for (std::map<std::string, HUD_Object*>::iterator it = get_hud_objects()->begin(); it != get_hud_objects()->end(); it++)
+        {
+            it->second->soft_reset();
+        }
+
+        HUD_Object::render();
+    }
+
+    // Update the HUD
+    void HUD::update()
+    {
+        update_object();
+    }
+
+    // Update all the objects in the HUD
+    void HUD::update_object()
+    {
+        for (std::map<std::string, HUD_Object*>::iterator it = get_hud_objects()->begin(); it != get_hud_objects()->end(); it++)
+        {
+            it->second->update();
         }
     }
-    else if(a_cursor == 0)
-    {
-        a_cursor = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
-        glfwSetCursor(window, a_cursor);
-        a_current_cursor = GLFW_ARROW_CURSOR;
-    }
-}
 
-// Window destructor
-Window::~Window()
-{
-    // Destroy the cursor
-    if(a_cursor != 0) glfwDestroyCursor(a_cursor);
-
-    std::map<std::string, Scene*> *scenes = get_scenes();
-    for (std::map<std::string, Scene*>::iterator it = scenes->begin(); it != scenes->end(); it++)
+    // Unload the objects in the HUD
+    void HUD::unload()
     {
-        delete it->second; // Destroy each scenes
-        it->second = 0;
+        std::map < std::string, HUD_Object*>* objects = get_hud_objects();
+        for (std::map<std::string, HUD_Object*>::iterator it = objects->begin(); it != objects->end(); it++)
+        {
+            delete it->second; // Delete each HUD_Object
+            it->second = 0;
+        }
+        objects->clear();
     }
 
-    std::map<std::string, HUD*>* huds = get_huds();
-    for (std::map<std::string, HUD*>::iterator it = huds->begin(); it != huds->end(); it++)
+    // HUD destructor
+    HUD::~HUD()
     {
-        delete it->second; // Destroy each HUD_Object
-        it->second = 0;
+        unload();
+    }
+
+    // Window constructor
+    Window::Window(int a_window_width, int a_window_height, std::string a_exec_path, bool load_vaos): Advanced_Struct(global_mouse_x, global_mouse_y, global_screen_width, global_screen_height, a_exec_path), a_cursor_on_window(cursor_on_window) {
+        load_keys();
+        // Configurate base_struct
+        get_camera()->set_position(glm::vec3(0.0, 0.0, 0.0));
+        get_camera()->set_rotation(glm::vec3(0.0, 0.0, 0.0));
+        set_window_height(a_window_height);
+        set_window_width(a_window_width);
+
+        // GLFW Window generation
+        glfwInit();
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+        window = glfwCreateWindow(get_window_width(), get_window_height(), "Fenêtre OpenGL", NULL, NULL);
+        if (window == NULL)
+        {
+            std::cout << "Failed to create GLFW window" << std::endl;
+            glfwTerminate();
+        }
+        glfwMakeContextCurrent(window);
+
+        // Glad loading
+        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+        {
+            std::cout << "Failed to initialize GLAD" << std::endl;
+            glfwTerminate();
+        }
+
+        // Texture setting
+        glEnable(GL_BLEND);
+        glEnable(GL_DEPTH_TEST);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDepthFunc(GL_LESS);
+
+        // Callback functions
+        glfwSetCursorPosCallback(window, _mouse_callback);
+        glfwSetCursorEnterCallback(window, _cursor_enter_callback);
+        glfwSetFramebufferSizeCallback(window, _framebuffer_size_callback);
+
+        if (load_vaos)
+        {
+            load_VAOs();
+        }
+    }
+
+    // Add an existing HUD to the game
+    void Window::add_hud(std::string name, HUD* hud) {
+        if (contains_hud(name)) { std::cout << "Matix game : error ! The HUD \"" << name << "\" you want to add already exists." << std::endl; return; }
+        (*get_huds())[name] = hud;
+    }
+
+    // Add an existing scene to the game
+    void Window::add_scene(std::string name, Scene* scene) {
+        if (contains_scene(name)) { std::cout << "Matix game : error ! The scene \"" << name << "\" you want to add already exists." << std::endl; return; }
+        (*get_scenes())[name] = scene;
+    }
+
+    // Return if the game contains an HUD Object
+    bool Window::contains_hud(std::string name) {
+        std::map < std::string, HUD*>* objects = get_huds();
+        for (std::map<std::string, HUD*>::iterator it = objects->begin(); it != objects->end(); it++)
+        {
+            if (it->first == name) { return true; } // Verify each hud object name (first element of map)
+        }
+        return false;
+    }
+
+    // Returns if the game contains a scene
+    bool Window::contains_scene(std::string name) {
+        std::map<std::string, Scene*> *scenes = get_scenes();
+        for (std::map<std::string, Scene*>::iterator it = scenes->begin(); it != scenes->end(); it++)
+        {
+            if (it->first == name) { return true; } // Verify each scene name (first element of map)
+        }
+        return false;
+    }
+
+    // Load the keys in the game
+    void Window::load_keys() {
+        // Alphabet
+        keys["a"] = GLFW_KEY_Q;
+        keys["b"] = GLFW_KEY_B;
+        keys["c"] = GLFW_KEY_C;
+        keys["d"] = GLFW_KEY_D;
+        keys["e"] = GLFW_KEY_E;
+        keys["f"] = GLFW_KEY_F;
+        keys["g"] = GLFW_KEY_G;
+        keys["h"] = GLFW_KEY_H;
+        keys["i"] = GLFW_KEY_I;
+        keys["j"] = GLFW_KEY_J;
+        keys["k"] = GLFW_KEY_K;
+        keys["l"] = GLFW_KEY_L;
+        keys["m"] = GLFW_KEY_SEMICOLON;
+        keys["n"] = GLFW_KEY_N;
+        keys["o"] = GLFW_KEY_O;
+        keys["p"] = GLFW_KEY_P;
+        keys["q"] = GLFW_KEY_A;
+        keys["r"] = GLFW_KEY_R;
+        keys["s"] = GLFW_KEY_S;
+        keys["t"] = GLFW_KEY_T;
+        keys["u"] = GLFW_KEY_U;
+        keys["v"] = GLFW_KEY_V;
+        keys["w"] = GLFW_KEY_Z;
+        keys["x"] = GLFW_KEY_X;
+        keys["y"] = GLFW_KEY_Y;
+        keys["z"] = GLFW_KEY_W;
+
+        // Numbers
+        keys["0"] = GLFW_KEY_KP_0;
+        keys["1"] = GLFW_KEY_KP_1;
+        keys["2"] = GLFW_KEY_KP_2;
+        keys["3"] = GLFW_KEY_KP_3;
+        keys["4"] = GLFW_KEY_KP_4;
+        keys["5"] = GLFW_KEY_KP_5;
+        keys["6"] = GLFW_KEY_KP_6;
+        keys["7"] = GLFW_KEY_KP_7;
+        keys["8"] = GLFW_KEY_KP_8;
+        keys["9"] = GLFW_KEY_KP_9;
+
+        // Poncutation
+        keys["_"] = GLFW_KEY_8;
+        keys[":"] = GLFW_KEY_PERIOD;
+        keys[";"] = GLFW_KEY_COMMA;
+
+        // Other
+        keys["backspace"] = GLFW_KEY_BACKSPACE;
+        keys["down arrow"] = GLFW_KEY_DOWN;
+        keys["enter"] = GLFW_KEY_ENTER;
+        keys["left arrow"] = GLFW_KEY_LEFT;
+        keys["left shift"] = GLFW_KEY_LEFT_SHIFT;
+        keys["right arrow"] = GLFW_KEY_RIGHT;
+        keys["right shift"] = GLFW_KEY_RIGHT_SHIFT;
+        keys["space"] = GLFW_KEY_SPACE;
+        keys["tab"] = GLFW_KEY_TAB;
+        keys["up arrow"] = GLFW_KEY_UP;
+    }
+
+    // Load the game from a config file
+    void Window::load_from_config_file(std::string path) {
+        std::string last_config_file_path = get_config_file_path();
+        set_config_file_path(path);
+
+        if (last_config_file_path != get_config_file_path()) // If the path is correct
+        {
+            std::vector<std::string> content = scls::cut_string(scls::read_file(get_config_file_path()), "\n");
+
+            for (int i = 0; i < content.size(); i++) // Analyze each lines
+            {
+                std::vector<std::string> line = scls::cut_string(content[i], ":");
+                std::string all_variables = "";
+                for (int j = 1; j < line.size(); j++) { all_variables += line[j]; }
+
+                if (line[0] == "screen_size") // If the line represents the size of the screen
+                {
+                    std::vector<std::string> variables = scls::cut_string(all_variables, ";");
+                    resize(std::stoi(variables[0]), std::stoi(variables[1]));
+                }
+                else if (line[0] == "assets_path_directory") // If the line represents the assets path
+                {
+                    set_assets_directory_path(all_variables);
+                }
+            }
+        }
+    }
+
+    // Create a scene into the game and return it
+    Scene* Window::new_scene(std::string name, std::string map_path, Map_Opening_Mode mode, bool use_graphic, bool use_physic) {
+        if (contains_scene(name)) { std::cout << "Matix game : error ! The scene \"" << name << "\" you want to create already exists." << std::endl; return 0; }
+
+        Scene* new_scene = new Scene(this, name, map_path, use_graphic, use_physic, mode);
+        add_scene(name, new_scene);
+        return new_scene;
+    }
+
+    // Render the scene
+    void Window::render() {
+        // Clear OpenGL window
+        glClearColor(get_background_color()[0], get_background_color()[1], get_background_color()[2], get_background_color()[3]);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glDepthFunc(GL_LESS);
+        if (get_current_scene_name() != "" && contains_scene(get_current_scene_name()))
+        {
+            Scene* scene = get_current_scene();
+            if (scene != 0)
+            {
+                scene->render();
+            }
+        }
+
+        glDepthFunc(GL_ALWAYS);
+        if (get_current_hud_name() != "" && contains_hud(get_current_hud_name()))
+        {
+            HUD* hud = get_current_hud();
+            if (hud != 0)
+            {
+                hud->render();
+            }
+        }
+
+        // Update OpenGL
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // Properly resize the window
+    void Window::resize(unsigned int width, unsigned int height) {
+        glfwSetWindowSize(window, width, height);
+    }
+
+    // Run the game by doing multiples call to update
+    bool Window::run() {
+        bool to_return = glfwWindowShouldClose(window);
+        if (!continue_running()) { to_return = true; }
+
+        if(to_return)
+            glfwTerminate();
+        return !to_return;
+    }
+
+    // Set the current HUD in the game
+    void Window::set_current_hud(std::string a_name) {
+        if (contains_hud(a_name))
+        {
+            current_hud = a_name;
+            get_current_hud()->load();
+        }
+        else if(a_name == "")
+        {
+
+            current_hud = "";
+        }
+        else
+        {
+            std::cout << "Matrix game : error ! The current hud \"" << a_name << "\" does not exist." << std::endl;
+        }
+    };
+
+    // Set the current scene in the game
+    void Window::set_current_scene(std::string a_name) {
+        if (contains_scene(a_name))
+        {
+            current_scene = a_name;
+            get_current_scene()->load();
+        }
+        else if (a_name == "")
+        {
+            current_scene = "";
+        }
+        else
+        {
+            std::cout << "Matrix game : error ! The current scene \"" << a_name << "\" does not exist." << std::endl;
+        }
+    };
+
+    // Update one frame of the game
+    void Window::update() {
+        if (get_current_scene_name() != "" && contains_scene(get_current_scene_name()))
+        {
+            Scene* scene = get_current_scene();
+            if (scene != 0)
+            {
+                scene->update();
+            }
+        }
+
+        if (get_current_hud_name() != "" && contains_hud(get_current_hud_name()))
+        {
+            HUD* hud = get_current_hud();
+            if (hud != 0)
+            {
+                hud->update();
+            }
+        }
+    }
+
+    // Update the event of the game during this frame
+    void Window::update_event()
+    {
+        // Calculate delta time
+        set_delta_time(glfwGetTime() - last_frame_time);
+        last_frame_time = glfwGetTime();
+
+        if (get_delta_time() > 0.1) set_delta_time(0);
+
+        // FPS calculation
+        time_since_last_fps_calculation += get_delta_time();
+        if (time_since_last_fps_calculation >= 1)
+        {
+            std::cout << "FPS " << frame_count << std::endl;
+            frame_count = 0;
+            time_since_last_fps_calculation = 0;
+        }
+        else
+        {
+            frame_count++;
+        }
+
+        // Calculate mouse move and button
+        double mouse_move_x = get_mouse_x() - get_last_mouse_x();
+        if (get_mouse_x() >= 100000) mouse_move_x = 0;
+        double mouse_move_y = get_mouse_y() - get_last_mouse_y();
+        if (get_mouse_y() >= 100000) mouse_move_y = 0;
+        set_left_mouse_button_state(0);
+        set_mouse_move_x(mouse_move_x);
+        set_mouse_move_y(mouse_move_y);
+        set_right_mouse_button_state(0);
+        if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+            set_left_mouse_button_state(1);
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+            set_right_mouse_button_state(1);
+
+        // Check overflied HUD object
+        overflighted_object = 0;
+        if (is_cursor_on_window() && get_cursor_state() == GLFW_CURSOR_NORMAL)
+        {
+            HUD* current_hud = get_current_hud();
+            if (current_hud != 0)
+            {
+                std::vector<HUD_Object*>* objects = (&current_hud->sorted_children());
+                for (int i = static_cast<int>(objects->size()) - 1; i >= 0; i--) // Check each objects
+                {
+                    HUD_Object* object = (*objects)[i];
+                    if (object->is_in(glm::vec2(get_mouse_x(), get_mouse_y())))
+                    {
+                        overflighted_object = object;
+                        objects = &object->sorted_children();
+                        i = static_cast<int>(objects->size());
+                    }
+                }
+            }
+
+            if (overflighted_object != 0)
+            {
+                if(get_left_mouse_button_state()) overflighted_object->set_is_clicked(true);
+                overflighted_object->set_is_overflighted(true);
+            }
+        }
+
+        // Update the keys
+        get_pressed_keys()->clear();
+        get_pressed_keys_frame()->clear();
+        for (std::map<std::string, Key_State>::iterator it = get_keys_state()->begin(); it != get_keys_state()->end(); it++)
+        {
+            it->second = Key_State::Nothing; // Reset keys
+        }
+
+        for (std::map<std::string, unsigned int>::iterator it = keys.begin(); it != keys.end(); it++)
+        {
+            if (glfwGetKey(window, it->second) == GLFW_PRESS)
+            {
+                (*get_keys_state())[it->first] = Key_State::Pressed;
+                get_pressed_keys()->push_back(it->first);
+            }
+        }
+
+        // Update key frame
+        for (std::map<std::string, Key_State>::iterator it = get_keys_state()->begin(); it != get_keys_state()->end(); it++)
+        {
+            Key_State state = it->second;
+            if (state != Key_State::Nothing)
+            {
+                if ((*get_keys_state_frame())[it->first] != state && (*get_keys_state_frame())[it->first] != Key_State::Already_Pressed)
+                {
+                    (*get_keys_state_frame())[it->first] = Key_State::Pressed;
+                    get_pressed_keys_frame()->push_back(it->first);
+                }
+                else
+                {
+                    (*get_keys_state_frame())[it->first] = Key_State::Already_Pressed;
+                }
+            }
+            else
+            {
+                (*get_keys_state_frame())[it->first] = Key_State::Nothing; // Reset keys
+            }
+        }
+
+        // Update last mouse pos for future mouse pos calcul
+        set_last_mouse_x(get_mouse_x());
+        set_last_mouse_y(get_mouse_y());
+
+        // Update the cursor texture
+        if(overflighted_object != 0)
+        {
+            if(current_cursor() != overflighted_object->cursor_overflighted())
+            {
+                if(a_cursor != 0) glfwDestroyCursor(a_cursor);
+                a_cursor = glfwCreateStandardCursor(overflighted_object->cursor_overflighted());
+                glfwSetCursor(window, a_cursor);
+                a_current_cursor = overflighted_object->cursor_overflighted();
+            }
+        }
+        else if(a_cursor == 0)
+        {
+            a_cursor = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
+            glfwSetCursor(window, a_cursor);
+            a_current_cursor = GLFW_ARROW_CURSOR;
+        }
+    }
+
+    // Window destructor
+    Window::~Window()
+    {
+        // Destroy the cursor
+        if(a_cursor != 0) glfwDestroyCursor(a_cursor);
+
+        std::map<std::string, Scene*> *scenes = get_scenes();
+        for (std::map<std::string, Scene*>::iterator it = scenes->begin(); it != scenes->end(); it++)
+        {
+            delete it->second; // Destroy each scenes
+            it->second = 0;
+        }
+
+        std::map<std::string, HUD*>* huds = get_huds();
+        for (std::map<std::string, HUD*>::iterator it = huds->begin(); it != huds->end(); it++)
+        {
+            delete it->second; // Destroy each HUD_Object
+            it->second = 0;
+        }
     }
 }

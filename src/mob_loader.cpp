@@ -41,7 +41,7 @@ namespace mob_loader
 	// Load a MOB from a path
 	Object* MOB_Loader::load_from_mob(std::string path, Scene* scene)
 	{
-		Window* window = (Window*)scene->get_game_struct();
+		scls::Window* window = reinterpret_cast<scls::Window*>(scene->get_game_struct());
 
 		// Check if the path exists
 		if (!std::filesystem::exists(path))

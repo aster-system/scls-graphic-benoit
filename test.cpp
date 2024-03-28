@@ -20,7 +20,7 @@
 int main(int argc, char* argv[]) {
     srand(time(0));
 
-    // Create a simple WiWim window
+    // Create a simple WiSim window
     wisim::use_wisim(argv[0]);
 
     return 0;

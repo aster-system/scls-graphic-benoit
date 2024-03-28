@@ -24,7 +24,7 @@ namespace wisim {
         // Create the window
         unsigned short height = 900;
         unsigned short width = 900;
-        a_window = new Window(width, height, path, true);
+        a_window = new scls::Window(width, height, path, true);
     }
 
     // Executes a frame in the simulation
