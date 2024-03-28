@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <link rel="stylesheet" href="../style.css">
+        <meta charset="utf-8">
+        <title>SCLS Graphic "Benoit" - Object</title>
+    </head>
+    <body>
+        <h1>SCLS Graphic Object</h1>
+        <h2>Presentation</h2>
+        <div>
+            SCLS Graphic Object contains the base objects usable in SCLS Graphic.
+        </div>
+        <h2>
+            Content
+        </h2>
+        <div>
+            SCLS Graphic Object is axed around the class "Object".
+            It's the only notable thing in this file.
+            However, this class is full of usefull things to handle objects in the window.
+            <h3>
+                Object main functions
+            </h3>
+            <div>
+                Object has some must-see features, made to be simple, but very usefull.</br>
+                Each Object has an unique name, made to be easily differentiable of the others Object.</br>
+                You can also easily hide or show any object by making it visible or not.
+                It's a very important feature to make a software properly.</br>
+                An another thing that can describe the Object is its tags. They are not unique and can be any std::string.</br>
+                To evolve in the space, the object uses a <a href="scls_graphic_base_struct.html">Transform_Object</a>.</br>
+                As everything in SCLS Graphic, the Object has a pointer to the main window struct.
+                <h4>
+                    Functions
+                </h4>
+                <div>
+                    <h5>
+                        Object()
+                    </h5>
+                    <div>
+                        Most basic constructor of an Object, used to clone some objects if necessary.
+                    </div>
+                    <h5>
+                        Object(std::string a_name, std::string texture_name, std::string vao_name)
+                    </h5>
+                    <div>
+                        Simple Object constructor, usable by the developer. The name of the object is "a_name".</br>
+                        The Texture applied is the main texture "texture_name", and the VAO applied is the main VAO "vao_name".
+                        See the <a href="#object_graphic_functions">graphic</a> part for more informations.
+                    </div>
+                    <h5>
+                        bool contains_tag(std::string tag)
+                    </h5>
+                    <div>
+                        Return if the object contains the tag "tag" in its tags.
+                    </div>
+                    <h5>
+                        Advanced_Struct* window_struct()
+                    </h5>
+                    <div>
+                        Return the pointer to the main window struct 
+                    </div>
+                    <h5>
+                        std::string name() const
+                    </h5>
+                    <div>
+                        Return the name of the object.
+                    </div>
+                    <h5>
+                        void set_visible(bool new_visible)
+                    </h5>
+                    <div>
+                        Change the visiblity of an Object by "new_visible".
+                    </div>
+                    <h5>
+                        std::vector&lt;std::string&gt;& tags()
+                    </h5>
+                    <div>
+                        Return the std::vector of each tags of the Object.
+                    </div>
+                    <h5>
+                        Transform_Object* transform()
+                    </h5>
+                    <div>
+                        Return a pointer to the Transform_Object of this object.
+                    </div>
+                    <h5>
+                        bool visible() const
+                    </h5>
+                    <div>
+                        Return if an Object is visible or not.
+                    </div>
+                    <h5>
+                        ~Object()
+                    </h5>
+                    <div>
+                        Most basic destructor of an Object, deleting the Transform_Object of this object.
+                    </div>
+                </div>
+            </div>
+            <h3 id="object_graphic_functions">
+                Object graphics functions
+            </h3>
+            <div>
+                It's may be trivial, but the graphic Object needs graphic functions. This functions are made to not be used by the user if it's not necessary.</br>
+                It allows the handle of the VAO and the Texture of this object.
+                <h4>
+                    Functions
+                </h4>
+                <div>
+                    <h5>
+                        virtual void render()
+                    </h5>
+                    <div>
+                        Render the object on the window.</br>
+                        This function may be heritated if necessary.
+                    </div>
+                    <h5>
+                        Texture* texture()
+                    </h5>
+                    <div>
+                        Return the pointer to the Texture used by this object.
+                    </div>
+                    <h5>
+                        VAO* vao()
+                    </h5>
+                    <div>
+                        Return the pointer to the VAO used by this object.
+                    </div>
+                </div>
+            </div>
+            <h3>
+                Object heritage functions
+            </h3>
+            <div>
+                To be the most modulable possible, this class needs a good heritage handling.
+                To respect this, it has a lot of heritage functions, callable by the children classes.
+                <h4>
+                    Functions
+                </h4>
+                <div>
+                    <h5>
+                        virtual void after_loading()
+                    </h5>
+                    <div>
+                        Function called after the loading of the window.
+                    </div>
+                    <h5>
+                        virtual void last_update()
+                    </h5>
+                    <div>
+                        Last update-like function called during a frame.
+                    </div>
+                    <h5>
+                        virtual void update()
+                    </h5>
+                    <div>
+                        First update-like function called during a frame.
+                    </div>
+                </div>
+            </div>
+            <h3>
+                Code specification
+            </h3>
+            <div>
+                This file define the macro "SCLS_GRAPHIC_OBJECT".
+            </div>
+        </div>
+    </body>
+</html>

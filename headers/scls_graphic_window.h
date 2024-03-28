@@ -20,7 +20,7 @@
 #include "../headers/advanced_struct.h"
 #include "../headers/base_struct.h"
 #include "../headers/model.h"
-#include "../headers/scene.h"
+#include "scls_graphic_object.h"
 
 // The namespace "scls" is used to simplify the all.
 namespace scls {
@@ -39,39 +39,6 @@ namespace scls {
 
     // Callback function for mouse moving
     void _mouse_callback(GLFWwindow* window, double xpos, double ypos);
-
-    class HUD : public HUD_Object {
-        // Class representing an HUD
-    public:
-        HUD(Advanced_Struct* a_advanced_struct, std::string a_name); // HUD constructor
-        void add_hud_object(std::string name, HUD_Object* object); // Add an existing HUD to the game
-        bool contains_hud_object(std::string name); // Return if the game contains an HUD Object
-        bool is_hud() {return true;};
-        virtual void load() {}; // Load the CLI after being selected as new current HUD
-        template <class O = HUD_Object> // Template for adding a type of HUD object
-        O* new_hud_object(std::string name, HUD_Object* parent, Texture* texture, std::string vao_name = "hud_default"); // Create a new HUD Object into the game
-        template <class O = HUD_Object> // Template for adding a type of HUD object
-        O* new_hud_object(std::string name, HUD_Object* parent, std::string texture_name, std::string vao_name = "hud_default"); // Create a new HUD Object into the game
-        template <class O = HUD_Object> // Template for adding a type of HUD object
-        O* new_hud_object(std::string name, HUD_Object* parent, unsigned short texture_width, unsigned short texture_height, glm::vec4 texture_color, std::string vao_name = "hud"); // Create a new HUD Object into the game
-        void render(); // Render the HUD
-        inline double scale_rendered_ratio() {return get_advanced_struct()->window_ratio();};
-        void unload(); // Unload the objects in the HUD
-        virtual void update(); // Update the HUD
-        void update_object(); // Update all the objects in the HUD
-        ~HUD(); // HUD destructor
-
-        // Getters and setters
-        inline Advanced_Struct* get_advanced_struct() { return advanced_struct; };
-        inline HUD_Object* get_hud_object(std::string a_name) { return hud_objects[a_name]; };
-        inline std::map < std::string, HUD_Object*>* get_hud_objects() { return &hud_objects; };
-        inline std::string get_name() { return name; };
-    private:
-        std::string name; // Name of the HUD
-
-        Advanced_Struct* advanced_struct = 0;
-        std::map < std::string, HUD_Object*> hud_objects = std::map < std::string, HUD_Object*>(); // Each HUD_Object, with their name as key, in the HUD
-    };
 
     class Window: public Advanced_Struct {
         // Class representing the game
