@@ -24,8 +24,12 @@
             </h3>
             <div>
                 Window has some must-see features, made to be simple but very usefull.</br>
+                You can gives the window a special background color, even if a page could hide it.</br>
+                You can also handle if the window is running or not easily.</br>
                 To display <a href="scls_graphic_object.html">Objects</a>, the class uses the system of page.
                 A page is the first object rendered, which should have a list of childrens to display.
+                As the Objects, the pages have their name, used in the Window to identify them.
+                If you do not want to display any pages, set the current page to "", an empty std::string.
                 <h4>
                     Functions
                 </h4>
@@ -37,16 +41,129 @@
                         The most basic window constructore, which should be easily creatable for the user.
                     </div>
                     <h5>
+                        Color background_color()
+                    </h5>
+                    <div>
+                        Returns the background color of the window.
+                    </div>
+                    <h5>
+                        bool contains_page(std::string name)
+                    </h5>
+                    <div>
+                        Returns if the window contains the page called "name" or not.
+                    </div>
+                    <h5>
                         std::string current_page_name()
                     </h5>
                     <div>
-                        Return the name of the currently displayed page.
+                        Returns the name of the currently displayed page.
+                    </div>
+                    <h5>
+                        bool is_running()
+                    </h5>
+                    <div>
+                        Returns if the window should continue to run or not.</br>
+                        If you want to do a infinite loop for your program, DO NOT use this function as the condition. Use run() instead.
+                    </div>
+                    <h5>
+                        Object* page(std::string name)
+                    </h5>
+                    <div>
+                        Returns the pointer to the page Object called "name".</br>
+                        If the window does not contains "name", it prints a warning and returns 0.
+                    </div>
+                    <h5>
+                        std::map&lt;std::string, Object*&gt;& pages()
+                    </h5>
+                    <div>
+                        Returns a reference to the std::map of the pages in the window.
+                    </div>
+                    <h5>
+                        bool run()
+                    </h5>
+                    <div>
+                        Returns if the window is still running or not.</br>
+                        When it returns false, GFLW is terminated.</br>
+                        If you want to do a infinite loop for your program, use this function as the condition.
+                    </div>
+                    <h5>
+                        void set_background_color(Color new_background_color)
+                    </h5>
+                    <div>
+                        Set the background color to "new_background_color".
                     </div>
                     <h5>
                         void set_current_page(std::string new_current_page)
                     </h5>
                     <div>
-                        Set the current page to "new_current_page".
+                        Set the current page to "new_current_page".</br>
+                        If the window does not contains "new_current_page", it prints a warning and does not change the current page.
+                    </div>
+                    <h5>
+                        void set_is_running(bool new_is_running)
+                    </h5>
+                    <div>
+                        Set if the window should continue to run or not by "new_is_running".</br>
+                        If you set it to false, the window will close in the next frame.
+                    </div>
+                    <h5>
+                        GLFWwindow* window()
+                    </h5>
+                    <div>
+                        Returns a pointer to the GLFW window.
+                    </div>
+                </div>
+            </div>
+            <h3>
+                Window input handling
+            </h3>
+            <div>
+                Like every software, Window has a system allowing to handle the input coming from the system or the user.</br>
+                As GLFW works with a lot of callback functions, a lot of functions are hidden to be usable with a class system.</br>
+                The most important input features is of course present : the keyboard.
+                The window registers each keys as the character that they represents.</br>
+                Window allows to have some datas about the cursor and the mouse.
+                You can have the position of the mouse, if it is clicked, its texture, or even if it  is displayed or not.</br>
+                The resizing of the window is also an input.
+                <h4>
+                    Functions
+                </h4>
+                <div>
+                    <h5>
+                        void hide_cursor()
+                    </h5>
+                    <div>
+                        Hide the cursor to the user.
+                    </div>
+                    <h5>
+                        void resize_window(unsigned int width, unsigned int height)
+                    </h5>
+                    <div>
+                        Resize the window at the size ("width", "height").
+                    </div>
+                    <h5>
+                        void show_cursor()
+                    </h5>
+                    <div>
+                        Show the cursor to the user.
+                    </div>
+                </div>
+                <h4>
+                    Hidden functions
+                </h4>
+                <div>
+                    <h5>
+                        void _framebuffer_size_callback(GLFWwindow* window, int width, int height)
+                    </h5>
+                    <div>
+                        Callback function when the window is resized.</br>
+                        "width" and "height" are assignated to two hiddens variables : "int _global_screen_width" and "int _global_screen_height", which are the destination of references into Window.
+                    </div>
+                    <h5>
+                        void _load_keys()
+                    </h5>
+                    <div>
+                        Load every keys supported in the window.
                     </div>
                 </div>
             </div>

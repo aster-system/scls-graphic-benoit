@@ -25,6 +25,12 @@
 // The namespace "scls" is used to simplify the all.
 namespace scls {
 
+    //*********
+    //
+    // Window input handling hiddens functions
+    //
+    //*********
+
     // Callback function for cursor enter in the window
     void _cursor_enter_callback(GLFWwindow* window, int entered);
 
@@ -46,60 +52,88 @@ namespace scls {
 
         // Window base constructor
         Window(int window_width, int window_height, std::string exec_path);
+        // Window base destructor
+        ~Window();
+
+        // Return if the window is running or not
+        bool run();
+
+        // Getters and setters (ONLY WITHOUT ATTRIBUTES)
+        inline bool contains_page(std::string name) { for(std::map<std::string, Object*>::iterator it = pages().begin();it!=pages().end();it++) if(it->first == name) return true; return false;};
+        inline Object* page(std::string name) {
+            if(contains_page(name)) return pages()[name];
+            scls::print("Warning", "SCLS Window", "The \"" + name + "\" page you want to get does not exists.");
+            return 0;
+        };
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
+        inline Color background_color() { return a_background_color; };
         inline std::string current_page_name() {return a_current_page;};
-        inline void set_current_page(std::string new_current_page) { a_current_page = new_current_page; };
+        inline bool is_running() {return a_is_running;};
+        inline std::map<std::string, Object*>& pages() {return a_pages;};
+        inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
+        inline void set_current_page(std::string new_current_page) {
+            if(new_current_page != "" && !contains_page(name)) scls::print("Warning", "SCLS Window", "The \"" + name + "\" page you want to set as the current page does not exists.");
+            else a_current_page = new_current_page;
+        };
+        inline void set_is_running(bool new_is_runnig) { a_is_running = new_is_runnig; };
+        inline GLFWwindow* window() {return a_window;};
 
+        //*********
+        //
+        // Window input handling
+        //
+        //*********
 
-
-        void add_hud(std::string name, HUD* object); // Add an existing HUD to the game
-        void add_scene(std::string name, Scene* scene); // Add an existing scene to the game
-        bool contains_hud(std::string name); // Return if the game contains an HUD Object
-        bool contains_scene(std::string name); // Returns if the game contains a scene
+        // Load the keys of the window
+        void _load_keys();
         // Disable the cursor from the game
-        inline void disable_cursor() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); _cursor_state = GLFW_CURSOR_DISABLED; };
+        inline void hide_cursor() { glfwSetInputMode(window(), GLFW_CURSOR, GLFW_CURSOR_DISABLED); _cursor_state = GLFW_CURSOR_DISABLED; };
+        // Properly resize the window
+        void resize_window(unsigned int width, unsigned int height);
         // Enable the cursor from the game
-        inline void enable_cursor() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); _cursor_state = GLFW_CURSOR_NORMAL; };
-        void load_keys(); // Load the keys in the game
+        inline void show_cursor() { glfwSetInputMode(window(), GLFW_CURSOR, GLFW_CURSOR_NORMAL); _cursor_state = GLFW_CURSOR_NORMAL; };
+
+
+
         void load_from_config_file(std::string path); // Load the game from a config file
-        template <class O = HUD> // Template for adding a type of HUD
-        O* new_hud(std::string name); // Create a new HUD into the game
-        Scene* new_scene(std::string name, std::string map_path = "", Map_Opening_Mode mode = Map_Opening_Mode::Simple, bool use_graphic = true, bool use_physic = true); // Create a scene into the game and return it
         void render(); // Render the scene
-        void resize(unsigned int width, unsigned int height); // Properly resize the window
-        bool run(); // Run the game by doing multiples call to update
         void update(); // Update one frame of the game
         void update_event(); // Update the event of the game during this frame
-        ~Window(); // Window destructor
 
         // Getters and setters
-        inline bool continue_running() { return is_running; };
         inline unsigned long current_cursor() const {return a_current_cursor;};
-        inline glm::vec4 get_background_color() { return background_color; };
-        inline HUD* get_current_hud() { if (get_current_hud_name() == "") return 0; return (*get_huds())[get_current_hud_name()]; };
-        inline Scene* get_current_scene() { if (get_current_scene_name() == "") return 0; return (*get_scenes())[get_current_scene_name()]; };
-        inline std::string get_current_hud_name() { return current_hud; };
-        inline std::string get_current_scene_name() { return current_scene; };
         inline std::string get_exec_directory() {
             std::vector<std::string> parts = scls::cut_string(get_exec_path(), "\\");
             std::string result = "";
             for (int i = 0; i < parts.size() - 1; i++) { result += parts[i] + "/"; }
             return result;
         } // Return the directory of the game exe
-        inline HUD* get_hud(std::string a_name) { return huds[a_name]; };
-        inline std::map < std::string, HUD*>* get_huds() { return &huds; };
-        inline Scene* get_scene(std::string name) { if (contains_scene(name) && name != "") { return scenes[name]; } std::cout << "Matrix game : error ! The scene \"" << name << "\" does not exist." << std::endl; return 0; }
-        inline std::map<std::string, Scene*> *get_scenes() { return &scenes; };
         inline bool is_cursor_on_window() { return a_cursor_on_window; };
-        inline void set_background_color(glm::vec4 a_background_color) { background_color = a_background_color; };
-        void set_current_hud(std::string a_name);
-        void set_current_scene(std::string a_name);
-        inline void set_is_running(bool a_run) { is_running = a_run; };
     private:
 
+        // Basics Window descriptors
+        // Background color of the window
+        Color a_background_color = white;
+        // Pointer to the GLFW window
+        GLFWwindow* a_window = 0;
+
+        // Page handling
         // Name of the current page loaded
         std::string a_current_page = "";
+        // If the window should continue to run or not
+        bool a_is_running = true;
+        // Map containing each pages in the window with their name as key
+        std::map<std::string, Object*> a_pages = std::map<std::string, Object*>();
+
+        //*********
+        //
+        // Window input handling
+        //
+        //*********
+
+        // Map of each keys in the window, with their character as the value
+        std::map<std::string, unsigned int> a_keys = std::map<std::string, unsigned int>();
 
 
 
@@ -109,61 +143,8 @@ namespace scls {
         GLFWcursor* a_cursor = 0;
         // Reference to the cursor_on_window bool
         bool &a_cursor_on_window;
-        bool is_running = true; // If the game should continue running or not
         float last_frame_time = 0; // Time when the last frame occurs, for calculating delta_time and FPS
-
-        glm::vec4 background_color = glm::vec4(0.0f, (1.0f/255.0f) * 204.0f, (1.0f / 255.0f) * 204.0f, 1.0f); // Background color of the game
-        std::map < std::string, HUD*> huds = std::map < std::string, HUD*>(); // Each HUD, with their name as key, in the game
-        // HUD_Object overflighted by the cursor
-        HUD_Object* overflighted_object = 0;
-        std::map<std::string, Scene *> scenes = std::map<std::string, Scene *>(); // Each scenes, with their name as key, in the game
-        GLFWwindow* window = 0; // Pointer to the GLFW window
     };
-
-    // Create a new HUD Object into the HUD
-    template <class O> // Template for adding a type of HUD object
-    O* HUD::new_hud_object(std::string name, HUD_Object* parent, std::string texture_name, std::string vao_name) {
-        return new_hud_object<O>(name, parent, get_advanced_struct()->get_texture(texture_name), vao_name);
-    }
-
-    // Create a new HUD Object into the game
-    template <class O> // Template for adding a type of HUD object
-    O* HUD::new_hud_object(std::string name, HUD_Object* parent, Texture* texture, std::string vao_name) {
-        if (contains_hud_object(name)) { std::cout << "HUD \"" << get_name() << "\" error ! The objects \"" << name << "\" you want to create already exists." << std::endl; return 0; }
-
-        // Load the VAO
-        VAO* vao = (*get_advanced_struct()->get_all_vaos())[vao_name];
-
-        O* new_object = new O(get_advanced_struct(), name, parent, texture, vao);
-        add_hud_object(name, new_object);
-        return new_object;
-    }
-
-    // Create a new HUD Object into the HUD
-    template <class O> // Template for adding a type of HUD object
-    O* HUD::new_hud_object(std::string name, HUD_Object* parent, unsigned short texture_width, unsigned short texture_height, glm::vec4 texture_color, std::string vao_name) {
-        if (contains_hud_object(name)) { std::cout << "HUD \"" << get_name() << "\" error ! The objects \"" << name << "\" you want to create already exists." << std::endl; return 0; }
-
-        bool texture_resize = false; // Load the texture
-        Texture* texture = get_advanced_struct()->new_texture(name, texture_width, texture_height, texture_color);
-
-        // Load the VAO
-        VAO* vao = (*get_advanced_struct()->get_all_vaos())[vao_name];
-
-        O* new_object = new O(get_advanced_struct(), name, parent, texture, vao);
-        add_hud_object(name, new_object);
-        return new_object;
-    }
-
-    // Create a new HUD Object into the game
-    template <class O> // Template for adding a type of HUD
-    O* Window::new_hud(std::string name) {
-        if (contains_scene(name)) { std::cout << "Matix game : error ! The objects \"" << name << "\" you want to create already exists." << std::endl; return 0; }
-
-        O* new_object = new O(this, name);
-        add_hud(name, new_object);
-        return new_object;
-    }
 }
 
 #endif // SCLS_WINDOW

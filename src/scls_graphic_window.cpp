@@ -22,9 +22,6 @@ namespace scls {
     bool cursor_on_window = false; // If the cursor is on the window or not
     double global_mouse_x = 100000; // Global variable representing the X pos of the mouse
     double global_mouse_y = 100000; // Global variable representing the Y pos of the mouse
-    int global_screen_width = 1280; // Global variable representing the width of the screen
-    int global_screen_height = 720; // Global variable representing the height of the screen
-    std::map<std::string, unsigned int> keys = std::map<std::string, unsigned int>(); // Map of each keys in the game
 
     // Callback function for cursor enter in the window
     void _cursor_enter_callback(GLFWwindow* window, int entered) {
@@ -40,17 +37,26 @@ namespace scls {
         }
     }
 
-    // Callback function for window resizing
-    void _framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-        glViewport(0, 0, width, height);
-        global_screen_height = height;
-        global_screen_width = width;
-    }
-
     // Callback function for mouse moving
     void _mouse_callback(GLFWwindow* window, double xpos, double ypos) {
         global_mouse_x = xpos;
         global_mouse_y = ypos;
+    }
+
+    //*********
+    //
+    // Window input handling hiddens functions
+    //
+    //*********
+
+    int _global_screen_width = 1280; // Global variable representing the width of the screen
+    int _global_screen_height = 720; // Global variable representing the height of the screen
+
+    // Callback function for window resizing
+    void _framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+        glViewport(0, 0, width, height);
+        _global_screen_height = height;
+        _global_screen_width = width;
     }
 
     //*********
@@ -60,10 +66,10 @@ namespace scls {
     //*********
 
     // Window base constructor
-    Window::Window(int a_window_width, int a_window_height, std::string a_exec_path): Advanced_Struct(global_mouse_x, global_mouse_y, global_screen_width, global_screen_height, a_exec_path), a_cursor_on_window(cursor_on_window) {
+    Window::Window(int a_window_width, int a_window_height, std::string a_exec_path): Advanced_Struct(global_mouse_x, global_mouse_y, _global_screen_width, _global_screen_height, a_exec_path), a_cursor_on_window(cursor_on_window) {
 
         // Load the keys
-        load_keys();
+        _load_keys();
 
         // Configurate base_struct
         get_camera()->set_position(glm::vec3(0.0, 0.0, 0.0));
@@ -77,18 +83,18 @@ namespace scls {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        window = glfwCreateWindow(get_window_width(), get_window_height(), "Fenêtre OpenGL", NULL, NULL);
-        if (window == NULL)
+        a_window = glfwCreateWindow(get_window_width(), get_window_height(), "Fenêtre OpenGL", NULL, NULL);
+        if (a_window == NULL)
         {
-            std::cout << "Failed to create GLFW window" << std::endl;
+            print("Error", "GLFW Loader", "Failed to create GLFW window");
             glfwTerminate();
         }
-        glfwMakeContextCurrent(window);
+        glfwMakeContextCurrent(a_window);
 
         // Glad loading
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         {
-            std::cout << "Failed to initialize GLAD" << std::endl;
+            print("Error", "GLAD Loader", "Failed to initialize GLAD");
             glfwTerminate();
         }
 
@@ -99,9 +105,9 @@ namespace scls {
         glDepthFunc(GL_LESS);
 
         // Callback functions
-        glfwSetCursorPosCallback(window, _mouse_callback);
-        glfwSetCursorEnterCallback(window, _cursor_enter_callback);
-        glfwSetFramebufferSizeCallback(window, _framebuffer_size_callback);
+        glfwSetCursorPosCallback(a_window, _mouse_callback);
+        glfwSetCursorEnterCallback(a_window, _cursor_enter_callback);
+        glfwSetFramebufferSizeCallback(a_window, _framebuffer_size_callback);
 
         if (load_vaos)
         {
@@ -109,97 +115,114 @@ namespace scls {
         }
     }
 
-    // Add an existing HUD to the game
-    void Window::add_hud(std::string name, HUD* hud) {
-        if (contains_hud(name)) { std::cout << "Matix game : error ! The HUD \"" << name << "\" you want to add already exists." << std::endl; return; }
-        (*get_huds())[name] = hud;
+    // Return if the window is running or not
+    bool Window::run() {
+        bool to_return = glfwWindowShouldClose(a_window);
+        if (!continue_running()) { to_return = true; }
+
+        if(to_return)
+            glfwTerminate();
+        return !to_return;
     }
 
-    // Add an existing scene to the game
-    void Window::add_scene(std::string name, Scene* scene) {
-        if (contains_scene(name)) { std::cout << "Matix game : error ! The scene \"" << name << "\" you want to add already exists." << std::endl; return; }
-        (*get_scenes())[name] = scene;
-    }
+    // Window destructor
+    Window::~Window() {
+        // Destroy the cursor
+        if(a_cursor != 0) glfwDestroyCursor(a_cursor);
 
-    // Return if the game contains an HUD Object
-    bool Window::contains_hud(std::string name) {
-        std::map < std::string, HUD*>* objects = get_huds();
-        for (std::map<std::string, HUD*>::iterator it = objects->begin(); it != objects->end(); it++)
-        {
-            if (it->first == name) { return true; } // Verify each hud object name (first element of map)
-        }
-        return false;
-    }
-
-    // Returns if the game contains a scene
-    bool Window::contains_scene(std::string name) {
         std::map<std::string, Scene*> *scenes = get_scenes();
         for (std::map<std::string, Scene*>::iterator it = scenes->begin(); it != scenes->end(); it++)
         {
-            if (it->first == name) { return true; } // Verify each scene name (first element of map)
+            delete it->second; // Destroy each scenes
+            it->second = 0;
         }
-        return false;
+
+        std::map<std::string, HUD*>* huds = get_huds();
+        for (std::map<std::string, HUD*>::iterator it = huds->begin(); it != huds->end(); it++)
+        {
+            delete it->second; // Destroy each HUD_Object
+            it->second = 0;
+        }
     }
 
-    // Load the keys in the game
-    void Window::load_keys() {
+    //*********
+    //
+    // Window input handling
+    //
+    //*********
+
+    // Load the keys of the window
+    void Window::_load_keys() {
         // Alphabet
-        keys["a"] = GLFW_KEY_Q;
-        keys["b"] = GLFW_KEY_B;
-        keys["c"] = GLFW_KEY_C;
-        keys["d"] = GLFW_KEY_D;
-        keys["e"] = GLFW_KEY_E;
-        keys["f"] = GLFW_KEY_F;
-        keys["g"] = GLFW_KEY_G;
-        keys["h"] = GLFW_KEY_H;
-        keys["i"] = GLFW_KEY_I;
-        keys["j"] = GLFW_KEY_J;
-        keys["k"] = GLFW_KEY_K;
-        keys["l"] = GLFW_KEY_L;
-        keys["m"] = GLFW_KEY_SEMICOLON;
-        keys["n"] = GLFW_KEY_N;
-        keys["o"] = GLFW_KEY_O;
-        keys["p"] = GLFW_KEY_P;
-        keys["q"] = GLFW_KEY_A;
-        keys["r"] = GLFW_KEY_R;
-        keys["s"] = GLFW_KEY_S;
-        keys["t"] = GLFW_KEY_T;
-        keys["u"] = GLFW_KEY_U;
-        keys["v"] = GLFW_KEY_V;
-        keys["w"] = GLFW_KEY_Z;
-        keys["x"] = GLFW_KEY_X;
-        keys["y"] = GLFW_KEY_Y;
-        keys["z"] = GLFW_KEY_W;
+        a_keys["a"] = GLFW_KEY_Q;
+        a_keys["b"] = GLFW_KEY_B;
+        a_keys["c"] = GLFW_KEY_C;
+        a_keys["d"] = GLFW_KEY_D;
+        a_keys["e"] = GLFW_KEY_E;
+        a_keys["f"] = GLFW_KEY_F;
+        a_keys["g"] = GLFW_KEY_G;
+        a_keys["h"] = GLFW_KEY_H;
+        a_keys["i"] = GLFW_KEY_I;
+        a_keys["j"] = GLFW_KEY_J;
+        a_keys["k"] = GLFW_KEY_K;
+        a_keys["l"] = GLFW_KEY_L;
+        a_keys["m"] = GLFW_KEY_SEMICOLON;
+        a_keys["n"] = GLFW_KEY_N;
+        a_keys["o"] = GLFW_KEY_O;
+        a_keys["p"] = GLFW_KEY_P;
+        a_keys["q"] = GLFW_KEY_A;
+        a_keys["r"] = GLFW_KEY_R;
+        a_keys["s"] = GLFW_KEY_S;
+        a_keys["t"] = GLFW_KEY_T;
+        a_keys["u"] = GLFW_KEY_U;
+        a_keys["v"] = GLFW_KEY_V;
+        a_keys["w"] = GLFW_KEY_Z;
+        a_keys["x"] = GLFW_KEY_X;
+        a_keys["y"] = GLFW_KEY_Y;
+        a_keys["z"] = GLFW_KEY_W;
 
         // Numbers
-        keys["0"] = GLFW_KEY_KP_0;
-        keys["1"] = GLFW_KEY_KP_1;
-        keys["2"] = GLFW_KEY_KP_2;
-        keys["3"] = GLFW_KEY_KP_3;
-        keys["4"] = GLFW_KEY_KP_4;
-        keys["5"] = GLFW_KEY_KP_5;
-        keys["6"] = GLFW_KEY_KP_6;
-        keys["7"] = GLFW_KEY_KP_7;
-        keys["8"] = GLFW_KEY_KP_8;
-        keys["9"] = GLFW_KEY_KP_9;
+        a_keys["0"] = GLFW_KEY_KP_0;
+        a_keys["1"] = GLFW_KEY_KP_1;
+        a_keys["2"] = GLFW_KEY_KP_2;
+        a_keys["3"] = GLFW_KEY_KP_3;
+        a_keys["4"] = GLFW_KEY_KP_4;
+        a_keys["5"] = GLFW_KEY_KP_5;
+        a_keys["6"] = GLFW_KEY_KP_6;
+        a_keys["7"] = GLFW_KEY_KP_7;
+        a_keys["8"] = GLFW_KEY_KP_8;
+        a_keys["9"] = GLFW_KEY_KP_9;
 
         // Poncutation
-        keys["_"] = GLFW_KEY_8;
-        keys[":"] = GLFW_KEY_PERIOD;
-        keys[";"] = GLFW_KEY_COMMA;
+        a_keys["_"] = GLFW_KEY_8;
+        a_keys[":"] = GLFW_KEY_PERIOD;
+        a_keys[";"] = GLFW_KEY_COMMA;
 
         // Other
-        keys["backspace"] = GLFW_KEY_BACKSPACE;
-        keys["down arrow"] = GLFW_KEY_DOWN;
-        keys["enter"] = GLFW_KEY_ENTER;
-        keys["left arrow"] = GLFW_KEY_LEFT;
-        keys["left shift"] = GLFW_KEY_LEFT_SHIFT;
-        keys["right arrow"] = GLFW_KEY_RIGHT;
-        keys["right shift"] = GLFW_KEY_RIGHT_SHIFT;
-        keys["space"] = GLFW_KEY_SPACE;
-        keys["tab"] = GLFW_KEY_TAB;
-        keys["up arrow"] = GLFW_KEY_UP;
+        a_keys["backspace"] = GLFW_KEY_BACKSPACE;
+        a_keys["down arrow"] = GLFW_KEY_DOWN;
+        a_keys["enter"] = GLFW_KEY_ENTER;
+        a_keys["left arrow"] = GLFW_KEY_LEFT;
+        a_keys["left shift"] = GLFW_KEY_LEFT_SHIFT;
+        a_keys["right arrow"] = GLFW_KEY_RIGHT;
+        a_keys["right shift"] = GLFW_KEY_RIGHT_SHIFT;
+        a_keys["space"] = GLFW_KEY_SPACE;
+        a_keys["tab"] = GLFW_KEY_TAB;
+        a_keys["up arrow"] = GLFW_KEY_UP;
     }
+
+    // Properly resize the window
+    void Window::resize_window(unsigned int width, unsigned int height) {
+        glfwSetWindowSize(window, width, height);
+    }
+
+
+
+
+
+
+
+
 
     // Load the game from a config file
     void Window::load_from_config_file(std::string path) {
@@ -227,15 +250,6 @@ namespace scls {
                 }
             }
         }
-    }
-
-    // Create a scene into the game and return it
-    Scene* Window::new_scene(std::string name, std::string map_path, Map_Opening_Mode mode, bool use_graphic, bool use_physic) {
-        if (contains_scene(name)) { std::cout << "Matix game : error ! The scene \"" << name << "\" you want to create already exists." << std::endl; return 0; }
-
-        Scene* new_scene = new Scene(this, name, map_path, use_graphic, use_physic, mode);
-        add_scene(name, new_scene);
-        return new_scene;
     }
 
     // Render the scene
@@ -269,56 +283,6 @@ namespace scls {
         glfwPollEvents();
     }
 
-    // Properly resize the window
-    void Window::resize(unsigned int width, unsigned int height) {
-        glfwSetWindowSize(window, width, height);
-    }
-
-    // Run the game by doing multiples call to update
-    bool Window::run() {
-        bool to_return = glfwWindowShouldClose(window);
-        if (!continue_running()) { to_return = true; }
-
-        if(to_return)
-            glfwTerminate();
-        return !to_return;
-    }
-
-    // Set the current HUD in the game
-    void Window::set_current_hud(std::string a_name) {
-        if (contains_hud(a_name))
-        {
-            current_hud = a_name;
-            get_current_hud()->load();
-        }
-        else if(a_name == "")
-        {
-
-            current_hud = "";
-        }
-        else
-        {
-            std::cout << "Matrix game : error ! The current hud \"" << a_name << "\" does not exist." << std::endl;
-        }
-    };
-
-    // Set the current scene in the game
-    void Window::set_current_scene(std::string a_name) {
-        if (contains_scene(a_name))
-        {
-            current_scene = a_name;
-            get_current_scene()->load();
-        }
-        else if (a_name == "")
-        {
-            current_scene = "";
-        }
-        else
-        {
-            std::cout << "Matrix game : error ! The current scene \"" << a_name << "\" does not exist." << std::endl;
-        }
-    };
-
     // Update one frame of the game
     void Window::update() {
         if (get_current_scene_name() != "" && contains_scene(get_current_scene_name()))
@@ -341,8 +305,7 @@ namespace scls {
     }
 
     // Update the event of the game during this frame
-    void Window::update_event()
-    {
+    void Window::update_event() {
         // Calculate delta time
         set_delta_time(glfwGetTime() - last_frame_time);
         last_frame_time = glfwGetTime();
@@ -462,27 +425,6 @@ namespace scls {
             a_cursor = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
             glfwSetCursor(window, a_cursor);
             a_current_cursor = GLFW_ARROW_CURSOR;
-        }
-    }
-
-    // Window destructor
-    Window::~Window()
-    {
-        // Destroy the cursor
-        if(a_cursor != 0) glfwDestroyCursor(a_cursor);
-
-        std::map<std::string, Scene*> *scenes = get_scenes();
-        for (std::map<std::string, Scene*>::iterator it = scenes->begin(); it != scenes->end(); it++)
-        {
-            delete it->second; // Destroy each scenes
-            it->second = 0;
-        }
-
-        std::map<std::string, HUD*>* huds = get_huds();
-        for (std::map<std::string, HUD*>::iterator it = huds->begin(); it != huds->end(); it++)
-        {
-            delete it->second; // Destroy each HUD_Object
-            it->second = 0;
         }
     }
 }
