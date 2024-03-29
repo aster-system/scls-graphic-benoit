@@ -1,27 +1,5 @@
 #include "../headers/advanced_struct.h"
 
-// Part constructor
-Part::Part(glm::vec3 a_position, glm::vec3 a_rotation, glm::vec3 a_scale, std::string a_type, std::string a_texture_path, void* a_base_object) : position(a_position), rotation(a_rotation), scale(a_scale), type(a_type), texture_path(a_texture_path), base_object(a_base_object)
-{
-
-}
-
-// Part copy constructor
-Part::Part(const Part& copy) : Part(copy.position, copy.rotation, copy.scale, copy.type, copy.texture_path, copy.base_object)
-{
-
-}
-
-// Part destructor
-Part::~Part()
-{
-	if (base_object != 0)
-	{
-		delete base_object;
-		base_object = 0;
-	}
-}
-
 // Advanced_Struct constructor
 Advanced_Struct::Advanced_Struct(double& a_mouse_x, double& a_mouse_y, int& a_window_width, int& a_window_height, std::string a_exec_path): Base_Struct(a_mouse_x, a_mouse_y, a_window_width, a_window_height, a_exec_path)
 {

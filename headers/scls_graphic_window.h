@@ -25,12 +25,6 @@
 // The namespace "scls" is used to simplify the all.
 namespace scls {
 
-    //*********
-	//
-	// The Window class
-	//
-	//*********
-
     // Callback function for cursor enter in the window
     void _cursor_enter_callback(GLFWwindow* window, int entered);
 
@@ -43,7 +37,22 @@ namespace scls {
     class Window: public Advanced_Struct {
         // Class representing the game
     public:
-        Window(int a_window_width, int a_window_height, std::string a_exec_path, bool load_vaos = true); // Window constructor
+
+        //*********
+        //
+        // Window main functions
+        //
+        //*********
+
+        // Window base constructor
+        Window(int window_width, int window_height, std::string exec_path);
+
+        // Getters and setters (ONLY WITH ATTRIBUTES)
+        inline std::string current_page_name() {return a_current_page;};
+        inline void set_current_page(std::string new_current_page) { a_current_page = new_current_page; };
+
+
+
         void add_hud(std::string name, HUD* object); // Add an existing HUD to the game
         void add_scene(std::string name, Scene* scene); // Add an existing scene to the game
         bool contains_hud(std::string name); // Return if the game contains an HUD Object
@@ -88,12 +97,16 @@ namespace scls {
         void set_current_scene(std::string a_name);
         inline void set_is_running(bool a_run) { is_running = a_run; };
     private:
+
+        // Name of the current page loaded
+        std::string a_current_page = "";
+
+
+
         // Current displayed cursor
         unsigned long a_current_cursor = GLFW_ARROW_CURSOR;
         // Pointer to the cursor
         GLFWcursor* a_cursor = 0;
-        std::string current_hud = ""; // Name of the current hud loaded
-        std::string current_scene = ""; // Name of the current scene loaded
         // Reference to the cursor_on_window bool
         bool &a_cursor_on_window;
         bool is_running = true; // If the game should continue running or not

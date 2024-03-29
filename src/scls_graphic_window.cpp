@@ -53,76 +53,18 @@ namespace scls {
         global_mouse_y = ypos;
     }
 
-    // HUD constructor
-    HUD::HUD(Advanced_Struct* a_advanced_struct, std::string a_name): HUD_Object(reinterpret_cast<Base_Struct*>(a_advanced_struct), a_name, 0, a_advanced_struct->get_texture("transparent"), a_advanced_struct->get_vao("hud_default")) {
-        advanced_struct = a_advanced_struct;name = a_name;
+    //*********
+    //
+    // Window main functions
+    //
+    //*********
 
-        set_position(glm::vec3(0, 0, -10));
-    }
+    // Window base constructor
+    Window::Window(int a_window_width, int a_window_height, std::string a_exec_path): Advanced_Struct(global_mouse_x, global_mouse_y, global_screen_width, global_screen_height, a_exec_path), a_cursor_on_window(cursor_on_window) {
 
-    // Add an existing HUD to the hud
-    void HUD::add_hud_object(std::string name, HUD_Object* object) {
-        if (contains_hud_object(name)) { std::cout << "HUD \"" << get_name() << "\" : error ! The HUD object \"" << name << "\" you want to add already exists." << std::endl; return; }
-        (*get_hud_objects())[name] = object;
-    }
-
-    // Return if the HUD contains an HUD Object
-    bool HUD::contains_hud_object(std::string name) {
-        std::map < std::string, HUD_Object*>* objects = get_hud_objects();
-        for (std::map<std::string, HUD_Object*>::iterator it = objects->begin(); it != objects->end(); it++)
-        {
-            if (it->first == name) { return true; } // Verify each hud object name (first element of map)
-        }
-        return false;
-    }
-
-    // Render the HUD
-    void HUD::render() {
-
-        for (std::map<std::string, HUD_Object*>::iterator it = get_hud_objects()->begin(); it != get_hud_objects()->end(); it++)
-        {
-            it->second->soft_reset();
-        }
-
-        HUD_Object::render();
-    }
-
-    // Update the HUD
-    void HUD::update()
-    {
-        update_object();
-    }
-
-    // Update all the objects in the HUD
-    void HUD::update_object()
-    {
-        for (std::map<std::string, HUD_Object*>::iterator it = get_hud_objects()->begin(); it != get_hud_objects()->end(); it++)
-        {
-            it->second->update();
-        }
-    }
-
-    // Unload the objects in the HUD
-    void HUD::unload()
-    {
-        std::map < std::string, HUD_Object*>* objects = get_hud_objects();
-        for (std::map<std::string, HUD_Object*>::iterator it = objects->begin(); it != objects->end(); it++)
-        {
-            delete it->second; // Delete each HUD_Object
-            it->second = 0;
-        }
-        objects->clear();
-    }
-
-    // HUD destructor
-    HUD::~HUD()
-    {
-        unload();
-    }
-
-    // Window constructor
-    Window::Window(int a_window_width, int a_window_height, std::string a_exec_path, bool load_vaos): Advanced_Struct(global_mouse_x, global_mouse_y, global_screen_width, global_screen_height, a_exec_path), a_cursor_on_window(cursor_on_window) {
+        // Load the keys
         load_keys();
+
         // Configurate base_struct
         get_camera()->set_position(glm::vec3(0.0, 0.0, 0.0));
         get_camera()->set_rotation(glm::vec3(0.0, 0.0, 0.0));
