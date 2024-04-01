@@ -26,12 +26,12 @@ namespace scls {
     //*********
 
     // Object most basic constructor
-    Object::Object(Advanced_Struct* window_struct) : a_window_struct(window_struct) {}
+    Object::Object(_Window_Advanced_Struct* window_struct) : a_window_struct(window_struct) {}
 
     // Object constructor used for displaying
-    Object::Object(Advanced_Struct* window_struct, std::string name, std::string texture_name, std::string vao_name) : Object(window_struct) {
+    Object::Object(_Window_Advanced_Struct* window_struct, std::string name, std::string texture_name, std::string vao_name) : Object(window_struct) {
         a_name = name;
-        a_texture = window_struct->get_texture(texture_name);
+        a_texture = window_struct->texture(texture_name);
         a_vao = window_struct->get_vao(vao_name);
     }
 

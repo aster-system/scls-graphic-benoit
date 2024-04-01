@@ -18,7 +18,13 @@
         <div>
             SCLS Graphic Window is axed around the class "Window".
             It's the only notable thing in this file.
-            However, this class is full of usefull things to do a window in only some lines.
+            However, this class is full of usefull things to do a window in only some lines.</br></br>
+            The hierarchy of the class is quite complicated. Indeed, some informations need to be accessible to all the object in SCLS Window.
+            However, the Window class must include all the others classes. So, the Window class can't be a way to access to those informations.
+            Actually, there are 2 mores classes : _Window_Advanced_Struct and _Window_Base_Struct.
+            Window herits from _Window_Advanced_Struct and _Window_Advanced_Struct herits from _Window_Base_Struct.
+            There are contained in the files "scls_graphic_window_advanced_struct.h" and "scls_graphic_window_base_struct.h".</br>
+            _Window_Advanced_Struct contains data for the object which are not include by _Window_Base_Struct.
             <h3>
                 Window main functions
             </h3>
@@ -211,6 +217,76 @@
                     </h5>
                     <div>
                         Load every keys supported in the window.
+                    </div>
+                </div>
+            </div>
+            <h3>
+                Window model storage
+            </h3>
+            <div>
+                One of the key features made possible by the use of _Window_Advanced_Struct is the possibility to handle models directly in the Window.
+                Indeed, the Window can store the necessary things to create objects. It contains Textures, VAOs, VBOs and Shader_Programs.
+                It provides a good access to it, without being very complicated. Each of this objects has an unique name, and are usable from it.</br>
+                All this functions are implemented into _Window_Advanced_Struct.
+                <h4>
+                    Methods
+                </h4>
+                <div>
+                    <h5>
+                        void add_vbo(std::string name, VBO* vbo)
+                    </h5>
+                    <div>
+                        Add an existing VBO "vbo" in the Window with the name "name".
+                    </div>
+                    <h5>
+                        bool contains_texture(std::string name)
+                    </h5>
+                    <div>
+                        Returns if the Window contains a Texture called "name";
+                    </div>
+                    <h5>
+                        bool contains_vao(std::string name)
+                    </h5>
+                    <div>
+                        Returns if the Window contains a VAO called "name";
+                    </div>
+                    <h5>
+                        bool contains_vbo(std::string name)
+                    </h5>
+                    <div>
+                        Returns if the Window contains a VBO called "name";
+                    </div>
+                    <h5>
+                        Texture* texture(std::string texture_name, bool copy_texture = false)
+                    </h5>
+                    <div>
+                        Returns the texture named "name" in the Window. If the window does not has a "texture_name" texture, it returns 0.</br>
+                        If "copy_texture" is true, the method copy the texture and returns the copy to not alterate the original texture.
+                    </div>
+                </div>
+            </div>
+            <h3>
+                _Window_Advanced_Struct hiddens things
+            </h3>
+            <div>
+                To work correctly, _Window_Advanced_Struct has some hiddens things.
+                You (theorically) do not have to use it, but they are either here.
+                <h4>
+                    Methods
+                </h4>
+                <div>
+                    <h5>
+                        _Window_Advanced_Struct(double& mouse_x, double& mouse_y, int& window_width, int& window_height, std::string exec_path)
+                    </h5>
+                    <div>
+                        Only _Window_Advanced_Struct constructor, taking references to the mouse position ("mouse_x", "mouse_y") and the window size ("window_width", "window_height").
+                        It also takes the path "exec_path" of the program.
+                    </div>
+                    <h5>
+                        virtual ~_Window_Advanced_Struct()
+                    </h5>
+                    <div>
+                        _Window_Advanced_Struct destructor, freeing the memory from the things created with "new".
                     </div>
                 </div>
             </div>

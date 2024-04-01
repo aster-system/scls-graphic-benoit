@@ -66,7 +66,7 @@ namespace scls {
     //*********
 
     // Window base constructor
-    Window::Window(int a_window_width, int a_window_height, std::string a_exec_path): Advanced_Struct(global_mouse_x, global_mouse_y, _global_screen_width, _global_screen_height, a_exec_path), a_cursor_on_window(cursor_on_window) {
+    Window::Window(int a_window_width, int a_window_height, std::string a_exec_path): _Window_Advanced_Struct(global_mouse_x, global_mouse_y, _global_screen_width, _global_screen_height, a_exec_path), a_cursor_on_window(cursor_on_window) {
 
         // Load the keys
         _load_keys();

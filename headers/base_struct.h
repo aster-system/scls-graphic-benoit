@@ -249,7 +249,7 @@ public:
 	void error(std::string thrower, std::string error_content); // Cout an error in the program
 	std::string file_formatted(std::string path); // Return if a file formatted with the struct context
 	glm::mat4 get_projection(); // Return the projection matrix
-	~Base_Struct(); // Base_Struct destructor
+	virtual ~Base_Struct(); // Base_Struct destructor
 
 	// Getters and setters
 	inline std::string get_assets_directory_path() { return assets_directory_path; };

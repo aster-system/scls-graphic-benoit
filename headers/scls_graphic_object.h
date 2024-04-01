@@ -14,7 +14,7 @@
 // This file contains the features allowing to handle the displayed things on the screen.
 //
 
-#include "advanced_struct.h"
+#include "scls_graphic_window_advanced_struct.h"
 
 // The namespace "scls" is used to simplify the all.
 namespace scls {
@@ -30,9 +30,9 @@ namespace scls {
         //*********
 
         // Object most basic constructor
-        Object(Advanced_Struct* window_struct);
+        Object(_Window_Advanced_Struct* window_struct);
         // Object constructor used for displaying
-        Object(Advanced_Struct* window_struct, std::string name, std::string texture_name, std::string vao_name = "hud_default");
+        Object(_Window_Advanced_Struct* window_struct, std::string name, std::string texture_name, std::string vao_name = "hud_default");
         // Object destructor
         ~Object();
 
@@ -40,7 +40,7 @@ namespace scls {
         inline bool contains_tag(std::string tag) { for (int i = 0; i < tags().size(); i++) { if (tags()[i] == tag) { return true; } } return false; };
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
-        inline Advanced_Struct* window_struct() { return a_window_struct;};
+        inline _Window_Advanced_Struct* window_struct() { return a_window_struct;};
         inline std::string name() const { return a_name; };
         inline void set_visible(bool new_visible) {a_visible = new_visible;};
         inline std::vector<std::string>& tags() { return a_tags; };
@@ -84,7 +84,7 @@ namespace scls {
         // Transform object attached
         Transform_Object* a_transform = 0;
         // Base struct in the game
-        Advanced_Struct* a_window_struct = 0;
+        _Window_Advanced_Struct* a_window_struct = 0;
 
         // Necessary things to do the render
         // Pointer to the VAO used to render the object

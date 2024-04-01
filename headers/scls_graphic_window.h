@@ -17,7 +17,7 @@
 #ifndef SCLS_WINDOW
 #define SCLS_WINDOW
 
-#include "../headers/advanced_struct.h"
+#include "../headers/scls_graphic_window_advanced_struct.h"
 #include "../headers/base_struct.h"
 #include "../headers/model.h"
 #include "scls_graphic_object.h"
@@ -40,7 +40,7 @@ namespace scls {
     // Callback function for mouse moving
     void _mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
-    class Window: public Advanced_Struct {
+    class Window: public _Window_Advanced_Struct {
         // Class representing the game
     public:
 
@@ -53,7 +53,7 @@ namespace scls {
         // Window base constructor
         Window(int window_width, int window_height, std::string exec_path);
         // Window base destructor
-        ~Window();
+        virtual ~Window();
 
         // Load the game from a config file
         void load_from_config_file(std::string path);
