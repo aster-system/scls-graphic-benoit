@@ -19,25 +19,6 @@ void Advanced_Struct::add_vbo(std::string name, VBO* vbo)
 	}
 }
 
-// Asscls::sign to a number a part
-void Advanced_Struct::assign_part(unsigned int number, Part* part)
-{
-	if (contains_part(number)) { std::cout << "Matrix game : error ! The part \"" << number << "\" you want to add already exist." << std::endl; return; }
-	(*get_parts())[number] = part;
-}
-
-
-// Returns if the struct contains a part
-bool Advanced_Struct::contains_part(unsigned int number)
-{
-	std::map<unsigned int, Part*>* parts = get_parts();
-	for (std::map<unsigned int, Part*>::iterator it = parts->begin(); it != parts->end(); it++)
-	{
-		if (it->first == number) { return true; } // Verify each part name (first element of map)
-	}
-	return false;
-}
-
 // Returns if the struct contains a texture
 bool Advanced_Struct::contains_texture(std::string texture_name)
 {
@@ -69,20 +50,6 @@ bool Advanced_Struct::contains_vbo(std::string name)
 		if (it->first == name) { return true; } // Verify each vbos name (first element of map)
 	}
 	return false;
-}
-
-// Returns a part
-Part* Advanced_Struct::get_part(unsigned int number)
-{
-	if (contains_part(number))
-	{
-		return (*get_parts())[number];
-	}
-	else
-	{
-		std::cout << "Matrix game : error ! The part \"" << number << "\" you want to get does not exist." << std::endl;
-		return 0;
-	}
 }
 
 // Returns a texture in the struct
@@ -267,13 +234,6 @@ Advanced_Struct::~Advanced_Struct()
 	for (std::map<std::string, VBO*>::iterator it = vbos->begin(); it != vbos->end(); it++)
 	{
 		delete it->second; // Delete VBOs
-		it->second = 0;
-	}
-
-	std::map<unsigned int, Part*>* parts = get_parts();
-	for (std::map<unsigned int, Part*>::iterator it = parts->begin(); it != parts->end(); it++)
-	{
-		delete it->second; // Delete parts
 		it->second = 0;
 	}
 }

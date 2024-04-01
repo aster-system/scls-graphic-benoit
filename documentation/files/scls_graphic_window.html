@@ -53,6 +53,13 @@
                         Returns if the window contains the page called "name" or not.
                     </div>
                     <h5>
+                        Object* current_page()
+                    </h5>
+                    <div>
+                        Returns a pointer to the current page.</br>
+                        If the current page is "" or is not existing, reutrns 0.
+                    </div>
+                    <h5>
                         std::string current_page_name()
                     </h5>
                     <div>
@@ -64,6 +71,12 @@
                     <div>
                         Returns if the window should continue to run or not.</br>
                         If you want to do a infinite loop for your program, DO NOT use this function as the condition. Use run() instead.
+                    </div>
+                    <h5>
+                        void load_from_config_file(std::string path)
+                    </h5>
+                    <div>
+                        Load the window from a portable configuration file at the path "path".
                     </div>
                     <h5>
                         Object* page(std::string name)
@@ -115,6 +128,40 @@
                 </div>
             </div>
             <h3>
+                Window operating
+            </h3>
+            <div>
+                To be usable, the window must be able to evolve in the time.
+                For that, like in each graphic library, there are an infinite while loop, allowing to update and render the window.
+                This loop should be created by the user of the window. One loop iteration is called a frame.</br>
+                In Window, a FPS is the number of frame in one second, and is calculated by "update_event()".
+                <h4>
+                    Methods
+                </h4>
+                <div>
+                    <h5>
+                        virtual void render()
+                    </h5>
+                    <div>
+                        Render the window graphic.</br>
+                        It is recommended to call this function after all the others function of the frame.
+                    </div>
+                    <h5>
+                        virtual void update()
+                    </h5>
+                    <div>
+                        Update each objects in the Window.
+                    </div>
+                    <h5>
+                        virtual void update_event()
+                    </h5>
+                    <div>
+                        Update the system and Window events.</br>
+                        It is recommended to call this function before all the others function of the frame.
+                    </div>
+                </div>
+            </div>
+            <h3>
                 Window input handling
             </h3>
             <div>
@@ -123,10 +170,10 @@
                 The most important input features is of course present : the keyboard.
                 The window registers each keys as the character that they represents.</br>
                 Window allows to have some datas about the cursor and the mouse.
-                You can have the position of the mouse, if it is clicked, its texture, or even if it  is displayed or not.</br>
+                You can have the position of the mouse, if it is clicked, its texture, or even if it is displayed or not.</br>
                 The resizing of the window is also an input.
                 <h4>
-                    Functions
+                    Methods
                 </h4>
                 <div>
                     <h5>

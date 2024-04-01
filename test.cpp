@@ -15,13 +15,13 @@
 //
 
 #include "scls_graphic.h"
-#include "mods/wisim/wisim.h"
+#include "mods/efa/efa.h"
 
 int main(int argc, char* argv[]) {
     srand(time(0));
 
-    // Create a simple WiSim window
-    wisim::use_wisim(argv[0]);
+    // Create a simple EFA window
+    efa::use_efa(argv[0]);
 
     return 0;
 }

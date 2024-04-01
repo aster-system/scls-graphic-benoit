@@ -39,15 +39,13 @@ namespace mob_loader
 	}
 
 	// Load a MOB from a path
-	Object* MOB_Loader::load_from_mob(std::string path, Scene* scene)
+	void MOB_Loader::load_from_mob(std::string path, scls::Window* window)
 	{
-		scls::Window* window = reinterpret_cast<scls::Window*>(scene->get_game_struct());
-
 		// Check if the path exists
 		if (!std::filesystem::exists(path))
 		{
 			window->error("MOB Loader", "The path \"" + path + "\" does not exists.");
-			return 0;
+			return ;
 		}
 
 		// Get the signature of the path
@@ -63,7 +61,6 @@ namespace mob_loader
 		if (signature != "MATIX3DO")
 		{
 			window->error("MOB Loader", "The path \"" + path + "\" is not a MOB file (its signature is \"" + signature + "\" but the \"MATIX3DO\" signature is wanted).");
-			return 0;
 		}
 
 		// Get the size of the path
@@ -229,8 +226,10 @@ namespace mob_loader
 					if (type == get_png_texture_number()) // Load the texture as PNG datas
 					{
 						// Get the data of the texture
-						char* texture_input = new char[size];
-						scls::read_file_binary(path, texture_input, size, current_pos);
+						char* texture_input_ca = new char[size];
+						scls::read_file_binary(path, texture_input_ca, size, current_pos);
+						scls::Bytes_Set* texture_input = new scls::Bytes_Set(texture_input_ca, size);
+						delete[] texture_input_ca; texture_input_ca = 0;
 						bool flip_y = false;
 						bool resize = false;
 						if (datas[get_resize_texture_data_number()].data != 0)
@@ -242,10 +241,10 @@ namespace mob_loader
 							flip_y = datas[get_flip_y_texture_data_number()].data[0];
 						}
 						Texture* texture = window->new_texture(name);
-						texture->get_image()->_load_from_binary_PNG(texture_input, size);
+						texture->get_image()->_load_png_file(texture_input);
 						if (flip_y) texture->get_image()->flip_y();
 						texture->load_texture();
-						delete[] texture_input; texture_input = 0;
+						delete texture_input; texture_input = 0;
 					}
 				}
 				else if (type_chunk == get_vbo_number()) // Load a VBO
@@ -279,7 +278,6 @@ namespace mob_loader
 				}
 			}
 		}
-		return 0;
 	}
 
 	// MOB_Loader destructor

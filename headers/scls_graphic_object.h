@@ -30,9 +30,9 @@ namespace scls {
         //*********
 
         // Object most basic constructor
-        Object();
+        Object(Advanced_Struct* window_struct);
         // Object constructor used for displaying
-        Object(std::string name, std::string texture_name, std::string vao_name = "hud_default");
+        Object(Advanced_Struct* window_struct, std::string name, std::string texture_name, std::string vao_name = "hud_default");
         // Object destructor
         ~Object();
 

@@ -55,11 +55,17 @@ namespace scls {
         // Window base destructor
         ~Window();
 
+        // Load the game from a config file
+        void load_from_config_file(std::string path);
         // Return if the window is running or not
         bool run();
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         inline bool contains_page(std::string name) { for(std::map<std::string, Object*>::iterator it = pages().begin();it!=pages().end();it++) if(it->first == name) return true; return false;};
+        inline Object* current_page() {
+            if(current_page_name() != "" && contains_page(current_page_name())) return pages()[current_page_name()];
+            return 0;
+        }
         inline Object* page(std::string name) {
             if(contains_page(name)) return pages()[name];
             scls::print("Warning", "SCLS Window", "The \"" + name + "\" page you want to get does not exists.");
@@ -73,7 +79,7 @@ namespace scls {
         inline std::map<std::string, Object*>& pages() {return a_pages;};
         inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
         inline void set_current_page(std::string new_current_page) {
-            if(new_current_page != "" && !contains_page(name)) scls::print("Warning", "SCLS Window", "The \"" + name + "\" page you want to set as the current page does not exists.");
+            if(new_current_page != "" && !contains_page(new_current_page)) scls::print("Warning", "SCLS Window", "The \"" + new_current_page + "\" page you want to set as the current page does not exists.");
             else a_current_page = new_current_page;
         };
         inline void set_is_running(bool new_is_runnig) { a_is_running = new_is_runnig; };
@@ -94,22 +100,23 @@ namespace scls {
         // Enable the cursor from the game
         inline void show_cursor() { glfwSetInputMode(window(), GLFW_CURSOR, GLFW_CURSOR_NORMAL); _cursor_state = GLFW_CURSOR_NORMAL; };
 
-
-
-        void load_from_config_file(std::string path); // Load the game from a config file
-        void render(); // Render the scene
-        void update(); // Update one frame of the game
-        void update_event(); // Update the event of the game during this frame
-
-        // Getters and setters
+        // Getters and setters (ONLY WITH ATTRIBUTES)
         inline unsigned long current_cursor() const {return a_current_cursor;};
-        inline std::string get_exec_directory() {
-            std::vector<std::string> parts = scls::cut_string(get_exec_path(), "\\");
-            std::string result = "";
-            for (int i = 0; i < parts.size() - 1; i++) { result += parts[i] + "/"; }
-            return result;
-        } // Return the directory of the game exe
         inline bool is_cursor_on_window() { return a_cursor_on_window; };
+
+        //*********
+        //
+        // Window operating
+        //
+        //*********
+
+        // Render the scene
+        virtual void render();
+        // Update one frame of the game
+        virtual void update();
+        // Update the event of the game during this frame
+        virtual void update_event();
+
     private:
 
         // Basics Window descriptors
@@ -132,18 +139,22 @@ namespace scls {
         //
         //*********
 
-        // Map of each keys in the window, with their character as the value
-        std::map<std::string, unsigned int> a_keys = std::map<std::string, unsigned int>();
-
-
-
         // Current displayed cursor
         unsigned long a_current_cursor = GLFW_ARROW_CURSOR;
         // Pointer to the cursor
         GLFWcursor* a_cursor = 0;
         // Reference to the cursor_on_window bool
         bool &a_cursor_on_window;
-        float last_frame_time = 0; // Time when the last frame occurs, for calculating delta_time and FPS
+        // Map of each keys in the window, with their character as the value
+        std::map<std::string, unsigned int> a_keys = std::map<std::string, unsigned int>();
+
+        //*********
+        //
+        // Window operating
+        //
+        //*********
+
+        float a_last_frame_time = 0; // Time when the last frame occurs, for calculating delta_time and FPS
     };
 }
 

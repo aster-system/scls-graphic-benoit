@@ -475,10 +475,10 @@ void Texture::bind() {
 
 // Change the texture of the texture according to image
 void Texture::change_texture() {
-	height = get_image()->get_height();
-	width = get_image()->get_width();
+	height = get_image()->height();
+	width = get_image()->width();
 
-	unsigned char* texture = get_image()->data();
+	char* texture = get_image()->datas()->datas();
 
 	// Load the texture
 	glBindTexture(GL_TEXTURE_2D, texture_id);

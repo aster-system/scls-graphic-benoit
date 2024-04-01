@@ -109,16 +109,41 @@ namespace scls {
         glfwSetCursorEnterCallback(a_window, _cursor_enter_callback);
         glfwSetFramebufferSizeCallback(a_window, _framebuffer_size_callback);
 
-        if (load_vaos)
+        load_VAOs();
+    }
+
+    // Load the game from a config file
+    void Window::load_from_config_file(std::string path) {
+        std::string last_config_file_path = get_config_file_path();
+        set_config_file_path(path);
+
+        if (last_config_file_path != get_config_file_path()) // If the path is correct
         {
-            load_VAOs();
+            std::vector<std::string> content = scls::cut_string(scls::read_file(get_config_file_path()), "\n");
+
+            for (int i = 0; i < content.size(); i++) // Analyze each lines
+            {
+                std::vector<std::string> line = scls::cut_string(content[i], ":");
+                std::string all_variables = "";
+                for (int j = 1; j < line.size(); j++) { all_variables += line[j]; }
+
+                if (line[0] == "screen_size") // If the line represents the size of the screen
+                {
+        std::vector<std::string> variables = scls::cut_string(all_variables, ";");
+        resize_window(std::stoi(variables[0]), std::stoi(variables[1]));
+    }
+                else if (line[0] == "assets_path_directory") // If the line represents the assets path
+                {
+                    set_assets_directory_path(all_variables);
+                }
+            }
         }
     }
 
     // Return if the window is running or not
     bool Window::run() {
         bool to_return = glfwWindowShouldClose(a_window);
-        if (!continue_running()) { to_return = true; }
+        if (!is_running()) { to_return = true; }
 
         if(to_return)
             glfwTerminate();
@@ -130,17 +155,10 @@ namespace scls {
         // Destroy the cursor
         if(a_cursor != 0) glfwDestroyCursor(a_cursor);
 
-        std::map<std::string, Scene*> *scenes = get_scenes();
-        for (std::map<std::string, Scene*>::iterator it = scenes->begin(); it != scenes->end(); it++)
+        std::map<std::string, Object*>& all_pages = pages();
+        for (std::map<std::string, Object*>::iterator it = all_pages.begin(); it != all_pages.end(); it++)
         {
-            delete it->second; // Destroy each scenes
-            it->second = 0;
-        }
-
-        std::map<std::string, HUD*>* huds = get_huds();
-        for (std::map<std::string, HUD*>::iterator it = huds->begin(); it != huds->end(); it++)
-        {
-            delete it->second; // Destroy each HUD_Object
+            delete it->second; // Destroy each pages
             it->second = 0;
         }
     }
@@ -213,102 +231,50 @@ namespace scls {
 
     // Properly resize the window
     void Window::resize_window(unsigned int width, unsigned int height) {
-        glfwSetWindowSize(window, width, height);
+        glfwSetWindowSize(window(), width, height);
     }
 
-
-
-
-
-
-
-
-
-    // Load the game from a config file
-    void Window::load_from_config_file(std::string path) {
-        std::string last_config_file_path = get_config_file_path();
-        set_config_file_path(path);
-
-        if (last_config_file_path != get_config_file_path()) // If the path is correct
-        {
-            std::vector<std::string> content = scls::cut_string(scls::read_file(get_config_file_path()), "\n");
-
-            for (int i = 0; i < content.size(); i++) // Analyze each lines
-            {
-                std::vector<std::string> line = scls::cut_string(content[i], ":");
-                std::string all_variables = "";
-                for (int j = 1; j < line.size(); j++) { all_variables += line[j]; }
-
-                if (line[0] == "screen_size") // If the line represents the size of the screen
-                {
-                    std::vector<std::string> variables = scls::cut_string(all_variables, ";");
-                    resize(std::stoi(variables[0]), std::stoi(variables[1]));
-                }
-                else if (line[0] == "assets_path_directory") // If the line represents the assets path
-                {
-                    set_assets_directory_path(all_variables);
-                }
-            }
-        }
-    }
+    //*********
+    //
+    // Window operating
+    //
+    //*********
 
     // Render the scene
     void Window::render() {
         // Clear OpenGL window
-        glClearColor(get_background_color()[0], get_background_color()[1], get_background_color()[2], get_background_color()[3]);
+        glClearColor(background_color().red(), background_color().green(), background_color().blue(), background_color().alpha());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glDepthFunc(GL_LESS);
-        if (get_current_scene_name() != "" && contains_scene(get_current_scene_name()))
-        {
-            Scene* scene = get_current_scene();
-            if (scene != 0)
-            {
-                scene->render();
-            }
-        }
-
         glDepthFunc(GL_ALWAYS);
-        if (get_current_hud_name() != "" && contains_hud(get_current_hud_name()))
+        if (current_page_name() != "" && contains_page(current_page_name()))
         {
-            HUD* hud = get_current_hud();
-            if (hud != 0)
+            Object* page = current_page();
+            if (page != 0)
             {
-                hud->render();
+                page->render();
             }
         }
 
         // Update OpenGL
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(window());
         glfwPollEvents();
     }
 
     // Update one frame of the game
     void Window::update() {
-        if (get_current_scene_name() != "" && contains_scene(get_current_scene_name()))
+        Object* page = current_page();
+        if (page != 0)
         {
-            Scene* scene = get_current_scene();
-            if (scene != 0)
-            {
-                scene->update();
-            }
-        }
-
-        if (get_current_hud_name() != "" && contains_hud(get_current_hud_name()))
-        {
-            HUD* hud = get_current_hud();
-            if (hud != 0)
-            {
-                hud->update();
-            }
+            page->update();
         }
     }
 
     // Update the event of the game during this frame
     void Window::update_event() {
         // Calculate delta time
-        set_delta_time(glfwGetTime() - last_frame_time);
-        last_frame_time = glfwGetTime();
+        set_delta_time(glfwGetTime() - a_last_frame_time);
+        a_last_frame_time = glfwGetTime();
 
         if (get_delta_time() > 0.1) set_delta_time(0);
 
@@ -334,37 +300,10 @@ namespace scls {
         set_mouse_move_x(mouse_move_x);
         set_mouse_move_y(mouse_move_y);
         set_right_mouse_button_state(0);
-        if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+        if(glfwGetMouseButton(window(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
             set_left_mouse_button_state(1);
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+        if (glfwGetMouseButton(window(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
             set_right_mouse_button_state(1);
-
-        // Check overflied HUD object
-        overflighted_object = 0;
-        if (is_cursor_on_window() && get_cursor_state() == GLFW_CURSOR_NORMAL)
-        {
-            HUD* current_hud = get_current_hud();
-            if (current_hud != 0)
-            {
-                std::vector<HUD_Object*>* objects = (&current_hud->sorted_children());
-                for (int i = static_cast<int>(objects->size()) - 1; i >= 0; i--) // Check each objects
-                {
-                    HUD_Object* object = (*objects)[i];
-                    if (object->is_in(glm::vec2(get_mouse_x(), get_mouse_y())))
-                    {
-                        overflighted_object = object;
-                        objects = &object->sorted_children();
-                        i = static_cast<int>(objects->size());
-                    }
-                }
-            }
-
-            if (overflighted_object != 0)
-            {
-                if(get_left_mouse_button_state()) overflighted_object->set_is_clicked(true);
-                overflighted_object->set_is_overflighted(true);
-            }
-        }
 
         // Update the keys
         get_pressed_keys()->clear();
@@ -374,9 +313,9 @@ namespace scls {
             it->second = Key_State::Nothing; // Reset keys
         }
 
-        for (std::map<std::string, unsigned int>::iterator it = keys.begin(); it != keys.end(); it++)
+        for (std::map<std::string, unsigned int>::iterator it = a_keys.begin(); it != a_keys.end(); it++)
         {
-            if (glfwGetKey(window, it->second) == GLFW_PRESS)
+            if (glfwGetKey(window(), it->second) == GLFW_PRESS)
             {
                 (*get_keys_state())[it->first] = Key_State::Pressed;
                 get_pressed_keys()->push_back(it->first);
@@ -409,7 +348,7 @@ namespace scls {
         set_last_mouse_x(get_mouse_x());
         set_last_mouse_y(get_mouse_y());
 
-        // Update the cursor texture
+        /*// Update the cursor texture
         if(overflighted_object != 0)
         {
             if(current_cursor() != overflighted_object->cursor_overflighted())
@@ -425,6 +364,6 @@ namespace scls {
             a_cursor = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
             glfwSetCursor(window, a_cursor);
             a_current_cursor = GLFW_ARROW_CURSOR;
-        }
+        } //*/
     }
 }

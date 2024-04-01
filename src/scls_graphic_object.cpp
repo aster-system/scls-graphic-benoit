@@ -26,20 +26,18 @@ namespace scls {
     //*********
 
     // Object most basic constructor
-    Object::Object() {}
+    Object::Object(Advanced_Struct* window_struct) : a_window_struct(window_struct) {}
 
     // Object constructor used for displaying
-    Object::Object(std::string name, std::string texture_name, std::string vao_name) : Object()
-    {
+    Object::Object(Advanced_Struct* window_struct, std::string name, std::string texture_name, std::string vao_name) : Object(window_struct) {
         a_name = name;
-        a_texture = game_struct()->get_texture(texture_name);
-        a_vao = game_struct()->get_vao(vao_name);
+        a_texture = window_struct->get_texture(texture_name);
+        a_vao = window_struct->get_vao(vao_name);
     }
 
     // Object destructor
-    Object::~Object()
-    {
-        delete attached_transform; attached_transform = 0;
+    Object::~Object() {
+        delete a_transform; a_transform = 0;
     }
 
     //*********
@@ -51,10 +49,10 @@ namespace scls {
     // Render the object on the window
     void Object::render() {
         texture()->bind(); // Bind the texture
-        vao->get_shader_program()->set_uniform4fv_value("model", transform()->get_model_matrix()); // Write some uniform variables into the shader
-        vao->get_shader_program()->set_uniform4fv_value("projection", get_base_struct()->get_projection());
-        vao->get_shader_program()->set_uniform4fv_value("view", get_base_struct()->get_camera()->get_view());
-        if (texture->use_resize())
+        vao()->get_shader_program()->set_uniform4fv_value("model", transform()->get_model_matrix()); // Write some uniform variables into the shader
+        vao()->get_shader_program()->set_uniform4fv_value("projection", window_struct()->get_projection());
+        vao()->get_shader_program()->set_uniform4fv_value("view", window_struct()->get_camera()->get_view());
+        if (texture()->use_resize())
         {
             vao()->render(transform()->get_scale()); // Render the object with scaling
         }
@@ -73,8 +71,7 @@ namespace scls {
     // Clone the object
     void* Object::clone(std::string name, std::string texture_name, std::string vao_name)
     {
-        Object* to_return = new Object(name, texture_name, vao_name);
-        to_return->a_window_struct = window_struct();
+        Object* to_return = new Object(window_struct(), name, texture_name, vao_name);
 
         return to_return;
     }

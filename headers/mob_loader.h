@@ -99,7 +99,7 @@ namespace mob_loader
 		// Include a MOB path
 		void include_mob(std::string path, unsigned char include_type = 0);
 		// Load a MOB from a path
-		Object* load_from_mob(std::string path, Scene* scene);
+		void load_from_mob(std::string path, scls::Window* window);
 
 		// Returns if the MOB contains a data
 		bool contains_data(unsigned short data_number);

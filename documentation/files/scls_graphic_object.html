@@ -34,16 +34,18 @@
                 </h4>
                 <div>
                     <h5>
-                        Object()
+                        Object(Advanced_Struct* window_struct)
                     </h5>
                     <div>
                         Most basic constructor of an Object, used to clone some objects if necessary.
+                        It is contained into the Window "window_struct".
                     </div>
                     <h5>
-                        Object(std::string a_name, std::string texture_name, std::string vao_name)
+                        Object(Advanced_Struct* window_struct, std::string a_name, std::string texture_name, std::string vao_name)
                     </h5>
                     <div>
-                        Simple Object constructor, usable by the developer. The name of the object is "a_name".</br>
+                        Simple Object constructor, usable by the developer. The name of the object is "a_name".
+                        It is contained into the Window "window_struct".</br>
                         The Texture applied is the main texture "texture_name", and the VAO applied is the main VAO "vao_name".
                         See the <a href="#object_graphic_functions">graphic</a> part for more informations.
                     </div>

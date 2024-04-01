@@ -296,7 +296,7 @@ public:
 	~Texture(); // Texture destructor
 
 	// Getters and setters (ONLY WITHOUT ATTRIBUTES)
-	inline double image_ratio() {return static_cast<double>(get_image()->get_width()) / static_cast<double>(get_image()->get_height());};
+	inline double image_ratio() {return static_cast<double>(get_image()->width()) / static_cast<double>(get_image()->height());};
 
 	// Getters and setters (ONLY WITH ATTRIBUTES)
 	inline unsigned short copy_count() {return a_copy_count;};
