@@ -263,7 +263,7 @@ public:
 	void load_vao();
 	virtual void render(glm::vec3 scale = glm::vec3(1.0, 1.0, 1.0)); // Render the VAO
 	unsigned int triangle_number(); // Returns the number of triangle to draw
-	~VAO(); // VAO destructor
+	virtual ~VAO(); // VAO destructor
 
 
 	// Getters and setters
@@ -285,6 +285,8 @@ public:
 	Texture(std::string a_texture_path, bool a_resize = true); // Texture constructor
 	// Texture constructor much modulable
 	Texture(unsigned short width, unsigned short height, glm::vec4 color, bool a_resize = true);
+	// Texture constructor much modulable
+	Texture(unsigned short width, unsigned short height, scls::Color color, bool a_resize = true);
 	// Texture copy constructor
 	Texture(Texture& texture_to_copy);
 	// Most basic texture constructor

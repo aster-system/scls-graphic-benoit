@@ -267,11 +267,103 @@
                         Returns if the Window contains a VBO called "name";
                     </div>
                     <h5>
+                        void load_VAOs()
+                    </h5>
+                    <div>
+                        Loads the builts-in VAOs in the window.
+                    </div>
+                    <h5>
+                        Texture* new_texture(std::string name, std::string path, bool texture_resize = false)
+                    </h5>
+                    <div>
+                        Create a new Texture called "name" with the image of the path "path".</br>
+                        If "texture_resize" is true, the texture is resizable by the VAO (not well implemented yet).
+                    </div>
+                    <h5>
+                        Texture* new_texture(std::string name, unsigned short width, unsigned short height, Color color)
+                    </h5>
+                    <div>
+                        Create a new Texture called "name" with an image with the size ("width", "height") and the background color "color".
+                    </div>
+                    <h5>
+                        Texture* new_texture(std::string name, bool texture_resize = false)
+                    </h5>
+                    <div>
+                        Create an empty Texture called "name".</br>
+                        If "texture_resize" is true, the texture is resizable by the VAO (not well implemented yet).
+                    </div>
+                    <h5>
+                        VAO* new_vao(std::string name, char* binary)
+                    </h5>
+                    <div>
+                        Create a new VAO called "name" from the binary datas in "binary".
+                    </div>
+                    <h5>
+                        VAO* new_vao(std::string name, std::string vbo, std::string shader = "default")
+                    </h5>
+                    <div>
+                        Create a new VAO called "name" with the already created VBO "vbo" and shader "shader".
+                    </div>
+                    <h5>
+                        VBO* new_vbo(std::string name)
+                    </h5>
+                    <div>
+                        Create a new VBO called "name".
+                    </div>
+                    <h5>
                         Texture* texture(std::string texture_name, bool copy_texture = false)
                     </h5>
                     <div>
                         Returns the texture named "name" in the Window. If the window does not has a "texture_name" texture, it returns 0.</br>
                         If "copy_texture" is true, the method copy the texture and returns the copy to not alterate the original texture.
+                    </div>
+                    <h5>
+                        std::map&lt;std::string, Texture*&gt;& textures()
+                    </h5>
+                    <div>
+                        Returns a reference to the std::map containing the Textures, with their name as key.
+                    </div>
+                    <h5>
+                        void unload_textures()
+                    </h5>
+                    <div>
+                        Unload all the textures in the window.
+                    </div>
+                    <h5>
+                        void unload_vaos()
+                    </h5>
+                    <div>
+                        Unload all the VAOs in the window.
+                    </div>
+                    <h5>
+                        void unload_vbos()
+                    </h5>
+                    <div>
+                        Unload all the VBOs in the window.
+                    </div>
+                    <h5>
+                        VAO* vao(std::string vao_name)
+                    </h5>
+                    <div>
+                        Returns the VAO named "name" in the Window. If the window does not has a "vao_name" VAO, it returns 0.
+                    </div>
+                    <h5>
+                        std::map&lt;std::string, VAO*&gt;& vaos()
+                    </h5>
+                    <div>
+                        Returns a reference to the std::map containing the VAOs, with their name as key.
+                    </div>
+                    <h5>
+                        VBO* vbo(std::string vbo_name)
+                    </h5>
+                    <div>
+                        Returns the VBO named "name" in the Window. If the window does not has a "vbo_name" VBO, it returns 0.
+                    </div>
+                    <h5>
+                        std::map&lt;std::string, VBO*&gt;& vbos()
+                    </h5>
+                    <div>
+                        Returns a reference to the std::map containing the VBOs, with their name as key.
                     </div>
                 </div>
             </div>
@@ -281,6 +373,23 @@
             <div>
                 To work correctly, _Window_Advanced_Struct has some hiddens things.
                 You (theorically) do not have to use it, but they are either here.
+                <h4>
+                    Functions
+                </h4>
+                <div>
+                    <h5>
+                        std::vector&lt;Shader_Program_Variable&gt; _base_hud_shader_program_variables()
+                    </h5>
+                    <div>
+                        Returns a vector of the built-in shader program variable of a base HUD shader.
+                    </div>
+                    <h5>
+                        std::vector&lt;Shader_Program_Variable&gt; _base_3d_shader_program_variables()
+                    </h5>
+                    <div>
+                        Returns a vector of the built-in shader program variable of a base 3D shader.
+                    </div>
+                </div>
                 <h4>
                     Methods
                 </h4>

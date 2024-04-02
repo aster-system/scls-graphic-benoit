@@ -16,21 +16,9 @@ namespace scls {
 
     // _Window_Advanced_Struct destructor
     _Window_Advanced_Struct::~_Window_Advanced_Struct() {
-        std::map<std::string, VAO*>* vaos = get_all_vaos();
-        for (std::map<std::string, VAO*>::iterator it = vaos->begin(); it != vaos->end(); it++)
-        {
-            delete it->second; // Delete VAOs
-            it->second = 0;
-        }
-
         unload_textures();
-
-        std::map<std::string, VBO*>* vbos = get_vbos();
-        for (std::map<std::string, VBO*>::iterator it = vbos->begin(); it != vbos->end(); it++)
-        {
-            delete it->second; // Delete VBOs
-            it->second = 0;
-        }
+        unload_vaos();
+        unload_vbos();
     }
 
     //*********
@@ -39,52 +27,69 @@ namespace scls {
     //
     //*********
 
+    // Loads the VAOs in the advanced struct
+    void _Window_Advanced_Struct::load_VAOs() {
+        // Create the base shaders
+        a_shaders_programs["default"] = Shader_Program();
+        a_shaders_programs["hud_default"] = Shader_Program(Shader_Program::HUD_Default);
+
+        // Create a base texture
+        textures()["transparent"] = new Texture(5, 5, glm::vec4(0.0, 0.0, 0.0, 0.0));
+        textures()["white"] = new Texture(5, 5, glm::vec4(1.0, 1.0, 1.0, 1.0));
+
+        // Define attributes for VAOs
+        std::vector<Shader_Program_Variable> hud_attributes = _base_hud_shader_program_variables();
+
+        // Create VAOs
+        VBO hud_vbo = VBO(hud_attributes, VBO::get_base_hud_vbo(hud_attributes), false);
+        vaos()["hud_default"] = new VAO(a_shaders_programs["hud_default"], hud_attributes, &hud_vbo); vaos()["hud_default"]->load_vao();
+    }
+
     // Returns a texture in the struct
     Texture* _Window_Advanced_Struct::texture(std::string texture_name, bool copy_texture) {
         if (contains_texture(texture_name))
         {
             if(copy_texture)
             {
-                Texture* to_copy = (*get_textures())[texture_name];
+                Texture* to_copy = textures()[texture_name];
                 Texture* to_return = new Texture(*to_copy);
-                (*get_textures())[texture_name + ";copy" + std::to_string(to_copy->copy_count())] = to_return;
+                textures()[texture_name + ";copy" + std::to_string(to_copy->copy_count())] = to_return;
                 return to_return;
             }
-            return (*get_textures())[texture_name];
+            return textures()[texture_name];
         }
         error("SCLS Graphic Window", "The \"" + texture_name + "\" texture you want to use does not exists.");
         return 0;
     }
 
-
-
-
-
-
-
-    // Loads the HUD VAOs in the advanced struct
-    void _Window_Advanced_Struct::load_hud_VAOs() {
-        // Create the base shaders
-        a_shaders_programs["hud_default"] = Shader_Program(Shader_Program::HUD_Default);
-
-        // Define attributes for VAOs
-        std::vector<Shader_Program_Variable> hud_attributes = get_base_hud_shader_program_variables();
-
-        // Create VAOs
-        VBO hud_vbo = VBO(hud_attributes, VBO::get_base_hud_vbo(hud_attributes), false);
-        all_vaos["hud_default"] = new VAO(a_shaders_programs["hud_default"], hud_attributes, &hud_vbo); all_vaos["hud_default"]->load_vao();
+    // Unload all the textures
+    void _Window_Advanced_Struct::unload_textures() {
+        for (std::map<std::string, Texture*>::iterator it = textures().begin(); it != textures().end(); it++)
+        {
+            delete it->second; // Delete textures
+            it->second = 0;
+        }
+        textures().clear();
     }
 
-    // Loads the VAOs in the advanced struct
-    void _Window_Advanced_Struct::load_VAOs() {
-        // Create the base shaders
-        a_shaders_programs["default"] = Shader_Program();
+    // Unload all the VAOs
+    void _Window_Advanced_Struct::unload_vaos() {
+        for (std::map<std::string, VAO*>::iterator it = vaos().begin(); it != vaos().end(); it++)
+        {
+            delete it->second; // Delete VAOs
+            it->second = 0;
+        }
+        vaos().clear();
+    }
 
-        // Create a base texture
-        (*get_textures())["transparent"] = new Texture(5, 5, glm::vec4(0.0, 0.0, 0.0, 0.0));
-        (*get_textures())["white"] = new Texture(5, 5, glm::vec4(1.0, 1.0, 1.0, 1.0));
-
-        load_hud_VAOs();
+    // Unload all the VBOs
+    void _Window_Advanced_Struct::unload_vbos() {
+        for (std::map<std::string, VBO*>::iterator it = vbos().begin(); it != vbos().end(); it++)
+        {
+            delete it->second; // Delete VBOs
+            it->second = 0;
+        }
+        vbos().clear();
     }
 
     // Add a texture to the game
@@ -92,27 +97,23 @@ namespace scls {
         if (!contains_texture(name))
         {
             Texture* texture = new Texture(path, texture_resize);
-            (*get_textures())[name] = texture;
+            textures()[name] = texture;
             return texture;
         }
-        else
-        {
-            error("Matix", "The \"" + name + "\" texture you want to add already exists.");
-        }
+        error("Matix", "The \"" + name + "\" texture you want to add already exists.");
+        return 0;
     }
 
     // Returns a texture in the struct
-    Texture* _Window_Advanced_Struct::new_texture(std::string texture_name, unsigned short width, unsigned short height, glm::vec4 color) {
-        if (!contains_texture(texture_name))
+    Texture* _Window_Advanced_Struct::new_texture(std::string name, unsigned short width, unsigned short height, Color color) {
+        if (!contains_texture(name))
         {
             Texture* texture = new Texture(width, height, color);
-            (*get_textures())[texture_name] = texture;
+            textures()[name] = texture;
             return texture;
         }
-        else
-        {
-            error("Matix", "The \"" + texture_name + "\" texture you want to add already exists.");
-        }
+        error("Matix", "The \"" + name + "\" texture you want to add already exists.");
+        return 0;
     }
 
     // Add a texture to the game with the most basic constructor
@@ -120,58 +121,54 @@ namespace scls {
         if (!contains_texture(name))
         {
             Texture* texture = new Texture();
-            (*get_textures())[name] = texture;
+            textures()[name] = texture;
             return texture;
         }
-        else
-        {
-            error("Matix", "The \"" + name + "\" texture you want to add already exists.");
-        }
+        error("Matix", "The \"" + name + "\" texture you want to add already exists.");
+        return 0;
     }
 
     // Create a new VAO into the game with the most basic constructor
     VAO* _Window_Advanced_Struct::new_vao(std::string name, char* binary) {
-        if (contains_vao(name))
+        if (!contains_vao(name))
         {
-            std::cout << "Matrix game : error ! The \"" << name << "\" VAO already exists." << std::endl;
-            return 0;
-        }
+            unsigned int current_pos = 0;
+            unsigned char shader_size = binary[current_pos]; current_pos++;
+            std::string shader = "";
+            for (int i = 0; i < shader_size; i++)
+            {
+                shader += binary[current_pos]; current_pos++;
+            }
 
-        unsigned int current_pos = 0;
-        unsigned char shader_size = binary[current_pos]; current_pos++;
-        std::string shader = "";
-        for (int i = 0; i < shader_size; i++)
-        {
-            shader += binary[current_pos]; current_pos++;
-        }
+            unsigned char vbo_size = binary[current_pos]; current_pos++;
+            std::string vbo = "";
+            for (int i = 0; i < vbo_size; i++)
+            {
+                vbo += binary[current_pos]; current_pos++;
+            }
 
-        unsigned char vbo_size = binary[current_pos]; current_pos++;
-        std::string vbo = "";
-        for (int i = 0; i < vbo_size; i++)
-        {
-            vbo += binary[current_pos]; current_pos++;
+            return new_vao(name, vbo, shader);
         }
-
-        return new_vao(name, vbo, shader);
+        print("Warning", "SCLS Window", "The \"" + name + "\" VAO already exists.");
+        return 0;
     }
 
     // Create a new VAO into the game
     VAO* _Window_Advanced_Struct::new_vao(std::string name, std::string vbo, std::string shader) {
-        if (contains_vao(name))
+        if (!contains_vao(name))
         {
-            std::cout << "Matrix game : error ! The \"" << name << "\" VAO already exists." << std::endl;
-            return 0;
-        }
+            if (!contains_vbo(vbo))
+            {
+                print("Warning", "SCLS Window", "Matrix game : error ! The \"" + name + "\" VAO use the \"" + vbo + "\" VBO, which does not exist.");
+                return 0;
+            }
 
-        if (!contains_vbo(vbo))
-        {
-            std::cout << "Matrix game : error ! The \"" << name << "\" VAO use the \"" << vbo << "\" VBO, which does not exist." << std::endl;
-            return 0;
+            vaos()[name] = new VAO(&a_shaders_programs[shader], vbos()[vbo]);
+            vaos()[name]->load_vao();
+            return vaos()[name];
         }
-
-        all_vaos[name] = new VAO(&a_shaders_programs[shader], a_vbos[vbo]);
-        all_vaos[name]->load_vao();
-        return all_vaos[name];
+        print("Warning", "SCLS Window", "Matrix game : error ! The \"" + name + "\" VAO already exists.");
+        return 0;
     }
 
     // Create a new VBO into the game
@@ -182,20 +179,7 @@ namespace scls {
             add_vbo(name, vbo);
             return vbo;
         }
-        else
-        {
-            error("Matix", "The \"" + name + "\" texture you want to add already exists.");
-        }
+        print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to add already exists.");
         return 0;
-    }
-
-    // Unload all the textures
-    void _Window_Advanced_Struct::unload_textures() {
-        std::map<std::string, Texture*>* textures = get_textures();
-        for (std::map<std::string, Texture*>::iterator it = textures->begin(); it != textures->end(); it++)
-        {
-            delete it->second; // Delete textures
-            it->second = 0;
-        }
     }
 }

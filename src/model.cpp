@@ -459,6 +459,16 @@ Texture::Texture(unsigned short width, unsigned short height, glm::vec4 color, b
 	load_texture();
 }
 
+// Texture constructor much modulable
+Texture::Texture(unsigned short width, unsigned short height, scls::Color color, bool a_resize) : Texture("", false) {
+	// Load the image
+	delete get_image();
+	a_image = new scls::Image(width, height, color);
+
+	// Load the texture
+	load_texture();
+}
+
 // Most basic texture constructor
 Texture::Texture() : Texture("", false) {}
 
