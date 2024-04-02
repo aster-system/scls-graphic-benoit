@@ -60,28 +60,10 @@ namespace scls {
         // Return if the window is running or not
         bool run();
 
-        // Getters and setters (ONLY WITHOUT ATTRIBUTES)
-        inline bool contains_page(std::string name) { for(std::map<std::string, Object*>::iterator it = pages().begin();it!=pages().end();it++) if(it->first == name) return true; return false;};
-        inline Object* current_page() {
-            if(current_page_name() != "" && contains_page(current_page_name())) return pages()[current_page_name()];
-            return 0;
-        }
-        inline Object* page(std::string name) {
-            if(contains_page(name)) return pages()[name];
-            scls::print("Warning", "SCLS Window", "The \"" + name + "\" page you want to get does not exists.");
-            return 0;
-        };
-
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline Color background_color() { return a_background_color; };
-        inline std::string current_page_name() {return a_current_page;};
         inline bool is_running() {return a_is_running;};
-        inline std::map<std::string, Object*>& pages() {return a_pages;};
         inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
-        inline void set_current_page(std::string new_current_page) {
-            if(new_current_page != "" && !contains_page(new_current_page)) scls::print("Warning", "SCLS Window", "The \"" + new_current_page + "\" page you want to set as the current page does not exists.");
-            else a_current_page = new_current_page;
-        };
         inline void set_is_running(bool new_is_runnig) { a_is_running = new_is_runnig; };
         inline GLFWwindow* window() {return a_window;};
 
@@ -106,6 +88,35 @@ namespace scls {
 
         //*********
         //
+        // Window page handling
+        //
+        //*********
+
+        // Create a new page to the Window and return it
+        Object* new_page(std::string name);
+
+        // Getters and setters (ONLY WITHOUT ATTRIBUTES)
+        inline bool contains_page(std::string name) { for(std::map<std::string, Object*>::iterator it = pages().begin();it!=pages().end();it++) if(it->first == name) return true; return false;};
+        inline Object* current_page() {
+            if(current_page_name() != "" && contains_page(current_page_name())) return pages()[current_page_name()];
+            return 0;
+        }
+        inline Object* page(std::string name) {
+            if(contains_page(name)) return pages()[name];
+            scls::print("Warning", "SCLS Window", "The \"" + name + "\" page you want to get does not exists.");
+            return 0;
+        };
+
+        // Getters and setters (ONLY WITHOUT ATTRIBUTES)
+        inline std::string current_page_name() {return a_current_page;};
+        inline std::map<std::string, Object*>& pages() {return a_pages;};
+        inline void set_current_page(std::string new_current_page) {
+            if(new_current_page != "" && !contains_page(new_current_page)) scls::print("Warning", "SCLS Window", "The \"" + new_current_page + "\" page you want to set as the current page does not exists.");
+            else a_current_page = new_current_page;
+        };
+
+        //*********
+        //
         // Window operating
         //
         //*********
@@ -119,19 +130,19 @@ namespace scls {
 
     private:
 
+        //*********
+        //
+        // Window main attributes
+        //
+        //*********
+
         // Basics Window descriptors
         // Background color of the window
         Color a_background_color = white;
         // Pointer to the GLFW window
         GLFWwindow* a_window = 0;
-
-        // Page handling
-        // Name of the current page loaded
-        std::string a_current_page = "";
         // If the window should continue to run or not
         bool a_is_running = true;
-        // Map containing each pages in the window with their name as key
-        std::map<std::string, Object*> a_pages = std::map<std::string, Object*>();
 
         //*********
         //
@@ -147,6 +158,17 @@ namespace scls {
         bool &a_cursor_on_window;
         // Map of each keys in the window, with their character as the value
         std::map<std::string, unsigned int> a_keys = std::map<std::string, unsigned int>();
+
+        //*********
+        //
+        // Window page handling
+        //
+        //*********
+
+        // Name of the current page loaded
+        std::string a_current_page = "";
+        // Map containing each pages in the window with their name as key
+        std::map<std::string, Object*> a_pages = std::map<std::string, Object*>();
 
         //*********
         //

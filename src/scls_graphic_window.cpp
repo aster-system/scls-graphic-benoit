@@ -236,6 +236,22 @@ namespace scls {
 
     //*********
     //
+    // Window page handling
+    //
+    //*********
+
+    // Create a new page to the Window and return it
+    Object* Window::new_page(std::string name) {
+        if(contains_page(name)) {
+            scls::print("Warning", "SCLS Window", "The \"" + name + "\" page you want to add in the window already exist.");
+            return 0;
+        }
+
+
+    }
+
+    //*********
+    //
     // Window operating
     //
     //*********
