@@ -18,10 +18,10 @@ void Shader_Program::load_shader()
 	// Convert the fragment and vertex shader (string) to an char*
 	char* char_array_fragment = new char[get_fragment_shader().length() + 1];
 	char_array_fragment[get_fragment_shader().length()] = '\0';
-	for (int i = 0; i < get_fragment_shader().length(); i++) { char_array_fragment[i] = get_fragment_shader()[i]; }
+	for (int i = 0; i < static_cast<int>(get_fragment_shader().length()); i++) { char_array_fragment[i] = get_fragment_shader()[i]; }
 	char* char_array_vertex = new char[get_vertex_shader().length() + 1];
 	char_array_vertex[get_vertex_shader().length()] = '\0';
-	for (int i = 0; i < get_vertex_shader().length(); i++) { char_array_vertex[i] = get_vertex_shader()[i]; }
+	for (int i = 0; i < static_cast<int>(get_vertex_shader().length()); i++) { char_array_vertex[i] = get_vertex_shader()[i]; }
 
 	// Pass the fragment shader into the GPU and compile it
 	unsigned int fragment = 0;
@@ -217,7 +217,7 @@ void VBO::bind_buffer()
 unsigned int VBO::get_vertice_number() {
 	std::vector<float> datas = get_datas();
 	unsigned int attribute_size = 0;
-	for(int i = 0;i<get_attributes()->size();i++)
+	for(int i = 0;i<static_cast<int>(get_attributes()->size());i++)
 	{
 		unsigned int type_size = 0;
 		if ((*get_attributes())[i].type == GL_FLOAT) { type_size = sizeof(float); }
@@ -240,7 +240,7 @@ void VBO::load_from_binary(char* binary) {
 	}
 
 	unsigned int size = scls::extract_4bytes_from_char_array(binary, cursor_pos, true); cursor_pos += 4;
-	for (int i = 0; i < size; i++)
+	for (unsigned int i = 0; i < size; i++)
 	{
 		double data = scls::extract_double_from_char_array(binary, cursor_pos);
 		cursor_pos += 8;
@@ -438,7 +438,7 @@ VAO::~VAO() {
 }
 
 // Texture constructor
-Texture::Texture(std::string a_texture_path, bool a_resize): texture_path(a_texture_path), resize(a_resize), a_image(new scls::Image()) {
+Texture::Texture(std::string a_texture_path, bool a_resize): resize(a_resize), texture_path(a_texture_path), a_image(new scls::Image()) {
 	if (a_texture_path != "")
 	{
 		get_image()->load_from_path(texture_path);

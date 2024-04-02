@@ -39,7 +39,7 @@ namespace mob_loader
 		char* result = new char[variables.size() * 4 + 1];
 		result[0] = static_cast<char>(variables.size()); current_pos++;
 
-		for (int i = 0; i < variables.size(); i++)
+		for (int i = 0; i < static_cast<int>(variables.size()); i++)
 		{
 			scls::put_2bytes_to_char_array(variables[i].type, result, current_pos, true); current_pos += 2;
 			scls::put_2bytes_to_char_array(variables[i].vector_size, result, current_pos, true); current_pos += 2;
@@ -115,7 +115,7 @@ namespace mob_loader
 			if (author_array == 0) return "";
 
 			std::string to_return = "";
-			for (int i = 0; i < author_size; i++) to_return += author_array[i];
+			for (unsigned int i = 0; i < author_size; i++) to_return += author_array[i];
 			return to_return;
 		};
 		inline std::vector<Include_Data> get_included_data() { return a_included_data; };

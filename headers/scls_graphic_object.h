@@ -37,7 +37,7 @@ namespace scls {
         ~Object();
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
-        inline bool contains_tag(std::string tag) { for (int i = 0; i < tags().size(); i++) { if (tags()[i] == tag) { return true; } } return false; };
+        inline bool contains_tag(std::string tag) { for (int i = 0; i < static_cast<int>(tags().size()); i++) { if (tags()[i] == tag) { return true; } } return false; };
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline _Window_Advanced_Struct* window_struct() { return a_window_struct;};

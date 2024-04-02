@@ -24,6 +24,7 @@
             Actually, there are 2 mores classes : _Window_Advanced_Struct and _Window_Base_Struct.
             Window herits from _Window_Advanced_Struct and _Window_Advanced_Struct herits from _Window_Base_Struct.
             There are contained in the files "scls_graphic_window_advanced_struct.h" and "scls_graphic_window_base_struct.h".</br>
+            _Window_Base_Struct contains usefull datas that should be accessible for everywhere in the program.</br>
             _Window_Advanced_Struct contains data for the object which are not include by _Window_Base_Struct.
             <h3>
                 Window main functions
@@ -31,7 +32,7 @@
             <div>
                 Window has some must-see features, made to be simple but very usefull.</br>
                 You can gives the window a special background color, even if a page could hide it.</br>
-                You can also handle if the window is running or not easily.
+                You can also handle if the window is running or not easily.</br>
                 <h4>
                     Functions
                 </h4>
@@ -406,6 +407,31 @@
                     </h5>
                     <div>
                         _Window_Advanced_Struct destructor, freeing the memory from the things created with "new".
+                    </div>
+                </div>
+            </div>
+            <h3>
+                _Window_Base_Struct hiddens things
+            </h3>
+            <div>
+                To work correctly, _Window_Base_Struct has some hiddens things.
+                You (theorically) do not have to use it, but they are either here.
+                <h4>
+                    Methods
+                </h4>
+                <div>
+                    <h5>
+                        _Window_Base_Struct(double& mouse_x, double& mouse_y, int& window_width, int& window_height, std::string exec_path)
+                    </h5>
+                    <div>
+                        Only _Window_Base_Struct constructor taking references to the mouse position ("mouse_x", "mouse_y") and the window size ("window_width", "window_height").
+                        It also takes the path "exec_path" of the program.
+                    </div>
+                    <h5>
+                        virtual ~_Window_Base_Struct()
+                    </h5>
+                    <div>
+                        _Window_Base_Struct destructor.
                     </div>
                 </div>
             </div>

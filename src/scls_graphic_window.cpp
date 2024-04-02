@@ -125,7 +125,7 @@ namespace scls {
             {
                 std::vector<std::string> line = scls::cut_string(content[i], ":");
                 std::string all_variables = "";
-                for (int j = 1; j < line.size(); j++) { all_variables += line[j]; }
+                for (int j = 1; j < static_cast<int>(line.size()); j++) { all_variables += line[j]; }
 
                 if (line[0] == "screen_size") // If the line represents the size of the screen
                 {

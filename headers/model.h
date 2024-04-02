@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../headers/base_struct.h"
+#include "../headers/scls_graphic_window_base_struct.h"
 
 struct Shader_Program_Variable
 {
@@ -46,10 +46,11 @@ public:
 		{
 			return get_default_fragment_shader();
 		}
-		else if (shader_type == HUD_Default)
+		/*else if (shader_type == HUD_Default)
 		{
 			return get_default_hud_fragment_shader();
-		}
+		} //*/
+		return get_default_hud_fragment_shader();
 	};
 	static std::string get_built_in_vertex_shader(Built_In_Shader shader_type)
 	{
@@ -57,10 +58,11 @@ public:
 		{
 			return get_default_vertex_shader();
 		}
-		else if (shader_type == HUD_Default)
+		/*else if (shader_type == HUD_Default)
 		{
 			return get_default_hud_vertex_shader();
-		}
+		} //*/
+		return get_default_hud_vertex_shader();
 	};
 	static std::string get_default_fragment_shader()
 	{

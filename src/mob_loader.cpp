@@ -21,7 +21,7 @@ namespace mob_loader
 	// Delete each data
 	void MOB_Loader::delete_datas()
 	{
-		for (int i = 0; i < a_datas.size(); i++)
+		for (int i = 0; i < static_cast<int>(a_datas.size()); i++)
 		{
 			delete[] a_datas[i].data;
 		}
@@ -44,7 +44,7 @@ namespace mob_loader
 		// Check if the path exists
 		if (!std::filesystem::exists(path))
 		{
-			window->error("MOB Loader", "The path \"" + path + "\" does not exists.");
+			scls::print("Warning", "MOB Loader", "The path \"" + path + "\" does not exists.");
 			return ;
 		}
 
@@ -60,7 +60,7 @@ namespace mob_loader
 		// Check the signature of the file
 		if (signature != "MATIX3DO")
 		{
-			window->error("MOB Loader", "The path \"" + path + "\" is not a MOB file (its signature is \"" + signature + "\" but the \"MATIX3DO\" signature is wanted).");
+			scls::print("Warning", "MOB Loader", "The path \"" + path + "\" is not a MOB file (its signature is \"" + signature + "\" but the \"MATIX3DO\" signature is wanted).");
 		}
 
 		// Get the size of the path
@@ -72,7 +72,7 @@ namespace mob_loader
 
 		// Analyze each chunks
 		unsigned int current_pos = 10;
-		for (int i = 0; i < size_chunk; i++)
+		for (unsigned int i = 0; i < size_chunk; i++)
 		{
 			// Read the type of the chunk
 			char* type_chunk_input = new char[1];
@@ -231,11 +231,11 @@ namespace mob_loader
 						scls::Bytes_Set* texture_input = new scls::Bytes_Set(texture_input_ca, size);
 						delete[] texture_input_ca; texture_input_ca = 0;
 						bool flip_y = false;
-						bool resize = false;
+						/*bool resize = false;
 						if (datas[get_resize_texture_data_number()].data != 0)
 						{
 							resize = datas[get_resize_texture_data_number()].data[0];
-						}
+						}//*/
 						if (datas[get_flip_y_texture_data_number()].data != 0)
 						{
 							flip_y = datas[get_flip_y_texture_data_number()].data[0];
@@ -266,7 +266,7 @@ namespace mob_loader
 						// Get the data of the VAO
 						char* vao_input = new char[size];
 						scls::read_file_binary(path, vao_input, size, current_pos);
-						VAO* vao = window->new_vao(name, vao_input);
+						window->new_vao(name, vao_input);
 						delete[] vao_input; vao_input = 0;
 					}
 				}

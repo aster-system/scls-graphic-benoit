@@ -10,7 +10,7 @@ namespace scls {
     //*********
 
     // _Window_Advanced_Struct constructor
-    _Window_Advanced_Struct::_Window_Advanced_Struct(double& mouse_x, double& mouse_y, int& window_width, int& window_height, std::string exec_path): Base_Struct(mouse_x, mouse_y, window_width, window_height, exec_path) {
+    _Window_Advanced_Struct::_Window_Advanced_Struct(double& mouse_x, double& mouse_y, int& window_width, int& window_height, std::string exec_path): _Window_Base_Struct(mouse_x, mouse_y, window_width, window_height, exec_path) {
 
     }
 
@@ -58,7 +58,7 @@ namespace scls {
             }
             return textures()[texture_name];
         }
-        error("SCLS Graphic Window", "The \"" + texture_name + "\" texture you want to use does not exists.");
+        scls::print("Warning", "SCLS Window", "The \"" + texture_name + "\" texture you want to use does not exists.");
         return 0;
     }
 
@@ -100,7 +100,7 @@ namespace scls {
             textures()[name] = texture;
             return texture;
         }
-        error("Matix", "The \"" + name + "\" texture you want to add already exists.");
+        scls::print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to add already exists.");
         return 0;
     }
 
@@ -112,7 +112,7 @@ namespace scls {
             textures()[name] = texture;
             return texture;
         }
-        error("Matix", "The \"" + name + "\" texture you want to add already exists.");
+        scls::print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to add already exists.");
         return 0;
     }
 
@@ -124,7 +124,7 @@ namespace scls {
             textures()[name] = texture;
             return texture;
         }
-        error("Matix", "The \"" + name + "\" texture you want to add already exists.");
+        scls::print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to add already exists.");
         return 0;
     }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../headers/base_struct.h"
+#include "../headers/scls_graphic_window_base_struct.h"
 #include "../headers/model.h"
 
 // Using of the "scls" namespace to simplify the programmation
@@ -46,7 +46,7 @@ namespace scls {
         return base_3d_attributes;
     };
 
-    class _Window_Advanced_Struct : public Base_Struct
+    class _Window_Advanced_Struct : public _Window_Base_Struct
     {
         // Class representing the advanced struct in the game
     public:
@@ -69,7 +69,7 @@ namespace scls {
         //*********
 
         // Add an existing VBO into the game
-        inline void add_vbo(std::string name, VBO* vbo) { if (!contains_vbo(name)) vbos()[name] = vbo; else error("Matix", "The \"" + name + "\" texture you want to add already exists."); };
+        inline void add_vbo(std::string name, VBO* vbo) { if (!contains_vbo(name)) vbos()[name] = vbo; else print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to add already exists."); };
 
         // Returns if the struct contains a textures
         inline bool contains_texture(std::string name) { for (std::map<std::string, Texture*>::iterator it = textures().begin(); it != textures().end(); it++) { if (it->first == name) return true; } return false; };
@@ -103,7 +103,7 @@ namespace scls {
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         Texture* texture(std::string texture_name, bool copy_texture = false);
-        inline VAO* vao(std::string vao_name) {if(contains_vao(vao_name)) return vaos()[vao_name]; error("SCLS Graphic Window", "The \"" + vao_name + "\" VAO you want to use does not exists."); return 0;};
+        inline VAO* vao(std::string vao_name) {if(contains_vao(vao_name)) return vaos()[vao_name]; print("Warning", "SCLS Window", "The \"" + vao_name + "\" VAO you want to use does not exists."); return 0;};
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline std::map<std::string, Texture*>& textures() { return a_textures; };
