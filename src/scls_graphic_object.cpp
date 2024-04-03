@@ -26,12 +26,14 @@ namespace scls {
     //*********
 
     // Object most basic constructor
-    Object::Object(_Window_Advanced_Struct* window_struct) : a_window_struct(window_struct) {}
+    Object::Object(_Window_Advanced_Struct* window_struct) : a_window_struct(window_struct) {
+        a_transform = new Transform_Object();
+    }
 
     // Object constructor used for displaying
     Object::Object(_Window_Advanced_Struct* window_struct, std::string name, std::string texture_name, std::string vao_name) : Object(window_struct) {
         a_name = name;
-        a_texture = window_struct->texture(texture_name);
+        if(texture_name != "")a_texture = window_struct->texture(texture_name);
         a_vao = window_struct->vao(vao_name);
     }
 
@@ -48,11 +50,11 @@ namespace scls {
 
     // Render the object on the window
     void Object::render() {
-        texture()->bind(); // Bind the texture
+        if(texture() != 0) texture()->bind(); // Bind the texture
         vao()->get_shader_program()->set_uniform4fv_value("model", transform()->get_model_matrix()); // Write some uniform variables into the shader
         vao()->get_shader_program()->set_uniform4fv_value("projection", window_struct()->projection());
         vao()->get_shader_program()->set_uniform4fv_value("view", window_struct()->camera()->get_view());
-        if (texture()->use_resize())
+        if (texture() != 0 && texture()->use_resize())
         {
             vao()->render(transform()->get_scale()); // Render the object with scaling
         }

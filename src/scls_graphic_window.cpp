@@ -61,6 +61,22 @@ namespace scls {
 
     //*********
     //
+    // _Page hiddens methods
+    //
+    //*********
+
+    // _Page base constructor
+    _Page::_Page(_Window_Advanced_Struct* window_struct, std::string name) : a_name(name), a_window_struct(window_struct) {
+
+    }
+
+    // _Page base destructor
+    _Page::~_Page() {
+
+    }
+
+    //*********
+    //
     // Window main functions
     //
     //*********
@@ -153,8 +169,8 @@ namespace scls {
         // Destroy the cursor
         if(a_cursor != 0) glfwDestroyCursor(a_cursor);
 
-        std::map<std::string, Object*>& all_pages = pages();
-        for (std::map<std::string, Object*>::iterator it = all_pages.begin(); it != all_pages.end(); it++)
+        std::map<std::string, _Page*>& all_pages = pages();
+        for (std::map<std::string, _Page*>::iterator it = all_pages.begin(); it != all_pages.end(); it++)
         {
             delete it->second; // Destroy each pages
             it->second = 0;
@@ -239,13 +255,16 @@ namespace scls {
     //*********
 
     // Create a new page to the Window and return it
-    Object* Window::new_page(std::string name) {
+    _Page* Window::new_page(std::string name) {
         if(contains_page(name)) {
             scls::print("Warning", "SCLS Window", "The \"" + name + "\" page you want to add in the window already exist.");
             return 0;
         }
 
+        _Page* page = new _Page(this, name);
+        pages()[name] = page;
 
+        return page;
     }
 
     //*********
@@ -263,7 +282,7 @@ namespace scls {
         glDepthFunc(GL_ALWAYS);
         if (current_page_name() != "" && contains_page(current_page_name()))
         {
-            Object* page = current_page();
+            _Page* page = current_page();
             if (page != 0)
             {
                 page->render();
@@ -277,7 +296,7 @@ namespace scls {
 
     // Update one frame of the game
     void Window::update() {
-        Object* page = current_page();
+        _Page* page = current_page();
         if (page != 0)
         {
             page->update();
@@ -296,7 +315,7 @@ namespace scls {
         a_time_since_last_fps_calculation += delta_time();
         if (a_time_since_last_fps_calculation >= 1)
         {
-            std::cout << "FPS " << a_frame_count << std::endl;
+            print("SCLS", "FPS", a_frame_count);
             a_frame_count = 0;
             a_time_since_last_fps_calculation = 0;
         }

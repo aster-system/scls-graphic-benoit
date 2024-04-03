@@ -40,8 +40,60 @@ namespace scls {
     // Callback function for mouse moving
     void _mouse_callback(GLFWwindow* window, double xpos, double ypos);
 
+    //*********
+    //
+    // Page class
+    //
+    //*********
+
+    class _Page {
+        // Class representing a page in the window
+    public:
+
+        //*********
+        //
+        // _Page hiddens methods
+        //
+        //*********
+
+        // _Page base constructor
+        _Page(_Window_Advanced_Struct* window_struct, std::string name);
+        // _Page base destructor
+        virtual ~_Page();
+
+        //*********
+        //
+        // _Page operating
+        //
+        //*********
+
+        // Render the page
+        virtual void render() {};
+        // Update the page
+        virtual void update() {};
+
+    private:
+
+        //*********
+        //
+        // _Page hiddens attributes
+        //
+        //*********
+
+        // Name of the apge
+        std::string a_name = "";
+        // Pointer to the window struct
+        _Window_Advanced_Struct* a_window_struct = 0;
+    };
+
+    //*********
+    //
+    // Window class
+    //
+    //*********
+
     class Window: public _Window_Advanced_Struct {
-        // Class representing the game
+        // Class representing the window
     public:
 
         //*********
@@ -93,15 +145,15 @@ namespace scls {
         //*********
 
         // Create a new page to the Window and return it
-        Object* new_page(std::string name);
+        _Page* new_page(std::string name);
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
-        inline bool contains_page(std::string name) { for(std::map<std::string, Object*>::iterator it = pages().begin();it!=pages().end();it++) if(it->first == name) return true; return false;};
-        inline Object* current_page() {
+        inline bool contains_page(std::string name) { for(std::map<std::string, _Page*>::iterator it = pages().begin();it!=pages().end();it++) if(it->first == name) return true; return false;};
+        inline _Page* current_page() {
             if(current_page_name() != "" && contains_page(current_page_name())) return pages()[current_page_name()];
             return 0;
         }
-        inline Object* page(std::string name) {
+        inline _Page* page(std::string name) {
             if(contains_page(name)) return pages()[name];
             scls::print("Warning", "SCLS Window", "The \"" + name + "\" page you want to get does not exists.");
             return 0;
@@ -109,7 +161,7 @@ namespace scls {
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         inline std::string current_page_name() {return a_current_page;};
-        inline std::map<std::string, Object*>& pages() {return a_pages;};
+        inline std::map<std::string, _Page*>& pages() {return a_pages;};
         inline void set_current_page(std::string new_current_page) {
             if(new_current_page != "" && !contains_page(new_current_page)) scls::print("Warning", "SCLS Window", "The \"" + new_current_page + "\" page you want to set as the current page does not exists.");
             else a_current_page = new_current_page;
@@ -168,7 +220,7 @@ namespace scls {
         // Name of the current page loaded
         std::string a_current_page = "";
         // Map containing each pages in the window with their name as key
-        std::map<std::string, Object*> a_pages = std::map<std::string, Object*>();
+        std::map<std::string, _Page*> a_pages = std::map<std::string, _Page*>();
 
         //*********
         //

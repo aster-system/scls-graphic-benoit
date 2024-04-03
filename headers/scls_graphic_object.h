@@ -34,7 +34,7 @@ namespace scls {
         // Object constructor used for displaying
         Object(_Window_Advanced_Struct* window_struct, std::string name, std::string texture_name, std::string vao_name = "hud_default");
         // Object destructor
-        ~Object();
+        virtual ~Object();
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         inline bool contains_tag(std::string tag) { for (int i = 0; i < static_cast<int>(tags().size()); i++) { if (tags()[i] == tag) { return true; } } return false; };

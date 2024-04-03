@@ -12,7 +12,6 @@
 // It is named after the Mandelbrot fractal discoverer, Benoit Mandelbrot.
 //
 // This file is the source code of the "EFA" mod, made to test the library.
-// It's a simple file analyzer.
 //
 
 #include "efa.h"
@@ -41,10 +40,29 @@ namespace efa {
         if(a_window != 0) {delete a_window; a_window = 0;}
     }
 
+    //*********
+    //
+    // BPS 2D
+    //
+    //*********
+
+    // Load the BPS 2D
+    void EFA::load_bps2d() {
+        // Create and configure the page
+        window()->new_page("bps2d");
+    }
+
+    // Set the BPS 2D page
+    void EFA::set_bps2d() {
+        window()->set_current_page("bps2d");
+    }
+
     // Create a simple EFA window
     void use_efa(std::string path) {
         // Create and configure the window
         EFA* window = new EFA(path);
+        window->load_bps2d();
+        window->set_bps2d();
 
         // Simulate the window
         while (window->run()) {
@@ -52,6 +70,5 @@ namespace efa {
         }
 
         // Finish the simulation.
-        delete window; window = 0;
     }
 }

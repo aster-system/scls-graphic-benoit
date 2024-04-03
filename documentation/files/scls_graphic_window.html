@@ -132,11 +132,12 @@
             </h3>
             <div>
                 To display <a href="scls_graphic_object.html">Objects</a>, the class uses the system of page.
-                A page is the first object rendered, which should have a list of childrens to display.
+                A page is a way to display a lot of objects easily. The class "_Page" allows to easily handle them.
+                However, this class should be used for heritage, and not directly.
                 As the Objects, the pages have their name, used in the Window to identify them.
                 If you do not want to display any pages, set the current page to "", an empty std::string.
                 <h4>
-                    Methods
+                    Window methods
                 </h4>
                 <div>
                     <h5>
@@ -179,6 +180,23 @@
                         If the window does not contains "new_current_page", it prints a warning and does not change the current page.
                     </div>
                 </div>
+                <h4>
+                    _Page hiddens methods
+                </h4>
+                <div>
+                    <h5>
+                        _Page(_Window_Advanced_Struct* window_struct, std::string name)
+                    </h5>
+                    <div>
+                        _Page base constructor taking a pointer to the window struct and the name "name".
+                    </div>
+                    <h5>
+                        virtual ~_Page()
+                    </h5>
+                    <div>
+                        _Page base destructor.
+                    </div>
+                </div>
             </div>
             <h3>
                 Window operating
@@ -189,7 +207,26 @@
                 This loop should be created by the user of the window. One loop iteration is called a frame.</br>
                 In Window, a FPS is the number of frame in one second, and is calculated by "update_event()".
                 <h4>
-                    Methods
+                    _Page methods
+                </h4>
+                <div>
+                    <h5>
+                        virtual void render()
+                    </h5>
+                    <div>
+                        Render the window page.</br>
+                        It is recommended to use this function in heritage.
+                    </div>
+                    <h5>
+                        virtual void update()
+                    </h5>
+                    <div>
+                        Update each objects in the Window.</br>
+                        It is recommended to use this function in heritage.
+                    </div>
+                </div>
+                <h4>
+                    Window methods
                 </h4>
                 <div>
                     <h5>

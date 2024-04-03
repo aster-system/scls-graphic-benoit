@@ -12,7 +12,6 @@
 // It is named after the Mandelbrot fractal discoverer, Benoit Mandelbrot.
 //
 // This file is the header of the "EFA" mod, made to test the library.
-// It's a simple file analyzer.
 //
 
 #ifndef EFA_MOD
@@ -38,6 +37,21 @@ namespace efa {
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline scls::Window* window() {return a_window;};
+
+        //*********
+        //
+        // BPS 2D
+        //
+        //*********
+        //
+        // BPS 2D is a part of the window, made to test the HUD, with a little cool 2D graphic simualtion.
+        //
+        //*********
+
+        // Load the BPS 2D
+        void load_bps2d();
+        // Set the BPS 2D page
+        void set_bps2d();
     private:
         // Window attributes
         // Pointer to the main Window
