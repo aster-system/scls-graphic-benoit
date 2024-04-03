@@ -164,7 +164,7 @@ void Shader_Program::use()
 // Shader_Program destructor
 Shader_Program::~Shader_Program()
 {
-	glDeleteProgram(shader_program);
+	if(loaded())glDeleteProgram(shader_program);
 }
 
 // Most basic VBO constructor
@@ -502,7 +502,8 @@ void Texture::change_texture() {
 
 // Load the texture into the GPU memory
 void Texture::load_texture() {
-	glGenTextures(1, &texture_id);
+	if(!loaded()) glGenTextures(1, &texture_id);
+	a_loaded = true;
 	change_texture();
 }
 

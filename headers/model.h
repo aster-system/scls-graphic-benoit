@@ -38,6 +38,7 @@ public:
 	// Getters and setters
 	inline std::string get_fragment_shader() const { return fragment_shader; };
 	inline std::string get_vertex_shader() const { return vertex_shader; };
+	inline bool loaded() {return a_loaded;};
 
 	// Return the default shaders
 	static std::string get_built_in_fragment_shader(Built_In_Shader shader_type)
@@ -82,6 +83,7 @@ public:
 		return "#version 330 core\nlayout(location = 0) in vec3 position;layout(location = 1) in vec2 texture_position;out vec2 tex_pos;uniform mat4 model;void main(){tex_pos = texture_position;gl_Position = model * vec4(position.xyz, 1.0);}";
 	};
 private:
+    bool a_loaded = false;
 	unsigned int shader_program = 0; // Handle to the shader program
 
 	std::string fragment_shader = ""; // Content of the fragment shader
@@ -307,6 +309,7 @@ public:
 	inline scls::Image* get_image() { return a_image; };
 	inline glm::vec2 get_texture_size() { return glm::vec2(width, height); };
 	inline std::string get_texture_path() { return texture_path; };
+	inline bool loaded() {return a_loaded;};
 	inline void set_image(scls::Image* new_image) {delete a_image;a_image = new_image; a_image->flip_x(); change_texture();};
 	inline bool use_resize() { return resize; };
 private:
@@ -315,6 +318,7 @@ private:
 	int height = 0; // Height of the texture
 	// SCLS image of this texture
 	scls::Image* a_image = 0;
+	bool a_loaded = false;
 	bool resize = true; // If the shader resize the texture or not
 	unsigned int texture_id = 0; // Handle to the texture
 	std::string texture_path = ""; // Path of the texture

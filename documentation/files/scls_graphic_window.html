@@ -137,6 +137,36 @@
                 As the Objects, the pages have their name, used in the Window to identify them.
                 If you do not want to display any pages, set the current page to "", an empty std::string.
                 <h4>
+                    _Page methods
+                </h4>
+                <div>
+                    <h5>
+                        bool contains_object(std::string object_name)
+                    </h5>
+                    <div>
+                        Returns if the page contains the object "object_name".
+                    </div>
+                    <h5>
+                        std::string name() const
+                    </h5>
+                    <div>
+                        Returns the name of the page.
+                    </div>
+                    <h5>
+                        template &lt;typename O = Object&gt;
+                        O* new_object(std::string object_name)
+                    </h5>
+                    <div>
+                        Simply creates and returns a new object created with the new operator of type "O" named "object_name".
+                    </div>
+                    <h5>
+                        std::map&lt;std::string, Object*&gt;& objects()
+                    </h5>
+                    <div>
+                        Returns a reference to the std::map containing the objects with their name as key.
+                    </div>
+                </div>
+                <h4>
                     Window methods
                 </h4>
                 <div>
@@ -158,6 +188,14 @@
                     </h5>
                     <div>
                         Returns the name of the currently displayed page.
+                    </div>
+                    <h5>
+                        template &lt;typename _P&gt;
+                        _P* new_page(std::string name)
+                    </h5>
+                    <div>
+                        Creates a new page named "name" with the new constructor and returns it.</br>
+                        The type passed as "_P" should herits from _Page.
                     </div>
                     <h5>
                         Object* page(std::string name)
@@ -196,6 +234,12 @@
                     <div>
                         _Page base destructor.
                     </div>
+                    <h5>
+                        _Window_Advanced_Struct* window_struct()
+                    </h5>
+                    <div>
+                        Return the pointer to the main window struct .
+                    </div>
                 </div>
             </div>
             <h3>
@@ -214,14 +258,14 @@
                         virtual void render()
                     </h5>
                     <div>
-                        Render the window page.</br>
+                        Render the _Page.</br>
                         It is recommended to use this function in heritage.
                     </div>
                     <h5>
                         virtual void update()
                     </h5>
                     <div>
-                        Update each objects in the Window.</br>
+                        Update each objects in the _Page.</br>
                         It is recommended to use this function in heritage.
                     </div>
                 </div>

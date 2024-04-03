@@ -21,8 +21,23 @@
 
 // Using of the "scls" namespace to simplify the programmation
 namespace scls {
-    class HUD_Object : public Object
-    {
+    class HUD_Page : public _Page {
+        // Class representing an HUD page to display on the window
+    public:
+
+        //*********
+        //
+        // HUD page
+        //
+        //*********
+
+        // HUD_Page most basic constructor
+        HUD_Page(_Window_Advanced_Struct* window_struct, std::string name);
+        // HUD_Page destructor
+        virtual ~HUD_Page();
+    };
+
+    class HUD_Object : public Object {
         // Class representing an HUD object displayed into the window
     public:
 
@@ -33,9 +48,9 @@ namespace scls {
         //*********
 
         // HUD_Object most basic constructor
-        HUD_Object(Window* window_struct);
+        HUD_Object(_Window_Advanced_Struct* window_struct);
         // HUD_Object constructor used for displaying
-        HUD_Object(Window* window_struct, std::string name, std::string texture_name, std::string vao_name = "hud_default");
+        HUD_Object(_Window_Advanced_Struct* window_struct, std::string name, std::string texture_name, std::string vao_name = "hud_default");
         // HUD_Object destructor
         ~HUD_Object();
     };

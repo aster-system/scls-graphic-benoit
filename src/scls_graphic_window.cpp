@@ -72,7 +72,35 @@ namespace scls {
 
     // _Page base destructor
     _Page::~_Page() {
+        for(std::map<std::string, Object*>::iterator it = objects().begin();it!=objects().end();it++) {
+            delete it->second; it->second = 0;
+        }
+    }
 
+    //*********
+    //
+    // _Page operating
+    //
+    //*********
+
+    // Render the page
+    void _Page::render() {
+        for(std::map<std::string, Object*>::iterator it = objects().begin();it!=objects().end();it++) {
+            Object* ob = it->second;
+            if(ob->visible()) {
+                ob->render();
+            }
+        }
+    }
+
+    // Update the page
+    void _Page::update() {
+        for(std::map<std::string, Object*>::iterator it = objects().begin();it!=objects().end();it++) {
+            Object* ob = it->second;
+            if(ob->visible()) {
+                ob->update();
+            }
+        }
     }
 
     //*********
@@ -253,19 +281,6 @@ namespace scls {
     // Window page handling
     //
     //*********
-
-    // Create a new page to the Window and return it
-    _Page* Window::new_page(std::string name) {
-        if(contains_page(name)) {
-            scls::print("Warning", "SCLS Window", "The \"" + name + "\" page you want to add in the window already exist.");
-            return 0;
-        }
-
-        _Page* page = new _Page(this, name);
-        pages()[name] = page;
-
-        return page;
-    }
 
     //*********
     //

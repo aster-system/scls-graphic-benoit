@@ -20,17 +20,33 @@
 namespace scls {
     //*********
     //
+    // HUD page
+    //
+    //*********
+
+    // HUD_Page most basic constructor
+    HUD_Page::HUD_Page(_Window_Advanced_Struct* window_struct, std::string name) : _Page(window_struct, name) {
+
+    }
+
+    // HUD_Page destructor
+    HUD_Page::~HUD_Page(){
+
+    }
+
+    //*********
+    //
     // HUD Object main functions
     //
     //*********
 
     // HUD_Object most basic constructor
-    HUD_Object::HUD_Object(Window* window_struct) : Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct)) {
+    HUD_Object::HUD_Object(_Window_Advanced_Struct* window_struct) : Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct)) {
 
     }
 
     // HUD_Object constructor used for displaying
-    HUD_Object::HUD_Object(Window* window_struct, std::string name, std::string texture_name, std::string vao_name) : Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), name, texture_name, vao_name) {
+    HUD_Object::HUD_Object(_Window_Advanced_Struct* window_struct, std::string name, std::string texture_name, std::string vao_name) : Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), name, texture_name, vao_name) {
 
     }
 

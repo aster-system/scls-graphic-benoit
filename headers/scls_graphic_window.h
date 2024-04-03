@@ -61,6 +61,10 @@ namespace scls {
         // _Page base destructor
         virtual ~_Page();
 
+        // Getters and setters (ONLY WITH ATTRIBUTES)
+        inline std::string name() const {return a_name;};
+        inline _Window_Advanced_Struct* window_struct() {return a_window_struct;};
+
         //*********
         //
         // _Page operating
@@ -68,9 +72,24 @@ namespace scls {
         //*********
 
         // Render the page
-        virtual void render() {};
+        virtual void render();
         // Update the page
-        virtual void update() {};
+        virtual void update();
+
+        //*********
+        //
+        // Window page handling
+        //
+        //*********
+
+        // Returns if the page contains an object or not
+        inline bool contains_object(std::string object_name) {for(std::map<std::string, Object*>::iterator it = objects().begin();it!=objects().end();it++) if(it->first == object_name) return true; return false;};
+        // Creates an object into the page and returns it
+        template <typename O = Object>
+        O* new_object(std::string object_name);
+
+        // Getters and setters (ONLY WITH ATTRIBUTES)
+        std::map<std::string, Object*>& objects() {return a_objects;};
 
     private:
 
@@ -80,7 +99,9 @@ namespace scls {
         //
         //*********
 
-        // Name of the apge
+        // Objects in the page
+        std::map<std::string, Object*> a_objects = std::map<std::string, Object*>();
+        // Name of the page
         std::string a_name = "";
         // Pointer to the window struct
         _Window_Advanced_Struct* a_window_struct = 0;
@@ -145,7 +166,8 @@ namespace scls {
         //*********
 
         // Create a new page to the Window and return it
-        _Page* new_page(std::string name);
+        template <typename _P>
+        _P* new_page(std::string name);
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         inline bool contains_page(std::string name) { for(std::map<std::string, _Page*>::iterator it = pages().begin();it!=pages().end();it++) if(it->first == name) return true; return false;};
@@ -230,6 +252,46 @@ namespace scls {
 
         float a_last_frame_time = 0; // Time when the last frame occurs, for calculating delta_time and FPS
     };
+
+    //*********
+    //
+    // _Page template
+    //
+    //*********
+
+    // Creates an object into the page and returns it
+    template <typename O>
+    O* _Page::new_object(std::string object_name) {
+        if(contains_object(object_name)) {
+            scls::print("Warning", "SCLS Page", "The \"" + object_name + "\" object you want to add in the page \"" + name() + "\" already exist.");
+            return 0;
+        }
+
+        O* object = new O(window_struct(), object_name, "logo");
+        objects()[object_name] = object;
+
+        return object;
+    }
+
+    //*********
+    //
+    // Window template
+    //
+    //*********
+
+    // Create a new page to the Window and return it
+    template <typename _P>
+    _P* Window::new_page(std::string name) {
+        if(contains_page(name)) {
+            scls::print("Warning", "SCLS Window", "The \"" + name + "\" page you want to add in the window already exist.");
+            return 0;
+        }
+
+        _P* page = new _P(this, name);
+        pages()[name] = page;
+
+        return page;
+    }
 }
 
 #endif // SCLS_WINDOW

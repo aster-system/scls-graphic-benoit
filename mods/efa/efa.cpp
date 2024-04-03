@@ -49,7 +49,11 @@ namespace efa {
     // Load the BPS 2D
     void EFA::load_bps2d() {
         // Create and configure the page
-        window()->new_page("bps2d");
+        scls::HUD_Page* page = window()->new_page<scls::HUD_Page>("bps2d");
+
+        window()->new_texture("logo", "logo_matix.png");
+
+        scls::Object* object = page->new_object<scls::HUD_Object>("Henry");
     }
 
     // Set the BPS 2D page

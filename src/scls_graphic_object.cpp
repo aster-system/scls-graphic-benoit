@@ -50,7 +50,9 @@ namespace scls {
 
     // Render the object on the window
     void Object::render() {
-        if(texture() != 0) texture()->bind(); // Bind the texture
+        if(texture() != 0) {
+            texture()->bind(); // Bind the texture
+        }
         vao()->get_shader_program()->set_uniform4fv_value("model", transform()->get_model_matrix()); // Write some uniform variables into the shader
         vao()->get_shader_program()->set_uniform4fv_value("projection", window_struct()->projection());
         vao()->get_shader_program()->set_uniform4fv_value("view", window_struct()->camera()->get_view());
@@ -71,8 +73,7 @@ namespace scls {
     //*********
 
     // Clone the object
-    void* Object::clone(std::string name, std::string texture_name, std::string vao_name)
-    {
+    void* Object::clone(std::string name, std::string texture_name, std::string vao_name) {
         Object* to_return = new Object(window_struct(), name, texture_name, vao_name);
 
         return to_return;
