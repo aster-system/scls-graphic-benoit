@@ -72,8 +72,8 @@ namespace scls {
         _load_keys();
 
         // Configurate base_struct
-        get_camera()->set_position(glm::vec3(0.0, 0.0, 0.0));
-        get_camera()->set_rotation(glm::vec3(0.0, 0.0, 0.0));
+        camera()->set_position(glm::vec3(0.0, 0.0, 0.0));
+        camera()->set_rotation(glm::vec3(0.0, 0.0, 0.0));
         set_window_height(a_window_height);
         set_window_width(a_window_width);
 
@@ -83,7 +83,7 @@ namespace scls {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        a_window = glfwCreateWindow(get_window_width(), get_window_height(), "Fenêtre OpenGL", NULL, NULL);
+        a_window = glfwCreateWindow(window_width(), window_height(), "Fenêtre OpenGL", NULL, NULL);
         if (a_window == NULL)
         {
             print("Error", "GLFW Loader", "Failed to create GLFW window");
@@ -114,14 +114,12 @@ namespace scls {
 
     // Load the game from a config file
     void Window::load_from_config_file(std::string path) {
-        std::string last_config_file_path = get_config_file_path();
-        set_config_file_path(path);
-
-        if (last_config_file_path != get_config_file_path()) // If the path is correct
+        if (path != config_file_path() && std::filesystem::exists(path)) // If the path is correct
         {
-            std::vector<std::string> content = scls::cut_string(scls::read_file(get_config_file_path()), "\n");
+            a_config_file_path = path;
+            std::vector<std::string> content = scls::cut_string(scls::read_file(config_file_path()), "\n");
 
-            for (int i = 0; i < content.size(); i++) // Analyze each lines
+            for (int i = 0; i < static_cast<int>(content.size()); i++) // Analyze each lines
             {
                 std::vector<std::string> line = scls::cut_string(content[i], ":");
                 std::string all_variables = "";
@@ -129,9 +127,9 @@ namespace scls {
 
                 if (line[0] == "screen_size") // If the line represents the size of the screen
                 {
-        std::vector<std::string> variables = scls::cut_string(all_variables, ";");
-        resize_window(std::stoi(variables[0]), std::stoi(variables[1]));
-    }
+                    std::vector<std::string> variables = scls::cut_string(all_variables, ";");
+                    resize_window(std::stoi(variables[0]), std::stoi(variables[1]));
+                    }
                 else if (line[0] == "assets_path_directory") // If the line represents the assets path
                 {
                     set_assets_directory_path(all_variables);
@@ -292,39 +290,37 @@ namespace scls {
         set_delta_time(glfwGetTime() - a_last_frame_time);
         a_last_frame_time = glfwGetTime();
 
-        if (get_delta_time() > 0.1) set_delta_time(0);
+        if (delta_time() > 0.1) set_delta_time(0);
 
         // FPS calculation
-        time_since_last_fps_calculation += get_delta_time();
-        if (time_since_last_fps_calculation >= 1)
+        a_time_since_last_fps_calculation += delta_time();
+        if (a_time_since_last_fps_calculation >= 1)
         {
-            std::cout << "FPS " << frame_count << std::endl;
-            frame_count = 0;
-            time_since_last_fps_calculation = 0;
+            std::cout << "FPS " << a_frame_count << std::endl;
+            a_frame_count = 0;
+            a_time_since_last_fps_calculation = 0;
         }
         else
         {
-            frame_count++;
+            a_frame_count++;
         }
 
         // Calculate mouse move and button
-        double mouse_move_x = get_mouse_x() - get_last_mouse_x();
-        if (get_mouse_x() >= 100000) mouse_move_x = 0;
-        double mouse_move_y = get_mouse_y() - get_last_mouse_y();
-        if (get_mouse_y() >= 100000) mouse_move_y = 0;
-        set_left_mouse_button_state(0);
+        double mouse_move_x = mouse_x() - last_mouse_x();
+        if (mouse_x() >= 100000) mouse_move_x = 0;
+        double mouse_move_y = mouse_y() - last_mouse_y();
+        if (mouse_y() >= 100000) mouse_move_y = 0;
+        set_left_mouse_button_state(Button_State::Released);
         set_mouse_move_x(mouse_move_x);
         set_mouse_move_y(mouse_move_y);
-        set_right_mouse_button_state(0);
-        if(glfwGetMouseButton(window(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-            set_left_mouse_button_state(1);
-        if (glfwGetMouseButton(window(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
-            set_right_mouse_button_state(1);
+        set_right_mouse_button_state(Button_State::Released);
+        if(glfwGetMouseButton(window(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) set_left_mouse_button_state(Button_State::Clicked);
+        if (glfwGetMouseButton(window(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) set_right_mouse_button_state(Button_State::Clicked);
 
         // Update the keys
-        get_pressed_keys()->clear();
-        get_pressed_keys_frame()->clear();
-        for (std::map<std::string, Key_State>::iterator it = get_keys_state()->begin(); it != get_keys_state()->end(); it++)
+        pressed_keys().clear();
+        pressed_keys_frame().clear();
+        for (std::map<std::string, Key_State>::iterator it = keys_state().begin(); it != keys_state().end(); it++)
         {
             it->second = Key_State::Nothing; // Reset keys
         }
@@ -333,36 +329,36 @@ namespace scls {
         {
             if (glfwGetKey(window(), it->second) == GLFW_PRESS)
             {
-                (*get_keys_state())[it->first] = Key_State::Pressed;
-                get_pressed_keys()->push_back(it->first);
+                keys_state()[it->first] = Key_State::Pressed;
+                pressed_keys().push_back(it->first);
             }
         }
 
         // Update key frame
-        for (std::map<std::string, Key_State>::iterator it = get_keys_state()->begin(); it != get_keys_state()->end(); it++)
+        for (std::map<std::string, Key_State>::iterator it = keys_state().begin(); it != keys_state().end(); it++)
         {
             Key_State state = it->second;
             if (state != Key_State::Nothing)
             {
-                if ((*get_keys_state_frame())[it->first] != state && (*get_keys_state_frame())[it->first] != Key_State::Already_Pressed)
+                if (keys_state_frame()[it->first] != state && keys_state_frame()[it->first] != Key_State::Already_Pressed)
                 {
-                    (*get_keys_state_frame())[it->first] = Key_State::Pressed;
-                    get_pressed_keys_frame()->push_back(it->first);
+                    keys_state_frame()[it->first] = Key_State::Pressed;
+                    pressed_keys_frame().push_back(it->first);
                 }
                 else
                 {
-                    (*get_keys_state_frame())[it->first] = Key_State::Already_Pressed;
+                    keys_state_frame()[it->first] = Key_State::Already_Pressed;
                 }
             }
             else
             {
-                (*get_keys_state_frame())[it->first] = Key_State::Nothing; // Reset keys
+                keys_state_frame()[it->first] = Key_State::Nothing; // Reset keys
             }
         }
 
         // Update last mouse pos for future mouse pos calcul
-        set_last_mouse_x(get_mouse_x());
-        set_last_mouse_y(get_mouse_y());
+        set_last_mouse_x(mouse_x());
+        set_last_mouse_y(mouse_y());
 
         /*// Update the cursor texture
         if(overflighted_object != 0)

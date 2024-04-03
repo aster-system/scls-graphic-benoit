@@ -44,10 +44,40 @@
                         The most basic window constructore, which should be easily creatable for the user.
                     </div>
                     <h5>
+                        std::string assets_directory_path()
+                    </h5>
+                    <div>
+                        Returns the assets directory of the window.
+                    </div>
+                    <h5>
                         Color background_color()
                     </h5>
                     <div>
                         Returns the background color of the window.
+                    </div>
+                    <h5>
+                        Camera* camera()
+                    </h5>
+                    <div>
+                        Returns a pointer to the Camera used in the window.
+                    </div>
+                    <h5>
+                        std::string config_file_path()
+                    </h5>
+                    <div>
+                        Returns the last loaded configuration file path of the window.
+                    </div>
+                    <h5>
+                        std::string exec_path()
+                    </h5>
+                    <div>
+                        Returns the execution path of the program.
+                    </div>
+                    <h5>
+                        std::string file_formatted(std::string path)
+                    </h5>
+                    <div>
+                        Returns the path "path" formatted according to the program (still in work).
                     </div>
                     <h5>
                         bool is_running()
@@ -69,6 +99,12 @@
                         Returns if the window is still running or not.</br>
                         When it returns false, GFLW is terminated.</br>
                         If you want to do a infinite loop for your program, use this function as the condition.
+                    </div>
+                    <h5>
+                        void set_assets_directory_path(std::string new_assets_directory_path)
+                    </h5>
+                    <div>
+                        Set the asset directory path to "new_assets_directory_path", if it exists.
                     </div>
                     <h5>
                         void set_background_color(Color new_background_color)
@@ -194,26 +230,116 @@
                 </h4>
                 <div>
                     <h5>
+                        int cursor_state() const
+                    </h5>
+                    <div>
+                        Returns the GLFW cursor state.
+                    </div>
+                    <h5>
+                        double delta_time()
+                    </h5>
+                    <div>
+                        Returns the time passed between the last frame and the current frame.
+                    </div>
+                    <h5>
                         void hide_cursor()
                     </h5>
                     <div>
-                        Hide the cursor to the user.
+                        Hides the cursor to the user.
+                    </div>
+                    <h5>
+                        unsigned short key_state(std::string name)
+                    </h5>
+                    <div>
+                        Returns the GLFW key state of the key "name".
+                    </div>
+                    <h5>
+                        unsigned short key_state_frame(std::string name)
+                    </h5>
+                    <div>
+                        Returns the GLFW key state modification during this frame of the key "name".
+                    </div>
+                    <h5>
+                        double last_mouse_x() const
+                    </h5>
+                    <div>
+                        Returns the x position of the mouse during the last frame.
+                    </div>
+                    <h5>
+                        double last_mouse_y() const
+                    </h5>
+                    <div>
+                        Returns the y position of the mouse during the last frame.
+                    </div>
+                    <h5>
+                        Button_State left_mouse_button_state() const
+                    </h5>
+                    <div>
+                        Returns the state of the left mouse button, Button_State::clicked if it is clicked, and Button_State::realease if not.
+                    </div>
+                    <h5>
+                        double mouse_move_x() const
+                    </h5>
+                    <div>
+                        Returns the x movement of the mouse during this frame.
+                    </div>
+                    <h5>
+                        double mouse_move_y() const
+                    </h5>
+                    <div>
+                        Returns the y movement of the mouse during this frame.
+                    </div>
+                    <h5>
+                        double mouse_x() const
+                    </h5>
+                    <div>
+                        Returns the x position of the mouse during this frame.
+                    </div>
+                    <h5>
+                        double mouse_y() const
+                    </h5>
+                    <div>
+                        Returns the y position of the mouse during this frame.
                     </div>
                     <h5>
                         void resize_window(unsigned int width, unsigned int height)
                     </h5>
+                    <h5>
+                        Button_State right_mouse_button_state() const
+                    </h5>
                     <div>
-                        Resize the window at the size ("width", "height").
+                        Returns the state of the right mouse button, Button_State::clicked if it is clicked, and Button_State::realease if not.
+                    </div>
+                    <div>
+                        Resizes the window at the size ("width", "height").
                     </div>
                     <h5>
                         void show_cursor()
                     </h5>
                     <div>
-                        Show the cursor to the user.
+                        Shows the cursor to the user.
+                    </div>
+                    <h5>
+                        int window_height() const
+                    </h5>
+                    <div>
+                        Returns the height of the window.
+                    </div>
+                    <h5>
+                        double window_ratio() const
+                    </h5>
+                    <div>
+                        Returns the radio width / height of the window.
+                    </div>
+                    <h5>
+                        int window_width() const
+                    </h5>
+                    <div>
+                        Returns the width of the window.
                     </div>
                 </div>
                 <h4>
-                    Hidden functions
+                    Hiddens functions
                 </h4>
                 <div>
                     <h5>
@@ -228,6 +354,89 @@
                     </h5>
                     <div>
                         Load every keys supported in the window.
+                    </div>
+                </div>
+                <h4>
+                    Hiddens methods from _Window_Base_Struct
+                </h4>
+                <div>
+                    <h5>
+                        std::map&lt;std::string, Key_State&gt;& keys_state()
+                    </h5>
+                    <div>
+                        Returns a reference to the map containing the keys state, with their name as key.
+                    </div>
+                    <h5>
+                        std::map&lt;std::string, Key_State&gt;& keys_state_frame()
+                    </h5>
+                    <div>
+                        Returns a reference to the map containing the keys state modification during this frame, with their name as key.
+                    </div>
+                    <h5>
+                        std::vector&lt;std::string&gt;& pressed_keys()
+                    </h5>
+                    <div>
+                        Returns a reference to the vector containing the name of the pressed keys.
+                    </div>
+                    <h5>
+                        std::vector&lt;std::string&gt;& pressed_keys_frame()
+                    </h5>
+                    <div>
+                        Returns a reference to the vector containing the name of the pressed keys state modification during this framekeys.
+                    </div>
+                    <h5>
+                        void set_delta_time(double new_delta_time)
+                    </h5>
+                    <div>
+                        Change the delta time by "new_delta_time".
+                    </div>
+                    <h5>
+                        void set_last_mouse_x(double new_last_mouse_x)
+                    </h5>
+                    <div>
+                        Change the x position of the mouse during the last frame by "new_last_mouse_x".
+                    </div>
+                    <h5>
+                        void set_last_mouse_y(double new_last_mouse_y)
+                    </h5>
+                    <div>
+                        Change the y position of the mouse during the last frame by "new_last_mouse_y".
+                    </div>
+                    <h5>
+                        void set_left_mouse_button_state(Button_State new_state)
+                    </h5>
+                    <div>
+                        Set the state of the left mouse button to "new_state".
+                    </div>
+                    <h5>
+                        void set_mouse_move_x(double new_mouse_move_x)
+                    </h5>
+                    <div>
+                        Change the x movement of the mouse during this frame by "new_mouse_move_x".
+                    </div>
+                    <h5>
+                        void set_mouse_move_y(double new_mouse_move_y)
+                    </h5>
+                    <div>
+                        Change the y movement of the mouse during this frame by "new_mouse_move_y".
+                    </div>
+                    <h5>
+                        void set_right_mouse_button_state(Button_State new_state)
+                    </h5>
+                    <div>
+                        Set the state of the right mouse button to "new_state".
+                    </div>
+                    <h5>
+                        void set_window_height(int new_height)
+                    </h5>
+                    <div>
+                        Set the height of the window by "new_height".
+                    </div>
+                    <h5>
+                        void set_window_width(int new_width)
+                    </h5>
+                    <div>
+                        Set the width of the window by "new_width".
                     </div>
                 </div>
             </div>

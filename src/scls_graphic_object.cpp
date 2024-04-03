@@ -50,8 +50,8 @@ namespace scls {
     void Object::render() {
         texture()->bind(); // Bind the texture
         vao()->get_shader_program()->set_uniform4fv_value("model", transform()->get_model_matrix()); // Write some uniform variables into the shader
-        vao()->get_shader_program()->set_uniform4fv_value("projection", window_struct()->get_projection());
-        vao()->get_shader_program()->set_uniform4fv_value("view", window_struct()->get_camera()->get_view());
+        vao()->get_shader_program()->set_uniform4fv_value("projection", window_struct()->projection());
+        vao()->get_shader_program()->set_uniform4fv_value("view", window_struct()->camera()->get_view());
         if (texture()->use_resize())
         {
             vao()->render(transform()->get_scale()); // Render the object with scaling

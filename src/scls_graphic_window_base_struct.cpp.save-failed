@@ -583,14 +583,14 @@ namespace scls {
 
     }
 
-    //*********
-    //
-    // Window main functions
-    //
-    //*********
+
+
+
+
 
     // Return if a file formatted with the struct context
-    std::string _Window_Base_Struct::file_formatted(std::string path) {
+    std::string _Window_Base_Struct::file_formatted(std::string path)
+    {
         std::string access = scls::cut_string(path, "/")[0];
         std::string current_path = (std::filesystem::current_path().string());
         std::vector<std::string> cutted_path = scls::cut_string(current_path, "\\");
@@ -621,4 +621,9 @@ namespace scls {
         return path;
     }
 
+    // Return the projection matrix
+    glm::mat4 _Window_Base_Struct::get_projection()
+    {
+        return camera()->get_projection(window_height(), window_width());
+    }
 }

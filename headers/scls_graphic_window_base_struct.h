@@ -240,6 +240,8 @@ namespace scls {
         bool a_looks_forward = true;
     };
 
+    // State of a button
+    enum Button_State {Clicked, Released};
     enum Key_State { Nothing, Pressed, Already_Pressed }; // Differents orientations for a map lev collection
 
     class _Window_Base_Struct
@@ -258,44 +260,28 @@ namespace scls {
         // _Window_Base_Struct destructor
         virtual ~_Window_Base_Struct();
 
+        //*********
+        //
+        // Window main functions
+        //
+        //*********
 
+        // Return if a file formatted with the window context
+        std::string file_formatted(std::string path);
 
-
-
-        std::string file_formatted(std::string path); // Return if a file formatted with the struct context
-        glm::mat4 get_projection(); // Return the projection matrix
-
-        // Getters and setters
-        inline std::string get_assets_directory_path() { return assets_directory_path; };
-        inline Camera* get_camera() { return &camera; };
-        inline std::string get_config_file_path() { return config_file_path; };
-        inline int get_cursor_state() { return _cursor_state; };
-        inline float get_delta_time() { return delta_time; };
-        inline std::string get_exec_path() { return a_exec_path; };
-        inline glm::vec3 get_gravity_force() { return gravity_force; };
-        inline unsigned short get_key_state(std::string name) { return (*get_keys_state())[name]; };
-        inline unsigned short get_key_state_frame(std::string name) { return (*get_keys_state_frame())[name]; };
-        inline std::map<std::string, Key_State>* get_keys_state() { return &keys_state; };
-        inline std::map<std::string, Key_State>* get_keys_state_frame() { return &keys_state_frame; };
-        inline double get_last_mouse_x() { return a_last_mouse_x; };
-        inline double get_last_mouse_y() { return a_last_mouse_y; };
-        inline unsigned short get_left_mouse_button_state() { return left_mouse_button_state; };
-        inline double get_mouse_move_x() { return mouse_move_x; };
-        inline double get_mouse_move_y() { return mouse_move_y; };
-        inline double get_mouse_x() { return a_mouse_x; };
-        inline double get_mouse_y() { return a_mouse_y; };
-        inline std::vector<std::string>* get_pressed_keys() { return &pressed_keys; };
-        inline std::vector <std::string>* get_pressed_keys_frame() { return &pressed_keys_frame; };
-        inline unsigned short get_right_mouse_button_state() { return right_mouse_button_state; };
-        inline int get_window_height() { return a_window_height; };
-        inline int get_window_width() { return a_window_width; };
+        // Getters and setters (ONLY WITH ATTRIBUTES)
+        inline std::string assets_directory_path() { return a_assets_directory_path; };
+        inline Camera* camera() { return &a_camera; };
+        inline std::string config_file_path() { return a_config_file_path; };
+        inline std::string exec_path() { return a_exec_path; };
+        inline glm::mat4 projection() {return camera()->get_projection(window_height(), window_width());};
         inline void set_assets_directory_path(std::string new_assets_directory_path) {
             new_assets_directory_path = file_formatted(new_assets_directory_path);
             if (std::filesystem::exists(new_assets_directory_path))
             {
                 if (std::filesystem::is_directory(new_assets_directory_path))
                 {
-                    assets_directory_path = new_assets_directory_path;
+                    a_assets_directory_path = new_assets_directory_path;
                 }
                 else
                 {
@@ -307,45 +293,6 @@ namespace scls {
                 print("Warning", "SCLS Window", "The path \"" + new_assets_directory_path + "\" you want to set as the window assets directory does not exist.");
             }
         }
-        inline void set_config_file_path(std::string new_config_file_path) {
-            new_config_file_path = file_formatted(new_config_file_path);
-            if (std::filesystem::exists(new_config_file_path))
-            {
-                if (!std::filesystem::is_directory(new_config_file_path))
-                {
-                    config_file_path = new_config_file_path;
-                }
-                else
-                {
-                    print("Warning", "SCLS Window", "The path \"" + new_config_file_path + "\" you want to set as the window config file is a directory.");
-                }
-            }
-            else
-            {
-                print("Warning", "SCLS Window", "The path \"" + new_config_file_path + "\" you want to set as the window config file does not exist.");
-            }
-        }
-        inline void set_delta_time(float new_delta_time) { delta_time = new_delta_time; };
-        inline void set_gravity_force(glm::vec3 a_gravity_force) { gravity_force = a_gravity_force; };
-        inline void set_last_mouse_x(double new_last_mouse_x) { a_last_mouse_x = new_last_mouse_x; };
-        inline void set_last_mouse_y(double new_last_mouse_y) { a_last_mouse_y = new_last_mouse_y; };
-        inline void set_left_mouse_button_state(unsigned short new_state) { left_mouse_button_state = new_state; };
-        inline void set_mouse_move_x(double a_mouse_move_x) { mouse_move_x = a_mouse_move_x; };
-        inline void set_mouse_move_y(double a_mouse_move_y) { mouse_move_y = a_mouse_move_y; };
-        inline void set_right_mouse_button_state(unsigned short new_state) { right_mouse_button_state = new_state; };
-        inline void set_window_height(int new_height) { a_window_height = new_height; };
-        inline void set_window_width(int new_width) { a_window_width = new_width; };
-        inline double window_ratio() {return static_cast<double>(get_window_width()) / static_cast<double>(get_window_height());};
-    protected:
-        // State of the cursor
-        int _cursor_state = GLFW_CURSOR_DISABLED;
-
-        // Number of frame during this second
-        unsigned short frame_count = 0;
-
-        // Time since the last FPS calculation
-        float time_since_last_fps_calculation = 0;
-    private:
 
         //*********
         //
@@ -353,41 +300,132 @@ namespace scls {
         //
         //*********
 
+        // Getters and setters (ONLY WITHOUT ATTRIUTES)
+        inline double window_ratio() const {return static_cast<double>(window_width()) / static_cast<double>(window_height());};
+
+        // Getters and setters (ONLY WITH ATTRIBUTES)
+
+        // FPS
+        inline double delta_time() { return a_delta_time; };
+
+        // Keyboard
+        inline unsigned short key_state(std::string name) const { return a_keys_state.at(name); };
+        inline unsigned short key_state_frame(std::string name) const { return contains(a_pressed_keys_frame, std::string(name)); };
+
+        // Mouse and cursor
+        inline int cursor_state() const { return _cursor_state; };
+        inline double last_mouse_x() const { return a_last_mouse_x; };
+        inline double last_mouse_y() const { return a_last_mouse_y; };
+        inline Button_State left_mouse_button_state() const { return a_left_mouse_button_state; };
+        inline double mouse_move_x() const { return a_mouse_move_x; };
+        inline double mouse_move_y() const { return a_mouse_move_y; };
+        inline double mouse_x() const { return a_mouse_x; };
+        inline double mouse_y() const { return a_mouse_y; };
+        inline Button_State right_mouse_button_state() const { return a_right_mouse_button_state; };
+        inline int window_height() const { return a_window_height; };
+        inline int window_width() const { return a_window_width; };
+
+    protected:
+
+        //*********
+        //
+        // Window main functions
+        //
+        //*********
+
+        // Path to the config path file
+        std::string a_config_file_path = "";
+
+        //*********
+        //
+        // Window input handling
+        //
+        //*********
+
+        // Getters and setters
+
+        // FPS
+        inline void set_delta_time(double new_delta_time) { a_delta_time = new_delta_time; };
+
+        // Keyboard
+        inline std::map<std::string, Key_State>& keys_state() { return a_keys_state; };
+        inline std::map<std::string, Key_State>& keys_state_frame() { return a_keys_state_frame; };
+        inline std::vector<std::string>& pressed_keys() { return a_pressed_keys; };
+        inline std::vector <std::string>& pressed_keys_frame() { return a_pressed_keys_frame; };
+
+        // Mouse and cursor
+        inline void set_last_mouse_x(double new_last_mouse_x) { a_last_mouse_x = new_last_mouse_x; };
+        inline void set_last_mouse_y(double new_last_mouse_y) { a_last_mouse_y = new_last_mouse_y; };
+        inline void set_left_mouse_button_state(Button_State new_state) { a_left_mouse_button_state = new_state; };
+        inline void set_mouse_move_x(double new_mouse_move_x) { a_mouse_move_x = new_mouse_move_x; };
+        inline void set_mouse_move_y(double new_mouse_move_y) { a_mouse_move_y = new_mouse_move_y; };
+        inline void set_right_mouse_button_state(Button_State new_state) { a_right_mouse_button_state = new_state; };
+        inline void set_window_height(int new_height) { a_window_height = new_height; };
+        inline void set_window_width(int new_width) { a_window_width = new_width; };
+
+        // Attributes
+        // State of the cursor
+        int _cursor_state = GLFW_CURSOR_DISABLED;
+        // Number of frame during this second
+        unsigned short a_frame_count = 0;
+        // Time since the last FPS calculation
+        double a_time_since_last_fps_calculation = 0;
+
+    private:
+
+        //*********
+        //
+        // Window main functions
+        //
+        //*********
+
+        // Path to the assert path file
+        std::string a_assets_directory_path = "";
+        // Camera of the window
+        Camera a_camera = Camera();
+        // Path of the window executable
+        const std::string a_exec_path = "";
+
+        //*********
+        //
+        // Window input handling attributes
+        //
+        //*********
+
+        // FPS
+        // Time since the last frame of the window
+        double a_delta_time = 0;
+
+        // Keyboard
+        // Current state of the keys
+        std::map<std::string, Key_State> a_keys_state = std::map<std::string, Key_State>();
+        // State of the modification in the keys during this frame
+        std::map<std::string, Key_State> a_keys_state_frame = std::map<std::string, Key_State>();
+        // All the pressed keys
+        std::vector <std::string> a_pressed_keys = std::vector <std::string>();
+        // All the pressed keys during this frame
+        std::vector <std::string> a_pressed_keys_frame = std::vector <std::string>();
+
+        // Mouse and cursor
         // Last X position of the mouse
         double a_last_mouse_x = 0;
         // Last Y position of the mouse
         double a_last_mouse_y = 0;
+        // State of the left button mouse
+        Button_State a_left_mouse_button_state = Button_State::Released;
+        // Last X move of the mouse
+        double a_mouse_move_x = 0;
+        // Last Y move of the mouse
+        double a_mouse_move_y = 0;
         // Reference to the mouse X pos
         double& a_mouse_x;
         // Reference to the mouse Y pos
         double& a_mouse_y;
+        // State of the left button mouse
+        Button_State a_right_mouse_button_state = Button_State::Released;
         // Reference to the height of the graphic window
         int& a_window_height;
         // Reference to the width of the graphic window
         int& a_window_width;
-
-
-
-
-
-
-        std::string assets_directory_path = ""; // Path through the assert path file
-        std::string config_file_path = ""; // Path through the config path file
-        float delta_time = 0; // Time since the last frame of the game
-
-        // Path of the game executable
-        const std::string a_exec_path = "";
-
-        unsigned short left_mouse_button_state = 0; // State of the left button mouse
-        unsigned short right_mouse_button_state = 0; // State of the left button mouse
-        double mouse_move_x = 0; // Last X move of the mouse
-        double mouse_move_y = 0; // Last Y move of the mouse
-
-        Camera camera = Camera(); // Camera of the game
-        glm::vec3 gravity_force = glm::vec3(0, -9.80665, 0); // Value of the gravity
-        std::map<std::string, Key_State> keys_state = std::map<std::string, Key_State>(); // Current state of the key
-        std::map<std::string, Key_State> keys_state_frame = std::map<std::string, Key_State>(); // State of the key if changed during this frame
-        std::vector <std::string> pressed_keys = std::vector <std::string>(); // All the pressed keys
-        std::vector <std::string> pressed_keys_frame = std::vector <std::string>(); // All the pressed keys during this frame
     };
 }
