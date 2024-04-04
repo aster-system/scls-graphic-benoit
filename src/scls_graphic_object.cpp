@@ -53,9 +53,12 @@ namespace scls {
         if(texture() != 0) {
             texture()->bind(); // Bind the texture
         }
+
+        vao()->get_shader_program()->set_uniform4f_value("background_color", glm::vec4(0, 1, 0, 1));
+        vao()->get_shader_program()->set_uniform4f_value("border_color", glm::vec4(0, 0, 0, 1));
+        vao()->get_shader_program()->set_uniform4f_value("border_width", glm::vec4(0, 0, 0, 0));
+        vao()->get_shader_program()->set_uniform4f_value("texture_rect", glm::vec4(0, 0, 1, 1));
         vao()->get_shader_program()->set_uniform4fv_value("model", transform()->get_model_matrix()); // Write some uniform variables into the shader
-        vao()->get_shader_program()->set_uniform4fv_value("projection", window_struct()->projection());
-        vao()->get_shader_program()->set_uniform4fv_value("view", window_struct()->camera()->get_view());
         if (texture() != 0 && texture()->use_resize())
         {
             vao()->render(transform()->get_scale()); // Render the object with scaling

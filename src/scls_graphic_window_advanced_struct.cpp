@@ -94,13 +94,18 @@ namespace scls {
 
     // Add a texture to the game
     Texture* _Window_Advanced_Struct::new_texture(std::string name, std::string path, bool texture_resize) {
-        if (!contains_texture(name))
-        {
-            Texture* texture = new Texture(path, texture_resize);
-            textures()[name] = texture;
-            return texture;
+        if(std::filesystem::exists(path)) {
+            if (!contains_texture(name)) {
+                Texture* texture = new Texture(path, texture_resize);
+                texture->change_texture();
+                textures()[name] = texture;
+
+                return texture;
+            }
+            scls::print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to add already exists.");
+            return 0;
         }
-        scls::print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to add already exists.");
+        scls::print("Warning", "SCLS Window", "The \"" + name + "\" texture uses the \"" + path + "\" path, which does not exist.");
         return 0;
     }
 
@@ -109,6 +114,7 @@ namespace scls {
         if (!contains_texture(name))
         {
             Texture* texture = new Texture(width, height, color);
+            texture->change_texture();
             textures()[name] = texture;
             return texture;
         }

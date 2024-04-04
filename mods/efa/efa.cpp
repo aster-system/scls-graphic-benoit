@@ -51,13 +51,15 @@ namespace efa {
         // Create and configure the page
         scls::HUD_Page* page = window()->new_page<scls::HUD_Page>("bps2d");
 
-        window()->new_texture("logo", "logo_matix.png");
+        // window()->new_texture("logo", 5, 5, scls::Color(0, 0, 255, 255));
+        window()->new_texture("logo", "logo_matix.png", false);
 
         scls::Object* object = page->new_object<scls::HUD_Object>("Henry");
     }
 
     // Set the BPS 2D page
     void EFA::set_bps2d() {
+        window()->set_background_color(scls::red);
         window()->set_current_page("bps2d");
     }
 

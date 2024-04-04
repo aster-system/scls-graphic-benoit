@@ -408,6 +408,8 @@ void VAO::load_vao() {
 	// Unbind all
 	a_vbo->unbind();
 	glBindVertexArray(0);
+
+	a_loaded = true;
 }
 
 // Render the VAO
@@ -419,7 +421,7 @@ void VAO::render(glm::vec3 scale) {
 	}
 	else
 	{
-		glDrawArrays(GL_TRIANGLES, 0, triangle_number() * 3.0);
+        glDrawArrays(GL_TRIANGLES, 0, triangle_number() * 3.0);
 	}
 }
 
@@ -430,10 +432,8 @@ unsigned int VAO::triangle_number() {
 
 // VAO destructor
 VAO::~VAO() {
-	delete get_shader_program();
-	a_shader_program = 0;
-	delete get_vbo();
-	a_vbo = 0;
+	delete get_shader_program(); a_shader_program = 0;
+	delete get_vbo(); a_vbo = 0;
 	glDeleteVertexArrays(1, &vao);
 }
 
@@ -441,11 +441,11 @@ VAO::~VAO() {
 Texture::Texture(std::string a_texture_path, bool a_resize): resize(a_resize), texture_path(a_texture_path), a_image(new scls::Image()) {
 	if (a_texture_path != "")
 	{
-		get_image()->load_from_path(texture_path);
-		get_image()->flip_x();
+        get_image()->load_from_path(texture_path);
+        get_image()->flip_x();
 
-		// Load the texture
-		load_texture();
+        // Load the texture
+        load_texture();
 	}
 }
 
@@ -456,7 +456,7 @@ Texture::Texture(unsigned short width, unsigned short height, glm::vec4 color, b
 	a_image = new scls::Image(width, height, color[0], color[1], color[2], color[3]);
 
 	// Load the texture
-	load_texture();
+    load_texture();
 }
 
 // Texture constructor much modulable
@@ -466,7 +466,7 @@ Texture::Texture(unsigned short width, unsigned short height, scls::Color color,
 	a_image = new scls::Image(width, height, color);
 
 	// Load the texture
-	load_texture();
+    load_texture();
 }
 
 // Most basic texture constructor
@@ -485,7 +485,7 @@ void Texture::bind() {
 
 // Change the texture of the texture according to image
 void Texture::change_texture() {
-	height = get_image()->height();
+    height = get_image()->height();
 	width = get_image()->width();
 
 	char* texture = get_image()->datas()->datas();
@@ -504,7 +504,7 @@ void Texture::change_texture() {
 void Texture::load_texture() {
 	if(!loaded()) glGenTextures(1, &texture_id);
 	a_loaded = true;
-	change_texture();
+	if(get_image() != 0) change_texture();
 }
 
 // Texture destructor
