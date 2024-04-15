@@ -183,11 +183,13 @@ namespace scls {
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         inline std::string current_page_name() {return a_current_page;};
+        inline bool is_resize_possible() {return a_is_resize_possible;};
         inline std::map<std::string, _Page*>& pages() {return a_pages;};
         inline void set_current_page(std::string new_current_page) {
             if(new_current_page != "" && !contains_page(new_current_page)) scls::print("Warning", "SCLS Window", "The \"" + new_current_page + "\" page you want to set as the current page does not exists.");
             else a_current_page = new_current_page;
         };
+        inline void set_is_resize_possible(bool new_is_resize_possible) {a_is_resize_possible = new_is_resize_possible;resize_window(window_width(), window_height());};
 
         //*********
         //
@@ -215,6 +217,8 @@ namespace scls {
         Color a_background_color = white;
         // Pointer to the GLFW window
         GLFWwindow* a_window = 0;
+        // If the window can resize or not or not
+        bool a_is_resize_possible = false;
         // If the window should continue to run or not
         bool a_is_running = true;
 

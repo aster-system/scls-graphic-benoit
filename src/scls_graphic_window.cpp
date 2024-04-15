@@ -274,6 +274,12 @@ namespace scls {
     // Properly resize the window
     void Window::resize_window(unsigned int width, unsigned int height) {
         glfwSetWindowSize(window(), width, height);
+        if(is_resize_possible()) {
+            glfwSetWindowSizeLimits(window(), minimum_window_width(), minimum_window_height(), maximum_window_width(), maximum_window_height());
+        }
+        else {
+            glfwSetWindowSizeLimits(window(), width, height, width, height);
+        }
     }
 
     //*********

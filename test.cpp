@@ -15,13 +15,13 @@
 //
 
 #include "scls_graphic.h"
-#include "mods/efa/efa.h"
+#include "mods/detroit/detroit.h"
 
 int main(int argc, char* argv[]) {
     srand(time(0));
 
     // Create a simple EFA window
-    efa::use_efa(argv[0]);
+    detroit::use_detroit(argv[0]);
 
     return 0;
 }
