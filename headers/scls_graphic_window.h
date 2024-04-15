@@ -158,6 +158,10 @@ namespace scls {
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline unsigned long current_cursor() const {return a_current_cursor;};
         inline bool is_cursor_on_window() { return a_cursor_on_window; };
+        void set_maximum_window_height(unsigned short new_max_window_height) { _Window_Base_Struct::set_maximum_window_height(new_max_window_height); resize_window(window_width(), window_height()); };
+        void set_maximum_window_width(unsigned short new_max_window_width) { _Window_Base_Struct::set_maximum_window_width(new_max_window_width); resize_window(window_width(), window_height()); };
+        void set_minimum_window_height(unsigned short new_min_window_height) { _Window_Base_Struct::set_minimum_window_height(new_min_window_height); resize_window(window_width(), window_height()); };
+        void set_minimum_window_width(unsigned short new_min_window_width) { _Window_Base_Struct::set_minimum_window_width(new_min_window_width); resize_window(window_width(), window_height()); };
 
         //*********
         //

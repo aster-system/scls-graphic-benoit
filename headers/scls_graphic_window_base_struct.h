@@ -317,15 +317,19 @@ namespace scls {
         inline double last_mouse_x() const { return a_last_mouse_x; };
         inline double last_mouse_y() const { return a_last_mouse_y; };
         inline Button_State left_mouse_button_state() const { return a_left_mouse_button_state; };
-        inline short maximum_window_height() const { return a_max_window_height; };
-        inline short maximum_window_width() const { return a_max_window_width; };
-        inline short minimum_window_height() const { return a_min_window_height; };
-        inline short minimum_window_width() const { return a_min_window_width; };
+        inline unsigned short maximum_window_height() const { return a_max_window_height; };
+        inline unsigned short maximum_window_width() const { return a_max_window_width; };
+        inline unsigned short minimum_window_height() const { return a_min_window_height; };
+        inline unsigned short minimum_window_width() const { return a_min_window_width; };
         inline double mouse_move_x() const { return a_mouse_move_x; };
         inline double mouse_move_y() const { return a_mouse_move_y; };
         inline double mouse_x() const { return a_mouse_x; };
         inline double mouse_y() const { return a_mouse_y; };
         inline Button_State right_mouse_button_state() const { return a_right_mouse_button_state; };
+        virtual void set_maximum_window_height(unsigned short new_max_window_height) { a_max_window_height = new_max_window_height; };
+        virtual void set_maximum_window_width(unsigned short new_max_window_width) { a_max_window_width = new_max_window_width; };
+        virtual void set_minimum_window_height(unsigned short new_min_window_height) { a_min_window_height = new_min_window_height; };
+        virtual void set_minimum_window_width(unsigned short new_min_window_width) { a_min_window_width = new_min_window_width; };
         inline int window_height() const { return a_window_height; };
         inline int window_width() const { return a_window_width; };
 
@@ -418,13 +422,13 @@ namespace scls {
         // State of the left button mouse
         Button_State a_left_mouse_button_state = Button_State::Released;
         // Maximum height of the graphic window
-        short a_max_window_height = 10000;
+        unsigned short a_max_window_height = 10000;
         // Maximum width of the graphic window
-        short a_max_window_width = 10000;
+        unsigned short a_max_window_width = 10000;
         // Minimum height of the graphic window
-        short a_min_window_height = 100;
+        unsigned short a_min_window_height = 100;
         // Minimum width of the graphic window
-        short a_min_window_width = 100;
+        unsigned short a_min_window_width = 100;
         // Last X move of the mouse
         double a_mouse_move_x = 0;
         // Last Y move of the mouse
