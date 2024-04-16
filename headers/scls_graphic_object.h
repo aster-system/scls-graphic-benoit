@@ -53,8 +53,13 @@ namespace scls {
         //
         //*********
 
+        // Hidden parts of the render object
+        void _render(glm::mat4 matrix);
         // Render the object on the window
         virtual void render();
+
+        // Getters and setters (ONLY WITHOUT ATTRIBUTES)
+        inline double texture_ratio() {return texture()->image_ratio();};
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline Texture* texture() {return a_texture;};
@@ -71,6 +76,15 @@ namespace scls {
         virtual void last_update() {}; // Function called after every updates
         virtual void update() {}; // Function called during every updates
 
+        //*********
+        //
+        // Object transformation facilities
+        //
+        //*********
+
+        // Getters and setters (ONLY WITH ATTRIBUTES)
+        virtual void set_scale(double new_scale) {transform()->set_scale(glm::vec3(new_scale, new_scale, new_scale));};
+        virtual void set_scale(glm::vec3 new_scale) {transform()->set_scale(new_scale);};
     private:
         // Basic object descriptor
         // Name of the object

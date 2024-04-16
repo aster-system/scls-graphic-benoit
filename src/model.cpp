@@ -470,7 +470,7 @@ Texture::Texture(unsigned short width, unsigned short height, scls::Color color,
 }
 
 // Most basic texture constructor
-Texture::Texture() : Texture("", false) {}
+Texture::Texture() : Texture(1, 1, scls::white, false) {}
 
 // Texture copy constructor
 Texture::Texture(Texture& texture_to_copy) : Texture(texture_to_copy.width, texture_to_copy.height, glm::vec4(0, 0, 0, 0), texture_to_copy.use_resize()) {

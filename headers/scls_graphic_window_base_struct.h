@@ -81,8 +81,8 @@ namespace scls {
         ~Transform_Object(); // Transform_Object destructor
 
         // Getters
-        inline glm::vec3 get_absolute_plan_rotation(bool use_rotation_multiplier = false)
-        {
+        inline glm::vec3 absolute_scale() {if(get_parent() == 0) return get_scale();return get_scale() * get_parent()->get_scale();};
+        inline glm::vec3 get_absolute_plan_rotation(bool use_rotation_multiplier = false){
             if (get_parent() != 0)
             {
                 return get_parent()->get_absolute_plan_rotation(use_rotation_multiplier) + get_plan_rotation(use_rotation_multiplier);
@@ -140,8 +140,7 @@ namespace scls {
         inline Transform_Object* get_parent() { return parent; }
         inline glm::vec3 get_parent_rotation_adder() { return a_parent_rotation_adder; };
         inline glm::vec3 get_parent_rotation_multiplier() { return parent_rotation_multiplier; };
-        inline glm::vec3 get_plan_rotation(bool use_rotation_multiplier = false)
-        {
+        inline glm::vec3 get_plan_rotation(bool use_rotation_multiplier = false){
             if (use_rotation_multiplier) return plan_rotation * get_parent_rotation_multiplier();
             return plan_rotation;
         };

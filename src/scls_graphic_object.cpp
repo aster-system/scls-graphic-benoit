@@ -48,17 +48,15 @@ namespace scls {
     //
     //*********
 
-    // Render the object on the window
-    void Object::render() {
+    // Hidden parts of the render object
+    void Object::_render(glm::mat4 matrix) {
+        // Write some uniform variables into the shader
+        vao()->get_shader_program()->set_uniform4fv_value("model", matrix);
+
         if(texture() != 0) {
             texture()->bind(); // Bind the texture
         }
 
-        vao()->get_shader_program()->set_uniform4f_value("background_color", glm::vec4(0, 1, 0, 1));
-        vao()->get_shader_program()->set_uniform4f_value("border_color", glm::vec4(0, 0, 0, 1));
-        vao()->get_shader_program()->set_uniform4f_value("border_width", glm::vec4(0, 0, 0, 0));
-        vao()->get_shader_program()->set_uniform4f_value("texture_rect", glm::vec4(0, 0, 1, 1));
-        vao()->get_shader_program()->set_uniform4fv_value("model", transform()->get_model_matrix()); // Write some uniform variables into the shader
         if (texture() != 0 && texture()->use_resize())
         {
             vao()->render(transform()->get_scale()); // Render the object with scaling
@@ -67,6 +65,15 @@ namespace scls {
         {
             vao()->render(); // Render the object without scaling
         }
+    }
+
+    // Render the object on the window
+    void Object::render() {
+        // Create the upgraded matrix
+        glm::mat4 matrix = transform()->get_model_matrix();
+
+        // Call the hidden render part
+        _render(matrix);
     }
 
     //*********

@@ -43,10 +43,46 @@ namespace detroit {
     // Load each pages in the object the object
     void Detroit::load_pages() {
         // Load the needed textures
-        window()->new_texture("logo", "logo_matix.png", false);
+        window()->new_texture("welcome_page_background", "assets/textures/detroit/welcome_page_background.png", false);
+        window()->new_texture("uk_flag", "assets/textures/detroit/uk_flag.png", false);
+        window()->new_texture("usa_flag", "assets/textures/detroit/usa_flag.png", false);
 
         // Create and configure the welcome_page page
         scls::HUD_Page* welcome_page = window()->new_page<scls::HUD_Page>("welcome");
+        // Create each objects
+        scls::HUD_Object* welcome_page_background = welcome_page->new_object<scls::HUD_Object>("welcome_page_background", "welcome_page_background");
+        scls::HUD_Text* welcome_page_start = welcome_page->new_object<scls::HUD_Text>("welcome_page_start");
+        scls::HUD_Object* welcome_page_uk_flag = welcome_page->new_object<scls::HUD_Object>("welcome_page_uk_flag", "uk_flag");
+        scls::HUD_Object* welcome_page_usa_flag = welcome_page->new_object<scls::HUD_Object>("welcome_page_usa_flag", "usa_flag");
+        scls::HUD_Text* welcome_page_title = welcome_page->new_object<scls::HUD_Text>("welcome_page_title");
+        // Configure each objects
+        // Configure the back ground
+        welcome_page_background->transform()->set_scale(glm::vec3(2, 2, 2));
+        // Configure the start button
+        welcome_page_start->set_background_color(scls::Color(255, 255, 255, 185));
+        welcome_page_start->set_border_width(0.1);
+        welcome_page_start->set_font_color(scls::black);
+        welcome_page_start->set_font_family("consolab");
+        welcome_page_start->set_font_size(100);
+        welcome_page_start->set_scale(0.2);
+        welcome_page_start->set_text("Start");
+        welcome_page_start->set_text_offset(0.2);
+        welcome_page_start->transform()->set_position(glm::vec3(0, -0.2, 1.0));
+        // Configure the flags
+        welcome_page_uk_flag->set_scale(0.35);
+        welcome_page_uk_flag->transform()->set_position(glm::vec3(-0.5, 0.25, 1.0));
+        welcome_page_usa_flag->set_scale(0.35);
+        welcome_page_usa_flag->transform()->set_position(glm::vec3(0.5, 0.25, 1.0));
+        // Configure the title
+        welcome_page_title->set_background_color(scls::Color(255, 255, 255, 185));
+        welcome_page_title->set_border_width(0.1);
+        welcome_page_title->set_font_color(scls::black);
+        welcome_page_title->set_font_family("consolab");
+        welcome_page_title->set_font_size(150);
+        welcome_page_title->set_scale(0.3);
+        welcome_page_title->set_text("Detroit");
+        welcome_page_title->set_text_offset(0.2);
+        welcome_page_title->transform()->set_position(glm::vec3(0, 0.65, 1.0));
     }
 
     // Set a page in the object

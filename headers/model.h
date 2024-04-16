@@ -72,7 +72,7 @@ public:
 	static std::string get_default_hud_fragment_shader()
 	{
 	    // Experimental : "#version 330 core\nin vec2 tex_pos;out vec4 FragColor;uniform vec4 border_color;uniform vec4 border_width;uniform sampler2D texture_0;void main(){vec4 color = border_color;if(tex_pos[0] >= border_width[1] && tex_pos[0] <= 1.0 - border_width[3] && tex_pos[1] >= border_width[0] && tex_pos[1] <= 1.0 - border_width[2]){vec2 texture_pos = tex_pos;texture_pos[0]-=border_width[1];texture_pos[1]-=border_width[0];texture_pos[0]*=(1.0+(border_width[1]+border_width[3]));texture_pos[1]*=(1.0+(border_width[0]+border_width[2]));color = texture(texture_0, texture_pos);}FragColor = color;}"
-		return "#version 330 core\nin vec2 tex_pos;out vec4 FragColor;uniform vec4 background_color;uniform vec4 border_color;uniform vec4 border_width;uniform vec4 texture_rect;uniform sampler2D texture_0;void main(){vec4 color = background_color;if(tex_pos[0] >= texture_rect[0] && tex_pos[0] <= texture_rect[0] + texture_rect[2] && tex_pos[1] > texture_rect[1] && tex_pos[1] < texture_rect[1] + texture_rect[3]){vec2 texture_pos = tex_pos;texture_pos[0]-=texture_rect[0];texture_pos[1]-=texture_rect[1];texture_pos[0]/=texture_rect[2];texture_pos[1]/=texture_rect[3]; color = texture(texture_0, texture_pos);}else if(tex_pos[0]<border_width[1]||tex_pos[1]<border_width[0]||tex_pos[0]>1.0-(border_width[3])||tex_pos[1]>1.0-(border_width[2])){color = border_color;}FragColor = color;}";
+		return "#version 330 core\nin vec2 tex_pos;out vec4 FragColor;uniform vec4 background_color;uniform vec4 border_color;uniform vec4 border_width;uniform vec4 texture_rect;uniform sampler2D texture_0;void main(){vec4 color = background_color;if(tex_pos[0]<border_width[1]||tex_pos[1]<border_width[0]||tex_pos[0]>1.0-(border_width[3])||tex_pos[1]>1.0-(border_width[2])){color = border_color;}else if(tex_pos[0] >= texture_rect[0] && tex_pos[0] <= texture_rect[0] + texture_rect[2] && tex_pos[1] > texture_rect[1] && tex_pos[1] < texture_rect[1] + texture_rect[3]){vec2 texture_pos = tex_pos;texture_pos[0]-=texture_rect[0];texture_pos[1]-=texture_rect[1];texture_pos[0]/=texture_rect[2];texture_pos[1]/=texture_rect[3]; color = texture(texture_0, texture_pos);}FragColor = color;}";
 	};
 	static std::string get_default_vertex_shader()
 	{
@@ -311,7 +311,12 @@ public:
 	inline glm::vec2 get_texture_size() { return glm::vec2(width, height); };
 	inline std::string get_texture_path() { return texture_path; };
 	inline bool loaded() {return a_loaded;};
-	inline void set_image(scls::Image* new_image) {delete a_image;a_image = new_image; a_image->flip_x(); change_texture();};
+	inline void set_image(scls::Image* new_image) {
+	    delete a_image;
+	    a_image = new_image;
+	    a_image->flip_x();
+	    change_texture();
+    };
 	inline bool use_resize() { return resize; };
 private:
     // Number of copy of this texture

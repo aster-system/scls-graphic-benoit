@@ -86,7 +86,7 @@ namespace scls {
         inline bool contains_object(std::string object_name) {for(std::map<std::string, Object*>::iterator it = objects().begin();it!=objects().end();it++) if(it->first == object_name) return true; return false;};
         // Creates an object into the page and returns it
         template <typename O = Object>
-        O* new_object(std::string object_name);
+        O* new_object(std::string object_name, std::string object_texture = "");
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         std::map<std::string, Object*>& objects() {return a_objects;};
@@ -269,13 +269,18 @@ namespace scls {
 
     // Creates an object into the page and returns it
     template <typename O>
-    O* _Page::new_object(std::string object_name) {
+    O* _Page::new_object(std::string object_name, std::string object_texture) {
         if(contains_object(object_name)) {
             scls::print("Warning", "SCLS Page", "The \"" + object_name + "\" object you want to add in the page \"" + name() + "\" already exist.");
             return 0;
         }
 
-        O* object = new O(window_struct(), object_name, "logo");
+        if(object_texture == "") {
+            object_texture = object_name + "_texture";
+            window_struct()->new_texture(object_texture);
+        }
+
+        O* object = new O(window_struct(), object_name, object_texture);
         objects()[object_name] = object;
 
         return object;
