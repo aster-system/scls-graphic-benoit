@@ -74,10 +74,12 @@ namespace scls {
 
         // Render the page
         virtual void render();
+        // Soft reset the page
+        virtual void soft_reset();
         // Update the page
         virtual void update();
         // Update the event of the page
-        virtual void update_event(){};
+        virtual void update_event(){soft_reset();};
 
         //*********
         //
@@ -173,7 +175,6 @@ namespace scls {
         inline void show_cursor() { glfwSetInputMode(window(), GLFW_CURSOR, GLFW_CURSOR_NORMAL); _cursor_state = GLFW_CURSOR_NORMAL; };
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
-        inline bool is_cursor_on_window() { return a_cursor_on_window; };
         void set_maximum_window_height(unsigned short new_max_window_height) { _Window_Base_Struct::set_maximum_window_height(new_max_window_height); resize_window(window_width(), window_height()); };
         void set_maximum_window_width(unsigned short new_max_window_width) { _Window_Base_Struct::set_maximum_window_width(new_max_window_width); resize_window(window_width(), window_height()); };
         void set_minimum_window_height(unsigned short new_min_window_height) { _Window_Base_Struct::set_minimum_window_height(new_min_window_height); resize_window(window_width(), window_height()); };
@@ -248,8 +249,6 @@ namespace scls {
         //
         //*********
 
-        // Reference to the cursor_on_window bool
-        bool &a_cursor_on_window;
         // Map of each keys in the window, with their character as the value
         std::map<std::string, unsigned int> a_keys = std::map<std::string, unsigned int>();
 

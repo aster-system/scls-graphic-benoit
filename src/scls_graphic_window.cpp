@@ -93,6 +93,13 @@ namespace scls {
         }
     }
 
+    // Soft reset the page
+    void _Page::soft_reset() {
+        for(std::map<std::string, Object*>::iterator it = objects().begin();it!=objects().end();it++) {
+            it->second->soft_reset();
+        }
+    }
+
     // Update the page
     void _Page::update() {
         for(std::map<std::string, Object*>::iterator it = objects().begin();it!=objects().end();it++) {
@@ -110,10 +117,11 @@ namespace scls {
     //*********
 
     // Window base constructor
-    Window::Window(int a_window_width, int a_window_height, std::string a_exec_path): _Window_Advanced_Struct(global_mouse_x, global_mouse_y, _global_screen_width, _global_screen_height, a_exec_path), a_cursor_on_window(cursor_on_window) {
+    Window::Window(int a_window_width, int a_window_height, std::string a_exec_path): _Window_Advanced_Struct(cursor_on_window, global_mouse_x, global_mouse_y, _global_screen_width, _global_screen_height, a_exec_path) {
 
-        // Load the keys
+        // Load the keys and the mouse
         _load_keys();
+        load_mouse_buttons();
 
         // Configurate base_struct
         camera()->set_position(glm::vec3(0.0, 0.0, 0.0));
@@ -362,12 +370,19 @@ namespace scls {
         if (mouse_x() >= 100000) mouse_move_x = 0;
         double mouse_move_y = mouse_y() - last_mouse_y();
         if (mouse_y() >= 100000) mouse_move_y = 0;
-        set_left_mouse_button_state(Button_State::Released);
         set_mouse_move_x(mouse_move_x);
         set_mouse_move_y(mouse_move_y);
-        set_right_mouse_button_state(Button_State::Released);
-        if(glfwGetMouseButton(window(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) set_left_mouse_button_state(Button_State::Clicked);
-        if (glfwGetMouseButton(window(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) set_right_mouse_button_state(Button_State::Clicked);
+        for(std::map<unsigned int, Button_State>::iterator it = mouse_buttons_state().begin();it!=mouse_buttons_state().end();it++) {
+            int state = glfwGetMouseButton(window(), it->first);
+            if (state == GLFW_PRESS)
+            {
+                if(it->second == Button_State::Released) it->second = Button_State::Clicked;
+                else it->second = Button_State::Already_Clicked;
+            }
+            else {
+                it->second = Button_State::Released;
+            }
+        }
 
         // Update the keys
         pressed_keys().clear();

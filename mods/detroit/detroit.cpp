@@ -48,13 +48,13 @@ namespace detroit {
         window()->new_texture("usa_flag", "assets/textures/detroit/usa_flag.png", false);
 
         // Create and configure the welcome_page page
-        scls::HUD_Page* welcome_page = window()->new_page<scls::HUD_Page>("welcome");
+        welcome_page = window()->new_page<scls::HUD_Page>("welcome");
         // Create each objects
-        scls::HUD_Object* welcome_page_background = welcome_page->new_object<scls::HUD_Object>("welcome_page_background", 0, "welcome_page_background");
-        scls::HUD_Text* welcome_page_start = welcome_page->new_object<scls::HUD_Text>("welcome_page_start");
-        scls::HUD_Object* welcome_page_uk_flag = welcome_page->new_object<scls::HUD_Object>("welcome_page_uk_flag", 0, "uk_flag");
-        scls::HUD_Object* welcome_page_usa_flag = welcome_page->new_object<scls::HUD_Object>("welcome_page_usa_flag", 0, "usa_flag");
-        scls::HUD_Text* welcome_page_title = welcome_page->new_object<scls::HUD_Text>("welcome_page_title");
+        welcome_page_background = welcome_page->new_object<scls::HUD_Object>("welcome_page_background", 0, "welcome_page_background");
+        welcome_page_start = welcome_page->new_object<scls::HUD_Text>("welcome_page_start");
+        welcome_page_uk_flag = welcome_page->new_object<scls::HUD_Object>("welcome_page_uk_flag", 0, "uk_flag");
+        welcome_page_usa_flag = welcome_page->new_object<scls::HUD_Object>("welcome_page_usa_flag", 0, "usa_flag");
+        welcome_page_title = welcome_page->new_object<scls::HUD_Text>("welcome_page_title");
         // Configure each objects
         // Configure the back ground
         welcome_page_background->transform()->set_scale(glm::vec3(2, 2, 2));

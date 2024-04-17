@@ -58,7 +58,7 @@ namespace scls {
         //*********
 
         // _Window_Advanced_Struct constructor
-        _Window_Advanced_Struct(double& mouse_x, double& mouse_y, int& window_width, int& window_height, std::string a_exec_path);
+        _Window_Advanced_Struct(bool& cursor_on_window, double& mouse_x, double& mouse_y, int& window_width, int& window_height, std::string a_exec_path);
         // _Window_Advanced_Struct destructor
         virtual ~_Window_Advanced_Struct();
 

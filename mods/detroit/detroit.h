@@ -46,6 +46,14 @@ namespace detroit {
         // Window attributes
         // Pointer to the main Window
         scls::Window* a_window = 0;
+
+        // Create and configure the welcome_page page
+        scls::HUD_Page* welcome_page = 0;
+        scls::HUD_Object* welcome_page_background = 0;
+        scls::HUD_Text* welcome_page_start = 0;
+        scls::HUD_Object* welcome_page_uk_flag = 0;
+        scls::HUD_Object* welcome_page_usa_flag = 0;
+        scls::HUD_Text* welcome_page_title = 0;
     };
 
     // Create a simple Detroit window

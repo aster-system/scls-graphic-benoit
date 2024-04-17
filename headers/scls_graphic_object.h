@@ -76,6 +76,8 @@ namespace scls {
         virtual void after_loading() {}; // Function called after loading
         virtual void* clone(std::string a_name, std::string texture_name, std::string vao_name = "hud_default"); // Clone the object
         virtual void last_update() {}; // Function called after every updates
+        // Reset the object without changing it
+        virtual void soft_reset() {};
         virtual void update() {}; // Function called during every updates
 
         //*********

@@ -48,6 +48,8 @@ namespace scls {
         inline double proportion_width_to_pixel(double proportion) {double absolute_width = (transform()->absolute_scale()[0]/2.0)*texture_ratio();return (absolute_width * (static_cast<double>(window_struct()->window_width()) / window_struct()->window_ratio())) * proportion;};
         // Render the HUD object on the window
         virtual void render();
+        // Reset the object without changing it
+        virtual void soft_reset() {Object::soft_reset();set_is_overflighted(false);};
 
         // Pixel size handler
         inline unsigned int absolute_gui_x_in_pixel() {double absolute_x = (1.0 + transform()->get_absolute_position()[0]) / 2.0; return static_cast<double>(window_struct()->window_width() / window_struct()->window_ratio()) * absolute_x - static_cast<double>(width_in_pixel()) / 2.0;};
@@ -62,9 +64,13 @@ namespace scls {
         // Getters and setters (ONLY WITH ATRIBUTES)
         inline Color background_color() {return a_background_color;};
         inline glm::vec4 border_width() {return a_border_width;};
+        inline bool is_clicked(unsigned int button) { return is_overflighted() && window_struct()->mouse_button_clicked(button); };
+        inline bool is_clicked_during_this_frame(unsigned int button) { return is_overflighted() && window_struct()->mouse_button_clicked_during_this_frame(button); };
+        inline bool is_overflighted() const {return a_is_overflighted;};
         inline unsigned long overflighted_cursor() {return a_overflighted_cursor;};
         inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
         inline void set_border_width(double new_border_width) {a_border_width = glm::vec4(new_border_width, new_border_width, new_border_width, new_border_width);};
+        inline void set_is_overflighted(bool new_is_overflighted) {a_is_overflighted = new_is_overflighted;};
         inline void set_overflighted_cursor(unsigned long new_overflighted_cursor) {a_overflighted_cursor = new_overflighted_cursor;};
         inline void set_texture_rect(glm::vec4 new_texture_rect) {a_texture_rect = new_texture_rect;};
         inline glm::vec4 texture_rect() {return a_texture_rect;};
@@ -79,6 +85,8 @@ namespace scls {
         Color a_background_color = Color(0, 0, 0, 0);
         // Width of the border
         glm::vec4 a_border_width = glm::vec4(0, 0, 0, 0);
+        // If the object is overfighted or not
+        bool a_is_overflighted = false;
         // Id of the overflighted cursor
         unsigned long a_overflighted_cursor = GLFW_ARROW_CURSOR;
         // Rect of the texture

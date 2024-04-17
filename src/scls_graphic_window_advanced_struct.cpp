@@ -10,7 +10,7 @@ namespace scls {
     //*********
 
     // _Window_Advanced_Struct constructor
-    _Window_Advanced_Struct::_Window_Advanced_Struct(double& mouse_x, double& mouse_y, int& window_width, int& window_height, std::string exec_path): _Window_Base_Struct(mouse_x, mouse_y, window_width, window_height, exec_path) {
+    _Window_Advanced_Struct::_Window_Advanced_Struct(bool& cursor_on_window, double& mouse_x, double& mouse_y, int& window_width, int& window_height, std::string exec_path): _Window_Base_Struct(cursor_on_window, mouse_x, mouse_y, window_width, window_height, exec_path) {
 
     }
 

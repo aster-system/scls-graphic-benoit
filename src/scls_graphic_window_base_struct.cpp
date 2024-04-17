@@ -574,7 +574,7 @@ namespace scls {
     //*********
 
     // _Window_Base_Struct constructor
-    _Window_Base_Struct::_Window_Base_Struct(double& mouse_x, double& mouse_y, int& window_width, int& window_height, std::string exec_path): a_exec_path(exec_path), a_mouse_x(mouse_x), a_mouse_y(mouse_y), a_last_mouse_x(mouse_x), a_last_mouse_y(mouse_y), a_window_height(window_height), a_window_width(window_width){
+    _Window_Base_Struct::_Window_Base_Struct(bool& cursor_on_window, double& mouse_x, double& mouse_y, int& window_width, int& window_height, std::string exec_path): a_cursor_on_window(cursor_on_window), a_exec_path(exec_path), a_mouse_x(mouse_x), a_mouse_y(mouse_y), a_last_mouse_x(mouse_x), a_last_mouse_y(mouse_y), a_window_height(window_height), a_window_width(window_width){
 
     }
 
@@ -621,4 +621,17 @@ namespace scls {
         return path;
     }
 
+    //*********
+    //
+    // Window input handling attributes
+    //
+    //*********
+
+    // Load the buttons on the mouse
+    void _Window_Base_Struct::load_mouse_buttons() {
+        a_mouse_buttons_state.clear();
+
+        a_mouse_buttons_state[GLFW_MOUSE_BUTTON_LEFT] = Button_State::Released;
+        a_mouse_buttons_state[GLFW_MOUSE_BUTTON_RIGHT] = Button_State::Released;
+    }
 }

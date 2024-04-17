@@ -110,6 +110,9 @@ namespace scls {
 
     // Update the event of the page
     void HUD_Page::update_event() {
+        // Soft reset the page
+        soft_reset();
+
         // Check the overflighted cursor
         HUD_Object* current_overflighted_object = 0;
         std::vector<Object*>* to_analyse = (&children());
@@ -132,6 +135,7 @@ namespace scls {
             window_struct()->set_cursor(glfwCreateStandardCursor(current_overflighted_object->overflighted_cursor()));
         }
         a_overflighted_object = current_overflighted_object;
+        if(a_overflighted_object != 0)a_overflighted_object->set_is_overflighted(true);
     }
 
     // HUD_Page destructor

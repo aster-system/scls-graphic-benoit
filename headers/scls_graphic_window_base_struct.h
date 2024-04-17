@@ -240,7 +240,7 @@ namespace scls {
     };
 
     // State of a button
-    enum Button_State {Clicked, Released};
+    enum Button_State {Clicked, Released, Already_Clicked};
     enum Key_State { Nothing, Pressed, Already_Pressed }; // Differents orientations for a map lev collection
 
     class _Window_Base_Struct
@@ -255,7 +255,7 @@ namespace scls {
         //*********
 
         // _Window_Base_Struct constructor
-        _Window_Base_Struct(double& mouse_x, double& mouse_y, int& window_width, int& window_height, std::string exec_path);
+        _Window_Base_Struct(bool& cursor_on_window, double& mouse_x, double& mouse_y, int& window_width, int& window_height, std::string exec_path);
         // _Window_Base_Struct destructor
         virtual ~_Window_Base_Struct();
 
@@ -317,16 +317,18 @@ namespace scls {
         inline int cursor_state() const { return _cursor_state; };
         inline double last_mouse_x() const { return a_last_mouse_x; };
         inline double last_mouse_y() const { return a_last_mouse_y; };
-        inline Button_State left_mouse_button_state() const { return a_left_mouse_button_state; };
+        void load_mouse_buttons();
         inline unsigned short maximum_window_height() const { return a_max_window_height; };
         inline unsigned short maximum_window_width() const { return a_max_window_width; };
         inline unsigned short minimum_window_height() const { return a_min_window_height; };
         inline unsigned short minimum_window_width() const { return a_min_window_width; };
+        inline bool mouse_button_clicked(unsigned int button) {return mouse_buttons_state()[button] != Button_State::Released;};
+        inline bool mouse_button_clicked_during_this_frame(unsigned int button) {return mouse_buttons_state()[button] == Button_State::Clicked;};
+        inline Button_State mouse_button_state(unsigned int button) {return a_mouse_buttons_state[button];};
         inline double mouse_move_x() const { return a_mouse_move_x; };
         inline double mouse_move_y() const { return a_mouse_move_y; };
         inline double mouse_x() const { return a_mouse_x; };
         inline double mouse_y() const { return a_mouse_y; };
-        inline Button_State right_mouse_button_state() const { return a_right_mouse_button_state; };
         inline void set_cursor(GLFWcursor* new_cursor) {if(new_cursor != cursor()) {
             if(a_cursor != 0) glfwDestroyCursor(a_cursor);
             a_cursor = new_cursor;
@@ -368,12 +370,12 @@ namespace scls {
         inline std::vector <std::string>& pressed_keys_frame() { return a_pressed_keys_frame; };
 
         // Mouse and cursor
+        inline bool is_cursor_on_window() { return a_cursor_on_window; };
+        inline std::map<unsigned int, Button_State>& mouse_buttons_state() {return a_mouse_buttons_state;};
         inline void set_last_mouse_x(double new_last_mouse_x) { a_last_mouse_x = new_last_mouse_x; };
         inline void set_last_mouse_y(double new_last_mouse_y) { a_last_mouse_y = new_last_mouse_y; };
-        inline void set_left_mouse_button_state(Button_State new_state) { a_left_mouse_button_state = new_state; };
         inline void set_mouse_move_x(double new_mouse_move_x) { a_mouse_move_x = new_mouse_move_x; };
         inline void set_mouse_move_y(double new_mouse_move_y) { a_mouse_move_y = new_mouse_move_y; };
-        inline void set_right_mouse_button_state(Button_State new_state) { a_right_mouse_button_state = new_state; };
         inline void set_window_height(int new_height) { a_window_height = new_height; };
         inline void set_window_width(int new_width) { a_window_width = new_width; };
 
@@ -384,6 +386,7 @@ namespace scls {
         int _cursor_state = GLFW_CURSOR_DISABLED;
         // Number of frame during this second
         unsigned short a_frame_count = 0;
+
         // Time since the last FPS calculation
         double a_time_since_last_fps_calculation = 0;
 
@@ -425,12 +428,12 @@ namespace scls {
         // Mouse and cursor
         // Pointer to the cursor
         GLFWcursor* a_cursor = 0;
+        // Reference to the cursor_on_window bool
+        bool &a_cursor_on_window;
         // Last X position of the mouse
         double a_last_mouse_x = 0;
         // Last Y position of the mouse
         double a_last_mouse_y = 0;
-        // State of the left button mouse
-        Button_State a_left_mouse_button_state = Button_State::Released;
         // Maximum height of the graphic window
         unsigned short a_max_window_height = 10000;
         // Maximum width of the graphic window
@@ -439,6 +442,8 @@ namespace scls {
         unsigned short a_min_window_height = 100;
         // Minimum width of the graphic window
         unsigned short a_min_window_width = 100;
+        // State of every mouse button
+        std::map<unsigned int, Button_State> a_mouse_buttons_state = std::map<unsigned int, Button_State>();
         // Last X move of the mouse
         double a_mouse_move_x = 0;
         // Last Y move of the mouse
@@ -447,8 +452,6 @@ namespace scls {
         double& a_mouse_x;
         // Reference to the mouse Y pos
         double& a_mouse_y;
-        // State of the left button mouse
-        Button_State a_right_mouse_button_state = Button_State::Released;
         // Reference to the height of the graphic window
         int& a_window_height;
         // Reference to the width of the graphic window
