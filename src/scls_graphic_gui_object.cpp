@@ -30,7 +30,7 @@ namespace scls {
     }
 
     // HUD_Object constructor used for displaying
-    HUD_Object::HUD_Object(_Window_Advanced_Struct* window_struct, std::string name, std::string texture_name, std::string vao_name) : Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), name, texture_name, vao_name) {
+    HUD_Object::HUD_Object(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name) : Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), parent, name, texture_name, vao_name) {
         a_type.push_back(SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME);
     }
 
@@ -67,7 +67,7 @@ namespace scls {
     }
 
     // HUD_Text constructor used for displaying
-    HUD_Text::HUD_Text(_Window_Advanced_Struct* window_struct, std::string name, std::string texture_name, std::string vao_name) : HUD_Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), name, texture_name, vao_name) {
+    HUD_Text::HUD_Text(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name) : HUD_Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), parent, name, texture_name, vao_name) {
 
     }
 
@@ -122,7 +122,8 @@ namespace scls {
                 HUD_Object* current_object = reinterpret_cast<HUD_Object*>(analyzed_object);
                 if(current_object->is_in_pixel(window_struct()->mouse_x(), window_struct()->window_height() - window_struct()->mouse_y())) {
                     current_overflighted_object = current_object;
-                    break;
+                    i = -1;
+                    to_analyse = (&current_overflighted_object->children());
                 }
             }
         }

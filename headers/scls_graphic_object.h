@@ -32,22 +32,36 @@ namespace scls {
         // Object most basic constructor
         Object(_Window_Advanced_Struct* window_struct);
         // Object constructor used for displaying
-        Object(_Window_Advanced_Struct* window_struct, std::string name, std::string texture_name, std::string vao_name = "hud_default");
+        Object(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name = "hud_default");
         // Object destructor
         virtual ~Object();
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
+        inline bool contains_child(Object* child) { for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] == child) {return true;}}return false;};
         inline bool contains_tag(std::string tag) { for (int i = 0; i < static_cast<int>(tags().size()); i++) { if (tags()[i] == tag) { return true; } } return false; };
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
-        inline _Window_Advanced_Struct* window_struct() { return a_window_struct;};
+        inline std::vector<Object*>& children() {return a_children;};
+        inline Object* parent() const {return a_parent;};
         inline std::string name() const { return a_name; };
+        inline void set_parent(Object* new_parent) {
+            if(parent() != 0) {
+                parent()->_remove_child(this);
+            }
+            a_parent = new_parent;
+            if(parent() != 0) {
+                if(!parent()->contains_child(this)) {
+                    parent()->children().push_back(this);
+                }
+            }
+        };
         inline void set_visible(bool new_visible) {a_visible = new_visible;};
         inline std::vector<std::string>& tags() { return a_tags; };
         inline Transform_Object* transform() { return a_transform; };
         inline std::vector<std::string> type() {return a_type;};
         inline std::string type(unsigned short position) {if(position >= a_type.size())return "";return a_type[position];};
         inline bool visible() const {return a_visible;};
+        inline _Window_Advanced_Struct* window_struct() { return a_window_struct;};
 
         //*********
         //
@@ -74,7 +88,7 @@ namespace scls {
         //*********
 
         virtual void after_loading() {}; // Function called after loading
-        virtual void* clone(std::string a_name, std::string texture_name, std::string vao_name = "hud_default"); // Clone the object
+        virtual void* clone(Object* parent, std::string a_name, std::string texture_name, std::string vao_name = "hud_default"); // Clone the object
         virtual void last_update() {}; // Function called after every updates
         // Reset the object without changing it
         virtual void soft_reset() {};
@@ -94,7 +108,21 @@ namespace scls {
         // Type of the object
         std::vector<std::string> a_type = std::vector<std::string>();
     private:
+        // Remove a children
+        inline void _remove_child(Object* child) {
+            for(int i = 0;i<static_cast<int>(children().size());i++) {
+                if(children()[i] == child) {
+                    children().erase(children().begin() + i);
+                    break;
+                }
+            }
+        };
+
         // Basic object descriptor
+        // Children of this object
+        std::vector<Object*> a_children = std::vector<Object*>();
+        // Parent of the object
+        Object* a_parent = 0;
         // Name of the object
         std::string a_name = "";
         // Tags about the object

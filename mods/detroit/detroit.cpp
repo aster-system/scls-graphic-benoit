@@ -24,12 +24,20 @@ namespace detroit {
         unsigned short height = 900;
         unsigned short width = 900;
         a_window = new scls::Window(width, height, path);
+        window()->set_is_resize_possible(false);
     }
 
     // Executes a frame in the simulation
     void Detroit::frame() {
         window()->update_event();
         window()->update();
+
+        if(current_presentation_state() == 0) {
+            if(welcome_page_start->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                a_current_presentation_state++;
+                set_big_map_page();
+            }
+        }
 
         window()->render();
     }
@@ -46,18 +54,20 @@ namespace detroit {
         window()->new_texture("welcome_page_background", "assets/textures/detroit/welcome_page_background.png", false);
         window()->new_texture("uk_flag", "assets/textures/detroit/uk_flag.png", false);
         window()->new_texture("usa_flag", "assets/textures/detroit/usa_flag.png", false);
+        window()->new_texture("big_usa_map", "assets/textures/detroit/big_usa_map.png", false);
+        window()->new_texture("red", 5, 5, scls::red);
 
         // Create and configure the welcome_page page
         welcome_page = window()->new_page<scls::HUD_Page>("welcome");
         // Create each objects
         welcome_page_background = welcome_page->new_object<scls::HUD_Object>("welcome_page_background", 0, "welcome_page_background");
-        welcome_page_start = welcome_page->new_object<scls::HUD_Text>("welcome_page_start");
-        welcome_page_uk_flag = welcome_page->new_object<scls::HUD_Object>("welcome_page_uk_flag", 0, "uk_flag");
-        welcome_page_usa_flag = welcome_page->new_object<scls::HUD_Object>("welcome_page_usa_flag", 0, "usa_flag");
-        welcome_page_title = welcome_page->new_object<scls::HUD_Text>("welcome_page_title");
+        welcome_page_start = welcome_page->new_object<scls::HUD_Text>("welcome_page_start", welcome_page_background);
+        welcome_page_uk_flag = welcome_page->new_object<scls::HUD_Object>("welcome_page_uk_flag", welcome_page_background, "uk_flag");
+        welcome_page_usa_flag = welcome_page->new_object<scls::HUD_Object>("welcome_page_usa_flag", welcome_page_background, "usa_flag");
+        welcome_page_title = welcome_page->new_object<scls::HUD_Text>("welcome_page_title", welcome_page_background);
         // Configure each objects
         // Configure the back ground
-        welcome_page_background->transform()->set_scale(glm::vec3(2, 2, 2));
+        welcome_page_background->set_scale(2);
         // Configure the start button
         welcome_page_start->set_background_color(scls::Color(255, 255, 255, 185));
         welcome_page_start->set_border_width(0.1);
@@ -84,16 +94,36 @@ namespace detroit {
         welcome_page_title->set_text("Detroit");
         welcome_page_title->set_text_offset(0.2);
         welcome_page_title->transform()->set_position(glm::vec3(0, 0.65, 1.0));
+
+        // Create and configure the big_map page
+        scls::HUD_Page* big_map_page = window()->new_page<scls::HUD_Page>("big_map");
+        // Create each objects
+        scls::HUD_Object* big_map_page_background = big_map_page->new_object<scls::HUD_Object>("big_map_page_background", 0, "big_usa_map");
+        scls::HUD_Text* big_map_page_detroit_title = big_map_page->new_object<scls::HUD_Text>("big_map_page_detroit_title", big_map_page_background);
+        scls::HUD_Object* big_map_page_point = big_map_page->new_object<scls::HUD_Object>("big_map_page_point", big_map_page_background, "red");
+        // Configure each objects
+        big_map_page_background->set_scale(2);
+        big_map_page_detroit_title->set_font_family("consolab");
+        big_map_page_detroit_title->set_font_size(100);
+        big_map_page_detroit_title->set_scale(0.05);
+        big_map_page_detroit_title->set_text("Detroit");
+        big_map_page_detroit_title->transform()->set_position(glm::vec3(0.205, 0.025, 0));
+        big_map_page_point->transform()->set_position(glm::vec3(0.205, -0.035, 0));
+        big_map_page_point->set_scale(0.025);
+    }
+
+    // Set the big map page in the object
+    void Detroit::set_big_map_page() {
+        // Set the current page to the big map page
+        window()->hide_all_pages();
+        window()->display_page("big_map");
     }
 
     // Set a page in the object
-    void Detroit::set_page(unsigned int page) {
-        window()->set_is_resize_possible(false);
-        if(page == 0)
-        {
-            // Set the current page to the welcome page
-            window()->set_current_page("welcome");
-        }
+    void Detroit::set_welcome_page() {
+        // Set the current page to the welcome page
+        window()->hide_all_pages();
+        window()->display_page("welcome");
     }
 
     // Create a simple Detroit window
@@ -101,7 +131,7 @@ namespace detroit {
         // Create and configure the window
         Detroit* window = new Detroit(path);
         window->load_pages();
-        window->set_page(0);
+        window->set_welcome_page();
 
         // Simulate the window
         while (window->run()) {

@@ -38,7 +38,7 @@ namespace scls {
         // HUD_Object most basic constructor
         HUD_Object(_Window_Advanced_Struct* window_struct);
         // HUD_Object constructor used for displaying
-        HUD_Object(_Window_Advanced_Struct* window_struct, std::string name, std::string texture_name, std::string vao_name = "hud_default");
+        HUD_Object(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name = "hud_default");
         // HUD_Object destructor
         ~HUD_Object();
 
@@ -52,14 +52,24 @@ namespace scls {
         virtual void soft_reset() {Object::soft_reset();set_is_overflighted(false);};
 
         // Pixel size handler
-        inline unsigned int absolute_gui_x_in_pixel() {double absolute_x = (1.0 + transform()->get_absolute_position()[0]) / 2.0; return static_cast<double>(window_struct()->window_width() / window_struct()->window_ratio()) * absolute_x - static_cast<double>(width_in_pixel()) / 2.0;};
+        inline unsigned int absolute_hud_x_in_pixel() {double absolute_x = (1.0 + transform()->get_absolute_position()[0]) / 2.0; return static_cast<double>(window_struct()->window_width() / window_struct()->window_ratio()) * absolute_x - static_cast<double>(width_in_pixel()) / 2.0;};
         inline unsigned int absolute_x_in_pixel() {double absolute_x = (1.0 + transform()->get_absolute_position()[0]) / 2.0; return static_cast<double>(window_struct()->window_width() / window_struct()->window_ratio()) * absolute_x;};
-        inline unsigned int absolute_gui_y_in_pixel() {double absolute_y = (1.0 + transform()->get_absolute_position()[1]) / 2.0; return (static_cast<double>(window_struct()->window_height()) * absolute_y) - static_cast<double>(height_in_pixel()) / 2.0;};
+        inline unsigned int absolute_hud_y_in_pixel() {double absolute_y = (1.0 + transform()->get_absolute_position()[1]) / 2.0; return (static_cast<double>(window_struct()->window_height()) * absolute_y) - static_cast<double>(height_in_pixel()) / 2.0;};
         inline unsigned int absolute_y_in_pixel() {double absolute_y = (1.0 + transform()->get_absolute_position()[1]) / 2.0; return static_cast<double>(window_struct()->window_height()) * absolute_y;};
         inline unsigned int height_in_pixel() {double absolute_height = transform()->absolute_scale()[1]/2.0;return absolute_height * static_cast<double>(window_struct()->window_height());};
-        inline bool is_in_pixel(unsigned int x, unsigned int y) {return x > absolute_gui_x_in_pixel() && y > absolute_gui_y_in_pixel() && x < absolute_gui_x_in_pixel() + width_in_pixel() && y < absolute_gui_y_in_pixel() + height_in_pixel();};
+        inline bool is_in_pixel(unsigned int x, unsigned int y) {return x > absolute_hud_x_in_pixel() && y > absolute_hud_y_in_pixel() && x < absolute_hud_x_in_pixel() + width_in_pixel() && y < absolute_hud_y_in_pixel() + height_in_pixel();};
+        inline void set_width_in_pixel(unsigned int width) {
+            double absolute_width = width / static_cast<double>(window_struct()->window_width());
+            double final_width = (absolute_width * 2) * window_struct()->window_ratio();
+            if(parent() != 0) final_width = parent_hud()->absolute_scale()[1] / final_width;
+            set_scale(final_width / texture_ratio());
+        };
         inline glm::vec2 size_in_pixel() {return glm::vec2(width_in_pixel(), height_in_pixel());};
         inline unsigned int width_in_pixel() {double absolute_width = (transform()->absolute_scale()[0]/2.0)*texture_ratio();return absolute_width * (static_cast<double>(window_struct()->window_width()) / window_struct()->window_ratio());};
+
+        // Getters and setters (ONLY WITHOUT ATRIBUTES)
+        inline glm::vec2 absolute_scale() {return transform()->absolute_scale();};
+        inline HUD_Object* parent_hud() {if(parent() == 0 || parent()->type(1) != SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME)return 0;return reinterpret_cast<HUD_Object*>(parent());};
 
         // Getters and setters (ONLY WITH ATRIBUTES)
         inline Color background_color() {return a_background_color;};
@@ -106,7 +116,7 @@ namespace scls {
         // HUD_Text most basic constructor
         HUD_Text(_Window_Advanced_Struct* window_struct);
         // HUD_Text constructor used for displaying
-        HUD_Text(_Window_Advanced_Struct* window_struct, std::string name, std::string texture_name, std::string vao_name = "hud_default");
+        HUD_Text(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name = "hud_default");
         // HUD_Text destructor
         ~HUD_Text();
 

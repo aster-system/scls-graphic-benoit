@@ -32,10 +32,12 @@ namespace scls {
     }
 
     // Object constructor used for displaying
-    Object::Object(_Window_Advanced_Struct* window_struct, std::string name, std::string texture_name, std::string vao_name) : Object(window_struct) {
+    Object::Object(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name) : Object(window_struct) {
         a_name = name;
         if(texture_name != "")a_texture = window_struct->texture(texture_name);
         a_vao = window_struct->vao(vao_name);
+
+        set_parent(parent);
     }
 
     // Object destructor
@@ -84,8 +86,8 @@ namespace scls {
     //*********
 
     // Clone the object
-    void* Object::clone(std::string name, std::string texture_name, std::string vao_name) {
-        Object* to_return = new Object(window_struct(), name, texture_name, vao_name);
+    void* Object::clone(Object* parent, std::string name, std::string texture_name, std::string vao_name) {
+        Object* to_return = new Object(window_struct(), parent, name, texture_name, vao_name);
 
         return to_return;
     }

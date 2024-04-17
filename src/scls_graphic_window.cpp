@@ -321,12 +321,11 @@ namespace scls {
         a_cursor_changed = false;
 
         glDepthFunc(GL_ALWAYS);
-        if (current_page_name() != "" && contains_page(current_page_name()))
+        if (displayed_pages_names().size() > 0)
         {
-            _Page* page = current_page();
-            if (page != 0)
-            {
-                page->render();
+            std::vector<_Page*> to_display = displayed_pages();
+            for(int i = 0;i<static_cast<int>(to_display.size());i++) {
+                to_display[i]->render();
             }
         }
 
@@ -337,10 +336,12 @@ namespace scls {
 
     // Update one frame of the game
     void Window::update() {
-        _Page* page = current_page();
-        if (page != 0)
+        if (displayed_pages_names().size() > 0)
         {
-            page->update();
+            std::vector<_Page*> to_display = displayed_pages();
+            for(int i = 0;i<static_cast<int>(to_display.size());i++) {
+                to_display[i]->update();
+            }
         }
     }
 
@@ -427,7 +428,13 @@ namespace scls {
         set_last_mouse_x(mouse_x());
         set_last_mouse_y(mouse_y());
 
-        // Update the event of the page
-        current_page()->update_event();
+        // Update the event of the pages
+        if (displayed_pages_names().size() > 0)
+        {
+            std::vector<_Page*> to_display = displayed_pages();
+            for(int i = 0;i<static_cast<int>(to_display.size());i++) {
+                to_display[i]->update_event();
+            }
+        }
     }
 }

@@ -34,15 +34,21 @@ namespace detroit {
 
         // Load each pages in the object the object
         void load_pages();
-        // Set a page in the object
-        void set_page(unsigned int page);
+        // Set the big map page in the object
+        void set_big_map_page();
+        // Set the welcome page in the object
+        void set_welcome_page();
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         inline bool run() {return window()->run();};
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
+        inline unsigned int current_presentation_state() {return a_current_presentation_state;};
         inline scls::Window* window() {return a_window;};
     private:
+        // Current state of the presentation
+        unsigned int a_current_presentation_state = 0;
+
         // Window attributes
         // Pointer to the main Window
         scls::Window* a_window = 0;

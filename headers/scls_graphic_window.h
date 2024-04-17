@@ -192,24 +192,33 @@ namespace scls {
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         inline bool contains_page(std::string name) { for(std::map<std::string, _Page*>::iterator it = pages().begin();it!=pages().end();it++) if(it->first == name) return true; return false;};
-        inline _Page* current_page() {
-            if(current_page_name() != "" && contains_page(current_page_name())) return pages()[current_page_name()];
-            return 0;
-        }
+        inline bool contains_displayed_page(std::string name) { for(int i = 0;i<static_cast<int>(displayed_pages_names().size());i++) { if(displayed_pages_names()[i] == name) return true;} return false;};
+        inline std::vector<_Page*> displayed_pages() {
+            std::vector<_Page*> to_return = std::vector<_Page*>();
+            if(displayed_pages_names().size() > 0) {
+                for(int i = 0;i<static_cast<int>(displayed_pages_names().size());i++) {
+                    to_return.push_back(pages()[displayed_pages_names()[i]]);
+                }
+            }
+            return to_return;
+        };
+        inline void display_page(std::string new_page) {
+            if(new_page != "" && !contains_page(new_page)) scls::print("Warning", "SCLS Window", "The \"" + new_page + "\" page you want to display does not exists.");
+            else if(!contains_displayed_page(new_page)) displayed_pages_names().push_back(new_page);
+        };
+        inline void hide_all_pages() {
+            displayed_pages_names().clear();
+        };
         inline _Page* page(std::string name) {
             if(contains_page(name)) return pages()[name];
             scls::print("Warning", "SCLS Window", "The \"" + name + "\" page you want to get does not exists.");
             return 0;
         };
 
-        // Getters and setters (ONLY WITHOUT ATTRIBUTES)
-        inline std::string current_page_name() {return a_current_page;};
+        // Getters and setters (ONLY WITH ATTRIBUTES)
+        inline std::vector<std::string>& displayed_pages_names() {return a_displayed_pages;};
         inline bool is_resize_possible() {return a_is_resize_possible;};
         inline std::map<std::string, _Page*>& pages() {return a_pages;};
-        inline void set_current_page(std::string new_current_page) {
-            if(new_current_page != "" && !contains_page(new_current_page)) scls::print("Warning", "SCLS Window", "The \"" + new_current_page + "\" page you want to set as the current page does not exists.");
-            else a_current_page = new_current_page;
-        };
         inline void set_is_resize_possible(bool new_is_resize_possible) {a_is_resize_possible = new_is_resize_possible;resize_window(window_width(), window_height());};
 
         //*********
@@ -258,8 +267,8 @@ namespace scls {
         //
         //*********
 
-        // Name of the current page loaded
-        std::string a_current_page = "";
+        // Names of the displayed page
+        std::vector<std::string> a_displayed_pages = std::vector<std::string>();
         // Map containing each pages in the window with their name as key
         std::map<std::string, _Page*> a_pages = std::map<std::string, _Page*>();
 
@@ -291,7 +300,7 @@ namespace scls {
             window_struct()->new_texture(object_texture);
         }
 
-        O* object = new O(window_struct(), object_name, object_texture);
+        O* object = new O(window_struct(), parent, object_name, object_texture);
         objects()[object_name] = object;
 
         if(parent == 0) {
