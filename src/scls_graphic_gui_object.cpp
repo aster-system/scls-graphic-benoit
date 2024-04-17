@@ -20,34 +20,18 @@
 namespace scls {
     //*********
     //
-    // HUD page
-    //
-    //*********
-
-    // HUD_Page most basic constructor
-    HUD_Page::HUD_Page(_Window_Advanced_Struct* window_struct, std::string name) : _Page(window_struct, name) {
-
-    }
-
-    // HUD_Page destructor
-    HUD_Page::~HUD_Page(){
-
-    }
-
-    //*********
-    //
     // HUD Object main functions
     //
     //*********
 
     // HUD_Object most basic constructor
     HUD_Object::HUD_Object(_Window_Advanced_Struct* window_struct) : Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct)) {
-
+        a_type.push_back(SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME);
     }
 
     // HUD_Object constructor used for displaying
     HUD_Object::HUD_Object(_Window_Advanced_Struct* window_struct, std::string name, std::string texture_name, std::string vao_name) : Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), name, texture_name, vao_name) {
-
+        a_type.push_back(SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME);
     }
 
     // Render the object on the window
@@ -110,6 +94,48 @@ namespace scls {
 
     // HUD_Text destructor
     HUD_Text::~HUD_Text() {
+
+    }
+
+    //*********
+    //
+    // HUD page
+    //
+    //*********
+
+    // HUD_Page most basic constructor
+    HUD_Page::HUD_Page(_Window_Advanced_Struct* window_struct, std::string name) : _Page(window_struct, name) {
+
+    }
+
+    // Update the event of the page
+    void HUD_Page::update_event() {
+        // Check the overflighted cursor
+        HUD_Object* current_overflighted_object = 0;
+        std::vector<Object*>* to_analyse = (&children());
+        for(int i = 0;i<static_cast<int>(to_analyse->size());i++) {
+            Object* analyzed_object = (*to_analyse)[to_analyse->size() - (i + 1)];
+            if(analyzed_object->type(1) == SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME) {
+                HUD_Object* current_object = reinterpret_cast<HUD_Object*>(analyzed_object);
+                if(current_object->is_in_pixel(window_struct()->mouse_x(), window_struct()->window_height() - window_struct()->mouse_y())) {
+                    current_overflighted_object = current_object;
+                    break;
+                }
+            }
+        }
+
+        // Update the cursor texture
+        if(current_overflighted_object == 0) {
+            window_struct()->set_cursor(glfwCreateStandardCursor(0));
+        }
+        else if(a_overflighted_object != current_overflighted_object) {
+            window_struct()->set_cursor(glfwCreateStandardCursor(current_overflighted_object->overflighted_cursor()));
+        }
+        a_overflighted_object = current_overflighted_object;
+    }
+
+    // HUD_Page destructor
+    HUD_Page::~HUD_Page(){
 
     }
 }

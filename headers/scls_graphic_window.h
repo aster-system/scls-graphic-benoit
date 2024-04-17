@@ -62,6 +62,7 @@ namespace scls {
         virtual ~_Page();
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
+        inline GLFWcursor* cursor() {return a_cursor;};
         inline std::string name() const {return a_name;};
         inline _Window_Advanced_Struct* window_struct() {return a_window_struct;};
 
@@ -75,6 +76,8 @@ namespace scls {
         virtual void render();
         // Update the page
         virtual void update();
+        // Update the event of the page
+        virtual void update_event(){};
 
         //*********
         //
@@ -86,10 +89,22 @@ namespace scls {
         inline bool contains_object(std::string object_name) {for(std::map<std::string, Object*>::iterator it = objects().begin();it!=objects().end();it++) if(it->first == object_name) return true; return false;};
         // Creates an object into the page and returns it
         template <typename O = Object>
-        O* new_object(std::string object_name, std::string object_texture = "");
+        O* new_object(std::string object_name, Object* parent = 0, std::string object_texture = "");
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
+        inline std::vector<Object*>& children(){return a_children;};
         std::map<std::string, Object*>& objects() {return a_objects;};
+
+    protected:
+
+        //*********
+        //
+        // _Page hiddens attributes
+        //
+        //*********
+
+        // Pointer to the cursor
+        GLFWcursor* a_cursor = 0;
 
     private:
 
@@ -99,6 +114,8 @@ namespace scls {
         //
         //*********
 
+        // Direct children of the page
+        std::vector<Object*> a_children = std::vector<Object*>();
         // Objects in the page
         std::map<std::string, Object*> a_objects = std::map<std::string, Object*>();
         // Name of the page
@@ -156,7 +173,6 @@ namespace scls {
         inline void show_cursor() { glfwSetInputMode(window(), GLFW_CURSOR, GLFW_CURSOR_NORMAL); _cursor_state = GLFW_CURSOR_NORMAL; };
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
-        inline unsigned long current_cursor() const {return a_current_cursor;};
         inline bool is_cursor_on_window() { return a_cursor_on_window; };
         void set_maximum_window_height(unsigned short new_max_window_height) { _Window_Base_Struct::set_maximum_window_height(new_max_window_height); resize_window(window_width(), window_height()); };
         void set_maximum_window_width(unsigned short new_max_window_width) { _Window_Base_Struct::set_maximum_window_width(new_max_window_width); resize_window(window_width(), window_height()); };
@@ -232,10 +248,6 @@ namespace scls {
         //
         //*********
 
-        // Current displayed cursor
-        unsigned long a_current_cursor = GLFW_ARROW_CURSOR;
-        // Pointer to the cursor
-        GLFWcursor* a_cursor = 0;
         // Reference to the cursor_on_window bool
         bool &a_cursor_on_window;
         // Map of each keys in the window, with their character as the value
@@ -269,7 +281,7 @@ namespace scls {
 
     // Creates an object into the page and returns it
     template <typename O>
-    O* _Page::new_object(std::string object_name, std::string object_texture) {
+    O* _Page::new_object(std::string object_name, Object* parent, std::string object_texture) {
         if(contains_object(object_name)) {
             scls::print("Warning", "SCLS Page", "The \"" + object_name + "\" object you want to add in the page \"" + name() + "\" already exist.");
             return 0;
@@ -282,6 +294,10 @@ namespace scls {
 
         O* object = new O(window_struct(), object_name, object_texture);
         objects()[object_name] = object;
+
+        if(parent == 0) {
+            children().push_back(object);
+        }
 
         return object;
     }

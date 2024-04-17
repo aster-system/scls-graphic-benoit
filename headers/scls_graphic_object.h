@@ -45,6 +45,8 @@ namespace scls {
         inline void set_visible(bool new_visible) {a_visible = new_visible;};
         inline std::vector<std::string>& tags() { return a_tags; };
         inline Transform_Object* transform() { return a_transform; };
+        inline std::vector<std::string> type() {return a_type;};
+        inline std::string type(unsigned short position) {if(position >= a_type.size())return "";return a_type[position];};
         inline bool visible() const {return a_visible;};
 
         //*********
@@ -85,6 +87,10 @@ namespace scls {
         // Getters and setters (ONLY WITH ATTRIBUTES)
         virtual void set_scale(double new_scale) {transform()->set_scale(glm::vec3(new_scale, new_scale, new_scale));};
         virtual void set_scale(glm::vec3 new_scale) {transform()->set_scale(new_scale);};
+    protected:
+        // Basic object descriptor
+        // Type of the object
+        std::vector<std::string> a_type = std::vector<std::string>();
     private:
         // Basic object descriptor
         // Name of the object

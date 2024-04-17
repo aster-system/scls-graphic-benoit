@@ -195,7 +195,7 @@ namespace scls {
     // Window destructor
     Window::~Window() {
         // Destroy the cursor
-        if(a_cursor != 0) glfwDestroyCursor(a_cursor);
+        if(cursor() != 0) glfwDestroyCursor(cursor());
 
         std::map<std::string, _Page*>& all_pages = pages();
         for (std::map<std::string, _Page*>::iterator it = all_pages.begin(); it != all_pages.end(); it++)
@@ -300,6 +300,18 @@ namespace scls {
         glClearColor(background_color().red(), background_color().green(), background_color().blue(), background_color().alpha());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // Update the cursor texture
+        if(cursor_changed() && cursor() != 0)
+        {
+            glfwSetCursor(window(), cursor());
+        }
+        else if(cursor() == 0)
+        {
+            set_cursor(glfwCreateStandardCursor(GLFW_ARROW_CURSOR));
+            glfwSetCursor(window(), cursor());
+        }
+        a_cursor_changed = false;
+
         glDepthFunc(GL_ALWAYS);
         if (current_page_name() != "" && contains_page(current_page_name()))
         {
@@ -400,22 +412,7 @@ namespace scls {
         set_last_mouse_x(mouse_x());
         set_last_mouse_y(mouse_y());
 
-        /*// Update the cursor texture
-        if(overflighted_object != 0)
-        {
-            if(current_cursor() != overflighted_object->cursor_overflighted())
-            {
-                if(a_cursor != 0) glfwDestroyCursor(a_cursor);
-                a_cursor = glfwCreateStandardCursor(overflighted_object->cursor_overflighted());
-                glfwSetCursor(window, a_cursor);
-                a_current_cursor = overflighted_object->cursor_overflighted();
-            }
-        }
-        else if(a_cursor == 0)
-        {
-            a_cursor = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
-            glfwSetCursor(window, a_cursor);
-            a_current_cursor = GLFW_ARROW_CURSOR;
-        } //*/
+        // Update the event of the page
+        current_page()->update_event();
     }
 }

@@ -50,10 +50,10 @@ namespace detroit {
         // Create and configure the welcome_page page
         scls::HUD_Page* welcome_page = window()->new_page<scls::HUD_Page>("welcome");
         // Create each objects
-        scls::HUD_Object* welcome_page_background = welcome_page->new_object<scls::HUD_Object>("welcome_page_background", "welcome_page_background");
+        scls::HUD_Object* welcome_page_background = welcome_page->new_object<scls::HUD_Object>("welcome_page_background", 0, "welcome_page_background");
         scls::HUD_Text* welcome_page_start = welcome_page->new_object<scls::HUD_Text>("welcome_page_start");
-        scls::HUD_Object* welcome_page_uk_flag = welcome_page->new_object<scls::HUD_Object>("welcome_page_uk_flag", "uk_flag");
-        scls::HUD_Object* welcome_page_usa_flag = welcome_page->new_object<scls::HUD_Object>("welcome_page_usa_flag", "usa_flag");
+        scls::HUD_Object* welcome_page_uk_flag = welcome_page->new_object<scls::HUD_Object>("welcome_page_uk_flag", 0, "uk_flag");
+        scls::HUD_Object* welcome_page_usa_flag = welcome_page->new_object<scls::HUD_Object>("welcome_page_usa_flag", 0, "usa_flag");
         scls::HUD_Text* welcome_page_title = welcome_page->new_object<scls::HUD_Text>("welcome_page_title");
         // Configure each objects
         // Configure the back ground
@@ -64,6 +64,7 @@ namespace detroit {
         welcome_page_start->set_font_color(scls::black);
         welcome_page_start->set_font_family("consolab");
         welcome_page_start->set_font_size(100);
+        welcome_page_start->set_overflighted_cursor(GLFW_HAND_CURSOR);
         welcome_page_start->set_scale(0.2);
         welcome_page_start->set_text("Start");
         welcome_page_start->set_text_offset(0.2);

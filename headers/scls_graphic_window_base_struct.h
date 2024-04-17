@@ -312,6 +312,8 @@ namespace scls {
         inline unsigned short key_state_frame(std::string name) const { return contains(a_pressed_keys_frame, std::string(name)); };
 
         // Mouse and cursor
+        inline GLFWcursor* cursor() {return a_cursor;};
+        inline bool cursor_changed() const {return a_cursor_changed;};
         inline int cursor_state() const { return _cursor_state; };
         inline double last_mouse_x() const { return a_last_mouse_x; };
         inline double last_mouse_y() const { return a_last_mouse_y; };
@@ -325,6 +327,11 @@ namespace scls {
         inline double mouse_x() const { return a_mouse_x; };
         inline double mouse_y() const { return a_mouse_y; };
         inline Button_State right_mouse_button_state() const { return a_right_mouse_button_state; };
+        inline void set_cursor(GLFWcursor* new_cursor) {if(new_cursor != cursor()) {
+            if(a_cursor != 0) glfwDestroyCursor(a_cursor);
+            a_cursor = new_cursor;
+            a_cursor_changed = true;
+        }};
         virtual void set_maximum_window_height(unsigned short new_max_window_height) { a_max_window_height = new_max_window_height; };
         virtual void set_maximum_window_width(unsigned short new_max_window_width) { a_max_window_width = new_max_window_width; };
         virtual void set_minimum_window_height(unsigned short new_min_window_height) { a_min_window_height = new_min_window_height; };
@@ -371,6 +378,8 @@ namespace scls {
         inline void set_window_width(int new_width) { a_window_width = new_width; };
 
         // Attributes
+        // If the cursor as changed during this frame or not
+        bool a_cursor_changed = false;
         // State of the cursor
         int _cursor_state = GLFW_CURSOR_DISABLED;
         // Number of frame during this second
@@ -414,6 +423,8 @@ namespace scls {
         std::vector <std::string> a_pressed_keys_frame = std::vector <std::string>();
 
         // Mouse and cursor
+        // Pointer to the cursor
+        GLFWcursor* a_cursor = 0;
         // Last X position of the mouse
         double a_last_mouse_x = 0;
         // Last Y position of the mouse

@@ -28,6 +28,7 @@ namespace scls {
     // Object most basic constructor
     Object::Object(_Window_Advanced_Struct* window_struct) : a_window_struct(window_struct) {
         a_transform = new Transform_Object();
+        a_type.push_back("object");
     }
 
     // Object constructor used for displaying

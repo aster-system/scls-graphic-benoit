@@ -19,24 +19,12 @@
 
 #include "scls_graphic_window.h"
 
+#ifndef SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME
+#define SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME "hud_object"
+#endif // SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME
+
 // Using of the "scls" namespace to simplify the programmation
 namespace scls {
-    class HUD_Page : public _Page {
-        // Class representing an HUD page to display on the window
-    public:
-
-        //*********
-        //
-        // HUD page
-        //
-        //*********
-
-        // HUD_Page most basic constructor
-        HUD_Page(_Window_Advanced_Struct* window_struct, std::string name);
-        // HUD_Page destructor
-        virtual ~HUD_Page();
-    };
-
     class HUD_Object : public Object {
         // Class representing an HUD object displayed into the window
     public:
@@ -61,16 +49,23 @@ namespace scls {
         // Render the HUD object on the window
         virtual void render();
 
-        // Getters and setters (ONLY WITHOUT ATRIBUTES)
+        // Pixel size handler
+        inline unsigned int absolute_gui_x_in_pixel() {double absolute_x = (1.0 + transform()->get_absolute_position()[0]) / 2.0; return static_cast<double>(window_struct()->window_width() / window_struct()->window_ratio()) * absolute_x - static_cast<double>(width_in_pixel()) / 2.0;};
+        inline unsigned int absolute_x_in_pixel() {double absolute_x = (1.0 + transform()->get_absolute_position()[0]) / 2.0; return static_cast<double>(window_struct()->window_width() / window_struct()->window_ratio()) * absolute_x;};
+        inline unsigned int absolute_gui_y_in_pixel() {double absolute_y = (1.0 + transform()->get_absolute_position()[1]) / 2.0; return (static_cast<double>(window_struct()->window_height()) * absolute_y) - static_cast<double>(height_in_pixel()) / 2.0;};
+        inline unsigned int absolute_y_in_pixel() {double absolute_y = (1.0 + transform()->get_absolute_position()[1]) / 2.0; return static_cast<double>(window_struct()->window_height()) * absolute_y;};
         inline unsigned int height_in_pixel() {double absolute_height = transform()->absolute_scale()[1]/2.0;return absolute_height * static_cast<double>(window_struct()->window_height());};
+        inline bool is_in_pixel(unsigned int x, unsigned int y) {return x > absolute_gui_x_in_pixel() && y > absolute_gui_y_in_pixel() && x < absolute_gui_x_in_pixel() + width_in_pixel() && y < absolute_gui_y_in_pixel() + height_in_pixel();};
         inline glm::vec2 size_in_pixel() {return glm::vec2(width_in_pixel(), height_in_pixel());};
         inline unsigned int width_in_pixel() {double absolute_width = (transform()->absolute_scale()[0]/2.0)*texture_ratio();return absolute_width * (static_cast<double>(window_struct()->window_width()) / window_struct()->window_ratio());};
 
         // Getters and setters (ONLY WITH ATRIBUTES)
         inline Color background_color() {return a_background_color;};
         inline glm::vec4 border_width() {return a_border_width;};
+        inline unsigned long overflighted_cursor() {return a_overflighted_cursor;};
         inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
         inline void set_border_width(double new_border_width) {a_border_width = glm::vec4(new_border_width, new_border_width, new_border_width, new_border_width);};
+        inline void set_overflighted_cursor(unsigned long new_overflighted_cursor) {a_overflighted_cursor = new_overflighted_cursor;};
         inline void set_texture_rect(glm::vec4 new_texture_rect) {a_texture_rect = new_texture_rect;};
         inline glm::vec4 texture_rect() {return a_texture_rect;};
     private:
@@ -84,6 +79,8 @@ namespace scls {
         Color a_background_color = Color(0, 0, 0, 0);
         // Width of the border
         glm::vec4 a_border_width = glm::vec4(0, 0, 0, 0);
+        // Id of the overflighted cursor
+        unsigned long a_overflighted_cursor = GLFW_ARROW_CURSOR;
         // Rect of the texture
         glm::vec4 a_texture_rect = glm::vec4(0, 0, 1, 1);
     };
@@ -141,6 +138,32 @@ namespace scls {
         std::string a_text = "";
         // Offset of the text
         glm::vec4 a_text_offset = glm::vec4(0, 0, 0, 0);
+    };
+
+    class HUD_Page : public _Page {
+        // Class representing an HUD page to display on the window
+    public:
+
+        //*********
+        //
+        // HUD page
+        //
+        //*********
+
+        // HUD_Page most basic constructor
+        HUD_Page(_Window_Advanced_Struct* window_struct, std::string name);
+        // HUD_Page destructor
+        virtual ~HUD_Page();
+
+        // Update the event of the page
+        virtual void update_event();
+
+        // Getters and setters (ONLY WITH ATTRIBUTES)
+        inline HUD_Object* overflighted_object(){return a_overflighted_object;};
+    private:
+        // Handle the overflighted object
+        // Pointer to the overflighted object
+        HUD_Object* a_overflighted_object = 0;
     };
 }
 
