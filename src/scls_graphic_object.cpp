@@ -26,13 +26,20 @@ namespace scls {
     //*********
 
     // Object most basic constructor
-    Object::Object(_Window_Advanced_Struct* window_struct) : a_window_struct(window_struct) {
-        a_transform = new Transform_Object();
+    Object::Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent) : a_window_struct(window_struct) {
+        a_transform = new Transform_Object(transform_parent);
         a_type.push_back("object");
     }
 
+    // Most parent Object constructor used for displaying
+    Object::Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : Object(window_struct, transform_parent) {
+        a_name = name;
+        if(texture_name != "")a_texture = window_struct->texture(texture_name);
+        a_vao = window_struct->vao(vao_name);
+    }
+
     // Object constructor used for displaying
-    Object::Object(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name) : Object(window_struct) {
+    Object::Object(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name) : Object(window_struct, parent->transform()) {
         a_name = name;
         if(texture_name != "")a_texture = window_struct->texture(texture_name);
         a_vao = window_struct->vao(vao_name);

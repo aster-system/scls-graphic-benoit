@@ -67,13 +67,17 @@ namespace scls {
 
     // _Page base constructor
     _Page::_Page(_Window_Advanced_Struct* window_struct, std::string name) : a_name(name), a_window_struct(window_struct) {
-
+        a_transform = new Transform_Object();
     }
 
     // _Page base destructor
     _Page::~_Page() {
         for(std::map<std::string, Object*>::iterator it = objects().begin();it!=objects().end();it++) {
             delete it->second; it->second = 0;
+        }
+        if(a_transform != 0) {
+            delete a_transform;
+            a_transform = 0;
         }
     }
 

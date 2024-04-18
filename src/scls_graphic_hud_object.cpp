@@ -1,6 +1,6 @@
 //******************
 //
-// scls_graphic_gui_object.cpp
+// scls_graphic_hud_object.cpp
 //
 //******************
 // Presentation :
@@ -24,8 +24,8 @@ namespace scls {
     //
     //*********
 
-    // HUD_Object most basic constructor
-    HUD_Object::HUD_Object(_Window_Advanced_Struct* window_struct) : Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct)) {
+    // Most parent HUD_Object constructor used for displaying
+    HUD_Object::HUD_Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), transform_parent, name, texture_name, vao_name) {
         a_type.push_back(SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME);
     }
 
@@ -39,7 +39,9 @@ namespace scls {
         // Create the upgraded matrix
         glm::mat4 matrix = transform()->get_model_matrix();
         // Apply the scale according to the texture
-        matrix = glm::scale(matrix, glm::vec3(texture_ratio() / window_struct()->window_ratio(), 1, 1));
+        double width_multiplicator = texture_ratio() / window_struct()->window_ratio();
+        if(transform()->get_parent() != 0) width_multiplicator /= transform()->get_parent()->get_scale()[0] / transform()->get_parent()->get_scale()[0];
+        matrix = glm::scale(matrix, glm::vec3(width_multiplicator, 1, 1));
 
         vao()->get_shader_program()->set_uniform4f_value("background_color", glm::vec4(background_color().red() / 255.0, background_color().green() / 255.0, background_color().blue() / 255.0, background_color().alpha() / 255.0));
         vao()->get_shader_program()->set_uniform4f_value("border_color", glm::vec4(0, 0, 0, 1));
@@ -61,8 +63,8 @@ namespace scls {
     //
     //*********
 
-    // HUD_Text most basic constructor
-    HUD_Text::HUD_Text(_Window_Advanced_Struct* window_struct) : HUD_Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct)) {
+    // Most parent HUD_Object constructor used for displaying
+    HUD_Text::HUD_Text(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : HUD_Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), transform_parent, name, texture_name, vao_name) {
 
     }
 

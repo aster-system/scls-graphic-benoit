@@ -348,14 +348,15 @@ namespace scls {
     {
         // Apply parent position position
         glm::vec3 local_vector = glm::vec3(0, 0, 0);
-        glm::vec3 vector = glm::vec3(0, 0, 0);
-        if (get_parent() != 0)vector = get_parent()->get_absolute_position(asker);
+        glm::vec3 parent_vector = glm::vec3(0, 0, 0);
+        if (get_parent() != 0)parent_vector = get_parent()->get_absolute_position(asker);
 
         // Move the vector
         glm::vec3 position = get_position();
         if (get_parent() != 0)
         {
-            position = rotate_vector(position, get_parent()->get_absolute_plan_rotation(), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), false, get_id());
+            position *= get_parent()->absolute_scale();
+            // position = rotate_vector(position, get_parent()->get_absolute_plan_rotation(), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1), false, get_id());
         }
         local_vector += position;
 
@@ -366,7 +367,7 @@ namespace scls {
         glm::vec3 final_anchor = rotated_vector - anchor;
         local_vector += final_anchor; //*/
 
-        return vector + local_vector;
+        return parent_vector + local_vector;
     }
 
     // Apply to a child matrix the parent rotation model
@@ -446,7 +447,8 @@ namespace scls {
         glm::mat4 matrix = glm::mat4(1.0f);
 
         // Move matrix
-        matrix = apply_parent_position_model_matrix(matrix);
+        matrix = glm::translate(matrix, get_absolute_position());
+        // matrix = apply_parent_position_model_matrix(matrix);
 
         // Rotate matrix from the plan
         glm::vec3 rotation = get_absolute_plan_rotation(true);
@@ -460,7 +462,7 @@ namespace scls {
         matrix = glm::rotate(matrix, glm::radians(rotation[2]), glm::vec3(0, 0, 1));
 
         // Scale matrix
-        matrix = glm::scale(matrix, get_scale());
+        matrix = glm::scale(matrix, absolute_scale());
 
         return matrix;
     }

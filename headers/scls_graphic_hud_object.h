@@ -1,6 +1,6 @@
 //******************
 //
-// scls_graphic_gui_object.h
+// scls_graphic_hud_object.h
 //
 //******************
 // Presentation :
@@ -12,6 +12,34 @@
 // It is named after the Mandelbrot fractal discoverer, Benoit Mandelbrot.
 //
 // This file contains some basics GUI built-in elements.
+//
+//******************
+// The HUD Transformation system :
+//
+// To do a good transformation with the HUD system, there is a precise method to do it.
+// The idea is to consider a real transformation system used in the lower tier of the library, and add a lot of various way to handle it.
+// Each ways to handle it take a different differencial.
+//
+// For the main window, here the used referencials :
+// - The direct window referencial :
+//   The lowest tier transformation way, where the coordonate system always start at the bottom left at (-1;-1) and end at the top right at (1;1) in the main graphic window.
+//   In this referencial, (0, 0) represent the middle of the window.
+//   This is the referencial used by OpenGL at the lowest tier of the drawing.
+// - The window referencial :
+//   The second lowest tier transformation way, where the height of the window is always 1, but the width of the window is the ratio width / height of the window.
+//   In this referencial, (0, 0) represent the middle of the window.
+// - The pixel window referencial :
+//   The simplest window referencial, where the height of the window is its width in pixel, and the height of the window is its height in pixel.
+//   In this referencial, (0, 0) represent the bottom left of the window.
+//
+// For an object in the window, it's a little more complicated.
+// Here the used referencials :
+// - The direct referencial
+//   The lowest tier transformation way, where the coordonate system always start at the bottom left at (-1;-1) and end at the top right at (1;1) in the object.
+//   For using it, the scale (1, 1) correspond to its full parent and its position (0;0) is the middle of its parent.
+// - The object referencial
+//   The second lowest tier transformation way, where the height of the object is always 1, but the width of the object is the ratio width / height of the texture of the object.
+//   For using it, its position (0;0) is the middle of its parent.
 //
 
 #ifndef SCLS_GRAPHIC_GUI_OBJECT
@@ -35,8 +63,8 @@ namespace scls {
         //
         //*********
 
-        // HUD_Object most basic constructor
-        HUD_Object(_Window_Advanced_Struct* window_struct);
+        // Most parent HUD_Object constructor used for displaying
+        HUD_Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_object, std::string name, std::string texture_name, std::string vao_name = "hud_default");
         // HUD_Object constructor used for displaying
         HUD_Object(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name = "hud_default");
         // HUD_Object destructor
@@ -80,6 +108,7 @@ namespace scls {
         inline unsigned long overflighted_cursor() {return a_overflighted_cursor;};
         inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
         inline void set_border_width(double new_border_width) {a_border_width = glm::vec4(new_border_width, new_border_width, new_border_width, new_border_width);};
+        virtual void set_normalized_scale(glm::vec2 new_scale) {new_scale[0] = new_scale[0] / (texture_ratio() / window_struct()->window_ratio());set_scale(glm::vec3(new_scale[0], new_scale[1], 1));};
         inline void set_is_overflighted(bool new_is_overflighted) {a_is_overflighted = new_is_overflighted;};
         inline void set_overflighted_cursor(unsigned long new_overflighted_cursor) {a_overflighted_cursor = new_overflighted_cursor;};
         inline void set_texture_rect(glm::vec4 new_texture_rect) {a_texture_rect = new_texture_rect;};
@@ -113,8 +142,8 @@ namespace scls {
         //
         //*********
 
-        // HUD_Text most basic constructor
-        HUD_Text(_Window_Advanced_Struct* window_struct);
+        // Most parent HUD_Object constructor used for displaying
+        HUD_Text(_Window_Advanced_Struct* window_struct, Transform_Object* transform_object, std::string name, std::string texture_name, std::string vao_name = "hud_default");
         // HUD_Text constructor used for displaying
         HUD_Text(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name = "hud_default");
         // HUD_Text destructor

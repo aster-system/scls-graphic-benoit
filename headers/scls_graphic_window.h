@@ -83,6 +83,19 @@ namespace scls {
 
         //*********
         //
+        // _Page transform system
+        //
+        //*********
+
+        // Change the position of the page
+        inline void set_position(glm::vec2 new_position) {a_transform->set_position(glm::vec3(new_position[0], new_position[1], 0));};
+        // Change the scale of the page
+        inline void set_scale(double new_scale) {a_transform->set_scale(glm::vec3(new_scale, new_scale, new_scale));};
+        // Change the scale of the page
+        inline void set_scale(glm::vec2 new_scale) {a_transform->set_scale(glm::vec3(new_scale[0], new_scale[1], 1));};
+
+        //*********
+        //
         // Window page handling
         //
         //*********
@@ -122,6 +135,8 @@ namespace scls {
         std::map<std::string, Object*> a_objects = std::map<std::string, Object*>();
         // Name of the page
         std::string a_name = "";
+        // Transform of the page
+        Transform_Object* a_transform = 0;
         // Pointer to the window struct
         _Window_Advanced_Struct* a_window_struct = 0;
     };
@@ -300,7 +315,13 @@ namespace scls {
             window_struct()->new_texture(object_texture);
         }
 
-        O* object = new O(window_struct(), parent, object_name, object_texture);
+        O* object = 0;
+        if(parent == 0) {
+            object = new O(window_struct(), a_transform, object_name, object_texture);
+        }
+        else {
+            object = new O(window_struct(), parent, object_name, object_texture);
+        }
         objects()[object_name] = object;
 
         if(parent == 0) {

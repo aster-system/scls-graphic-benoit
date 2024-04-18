@@ -30,7 +30,9 @@ namespace scls {
         //*********
 
         // Object most basic constructor
-        Object(_Window_Advanced_Struct* window_struct);
+        Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent);
+        // Most parent Object constructor used for displaying
+        Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name = "hud_default");
         // Object constructor used for displaying
         Object(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name = "hud_default");
         // Object destructor
@@ -101,6 +103,7 @@ namespace scls {
         //*********
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
+        virtual void set_normalized_scale(glm::vec3 new_scale) {set_scale(new_scale);};
         virtual void set_scale(double new_scale) {transform()->set_scale(glm::vec3(new_scale, new_scale, new_scale));};
         virtual void set_scale(glm::vec3 new_scale) {transform()->set_scale(new_scale);};
     protected:

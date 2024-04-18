@@ -81,7 +81,7 @@ namespace scls {
         ~Transform_Object(); // Transform_Object destructor
 
         // Getters
-        inline glm::vec3 absolute_scale() {if(get_parent() == 0) return get_scale();return get_scale() * get_parent()->get_scale();};
+        inline glm::vec3 absolute_scale() {if(get_parent() == 0) return get_scale();return get_scale() * get_parent()->absolute_scale();};
         inline glm::vec3 get_absolute_plan_rotation(bool use_rotation_multiplier = false){
             if (get_parent() != 0)
             {
