@@ -39,6 +39,7 @@
 //   For using it, the scale (1, 1) correspond to its full parent and its position (0;0) is the middle of its parent.
 // - The object referencial
 //   The second lowest tier transformation way, where the height of the object is always 1, but the width of the object is the ratio width / height of the texture of the object.
+//   To be adapted with the direct referencial, the width should be divided with the absolute witdh of the parent, then multiplied by the scale.
 //   For using it, its position (0;0) is the middle of its parent.
 //
 
@@ -80,11 +81,11 @@ namespace scls {
         virtual void soft_reset() {Object::soft_reset();set_is_overflighted(false);};
 
         // Pixel size handler
-        inline unsigned int absolute_hud_x_in_pixel() {double absolute_x = (1.0 + transform()->get_absolute_position()[0]) / 2.0; return static_cast<double>(window_struct()->window_width() / window_struct()->window_ratio()) * absolute_x - static_cast<double>(width_in_pixel()) / 2.0;};
-        inline unsigned int absolute_x_in_pixel() {double absolute_x = (1.0 + transform()->get_absolute_position()[0]) / 2.0; return static_cast<double>(window_struct()->window_width() / window_struct()->window_ratio()) * absolute_x;};
+        inline unsigned int absolute_hud_x_in_pixel() {double absolute_x = (1.0 + transform()->get_absolute_position()[0]) / 2.0; return static_cast<double>(window_struct()->window_width()) * absolute_x - static_cast<double>(width_in_pixel()) / 2.0;};
+        inline unsigned int absolute_x_in_pixel() {double absolute_x = (1.0 + transform()->get_absolute_position()[0]) / 2.0; return static_cast<double>(window_struct()->window_width()) * absolute_x;};
         inline unsigned int absolute_hud_y_in_pixel() {double absolute_y = (1.0 + transform()->get_absolute_position()[1]) / 2.0; return (static_cast<double>(window_struct()->window_height()) * absolute_y) - static_cast<double>(height_in_pixel()) / 2.0;};
         inline unsigned int absolute_y_in_pixel() {double absolute_y = (1.0 + transform()->get_absolute_position()[1]) / 2.0; return static_cast<double>(window_struct()->window_height()) * absolute_y;};
-        inline unsigned int height_in_pixel() {double absolute_height = transform()->absolute_scale()[1]/2.0;return absolute_height * static_cast<double>(window_struct()->window_height());};
+        inline unsigned int height_in_pixel() {double absolute_height = absolute_object_scale()[1]/2.0;return absolute_height * static_cast<double>(window_struct()->window_height());};
         inline bool is_in_pixel(unsigned int x, unsigned int y) {return x > absolute_hud_x_in_pixel() && y > absolute_hud_y_in_pixel() && x < absolute_hud_x_in_pixel() + width_in_pixel() && y < absolute_hud_y_in_pixel() + height_in_pixel();};
         inline void set_width_in_pixel(unsigned int width) {
             double absolute_width = width / static_cast<double>(window_struct()->window_width());
@@ -93,10 +94,12 @@ namespace scls {
             set_scale(final_width / texture_ratio());
         };
         inline glm::vec2 size_in_pixel() {return glm::vec2(width_in_pixel(), height_in_pixel());};
-        inline unsigned int width_in_pixel() {double absolute_width = (transform()->absolute_scale()[0]/2.0)*texture_ratio();return absolute_width * (static_cast<double>(window_struct()->window_width()) / window_struct()->window_ratio());};
+        inline unsigned int width_in_pixel() {double absolute_width = (absolute_object_scale()[0]/2.0);return absolute_width * static_cast<double>(window_struct()->window_width());};
 
         // Getters and setters (ONLY WITHOUT ATRIBUTES)
+        inline glm::vec2 absolute_object_scale() {double absolute_width = static_cast<double>(window_struct()->window_ratio());if(parent_hud() != 0)absolute_width *= parent_hud()->absolute_scale_ratio();double new_width = absolute_scale()[1] * (texture_ratio() / absolute_width);return glm::vec2(new_width, absolute_scale()[1]);};
         inline glm::vec2 absolute_scale() {return transform()->absolute_scale();};
+        inline double absolute_scale_ratio() {return absolute_scale()[0] / absolute_scale()[1];};
         inline HUD_Object* parent_hud() {if(parent() == 0 || parent()->type(1) != SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME)return 0;return reinterpret_cast<HUD_Object*>(parent());};
 
         // Getters and setters (ONLY WITH ATRIBUTES)
@@ -108,7 +111,8 @@ namespace scls {
         inline unsigned long overflighted_cursor() {return a_overflighted_cursor;};
         inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
         inline void set_border_width(double new_border_width) {a_border_width = glm::vec4(new_border_width, new_border_width, new_border_width, new_border_width);};
-        virtual void set_normalized_scale(glm::vec2 new_scale) {new_scale[0] = new_scale[0] / (texture_ratio() / window_struct()->window_ratio());set_scale(glm::vec3(new_scale[0], new_scale[1], 1));};
+        virtual void set_object_scale(double new_scale) {double absolute_width = static_cast<double>(window_struct()->window_ratio());if(parent_hud() != 0)absolute_width *= parent_hud()->absolute_scale_ratio();double new_width = new_scale * (texture_ratio() / absolute_width);set_scale(glm::vec3(new_width, new_scale, 1));};
+        virtual void set_object_scale(glm::vec2 new_scale) {double absolute_width = static_cast<double>(window_struct()->window_ratio());if(parent_hud() != 0)absolute_width *= parent_hud()->absolute_scale_ratio();new_scale[0] = new_scale[0] * (texture_ratio() / absolute_width);set_scale(glm::vec3(new_scale[0], new_scale[1], 1));};
         inline void set_is_overflighted(bool new_is_overflighted) {a_is_overflighted = new_is_overflighted;};
         inline void set_overflighted_cursor(unsigned long new_overflighted_cursor) {a_overflighted_cursor = new_overflighted_cursor;};
         inline void set_texture_rect(glm::vec4 new_texture_rect) {a_texture_rect = new_texture_rect;};
@@ -153,6 +157,10 @@ namespace scls {
         virtual void update();
         // Update the text texture
         void update_text_texture();
+
+        // Getters and setters (ONLY WITHOUT ATTRIBUTES)
+        virtual void set_object_scale(double new_scale) {update_text_texture();HUD_Object::set_object_scale(new_scale);};
+        virtual void set_object_scale(glm::vec2 new_scale) {update_text_texture();HUD_Object::set_object_scale(new_scale);};
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline Color font_color() {return a_font_color;};

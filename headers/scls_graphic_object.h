@@ -103,9 +103,8 @@ namespace scls {
         //*********
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
-        virtual void set_normalized_scale(glm::vec3 new_scale) {set_scale(new_scale);};
-        virtual void set_scale(double new_scale) {transform()->set_scale(glm::vec3(new_scale, new_scale, new_scale));};
-        virtual void set_scale(glm::vec3 new_scale) {transform()->set_scale(new_scale);};
+        void set_scale(double new_scale) {transform()->set_scale(glm::vec3(new_scale, new_scale, new_scale));};
+        void set_scale(glm::vec3 new_scale) {transform()->set_scale(new_scale);};
     protected:
         // Basic object descriptor
         // Type of the object

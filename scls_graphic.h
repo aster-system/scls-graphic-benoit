@@ -17,6 +17,6 @@
 #ifndef SCLS_GRAPHIC
 #define SCLS_GRAPHIC
 
-#include "headers/scls_graphic_gui_object.h"
+#include "headers/scls_graphic_hud_object.h"
 
 #endif // SCLS_GRAPHIC

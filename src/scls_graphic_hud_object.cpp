@@ -14,7 +14,7 @@
 // This file contains the code in scls_graphic_gui_object.h
 //
 
-#include "../headers/scls_graphic_gui_object.h"
+#include "../headers/scls_graphic_hud_object.h"
 
 // Using of the "scls" namespace to simplify the programmation
 namespace scls {
@@ -38,10 +38,6 @@ namespace scls {
     void HUD_Object::render() {
         // Create the upgraded matrix
         glm::mat4 matrix = transform()->get_model_matrix();
-        // Apply the scale according to the texture
-        double width_multiplicator = texture_ratio() / window_struct()->window_ratio();
-        if(transform()->get_parent() != 0) width_multiplicator /= transform()->get_parent()->get_scale()[0] / transform()->get_parent()->get_scale()[0];
-        matrix = glm::scale(matrix, glm::vec3(width_multiplicator, 1, 1));
 
         vao()->get_shader_program()->set_uniform4f_value("background_color", glm::vec4(background_color().red() / 255.0, background_color().green() / 255.0, background_color().blue() / 255.0, background_color().alpha() / 255.0));
         vao()->get_shader_program()->set_uniform4f_value("border_color", glm::vec4(0, 0, 0, 1));

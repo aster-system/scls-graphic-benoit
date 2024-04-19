@@ -75,14 +75,14 @@ namespace detroit {
         welcome_page_start->set_font_family("consolab");
         welcome_page_start->set_font_size(100);
         welcome_page_start->set_overflighted_cursor(GLFW_HAND_CURSOR);
-        welcome_page_start->set_scale(0.1);
         welcome_page_start->set_text("Start");
         welcome_page_start->set_text_offset(0.2);
+        welcome_page_start->set_object_scale(0.1);
         welcome_page_start->transform()->set_position(glm::vec3(0, -0.1, 0.5));
         // Configure the flags
-        welcome_page_uk_flag->set_scale(0.175);
+        welcome_page_uk_flag->set_object_scale(0.175);
         welcome_page_uk_flag->transform()->set_position(glm::vec3(-0.25, 0.125, 0.5));
-        welcome_page_usa_flag->set_scale(0.175);
+        welcome_page_usa_flag->set_object_scale(0.175);
         welcome_page_usa_flag->transform()->set_position(glm::vec3(0.25, 0.125, 0.5));
         // Configure the title
         welcome_page_title->set_background_color(scls::Color(255, 255, 255, 185));
@@ -90,9 +90,9 @@ namespace detroit {
         welcome_page_title->set_font_color(scls::black);
         welcome_page_title->set_font_family("consolab");
         welcome_page_title->set_font_size(150);
-        welcome_page_title->set_scale(0.15);
         welcome_page_title->set_text("Detroit");
         welcome_page_title->set_text_offset(0.2);
+        welcome_page_title->set_object_scale(0.15);
         welcome_page_title->transform()->set_position(glm::vec3(0, 0.325, 0.5));
 
         // Create and configure the navigation page
@@ -103,14 +103,15 @@ namespace detroit {
         scls::HUD_Object* navigation_page_background = navigation_page->new_object<scls::HUD_Object>("navigation_page_background", 0, "blue");
         scls::HUD_Text* navigation_page_big_map_button = navigation_page->new_object<scls::HUD_Text>("navigation_page_big_map_button", navigation_page_background);
         // Configure each objects
-        navigation_page_background->set_normalized_scale(glm::vec2(1, 1));
-        navigation_page_big_map_button->set_scale(0.1);
-        navigation_page_big_map_button->set_text("USA");
+        navigation_page_background->set_scale(1);
+        navigation_page_big_map_button->set_font_size(100);
+        navigation_page_big_map_button->set_text("USA Map");
+        navigation_page_big_map_button->set_object_scale(0.035);
 
         // Create and configure the big_map page
         scls::HUD_Page* big_map_page = window()->new_page<scls::HUD_Page>("big_map");
         big_map_page->set_position(glm::vec2(2.0/9.0, 2.0/9.0));
-        big_map_page->set_scale(2 * (7.0 / 9.0));
+        big_map_page->set_scale(2.0 * (7.0 / 9.0));
         // Create each objects
         scls::HUD_Object* big_map_page_background = big_map_page->new_object<scls::HUD_Object>("big_map_page_background", 0, "big_usa_map");
         scls::HUD_Text* big_map_page_detroit_title = big_map_page->new_object<scls::HUD_Text>("big_map_page_detroit_title", big_map_page_background);
@@ -118,11 +119,11 @@ namespace detroit {
         // Configure each objects
         big_map_page_detroit_title->set_font_family("consolab");
         big_map_page_detroit_title->set_font_size(100);
-        big_map_page_detroit_title->set_scale(0.025);
         big_map_page_detroit_title->set_text("Detroit");
+        big_map_page_detroit_title->set_object_scale(0.025);
         big_map_page_detroit_title->transform()->set_position(glm::vec3(0.1025, 0.0125, 0));
         big_map_page_point->transform()->set_position(glm::vec3(0.1025, -0.0175, 0));
-        big_map_page_point->set_scale(0.0125);
+        big_map_page_point->set_object_scale(0.0125);
     }
 
     // Set the big map page in the object
