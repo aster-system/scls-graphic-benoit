@@ -32,11 +32,11 @@ namespace detroit {
         window()->update_event();
         window()->update();
 
-        if(current_presentation_state() == 0) {
-            if(welcome_page_start->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
-                a_current_presentation_state++;
-                set_big_map_page();
-            }
+        if(welcome_page_start->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT) || navigation_page_big_map_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+            set_big_map_page();
+        }
+        else if(navigation_page_detroit_map_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+            set_detroit_map_page();
         }
 
         window()->render();
@@ -56,6 +56,7 @@ namespace detroit {
         window()->new_texture("usa_flag", "assets/textures/detroit/usa_flag.png", false);
         window()->new_texture("big_usa_map", "assets/textures/detroit/big_usa_map.png", false);
         window()->new_texture("blue", 5, 5, scls::Color(102, 102, 255));
+        window()->new_texture("detroit_map", "assets/textures/detroit/detroit_map.png", false);
         window()->new_texture("red", 5, 5, scls::red);
 
         // Create and configure the welcome_page page
@@ -100,13 +101,21 @@ namespace detroit {
         navigation_page->set_position(glm::vec2(-7.0/9.0, 0));
         navigation_page->set_scale(glm::vec2(4.0/9.0, 2.0));
         // Create each objects
-        scls::HUD_Object* navigation_page_background = navigation_page->new_object<scls::HUD_Object>("navigation_page_background", 0, "blue");
-        scls::HUD_Text* navigation_page_big_map_button = navigation_page->new_object<scls::HUD_Text>("navigation_page_big_map_button", navigation_page_background);
+        navigation_page_background = navigation_page->new_object<scls::HUD_Object>("navigation_page_background", 0, "blue");
+        navigation_page_big_map_button = navigation_page->new_object<scls::HUD_Text>("navigation_page_big_map_button", navigation_page_background);
+        navigation_page_detroit_map_button = navigation_page->new_object<scls::HUD_Text>("navigation_page_detroit_map_button", navigation_page_background);
         // Configure each objects
         navigation_page_background->set_scale(1);
         navigation_page_big_map_button->set_font_size(100);
+        navigation_page_big_map_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
         navigation_page_big_map_button->set_text("USA Map");
         navigation_page_big_map_button->set_object_scale(0.035);
+        navigation_page_big_map_button->transform()->set_position(glm::vec3(0, 0.03, 0));
+        navigation_page_detroit_map_button->set_font_size(100);
+        navigation_page_detroit_map_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        navigation_page_detroit_map_button->set_text("Detroit Map");
+        navigation_page_detroit_map_button->set_object_scale(0.025);
+        navigation_page_detroit_map_button->transform()->set_position(glm::vec3(0, -0.03, 0));
 
         // Create and configure the big_map page
         scls::HUD_Page* big_map_page = window()->new_page<scls::HUD_Page>("big_map");
@@ -124,6 +133,15 @@ namespace detroit {
         big_map_page_detroit_title->transform()->set_position(glm::vec3(0.1025, 0.0125, 0));
         big_map_page_point->transform()->set_position(glm::vec3(0.1025, -0.0175, 0));
         big_map_page_point->set_object_scale(0.0125);
+
+        // Create and configure the detroit_map page
+        scls::HUD_Page* detroit_map_page = window()->new_page<scls::HUD_Page>("detroit_map");
+        detroit_map_page->set_position(glm::vec2(2.0/9.0, 2.0/9.0));
+        detroit_map_page->set_scale(2.0 * (7.0 / 9.0));
+        // Create each objects
+        scls::HUD_Object* detroit_map_page_background = detroit_map_page->new_object<scls::HUD_Object>("detroit_map_page_background", 0, "detroit_map");
+        // Configure each objects
+
     }
 
     // Set the big map page in the object
@@ -139,6 +157,14 @@ namespace detroit {
         // Set the current page to the welcome page
         window()->hide_all_pages();
         window()->display_page("welcome");
+    }
+
+    // Set the detroit map page in the object
+    void Detroit::set_detroit_map_page() {
+        // Set the current page to the big map page
+        window()->hide_all_pages();
+        window()->display_page("detroit_map");
+        window()->display_page("navigation");
     }
 
     // Create a simple Detroit window

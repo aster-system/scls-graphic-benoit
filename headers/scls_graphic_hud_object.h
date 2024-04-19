@@ -94,7 +94,7 @@ namespace scls {
             set_scale(final_width / texture_ratio());
         };
         inline glm::vec2 size_in_pixel() {return glm::vec2(width_in_pixel(), height_in_pixel());};
-        inline unsigned int width_in_pixel() {double absolute_width = (absolute_object_scale()[0]/2.0);return absolute_width * static_cast<double>(window_struct()->window_width());};
+        inline unsigned int width_in_pixel() {double absolute_width = (absolute_scale()[0]/2.0);return absolute_width * static_cast<double>(window_struct()->window_width());};
 
         // Getters and setters (ONLY WITHOUT ATRIBUTES)
         inline glm::vec2 absolute_object_scale() {double absolute_width = static_cast<double>(window_struct()->window_ratio());if(parent_hud() != 0)absolute_width *= parent_hud()->absolute_scale_ratio();double new_width = absolute_scale()[1] * (texture_ratio() / absolute_width);return glm::vec2(new_width, absolute_scale()[1]);};
@@ -210,6 +210,15 @@ namespace scls {
         // HUD_Page destructor
         virtual ~HUD_Page();
 
+        // Function called when the page is unload
+        virtual void unload_page() {
+            _Page::unload_page();
+            // Soft reset the page
+            soft_reset();
+
+            // Check the overflighted cursor
+            a_overflighted_object = 0;
+        };
         // Update the event of the page
         virtual void update_event();
 

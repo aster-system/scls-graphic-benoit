@@ -127,14 +127,13 @@ namespace scls {
         }
 
         // Update the cursor texture
-        if(current_overflighted_object == 0) {
-            window_struct()->set_cursor(glfwCreateStandardCursor(0));
-        }
-        else if(a_overflighted_object != current_overflighted_object) {
+        if(a_overflighted_object != current_overflighted_object && current_overflighted_object != 0) {
             window_struct()->set_cursor(glfwCreateStandardCursor(current_overflighted_object->overflighted_cursor()));
         }
         a_overflighted_object = current_overflighted_object;
-        if(a_overflighted_object != 0)a_overflighted_object->set_is_overflighted(true);
+        if(a_overflighted_object != 0) {
+            a_overflighted_object->set_is_overflighted(true);
+        }
     }
 
     // HUD_Page destructor

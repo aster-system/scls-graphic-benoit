@@ -36,6 +36,8 @@ namespace detroit {
         void load_pages();
         // Set the big map page in the object
         void set_big_map_page();
+        // Set the detroit map page in the object
+        void set_detroit_map_page();
         // Set the welcome page in the object
         void set_welcome_page();
 
@@ -60,6 +62,10 @@ namespace detroit {
         scls::HUD_Object* welcome_page_uk_flag = 0;
         scls::HUD_Object* welcome_page_usa_flag = 0;
         scls::HUD_Text* welcome_page_title = 0;
+        // Create and configure the navigation map
+        scls::HUD_Object* navigation_page_background = 0;
+        scls::HUD_Text* navigation_page_big_map_button = 0;
+        scls::HUD_Text* navigation_page_detroit_map_button = 0;
     };
 
     // Create a simple Detroit window

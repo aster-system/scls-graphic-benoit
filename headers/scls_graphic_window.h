@@ -76,6 +76,8 @@ namespace scls {
         virtual void render();
         // Soft reset the page
         virtual void soft_reset();
+        // Function called when the page is unload
+        virtual void unload_page() {};
         // Update the page
         virtual void update();
         // Update the event of the page
@@ -222,6 +224,9 @@ namespace scls {
             else if(!contains_displayed_page(new_page)) displayed_pages_names().push_back(new_page);
         };
         inline void hide_all_pages() {
+            for(int i = 0;i<static_cast<int>(displayed_pages_names().size());i++) {
+                pages()[displayed_pages_names()[i]]->unload_page();
+            }
             displayed_pages_names().clear();
         };
         inline _Page* page(std::string name) {
