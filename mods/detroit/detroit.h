@@ -40,6 +40,8 @@ namespace detroit {
         void set_detroit_history_page();
         // Set the detroit map page in the object
         void set_detroit_map_page();
+        // Set the video page in the object
+        void set_video_page();
         // Set the welcome page in the object
         void set_welcome_page();
 
@@ -69,6 +71,7 @@ namespace detroit {
         scls::HUD_Text* navigation_page_big_map_button = 0;
         scls::HUD_Text* navigation_page_detroit_history_button = 0;
         scls::HUD_Text* navigation_page_detroit_map_button = 0;
+        scls::HUD_Text* navigation_page_video_button = 0;
     };
 
     // Create a simple Detroit window

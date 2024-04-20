@@ -41,6 +41,9 @@ namespace detroit {
         else if(navigation_page_detroit_history_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
             set_detroit_history_page();
         }
+        else if(navigation_page_video_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+            set_video_page();
+        }
 
         window()->render();
     }
@@ -54,13 +57,15 @@ namespace detroit {
     // Load each pages in the object the object
     void Detroit::load_pages() {
         // Load the needed textures
-        window()->new_texture("welcome_page_background", "assets/textures/detroit/welcome_page_background.png", false);
-        window()->new_texture("uk_flag", "assets/textures/detroit/uk_flag.png", false);
-        window()->new_texture("usa_flag", "assets/textures/detroit/usa_flag.png", false);
         window()->new_texture("big_usa_map", "assets/textures/detroit/big_usa_map.png", false);
         window()->new_texture("blue", 5, 5, scls::Color(102, 102, 255));
         window()->new_texture("detroit_map", "assets/textures/detroit/detroit_map.png", false);
+        window()->new_texture("devita_davison", "assets/textures/detroit/devita_davison.png", false);
         window()->new_texture("red", 5, 5, scls::red);
+        window()->new_texture("ted_logo", "assets/textures/detroit/ted_logo.png", false);
+        window()->new_texture("uk_flag", "assets/textures/detroit/uk_flag.png", false);
+        window()->new_texture("usa_flag", "assets/textures/detroit/usa_flag.png", false);
+        window()->new_texture("welcome_page_background", "assets/textures/detroit/welcome_page_background.png", false);
 
         // Create and configure the welcome_page page
         welcome_page = window()->new_page<scls::HUD_Page>("welcome");
@@ -110,6 +115,7 @@ namespace detroit {
         navigation_page_big_map_button = navigation_page->new_object<scls::HUD_Text>("navigation_page_big_map_button", navigation_page_background);
         navigation_page_detroit_history_button = navigation_page->new_object<scls::HUD_Text>("navigation_page_detroit_history_button", navigation_page_background);
         navigation_page_detroit_map_button = navigation_page->new_object<scls::HUD_Text>("navigation_page_detroit_map_button", navigation_page_background);
+        navigation_page_video_button = navigation_page->new_object<scls::HUD_Text>("navigation_page_video_button", navigation_page_background);
         // Configure each objects
         navigation_page_background->set_scale(1);
         navigation_page_big_map_button->set_font_size(100);
@@ -127,6 +133,11 @@ namespace detroit {
         navigation_page_detroit_map_button->set_text("Detroit Map");
         navigation_page_detroit_map_button->set_object_scale(0.025);
         navigation_page_detroit_map_button->transform()->set_position(glm::vec3(0, button_y, 0)); button_y -= button_separation;
+        navigation_page_video_button->set_font_size(100);
+        navigation_page_video_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        navigation_page_video_button->set_text("Video");
+        navigation_page_video_button->set_object_scale(0.035);
+        navigation_page_video_button->transform()->set_position(glm::vec3(0, button_y, 0)); button_y -= button_separation;
 
         // Create and configure the big_map page
         scls::HUD_Page* big_map_page = window()->new_page<scls::HUD_Page>("big_map");
@@ -164,6 +175,41 @@ namespace detroit {
         scls::HUD_Object* detroit_map_page_background = detroit_map_page->new_object<scls::HUD_Object>("detroit_map_page_background", 0, "detroit_map");
         // Configure each objects
 
+        // Create and configure the video page
+        scls::HUD_Page* video_page = window()->new_page<scls::HUD_Page>("video");
+        video_page->set_position(glm::vec2(2.0/9.0, 2.0/9.0));
+        video_page->set_scale(2.0 * (7.0 / 9.0));
+        // Create each objects
+        scls::HUD_Object* video_page_background = video_page->new_object<scls::HUD_Object>("video_page_background", 0, "white");
+        scls::HUD_Object* video_page_devita_davison = video_page->new_object<scls::HUD_Object>("video_page_devita_davison", video_page_background, "devita_davison");
+        scls::HUD_Text* video_page_devita_davison_description = video_page->new_object<scls::HUD_Text>("video_page_devita_davison_description", video_page_background);
+        scls::HUD_Text* video_page_devita_davison_name = video_page->new_object<scls::HUD_Text>("video_page_devita_davison_name", video_page_background);
+        scls::HUD_Object* video_page_ted_logo = video_page->new_object<scls::HUD_Object>("video_page_ted_logo", video_page_background, "ted_logo");
+        scls::HUD_Text* video_page_ted_tagline = video_page->new_object<scls::HUD_Text>("video_page_ted_tagline", video_page_background);
+        scls::HUD_Object* video_page_top_separation = video_page->new_object<scls::HUD_Object>("video_page_top_separation", video_page_background, "black");
+        // Configure each objects
+        video_page_background->set_border_width(0.01);
+        video_page_devita_davison->set_object_scale(0.25);
+        video_page_devita_davison->transform()->set_position(glm::vec3(0.25, 0.3, 0));
+        video_page_devita_davison_description->set_font_family("consolab");
+        video_page_devita_davison_description->set_font_size(100);
+        video_page_devita_davison_description->set_text("\"FoodLab Detroit founder\"");
+        video_page_devita_davison_description->set_object_scale(0.025);
+        video_page_devita_davison_description->transform()->set_position(glm::vec3(0.25, 0.1, 0));
+        video_page_devita_davison_name->set_font_family("consolab");
+        video_page_devita_davison_name->set_font_size(100);
+        video_page_devita_davison_name->set_text("Devita Davison");
+        video_page_devita_davison_name->set_object_scale(0.035);
+        video_page_devita_davison_name->transform()->set_position(glm::vec3(0.25, 0.15, 0));
+        video_page_ted_logo->set_object_scale(0.15);
+        video_page_ted_logo->transform()->set_position(glm::vec3(-0.25, 0.3, 0));
+        video_page_ted_tagline->set_font_family("consolab");
+        video_page_ted_tagline->set_font_size(100);
+        video_page_ted_tagline->set_text("\"Ideas Change Everything.\"");
+        video_page_ted_tagline->set_object_scale(0.035);
+        video_page_ted_tagline->transform()->set_position(glm::vec3(-0.25, 0.2, 0));
+        video_page_top_separation->set_scale(glm::vec3(0.01, 0.3, 1));
+        video_page_top_separation->transform()->set_position(glm::vec3(0.02, 0.25, 0));
     }
 
     // Set the big map page in the object
@@ -172,13 +218,6 @@ namespace detroit {
         window()->hide_all_pages();
         window()->display_page("big_map");
         window()->display_page("navigation");
-    }
-
-    // Set a page in the object
-    void Detroit::set_welcome_page() {
-        // Set the current page to the welcome page
-        window()->hide_all_pages();
-        window()->display_page("welcome");
     }
 
     // Set the detroit history page in the object
@@ -195,6 +234,21 @@ namespace detroit {
         window()->hide_all_pages();
         window()->display_page("detroit_map");
         window()->display_page("navigation");
+    }
+
+    // Set the video page in the object
+    void Detroit::set_video_page() {
+        // Set the current page to the detroit map page
+        window()->hide_all_pages();
+        window()->display_page("video");
+        window()->display_page("navigation");
+    }
+
+    // Set a page in the object
+    void Detroit::set_welcome_page() {
+        // Set the current page to the welcome page
+        window()->hide_all_pages();
+        window()->display_page("welcome");
     }
 
     // Create a simple Detroit window
