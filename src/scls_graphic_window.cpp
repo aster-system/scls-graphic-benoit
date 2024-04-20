@@ -89,8 +89,8 @@ namespace scls {
 
     // Render the page
     void _Page::render() {
-        for(std::map<std::string, Object*>::iterator it = objects().begin();it!=objects().end();it++) {
-            Object* ob = it->second;
+        for(int i = 0;i<static_cast<int>(children().size());i++) {
+            Object* ob = children()[i];
             if(ob->visible()) {
                 ob->render();
             }

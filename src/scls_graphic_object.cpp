@@ -75,6 +75,13 @@ namespace scls {
         {
             vao()->render(); // Render the object without scaling
         }
+
+        for(int i = 0;i<static_cast<int>(children().size());i++) {
+            Object* ob = children()[i];
+            if(ob->visible()) {
+                ob->render();
+            }
+        }
     }
 
     // Render the object on the window

@@ -34,6 +34,7 @@ namespace scls {
         a_shaders_programs["hud_default"] = Shader_Program(Shader_Program::HUD_Default);
 
         // Create a base texture
+        textures()["black"] = new Texture(5, 5, glm::vec4(0, 0, 0, 255));
         textures()["transparent"] = new Texture(5, 5, glm::vec4(0, 0, 0, 0));
         textures()["white"] = new Texture(5, 5, glm::vec4(255, 255, 255, 255));
 

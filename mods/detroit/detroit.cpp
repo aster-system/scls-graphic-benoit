@@ -38,6 +38,9 @@ namespace detroit {
         else if(navigation_page_detroit_map_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
             set_detroit_map_page();
         }
+        else if(navigation_page_detroit_history_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+            set_detroit_history_page();
+        }
 
         window()->render();
     }
@@ -97,12 +100,15 @@ namespace detroit {
         welcome_page_title->transform()->set_position(glm::vec3(0, 0.325, 0.5));
 
         // Create and configure the navigation page
+        double button_separation = 0.06;
+        double button_y = 0.06;
         scls::HUD_Page* navigation_page = window()->new_page<scls::HUD_Page>("navigation");
         navigation_page->set_position(glm::vec2(-7.0/9.0, 0));
         navigation_page->set_scale(glm::vec2(4.0/9.0, 2.0));
         // Create each objects
         navigation_page_background = navigation_page->new_object<scls::HUD_Object>("navigation_page_background", 0, "blue");
         navigation_page_big_map_button = navigation_page->new_object<scls::HUD_Text>("navigation_page_big_map_button", navigation_page_background);
+        navigation_page_detroit_history_button = navigation_page->new_object<scls::HUD_Text>("navigation_page_detroit_history_button", navigation_page_background);
         navigation_page_detroit_map_button = navigation_page->new_object<scls::HUD_Text>("navigation_page_detroit_map_button", navigation_page_background);
         // Configure each objects
         navigation_page_background->set_scale(1);
@@ -110,12 +116,17 @@ namespace detroit {
         navigation_page_big_map_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
         navigation_page_big_map_button->set_text("USA Map");
         navigation_page_big_map_button->set_object_scale(0.035);
-        navigation_page_big_map_button->transform()->set_position(glm::vec3(0, 0.03, 0));
+        navigation_page_big_map_button->transform()->set_position(glm::vec3(0, button_y, 0)); button_y -= button_separation;
+        navigation_page_detroit_history_button->set_font_size(100);
+        navigation_page_detroit_history_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        navigation_page_detroit_history_button->set_text("Detroit History");
+        navigation_page_detroit_history_button->set_object_scale(0.025);
+        navigation_page_detroit_history_button->transform()->set_position(glm::vec3(0, button_y, 0)); button_y -= button_separation;
         navigation_page_detroit_map_button->set_font_size(100);
         navigation_page_detroit_map_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
         navigation_page_detroit_map_button->set_text("Detroit Map");
         navigation_page_detroit_map_button->set_object_scale(0.025);
-        navigation_page_detroit_map_button->transform()->set_position(glm::vec3(0, -0.03, 0));
+        navigation_page_detroit_map_button->transform()->set_position(glm::vec3(0, button_y, 0)); button_y -= button_separation;
 
         // Create and configure the big_map page
         scls::HUD_Page* big_map_page = window()->new_page<scls::HUD_Page>("big_map");
@@ -133,6 +144,17 @@ namespace detroit {
         big_map_page_detroit_title->transform()->set_position(glm::vec3(0.1025, 0.0125, 0));
         big_map_page_point->transform()->set_position(glm::vec3(0.1025, -0.0175, 0));
         big_map_page_point->set_object_scale(0.0125);
+
+        // Create and configure the detroit_history page
+        scls::HUD_Page* detroit_history_page = window()->new_page<scls::HUD_Page>("detroit_history");
+        detroit_history_page->set_position(glm::vec2(2.0/9.0, 2.0/9.0));
+        detroit_history_page->set_scale(2.0 * (7.0 / 9.0));
+        // Create each objects
+        scls::HUD_Object* detroit_history_page_background = detroit_history_page->new_object<scls::HUD_Object>("detroit_history_page_background", 0, "black");
+        scls::HUD_Object* detroit_history_page_1950 = detroit_history_page->new_object<scls::HUD_Object>("detroit_history_page_1950", detroit_history_page_background, "uk_flag");
+        // Configure each objects
+        detroit_history_page_1950->set_scale(glm::vec3(0.5, 1.0, 1.0));
+        detroit_history_page_1950->transform()->set_position(glm::vec3(0.0, 0.0, 0));
 
         // Create and configure the detroit_map page
         scls::HUD_Page* detroit_map_page = window()->new_page<scls::HUD_Page>("detroit_map");
@@ -159,9 +181,17 @@ namespace detroit {
         window()->display_page("welcome");
     }
 
+    // Set the detroit history page in the object
+    void Detroit::set_detroit_history_page() {
+        // Set the current page to the detroit history page
+        window()->hide_all_pages();
+        window()->display_page("detroit_history");
+        window()->display_page("navigation");
+    }
+
     // Set the detroit map page in the object
     void Detroit::set_detroit_map_page() {
-        // Set the current page to the big map page
+        // Set the current page to the detroit map page
         window()->hide_all_pages();
         window()->display_page("detroit_map");
         window()->display_page("navigation");
