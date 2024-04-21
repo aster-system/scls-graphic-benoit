@@ -35,6 +35,9 @@ namespace detroit {
         if(welcome_page_start->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT) || navigation_page_big_map_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
             set_big_map_page();
         }
+        else if(navigation_page_detroit_farm_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+            set_detroit_farm_page();
+        }
         else if(navigation_page_detroit_map_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
             set_detroit_map_page();
         }
@@ -43,6 +46,12 @@ namespace detroit {
         }
         else if(navigation_page_video_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
             set_video_page();
+        }
+        else if(detroit_history_settings_page_number->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+            set_detroit_history_numbers();
+        }
+        else if(detroit_history_settings_page_statistic->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+            set_detroit_history_statistic();
         }
 
         window()->render();
@@ -65,6 +74,7 @@ namespace detroit {
         window()->new_texture("ted_logo", "assets/textures/detroit/ted_logo.png", false);
         window()->new_texture("uk_flag", "assets/textures/detroit/uk_flag.png", false);
         window()->new_texture("usa_flag", "assets/textures/detroit/usa_flag.png", false);
+        window()->new_texture("video_thumbnail", "assets/textures/detroit/video_thumbnail.png", false);
         window()->new_texture("welcome_page_background", "assets/textures/detroit/welcome_page_background.png", false);
 
         // Create and configure the welcome_page page
@@ -113,6 +123,7 @@ namespace detroit {
         // Create each objects
         navigation_page_background = navigation_page->new_object<scls::HUD_Object>("navigation_page_background", 0, "blue");
         navigation_page_big_map_button = navigation_page->new_object<scls::HUD_Text>("navigation_page_big_map_button", navigation_page_background);
+        navigation_page_detroit_farm_button = navigation_page->new_object<scls::HUD_Text>("navigation_page_detroit_farm_button", navigation_page_background);
         navigation_page_detroit_history_button = navigation_page->new_object<scls::HUD_Text>("navigation_page_detroit_history_button", navigation_page_background);
         navigation_page_detroit_map_button = navigation_page->new_object<scls::HUD_Text>("navigation_page_detroit_map_button", navigation_page_background);
         navigation_page_video_button = navigation_page->new_object<scls::HUD_Text>("navigation_page_video_button", navigation_page_background);
@@ -123,6 +134,11 @@ namespace detroit {
         navigation_page_big_map_button->set_text("USA Map");
         navigation_page_big_map_button->set_object_scale(0.035);
         navigation_page_big_map_button->transform()->set_position(glm::vec3(0, button_y, 0)); button_y -= button_separation;
+        navigation_page_detroit_farm_button->set_font_size(100);
+        navigation_page_detroit_farm_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        navigation_page_detroit_farm_button->set_text("Detroit Farm");
+        navigation_page_detroit_farm_button->set_object_scale(0.025);
+        navigation_page_detroit_farm_button->transform()->set_position(glm::vec3(0, button_y, 0)); button_y -= button_separation;
         navigation_page_detroit_history_button->set_font_size(100);
         navigation_page_detroit_history_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
         navigation_page_detroit_history_button->set_text("Detroit History");
@@ -156,16 +172,65 @@ namespace detroit {
         big_map_page_point->transform()->set_position(glm::vec3(0.1025, -0.0175, 0));
         big_map_page_point->set_object_scale(0.0125);
 
+        // Create and configure the detroit_history page settings
+        scls::HUD_Page* detroit_history_settings_page = window()->new_page<scls::HUD_Page>("detroit_history_settings");
+        detroit_history_settings_page->set_position(glm::vec2(2.0/9.0, -4.0/9.0));
+        detroit_history_settings_page->set_scale(glm::vec2(2.0 * (7.0 / 9.0), 2.0 * (7.0 / 9.0)));
+        // Create each objects
+        detroit_history_settings_page_number = detroit_history_settings_page->new_object<scls::HUD_Text>("detroit_history_settings_page_number");
+        detroit_history_settings_page_statistic = detroit_history_settings_page->new_object<scls::HUD_Text>("detroit_history_settings_page_statistic");
+        // Configure each objects
+        detroit_history_settings_page_number->set_font_family("consolab");
+        detroit_history_settings_page_number->set_font_size(100);
+        detroit_history_settings_page_number->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        detroit_history_settings_page_number->set_text("Number");
+        detroit_history_settings_page_number->set_object_scale(0.05);
+        detroit_history_settings_page_number->transform()->set_position(glm::vec3(-0.2, -0.2, 0));
+        detroit_history_settings_page_statistic->set_font_family("consolab");
+        detroit_history_settings_page_statistic->set_font_size(100);
+        detroit_history_settings_page_statistic->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        detroit_history_settings_page_statistic->set_text("Statistic");
+        detroit_history_settings_page_statistic->set_object_scale(0.05);
+        detroit_history_settings_page_statistic->transform()->set_position(glm::vec3(0.2, -0.2, 0));
+
         // Create and configure the detroit_history page
         scls::HUD_Page* detroit_history_page = window()->new_page<scls::HUD_Page>("detroit_history");
         detroit_history_page->set_position(glm::vec2(2.0/9.0, 2.0/9.0));
         detroit_history_page->set_scale(2.0 * (7.0 / 9.0));
         // Create each objects
-        scls::HUD_Object* detroit_history_page_background = detroit_history_page->new_object<scls::HUD_Object>("detroit_history_page_background", 0, "black");
-        scls::HUD_Object* detroit_history_page_1950 = detroit_history_page->new_object<scls::HUD_Object>("detroit_history_page_1950", detroit_history_page_background, "uk_flag");
+        detroit_history_page_background = detroit_history_page->new_object<scls::HUD_Object>("detroit_history_page_background", 0, "white");
+        detroit_history_page_1950 = detroit_history_page->new_object<scls::HUD_Object>("detroit_history_page_1950", detroit_history_page_background, "white");
+        detroit_history_page_1950_african_american = detroit_history_page->new_object<scls::HUD_Text>("detroit_history_page_1950_african_american", detroit_history_page_1950);
+        detroit_history_page_1950_obesity = detroit_history_page->new_object<scls::HUD_Text>("detroit_history_page_1950_obesity", detroit_history_page_1950);
+        detroit_history_page_1950_population = detroit_history_page->new_object<scls::HUD_Text>("detroit_history_page_1950_population", detroit_history_page_1950);
+        detroit_history_page_1950_title = detroit_history_page->new_object<scls::HUD_Text>("detroit_history_page_1950_title", detroit_history_page_1950);
+        detroit_history_page_2020 = detroit_history_page->new_object<scls::HUD_Object>("detroit_history_page_2020", detroit_history_page_background, "white");
+        detroit_history_page_2020_african_american = detroit_history_page->new_object<scls::HUD_Text>("detroit_history_page_2020_african_american", detroit_history_page_2020);
+        detroit_history_page_2020_farm = detroit_history_page->new_object<scls::HUD_Text>("detroit_history_page_2020_farm", detroit_history_page_2020);
+        detroit_history_page_2020_obesity = detroit_history_page->new_object<scls::HUD_Text>("detroit_history_page_2020_obesity", detroit_history_page_2020);
+        detroit_history_page_2020_population = detroit_history_page->new_object<scls::HUD_Text>("detroit_history_page_2020_population", detroit_history_page_2020);
+        detroit_history_page_2020_production = detroit_history_page->new_object<scls::HUD_Text>("detroit_history_page_2020_production", detroit_history_page_2020);
+        detroit_history_page_2020_title = detroit_history_page->new_object<scls::HUD_Text>("detroit_history_page_2020_title", detroit_history_page_2020);
+        detroit_history_page_2020_size = detroit_history_page->new_object<scls::HUD_Text>("detroit_history_page_2020_size", detroit_history_page_2020);
+        detroit_history_page_2020_vacant = detroit_history_page->new_object<scls::HUD_Text>("detroit_history_page_2020_vacant", detroit_history_page_2020);
         // Configure each objects
+        detroit_history_page_1950->set_border_width(0.01);
         detroit_history_page_1950->set_scale(glm::vec3(0.5, 1.0, 1.0));
-        detroit_history_page_1950->transform()->set_position(glm::vec3(0.0, 0.0, 0));
+        detroit_history_page_1950->transform()->set_position(glm::vec3(-0.25, 0.0, 0));
+        detroit_history_page_1950_title->set_font_family("consolab");
+        detroit_history_page_1950_title->set_font_size(100);
+        detroit_history_page_1950_title->set_text("1950");
+        detroit_history_page_1950_title->set_object_scale(0.1);
+        detroit_history_page_1950_title->transform()->set_position(glm::vec3(0, 0.4, 0));
+        detroit_history_page_2020->set_border_width(0.01);
+        detroit_history_page_2020->set_scale(glm::vec3(0.5, 1.0, 1.0));
+        detroit_history_page_2020->transform()->set_position(glm::vec3(0.25, 0.0, 0));
+        detroit_history_page_2020_title->set_font_family("consolab");
+        detroit_history_page_2020_title->set_font_size(100);
+        detroit_history_page_2020_title->set_text("2020");
+        detroit_history_page_2020_title->set_object_scale(0.1);
+        detroit_history_page_2020_title->transform()->set_position(glm::vec3(0, 0.4, 0));
+        set_detroit_history_numbers();
 
         // Create and configure the detroit_map page
         scls::HUD_Page* detroit_map_page = window()->new_page<scls::HUD_Page>("detroit_map");
@@ -184,8 +249,11 @@ namespace detroit {
         scls::HUD_Object* video_page_devita_davison = video_page->new_object<scls::HUD_Object>("video_page_devita_davison", video_page_background, "devita_davison");
         scls::HUD_Text* video_page_devita_davison_description = video_page->new_object<scls::HUD_Text>("video_page_devita_davison_description", video_page_background);
         scls::HUD_Text* video_page_devita_davison_name = video_page->new_object<scls::HUD_Text>("video_page_devita_davison_name", video_page_background);
+        scls::HUD_Object* video_page_middle_separation = video_page->new_object<scls::HUD_Object>("video_page_middle_separation", video_page_background, "black");
         scls::HUD_Object* video_page_ted_logo = video_page->new_object<scls::HUD_Object>("video_page_ted_logo", video_page_background, "ted_logo");
         scls::HUD_Text* video_page_ted_tagline = video_page->new_object<scls::HUD_Text>("video_page_ted_tagline", video_page_background);
+        scls::HUD_Text* video_page_title = video_page->new_object<scls::HUD_Text>("video_page_title", video_page_background);
+        scls::HUD_Object* video_page_thumbnail = video_page->new_object<scls::HUD_Object>("video_page_thumbnail", video_page_background, "video_thumbnail");
         scls::HUD_Object* video_page_top_separation = video_page->new_object<scls::HUD_Object>("video_page_top_separation", video_page_background, "black");
         // Configure each objects
         video_page_background->set_border_width(0.01);
@@ -201,6 +269,8 @@ namespace detroit {
         video_page_devita_davison_name->set_text("Devita Davison");
         video_page_devita_davison_name->set_object_scale(0.035);
         video_page_devita_davison_name->transform()->set_position(glm::vec3(0.25, 0.15, 0));
+        video_page_middle_separation->set_scale(glm::vec3(0.9, 0.01, 1));
+        video_page_middle_separation->transform()->set_position(glm::vec3(0.0, 0.05, 0));
         video_page_ted_logo->set_object_scale(0.15);
         video_page_ted_logo->transform()->set_position(glm::vec3(-0.25, 0.3, 0));
         video_page_ted_tagline->set_font_family("consolab");
@@ -208,6 +278,13 @@ namespace detroit {
         video_page_ted_tagline->set_text("\"Ideas Change Everything.\"");
         video_page_ted_tagline->set_object_scale(0.035);
         video_page_ted_tagline->transform()->set_position(glm::vec3(-0.25, 0.2, 0));
+        video_page_title->set_font_family("consolab");
+        video_page_title->set_font_size(100);
+        video_page_title->set_text("How urban agriculture is transforming Detroit ?");
+        video_page_title->set_object_scale(0.035);
+        video_page_title->transform()->set_position(glm::vec3(0, 0.0, 0));
+        video_page_thumbnail->set_object_scale(0.4);
+        video_page_thumbnail->transform()->set_position(glm::vec3(0, -0.25, 0));
         video_page_top_separation->set_scale(glm::vec3(0.01, 0.3, 1));
         video_page_top_separation->transform()->set_position(glm::vec3(0.02, 0.25, 0));
     }
@@ -220,12 +297,142 @@ namespace detroit {
         window()->display_page("navigation");
     }
 
+    // Set the detroit farm page in the object
+    void Detroit::set_detroit_farm_page() {
+        // Set the current page to the big map page
+        window()->hide_all_pages();
+        window()->display_page("detroit_farm");
+        window()->display_page("navigation");
+    }
+
+    // Set the detroit history page with the numbers part in the object
+    void Detroit::set_detroit_history_numbers() {
+        unsigned int african_american_1950 = 300506;
+        unsigned int detroit_population_1950 = 1849568;
+        unsigned int african_american_2020 = 590226;
+        unsigned int detroit_population_2020 = 639111;
+        unsigned int detroit_obesity_2020 = static_cast<int>(static_cast<double>(detroit_population_2020) * 0.7);
+        unsigned int detroit_size_2020 = 370.0;
+        std::string detroit_size_2020_str = std::to_string(detroit_size_2020);
+        double detroit_vacant_2020 = 40.0 * 0.386102;
+        std::string detroit_vacant_2020_str = std::to_string(detroit_vacant_2020).substr(0, 5);
+        unsigned int farm_number = 1500;
+        unsigned int farm_k_production_2020 = 227;
+
+        detroit_history_page_1950_african_american->set_font_family("consolab");
+        detroit_history_page_1950_african_american->set_font_size(100);
+        detroit_history_page_1950_african_american->set_text("African american : " + std::to_string(african_american_1950));
+        detroit_history_page_1950_african_american->set_object_scale(0.025);
+        detroit_history_page_1950_african_american->transform()->set_position(glm::vec3(0, 0.2, 0));
+        detroit_history_page_1950_obesity->set_font_family("consolab");
+        detroit_history_page_1950_obesity->set_font_size(100);
+        detroit_history_page_1950_obesity->set_text("Obesity : Unknow");
+        detroit_history_page_1950_obesity->set_object_scale(0.035);
+        detroit_history_page_1950_obesity->transform()->set_position(glm::vec3(0, 0.1, 0));
+        detroit_history_page_1950_population->set_font_family("consolab");
+        detroit_history_page_1950_population->set_font_size(100);
+        detroit_history_page_1950_population->set_text("Population : " + std::to_string(detroit_population_1950));
+        detroit_history_page_1950_population->set_object_scale(0.035);
+        detroit_history_page_1950_population->transform()->set_position(glm::vec3(0, 0.3, 0));
+        detroit_history_page_2020->transform()->set_position(glm::vec3(0.25, 0.0, 0));
+        detroit_history_page_2020_african_american->set_font_family("consolab");
+        detroit_history_page_2020_african_american->set_font_size(100);
+        detroit_history_page_2020_african_american->set_text("African american : " + std::to_string(african_american_2020));
+        detroit_history_page_2020_african_american->set_object_scale(0.025);
+        detroit_history_page_2020_african_american->transform()->set_position(glm::vec3(0, 0.2, 0));
+        detroit_history_page_2020_farm->set_font_family("consolab");
+        detroit_history_page_2020_farm->set_font_size(100);
+        detroit_history_page_2020_farm->set_text("Farms : " + std::to_string(farm_number));
+        detroit_history_page_2020_farm->set_object_scale(0.025);
+        detroit_history_page_2020_farm->transform()->set_position(glm::vec3(0, -0.2, 0));
+        detroit_history_page_2020_obesity->set_font_family("consolab");
+        detroit_history_page_2020_obesity->set_font_size(100);
+        detroit_history_page_2020_obesity->set_text("Obesity : " + std::to_string(detroit_obesity_2020));
+        detroit_history_page_2020_obesity->set_object_scale(0.035);
+        detroit_history_page_2020_obesity->transform()->set_position(glm::vec3(0, 0.1, 0));
+        detroit_history_page_2020_population->set_font_family("consolab");
+        detroit_history_page_2020_population->set_font_size(100);
+        detroit_history_page_2020_population->set_text("Population : " + std::to_string(detroit_population_2020));
+        detroit_history_page_2020_population->set_object_scale(0.035);
+        detroit_history_page_2020_population->transform()->set_position(glm::vec3(0, 0.3, 0));
+        detroit_history_page_2020_production->set_font_family("consolab");
+        detroit_history_page_2020_production->set_font_size(100);
+        detroit_history_page_2020_production->set_text("Food grown : " + std::to_string(farm_k_production_2020) + " tons");
+        detroit_history_page_2020_production->set_object_scale(0.035);
+        detroit_history_page_2020_production->transform()->set_position(glm::vec3(0, -0.3, 0));
+        detroit_history_page_2020_size->set_font_family("consolab");
+        detroit_history_page_2020_size->set_font_size(100);
+        detroit_history_page_2020_size->set_text(scls::to_utf_8("Size : " + detroit_size_2020_str + "km²"));
+        detroit_history_page_2020_size->set_object_scale(0.035);
+        detroit_history_page_2020_size->transform()->set_position(glm::vec3(0, 0, 0));
+        detroit_history_page_2020_vacant->set_font_family("consolab");
+        detroit_history_page_2020_vacant->set_font_size(100);
+        detroit_history_page_2020_vacant->set_text(scls::to_utf_8("Vacant part : " + detroit_vacant_2020_str + "km²"));
+        detroit_history_page_2020_vacant->set_object_scale(0.035);
+        detroit_history_page_2020_vacant->transform()->set_position(glm::vec3(0, -0.1, 0));
+    }
+
     // Set the detroit history page in the object
     void Detroit::set_detroit_history_page() {
         // Set the current page to the detroit history page
         window()->hide_all_pages();
         window()->display_page("detroit_history");
+        window()->display_page("detroit_history_settings");
         window()->display_page("navigation");
+    }
+
+    // Set the detroit history page with the statistic part in the object
+    void Detroit::set_detroit_history_statistic() {
+        double african_american_1950 = 300506;
+        double detroit_population_1950 = 1849568;
+        double african_american_2020 = 536853;
+        double detroit_population_2020 = 639111;
+        double detroit_obesity_2020 = detroit_population_2020 * 0.7;
+        double detroit_size_2020 = 370.0;
+        std::string african_american_1950_str = std::to_string((african_american_1950 / detroit_population_1950) * 100.0).substr(0, 6);
+        std::string african_american_2020_str = std::to_string((african_american_2020 / detroit_population_2020) * 100.0).substr(0, 6);
+        std::string detroit_obesity_2020_str = std::to_string((detroit_obesity_2020 / detroit_population_2020) * 100.0).substr(0, 6);
+        std::string detroit_population_2020_str = std::to_string((detroit_population_2020 / detroit_population_1950) * 100.0).substr(0, 6);
+        std::string detroit_size_2020_str = std::to_string(static_cast<int>(detroit_size_2020));
+
+        set_detroit_history_numbers();
+
+        detroit_history_page_1950_african_american->set_font_family("consolab");
+        detroit_history_page_1950_african_american->set_font_size(100);
+        detroit_history_page_1950_african_american->set_text("African american : " + african_american_1950_str + "%");
+        detroit_history_page_1950_african_american->set_object_scale(0.025);
+        detroit_history_page_1950_african_american->transform()->set_position(glm::vec3(0, 0.2, 0));
+        detroit_history_page_1950_obesity->set_font_family("consolab");
+        detroit_history_page_1950_obesity->set_font_size(100);
+        detroit_history_page_1950_obesity->set_text("Obesity : Unknow");
+        detroit_history_page_1950_obesity->set_object_scale(0.035);
+        detroit_history_page_1950_obesity->transform()->set_position(glm::vec3(0, 0.1, 0));
+        detroit_history_page_1950_population->set_font_family("consolab");
+        detroit_history_page_1950_population->set_font_size(100);
+        detroit_history_page_1950_population->set_text("Population : 100%");
+        detroit_history_page_1950_population->set_object_scale(0.035);
+        detroit_history_page_1950_population->transform()->set_position(glm::vec3(0, 0.3, 0));
+        detroit_history_page_2020->transform()->set_position(glm::vec3(0.25, 0.0, 0));
+        detroit_history_page_2020_african_american->set_font_family("consolab");
+        detroit_history_page_2020_african_american->set_font_size(100);
+        detroit_history_page_2020_african_american->set_text("African american : " + african_american_2020_str + "%");
+        detroit_history_page_2020_african_american->set_object_scale(0.025);
+        detroit_history_page_2020_african_american->transform()->set_position(glm::vec3(0, 0.2, 0));
+        detroit_history_page_2020_obesity->set_font_family("consolab");
+        detroit_history_page_2020_obesity->set_font_size(100);
+        detroit_history_page_2020_obesity->set_text("Obesity : " + detroit_obesity_2020_str + "%");
+        detroit_history_page_2020_obesity->set_object_scale(0.035);
+        detroit_history_page_2020_obesity->transform()->set_position(glm::vec3(0, 0.1, 0));
+        detroit_history_page_2020_population->set_font_family("consolab");
+        detroit_history_page_2020_population->set_font_size(100);
+        detroit_history_page_2020_population->set_text("Population : " + detroit_population_2020_str + "%");
+        detroit_history_page_2020_population->set_object_scale(0.035);
+        detroit_history_page_2020_population->transform()->set_position(glm::vec3(0, 0.3, 0));
+        detroit_history_page_2020_size->set_font_family("consolab");
+        detroit_history_page_2020_size->set_font_size(100);
+        detroit_history_page_2020_size->set_text(scls::to_utf_8("Size : " + detroit_size_2020_str + "km²"));
+        detroit_history_page_2020_size->set_object_scale(0.035);
+        detroit_history_page_2020_size->transform()->set_position(glm::vec3(0, 0, 0));
     }
 
     // Set the detroit map page in the object

@@ -36,8 +36,14 @@ namespace detroit {
         void load_pages();
         // Set the big map page in the object
         void set_big_map_page();
+        // Set the detroit farm page in the object
+        void set_detroit_farm_page();
+        // Set the detroit history page with the numbers part in the object
+        void set_detroit_history_numbers();
         // Set the detroit history page in the object
         void set_detroit_history_page();
+        // Set the detroit history page with the statistic part in the object
+        void set_detroit_history_statistic();
         // Set the detroit map page in the object
         void set_detroit_map_page();
         // Set the video page in the object
@@ -69,9 +75,28 @@ namespace detroit {
         // Create and configure the navigation map
         scls::HUD_Object* navigation_page_background = 0;
         scls::HUD_Text* navigation_page_big_map_button = 0;
+        scls::HUD_Text* navigation_page_detroit_farm_button = 0;
         scls::HUD_Text* navigation_page_detroit_history_button = 0;
         scls::HUD_Text* navigation_page_detroit_map_button = 0;
         scls::HUD_Text* navigation_page_video_button = 0;
+        // Create and configure the detroit_history page
+        scls::HUD_Object* detroit_history_page_background = 0;
+        scls::HUD_Object* detroit_history_page_1950 = 0;
+        scls::HUD_Text* detroit_history_page_1950_african_american = 0;
+        scls::HUD_Text* detroit_history_page_1950_obesity = 0;
+        scls::HUD_Text* detroit_history_page_1950_population = 0;
+        scls::HUD_Text* detroit_history_page_1950_title = 0;
+        scls::HUD_Object* detroit_history_page_2020 = 0;
+        scls::HUD_Text* detroit_history_page_2020_african_american = 0;
+        scls::HUD_Text* detroit_history_page_2020_farm = 0;
+        scls::HUD_Text* detroit_history_page_2020_obesity = 0;
+        scls::HUD_Text* detroit_history_page_2020_population = 0;
+        scls::HUD_Text* detroit_history_page_2020_production = 0;
+        scls::HUD_Text* detroit_history_page_2020_title = 0;
+        scls::HUD_Text* detroit_history_page_2020_size = 0;
+        scls::HUD_Text* detroit_history_page_2020_vacant = 0;
+        scls::HUD_Text* detroit_history_settings_page_number = 0;
+        scls::HUD_Text* detroit_history_settings_page_statistic = 0;
     };
 
     // Create a simple Detroit window

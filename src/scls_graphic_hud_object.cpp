@@ -127,8 +127,13 @@ namespace scls {
         }
 
         // Update the cursor texture
-        if(a_overflighted_object != current_overflighted_object && current_overflighted_object != 0) {
-            window_struct()->set_cursor(glfwCreateStandardCursor(current_overflighted_object->overflighted_cursor()));
+        if(a_overflighted_object != current_overflighted_object) {
+            if(current_overflighted_object == 0) {
+                window_struct()->set_cursor(glfwCreateStandardCursor(GLFW_ARROW_CURSOR));
+            }
+            else {
+                window_struct()->set_cursor(glfwCreateStandardCursor(current_overflighted_object->overflighted_cursor()));
+            }
         }
         a_overflighted_object = current_overflighted_object;
         if(a_overflighted_object != 0) {
