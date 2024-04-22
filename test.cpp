@@ -15,13 +15,13 @@
 //
 
 #include "scls_graphic.h"
-#include "mods/detroit/detroit.h"
+#include "mods/scls_documentalist_gui/scls_documentalist_gui.h"
 
 int main(int argc, char* argv[]) {
     srand(time(0));
 
-    // Create a simple EFA window
-    detroit::use_detroit(argv[0]);
+    // Create a simple Agatha GUI window
+    scls_documentalist_gui::use_scls_documentalist_gui(argv[0]);
 
     return 0;
 }
