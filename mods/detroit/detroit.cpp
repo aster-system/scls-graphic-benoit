@@ -240,6 +240,79 @@ namespace detroit {
         scls::HUD_Object* detroit_map_page_background = detroit_map_page->new_object<scls::HUD_Object>("detroit_map_page_background", 0, "detroit_map");
         // Configure each objects
 
+        // Create and configure the detroit_map page
+        scls::HUD_Page* farm_page = window()->new_page<scls::HUD_Page>("farm");
+        detroit_map_page->set_position(glm::vec2(2.0/9.0, 2.0/9.0));
+        detroit_map_page->set_scale(2.0 * (7.0 / 9.0));
+        // Create each objects
+        scls::HUD_Text* farm_page_business_name = farm_page->new_object<scls::HUD_Text>("farm_page_business_name");
+        scls::HUD_Text* farm_page_business_seed = farm_page->new_object<scls::HUD_Text>("farm_page_business_seed");
+        scls::HUD_Text* farm_page_business_title = farm_page->new_object<scls::HUD_Text>("farm_page_business_title");
+        scls::HUD_Text* farm_page_community_farm_name = farm_page->new_object<scls::HUD_Text>("farm_page_community_farm_name");
+        scls::HUD_Text* farm_page_community_ratio = farm_page->new_object<scls::HUD_Text>("farm_page_community_ratio");
+        scls::HUD_Text* farm_page_community_title = farm_page->new_object<scls::HUD_Text>("farm_page_community_title");
+        scls::HUD_Text* farm_page_production_farm_goal = farm_page->new_object<scls::HUD_Text>("farm_page_production_farm_goal");
+        scls::HUD_Text* farm_page_production_farm_name = farm_page->new_object<scls::HUD_Text>("farm_page_production_farm_name");
+        scls::HUD_Text* farm_page_production_farm_slogan = farm_page->new_object<scls::HUD_Text>("farm_page_production_farm_slogan");
+        scls::HUD_Text* farm_page_production_title = farm_page->new_object<scls::HUD_Text>("farm_page_production_title");
+        scls::HUD_Object* farm_page_separation_horizontal = farm_page->new_object<scls::HUD_Object>("farm_page_separation_horizontal", 0, "black");
+        scls::HUD_Object* farm_page_separation_vertical = farm_page->new_object<scls::HUD_Object>("farm_page_separation_vertical", 0, "black");
+        // Configure each objects
+        farm_page_business_name->set_font_family("consolab");
+        farm_page_business_name->set_font_size(100);
+        farm_page_business_name->set_text("Grown in Detroit");
+        farm_page_business_name->set_object_scale(0.05);
+        farm_page_business_name->transform()->set_position(glm::vec3(-0.125, 0.75, 0));
+        farm_page_business_seed->set_font_family("consolab");
+        farm_page_business_seed->set_font_size(100);
+        farm_page_business_seed->set_text("70k seeds packets sold");
+        farm_page_business_seed->set_object_scale(0.04);
+        farm_page_business_seed->transform()->set_position(glm::vec3(-0.125, 0.6, 0));
+        farm_page_business_title->set_font_family("consolab");
+        farm_page_business_title->set_font_size(100);
+        farm_page_business_title->set_text("Business");
+        farm_page_business_title->set_object_scale(0.075);
+        farm_page_business_title->transform()->set_position(glm::vec3(-0.125, 0.9, 0));
+        farm_page_community_farm_name->set_font_family("consolab");
+        farm_page_community_farm_name->set_font_size(100);
+        farm_page_community_farm_name->set_text("Brightmoor farm");
+        farm_page_community_farm_name->set_object_scale(0.05);
+        farm_page_community_farm_name->transform()->set_position(glm::vec3(0.6, 0.75, 0));
+        farm_page_community_ratio->set_font_family("consolab");
+        farm_page_community_ratio->set_font_size(100);
+        farm_page_community_ratio->set_text("1 garden for 426 peoples");
+        farm_page_community_ratio->set_object_scale(0.04);
+        farm_page_community_ratio->transform()->set_position(glm::vec3(0.6, 0.6, 0));
+        farm_page_community_title->set_font_family("consolab");
+        farm_page_community_title->set_font_size(100);
+        farm_page_community_title->set_text("Community");
+        farm_page_community_title->set_object_scale(0.075);
+        farm_page_community_title->transform()->set_position(glm::vec3(0.6, 0.9, 0));
+        farm_page_production_farm_goal->set_font_family("consolab");
+        farm_page_production_farm_goal->set_font_size(100);
+        farm_page_production_farm_goal->set_text("Goal : change vision over food");
+        farm_page_production_farm_goal->set_object_scale(0.04);
+        farm_page_production_farm_goal->transform()->set_position(glm::vec3(-0.125, -0.3, 0));
+        farm_page_production_farm_name->set_font_family("consolab");
+        farm_page_production_farm_name->set_font_size(100);
+        farm_page_production_farm_name->set_text("Oakland avenue farm");
+        farm_page_production_farm_name->set_object_scale(0.05);
+        farm_page_production_farm_name->transform()->set_position(glm::vec3(-0.125, 0, 0));
+        farm_page_production_farm_slogan->set_font_family("consolab");
+        farm_page_production_farm_slogan->set_font_size(100);
+        farm_page_production_farm_slogan->set_text("\"Art, architecture, ecology\"");
+        farm_page_production_farm_slogan->set_object_scale(0.04);
+        farm_page_production_farm_slogan->transform()->set_position(glm::vec3(-0.125, -0.15, 0));
+        farm_page_production_title->set_font_family("consolab");
+        farm_page_production_title->set_font_size(100);
+        farm_page_production_title->set_text("Production");
+        farm_page_production_title->set_object_scale(0.075);
+        farm_page_production_title->transform()->set_position(glm::vec3(-0.125, 0.15, 0));
+        farm_page_separation_horizontal->set_scale(glm::vec3(1.6, 0.01, 1));
+        farm_page_separation_horizontal->transform()->set_position(glm::vec3(0.25, 0.25, 0));
+        farm_page_separation_vertical->set_scale(glm::vec3(0.01, 1.6, 1));
+        farm_page_separation_vertical->transform()->set_position(glm::vec3(0.25, 0.25, 0));
+
         // Create and configure the video page
         scls::HUD_Page* video_page = window()->new_page<scls::HUD_Page>("video");
         video_page->set_position(glm::vec2(2.0/9.0, 2.0/9.0));
@@ -301,7 +374,7 @@ namespace detroit {
     void Detroit::set_detroit_farm_page() {
         // Set the current page to the big map page
         window()->hide_all_pages();
-        window()->display_page("detroit_farm");
+        window()->display_page("farm");
         window()->display_page("navigation");
     }
 
