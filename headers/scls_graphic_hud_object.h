@@ -64,6 +64,8 @@ namespace scls {
         //
         //*********
 
+        // Most basic HUD_Object constructor
+        HUD_Object(_Window_Advanced_Struct* window_struct, std::string name);
         // Most parent HUD_Object constructor used for displaying
         HUD_Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_object, std::string name, std::string texture_name, std::string vao_name = "hud_default");
         // HUD_Object constructor used for displaying
@@ -98,7 +100,6 @@ namespace scls {
 
         // Getters and setters (ONLY WITHOUT ATRIBUTES)
         inline glm::vec2 absolute_object_scale() {double absolute_width = static_cast<double>(window_struct()->window_ratio());if(parent_hud() != 0)absolute_width *= parent_hud()->absolute_scale_ratio();double new_width = absolute_scale()[1] * (texture_ratio() / absolute_width);return glm::vec2(new_width, absolute_scale()[1]);};
-        inline glm::vec2 absolute_scale() {return transform()->absolute_scale();};
         inline double absolute_scale_ratio() {return absolute_scale()[0] / absolute_scale()[1];};
         inline HUD_Object* parent_hud() {if(parent() == 0 || parent()->type(1) != SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME)return 0;return reinterpret_cast<HUD_Object*>(parent());};
 
@@ -111,10 +112,21 @@ namespace scls {
         inline unsigned long overflighted_cursor() {return a_overflighted_cursor;};
         inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
         inline void set_border_width(double new_border_width) {a_border_width = glm::vec4(new_border_width, new_border_width, new_border_width, new_border_width);};
-        virtual void set_object_scale(double new_scale) {double absolute_width = static_cast<double>(window_struct()->window_ratio());if(parent_hud() != 0)absolute_width *= parent_hud()->absolute_scale_ratio();double new_width = new_scale * (texture_ratio() / absolute_width);set_scale(glm::vec3(new_width, new_scale, 1));};
-        virtual void set_object_scale(glm::vec2 new_scale) {double absolute_width = static_cast<double>(window_struct()->window_ratio());if(parent_hud() != 0)absolute_width *= parent_hud()->absolute_scale_ratio();new_scale[0] = new_scale[0] * (texture_ratio() / absolute_width);set_scale(glm::vec3(new_scale[0], new_scale[1], 1));};
+        virtual void set_object_scale(double new_scale) {
+            double absolute_width = static_cast<double>(window_struct()->window_ratio());
+            if(transform_parent() != 0)absolute_width *= transform_parent()->absolute_scale()[0] / transform_parent()->absolute_scale()[1];
+            double new_width = new_scale * (texture_ratio() / absolute_width);
+            set_scale(glm::vec3(new_width, new_scale, 1));
+        };
+        virtual void set_object_scale(glm::vec2 new_scale) {
+            double absolute_width = static_cast<double>(window_struct()->window_ratio());
+            if(transform_parent() != 0)absolute_width *= transform_parent()->absolute_scale()[0] / transform_parent()->absolute_scale()[1];
+            new_scale[0] = new_scale[0] * (texture_ratio() / absolute_width);
+            set_scale(glm::vec3(new_scale[0], new_scale[1], 1));
+        };
         inline void set_is_overflighted(bool new_is_overflighted) {a_is_overflighted = new_is_overflighted;};
         inline void set_overflighted_cursor(unsigned long new_overflighted_cursor) {a_overflighted_cursor = new_overflighted_cursor;};
+        inline void set_position(glm::vec2 new_position) {Object::set_position(glm::vec3(new_position[0], new_position[1], 0));};
         inline void set_texture_rect(glm::vec4 new_texture_rect) {a_texture_rect = new_texture_rect;};
         inline glm::vec4 texture_rect() {return a_texture_rect;};
     private:
@@ -195,7 +207,7 @@ namespace scls {
         glm::vec4 a_text_offset = glm::vec4(0, 0, 0, 0);
     };
 
-    class HUD_Page : public _Page {
+    class HUD_Page : public _Page, public HUD_Object {
         // Class representing an HUD page to display on the window
     public:
 
@@ -210,11 +222,13 @@ namespace scls {
         // HUD_Page destructor
         virtual ~HUD_Page();
 
+        // Render the page
+        virtual void render();
         // Function called when the page is unload
         virtual void unload_page() {
             _Page::unload_page();
             // Soft reset the page
-            soft_reset();
+            _Page::soft_reset();
 
             // Check the overflighted cursor
             a_overflighted_object = 0;
@@ -224,6 +238,14 @@ namespace scls {
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline HUD_Object* overflighted_object(){return a_overflighted_object;};
+        inline _Window_Advanced_Struct* window_struct() {return _Page::window_struct();};
+
+        // Change the position of the page
+        inline void set_position(glm::vec2 new_position) {_Page::set_position(new_position);};
+        // Change the scale of the page
+        inline void set_scale(double new_scale) {_Page::set_scale(new_scale);};
+        // Change the scale of the page
+        inline void set_scale(glm::vec2 new_scale) {_Page::set_scale(new_scale);};
     private:
         // Handle the overflighted object
         // Pointer to the overflighted object

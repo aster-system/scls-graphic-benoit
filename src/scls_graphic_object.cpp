@@ -25,21 +25,34 @@ namespace scls {
     //
     //*********
 
-    // Object most basic constructor
-    Object::Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent) : a_window_struct(window_struct) {
+    // Object constructor used to do a page
+    Object::Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name) : a_name(name), a_window_struct(window_struct) {
         a_transform = new Transform_Object(transform_parent);
         a_type.push_back("object");
     }
 
+    // Object most basic constructor with a name
+    Object::Object(_Window_Advanced_Struct* window_struct, std::string name) : Object(window_struct, 0, name) {
+
+    }
+
+    // Object blank constructor
+    Object::Object(_Window_Advanced_Struct* window_struct) : Object(window_struct, "") {
+    }
+
+    // Object most basic constructor with a transform parent
+    Object::Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent) : Object(window_struct, transform_parent, "") {
+
+    }
+
     // Most parent Object constructor used for displaying
-    Object::Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : Object(window_struct, transform_parent) {
-        a_name = name;
+    Object::Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : Object(window_struct, transform_parent, name) {
         if(texture_name != "")a_texture = window_struct->texture(texture_name);
         a_vao = window_struct->vao(vao_name);
     }
 
     // Object constructor used for displaying
-    Object::Object(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name) : Object(window_struct, parent->transform()) {
+    Object::Object(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name) : Object(window_struct, parent->transform(), name) {
         a_name = name;
         if(texture_name != "")a_texture = window_struct->texture(texture_name);
         a_vao = window_struct->vao(vao_name);
@@ -62,6 +75,12 @@ namespace scls {
     void Object::_render(glm::mat4 matrix) {
         // Write some uniform variables into the shader
         vao()->get_shader_program()->set_uniform4fv_value("model", matrix);
+        if(texture() == 0) {
+            vao()->get_shader_program()->set_uniformb_value("texture_binded", false);
+        }
+        else {
+            vao()->get_shader_program()->set_uniformb_value("texture_binded", true);
+        }
 
         if(texture() != 0) {
             texture()->bind(); // Bind the texture

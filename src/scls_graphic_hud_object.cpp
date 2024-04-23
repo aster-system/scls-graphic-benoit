@@ -24,6 +24,11 @@ namespace scls {
     //
     //*********
 
+    // Most basic HUD_Object constructor
+    HUD_Object::HUD_Object(_Window_Advanced_Struct* window_struct, std::string name) :Object(window_struct, name) {
+        a_type.push_back(SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME);
+    }
+
     // Most parent HUD_Object constructor used for displaying
     HUD_Object::HUD_Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), transform_parent, name, texture_name, vao_name) {
         a_type.push_back(SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME);
@@ -102,18 +107,31 @@ namespace scls {
     //*********
 
     // HUD_Page most basic constructor
-    HUD_Page::HUD_Page(_Window_Advanced_Struct* window_struct, std::string name) : _Page(window_struct, name) {
-
+    HUD_Page::HUD_Page(_Window_Advanced_Struct* window_struct, std::string name) : _Page(window_struct, name), HUD_Object(window_struct, name) {
+        _Page::set_vao("hud_default");
+        HUD_Object::set_vao("hud_default");
     }
+
+    // Render the page
+    void HUD_Page::render(){
+        HUD_Object::render();
+
+        for(int i = 0;i<static_cast<int>(_Page::children().size());i++) {
+            Object* ob = _Page::children()[i];
+            if(ob->visible()) {
+                ob->render();
+            }
+        }
+    };
 
     // Update the event of the page
     void HUD_Page::update_event() {
         // Soft reset the page
-        soft_reset();
+        _Page::soft_reset();
 
         // Check the overflighted cursor
         HUD_Object* current_overflighted_object = 0;
-        std::vector<Object*>* to_analyse = (&children());
+        std::vector<Object*>* to_analyse = (&_Page::children());
         for(int i = 0;i<static_cast<int>(to_analyse->size());i++) {
             Object* analyzed_object = (*to_analyse)[to_analyse->size() - (i + 1)];
             if(analyzed_object->type(1) == SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME) {

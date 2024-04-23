@@ -109,6 +109,13 @@ void Shader_Program::pass_variable(std::vector<Shader_Program_Variable> *variabl
 	}
 }
 
+// Change the value of a uniform bool value
+void Shader_Program::set_uniformb_value(std::string name, bool v) {
+    int uniform_location = glGetUniformLocation(shader_program, name.c_str());
+	use();
+	glUniform1f(uniform_location, v);
+}
+
 // Change the value of a uniform float value
 void Shader_Program::set_uniform1f_value(std::string name, float v1)
 {

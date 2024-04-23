@@ -26,6 +26,7 @@ public:
 	// Create a new Shader_Program from this one
 	Shader_Program* new_copy();
 	void pass_variable(std::vector<Shader_Program_Variable> *variables); // Pass variable to the shader program
+	void set_uniformb_value(std::string name, bool v); // Change the value of a uniform bool value
 	void set_uniform1f_value(std::string name, float v1); // Change the value of a uniform float value
 	void set_uniform2f_value(std::string name, float v1, float v2); // Change the value of a uniform vec2 float value
 	void set_uniform3f_value(std::string name, float v1, float v2, float v3); // Change the value of a uniform vec3 float value
@@ -72,7 +73,24 @@ public:
 	static std::string get_default_hud_fragment_shader()
 	{
 	    // Experimental : "#version 330 core\nin vec2 tex_pos;out vec4 FragColor;uniform vec4 border_color;uniform vec4 border_width;uniform sampler2D texture_0;void main(){vec4 color = border_color;if(tex_pos[0] >= border_width[1] && tex_pos[0] <= 1.0 - border_width[3] && tex_pos[1] >= border_width[0] && tex_pos[1] <= 1.0 - border_width[2]){vec2 texture_pos = tex_pos;texture_pos[0]-=border_width[1];texture_pos[1]-=border_width[0];texture_pos[0]*=(1.0+(border_width[1]+border_width[3]));texture_pos[1]*=(1.0+(border_width[0]+border_width[2]));color = texture(texture_0, texture_pos);}FragColor = color;}"
-		return "#version 330 core\nin vec2 tex_pos;out vec4 FragColor;uniform vec4 background_color;uniform vec4 border_color;uniform vec4 border_width;uniform vec4 texture_rect;uniform sampler2D texture_0;void main(){vec4 color = background_color;if(tex_pos[0]<border_width[1]||tex_pos[1]<border_width[0]||tex_pos[0]>1.0-(border_width[3])||tex_pos[1]>1.0-(border_width[2])){color = border_color;}else if(tex_pos[0] >= texture_rect[0] && tex_pos[0] <= texture_rect[0] + texture_rect[2] && tex_pos[1] > texture_rect[1] && tex_pos[1] < texture_rect[1] + texture_rect[3]){vec2 texture_pos = tex_pos;texture_pos[0]-=texture_rect[0];texture_pos[1]-=texture_rect[1];texture_pos[0]/=texture_rect[2];texture_pos[1]/=texture_rect[3]; color = texture(texture_0, texture_pos);}FragColor = color;}";
+		std::string to_return = "#version 330 core\n";
+		to_return += "in vec2 tex_pos;";
+		to_return += "out vec4 FragColor;";
+		to_return += "uniform vec4 background_color;";
+		to_return += "uniform vec4 border_color;";
+		to_return += "uniform vec4 border_width;";
+		to_return += "uniform vec4 texture_rect;";
+		to_return += "uniform sampler2D texture_0;";
+		to_return += "uniform bool texture_binded;";
+		to_return += "void main(){";
+		to_return += "vec4 color = background_color;";
+		to_return += "if(tex_pos[0]<border_width[1]||tex_pos[1]<border_width[0]||tex_pos[0]>1.0-(border_width[3])||tex_pos[1]>1.0-(border_width[2])){";
+		to_return += "color = border_color;}";
+		to_return += "else if(texture_binded && (tex_pos[0] >= texture_rect[0] && tex_pos[0] <= texture_rect[0] + texture_rect[2] && tex_pos[1] > texture_rect[1] && tex_pos[1] < texture_rect[1] + texture_rect[3])){";
+		to_return += "vec2 texture_pos = tex_pos;texture_pos[0]-=texture_rect[0];texture_pos[1]-=texture_rect[1];texture_pos[0]/=texture_rect[2];texture_pos[1]/=texture_rect[3];";
+		to_return += "color = texture(texture_0, texture_pos);}";
+		to_return += "FragColor = color;}";
+		return to_return;
 	};
 	static std::string get_default_vertex_shader()
 	{
@@ -80,7 +98,14 @@ public:
 	};
 	static std::string get_default_hud_vertex_shader()
 	{
-		return "#version 330 core\nlayout(location = 0) in vec3 position;layout(location = 1) in vec2 texture_position;out vec2 tex_pos;uniform mat4 model;void main(){tex_pos = texture_position;gl_Position = model * vec4(position.xyz, 1.0);}";
+	    std::string to_return = "#version 330 core\n";
+	    to_return += "layout(location = 0) in vec3 position;";
+	    to_return += "layout(location = 1) in vec2 texture_position;";
+	    to_return += "out vec2 tex_pos;uniform mat4 model;";
+	    to_return += "void main(){";
+	    to_return += "tex_pos = texture_position;";
+	    to_return += "gl_Position = model * vec4(position.xyz, 1.0);}";
+		return to_return;
 	};
 private:
     bool a_loaded = false;

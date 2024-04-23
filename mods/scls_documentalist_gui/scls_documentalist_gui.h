@@ -37,10 +37,31 @@ namespace scls_documentalist_gui {
         // SCLS_Documentalist_GUI base destructor
         virtual ~SCLS_Documentalist_GUI();
 
+        // Load the entire gui
+        void load();
+        // Load the help navigation
+        void load_help_navigation();
+        // Load the main header
+        void load_main_header();
+        // Load the welcome page footer
+        void load_welcome_page_footer();
+
         // Run the gui
         void start();
     private:
+        // Navigation for the help
+        // Parent page of the navigation
+        scls::HUD_Page* a_help_navigation = 0;
 
+        // Main header for the mains buttons
+        // Parent page of the header
+        scls::HUD_Page* a_main_header = 0;
+        // File button of the header
+        scls::HUD_Text* a_main_header_file_button = 0;
+
+        // Footer of the welcome
+        // Parent page of the welcome footer
+        scls::HUD_Page* a_welcome_footer = 0;
     };
 
     // Use scls_documentalist_gui easily with a function

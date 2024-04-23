@@ -72,7 +72,12 @@ namespace scls {
         inline void add_vbo(std::string name, VBO* vbo) { if (!contains_vbo(name)) vbos()[name] = vbo; else print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to add already exists."); };
 
         // Returns if the struct contains a textures
-        inline bool contains_texture(std::string name) { for (std::map<std::string, Texture*>::iterator it = textures().begin(); it != textures().end(); it++) { if (it->first == name) return true; } return false; };
+        inline bool contains_texture(std::string name) {
+            for (std::map<std::string, Texture*>::iterator it = textures().begin(); it != textures().end(); it++) {
+                    if (it->first == name) return true;
+            }
+            return false;
+        };
         // Returns if the struct contains a VAO
         inline bool contains_vao(std::string name) { for (std::map<std::string, VAO*>::iterator it = vaos().begin(); it != vaos().end(); it++) { if (it->first == name) return true; } return false; };
         // Returns if the struct contains a VBO

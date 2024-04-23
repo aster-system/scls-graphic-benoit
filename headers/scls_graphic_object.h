@@ -29,7 +29,13 @@ namespace scls {
         //
         //*********
 
-        // Object most basic constructor
+        // Object constructor used to do a page
+        Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name);
+        // Object most basic constructor with a name
+        Object(_Window_Advanced_Struct* window_struct, std::string name);
+        // Object blank constructor
+        Object(_Window_Advanced_Struct* window_struct);
+        // Object most basic constructor with a transform parent
         Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent);
         // Most parent Object constructor used for displaying
         Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name = "hud_default");
@@ -80,6 +86,21 @@ namespace scls {
         inline double texture_ratio() {return texture()->image_ratio();};
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
+        inline void set_texture(std::string new_texture) {
+            if(new_texture == "")a_texture = 0;
+            if(!window_struct()->contains_texture(new_texture)) {
+                print("Warning", "SCLS Graphic Object \"" + name() + "\"", "The texture \"" + new_texture + "\" you want to set as the new texture of the object does not exist.");
+                return;
+            }
+            a_texture = window_struct()->texture(new_texture);
+        };
+        inline void set_vao(std::string new_vao) {
+            if(!window_struct()->contains_vao(new_vao)) {
+                print("Warning", "SCLS Graphic Object \"" + name() + "\"", "The VAO \"" + new_vao + "\" you want to set as the new VAO of the object does not exist.");
+                return;
+            }
+            a_vao = window_struct()->vao(new_vao);
+        };
         inline Texture* texture() {return a_texture;};
         inline VAO* vao() {return a_vao;};
 
@@ -103,8 +124,12 @@ namespace scls {
         //*********
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
+        inline glm::vec3 absolute_scale() {return transform()->absolute_scale();};
+        inline void set_position(glm::vec3 new_position) {transform()->set_position(new_position);};
         void set_scale(double new_scale) {transform()->set_scale(glm::vec3(new_scale, new_scale, new_scale));};
         void set_scale(glm::vec3 new_scale) {transform()->set_scale(new_scale);};
+        inline glm::vec3 scale() {return transform()->get_scale();};
+        Transform_Object* transform_parent() {if(transform() == 0)return 0;return transform()->get_parent();};
     protected:
         // Basic object descriptor
         // Type of the object
