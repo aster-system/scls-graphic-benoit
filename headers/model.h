@@ -48,10 +48,6 @@ public:
 		{
 			return get_default_fragment_shader();
 		}
-		/*else if (shader_type == HUD_Default)
-		{
-			return get_default_hud_fragment_shader();
-		} //*/
 		return get_default_hud_fragment_shader();
 	};
 	static std::string get_built_in_vertex_shader(Built_In_Shader shader_type)
@@ -60,10 +56,6 @@ public:
 		{
 			return get_default_vertex_shader();
 		}
-		/*else if (shader_type == HUD_Default)
-		{
-			return get_default_hud_vertex_shader();
-		} //*/
 		return get_default_hud_vertex_shader();
 	};
 	static std::string get_default_fragment_shader()
@@ -79,12 +71,14 @@ public:
 		to_return += "uniform vec4 background_color;";
 		to_return += "uniform vec4 border_color;";
 		to_return += "uniform vec4 border_width;";
+		to_return += "uniform vec2 one_pixel;";
 		to_return += "uniform vec4 texture_rect;";
 		to_return += "uniform sampler2D texture_0;";
 		to_return += "uniform bool texture_binded;";
 		to_return += "void main(){";
 		to_return += "vec4 color = background_color;";
-		to_return += "if(tex_pos[0]<border_width[1]||tex_pos[1]<border_width[0]||tex_pos[0]>1.0-(border_width[3])||tex_pos[1]>1.0-(border_width[2])){";
+		to_return += "if(tex_pos[0]<one_pixel[0]||tex_pos[1]<one_pixel[1]){";
+		//to_return += "if(tex_pos[0]<one_pixel[0]||tex_pos[1]<one_pixel[1]||tex_pos[0]<border_width[1]||tex_pos[1]<border_width[0]||tex_pos[0]>1.0-(border_width[3])||tex_pos[1]>1.0-(border_width[2])){";
 		to_return += "color = border_color;}";
 		to_return += "else if(texture_binded && (tex_pos[0] >= texture_rect[0] && tex_pos[0] <= texture_rect[0] + texture_rect[2] && tex_pos[1] > texture_rect[1] && tex_pos[1] < texture_rect[1] + texture_rect[3])){";
 		to_return += "vec2 texture_pos = tex_pos;texture_pos[0]-=texture_rect[0];texture_pos[1]-=texture_rect[1];texture_pos[0]/=texture_rect[2];texture_pos[1]/=texture_rect[3];";

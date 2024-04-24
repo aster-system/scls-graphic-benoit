@@ -101,7 +101,17 @@ namespace scls {
         // Getters and setters (ONLY WITHOUT ATRIBUTES)
         inline glm::vec2 absolute_object_scale() {double absolute_width = static_cast<double>(window_struct()->window_ratio());if(parent_hud() != 0)absolute_width *= parent_hud()->absolute_scale_ratio();double new_width = absolute_scale()[1] * (texture_ratio() / absolute_width);return glm::vec2(new_width, absolute_scale()[1]);};
         inline double absolute_scale_ratio() {return absolute_scale()[0] / absolute_scale()[1];};
+        inline glm::vec2 one_pixel_scale() {
+            return glm::vec2(static_cast<double>(2.0/(static_cast<double>(window_struct()->window_width()) * (absolute_scale()[0]))),
+                             static_cast<double>(2.0/(static_cast<double>(window_struct()->window_height()) * (absolute_scale()[1]))));
+        };
         inline HUD_Object* parent_hud() {if(parent() == 0 || parent()->type(1) != SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME)return 0;return reinterpret_cast<HUD_Object*>(parent());};
+        inline glm::vec2 pixel_scale() {
+            return glm::vec2(static_cast<double>(window_struct()->window_width()) * (absolute_scale()[0] / 2.0),
+                             static_cast<double>(window_struct()->window_height()) * (absolute_scale()[1] / 2.0));
+        };
+        inline double scale_ratio() {return absolute_scale_ratio();};
+        inline void set_object_border_width(double new_border_width) {set_border_width(glm::vec4(new_border_width, new_border_width / scale_ratio(), new_border_width, new_border_width / scale_ratio()));};
 
         // Getters and setters (ONLY WITH ATRIBUTES)
         inline Color background_color() {return a_background_color;};
@@ -111,7 +121,8 @@ namespace scls {
         inline bool is_overflighted() const {return a_is_overflighted;};
         inline unsigned long overflighted_cursor() {return a_overflighted_cursor;};
         inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
-        inline void set_border_width(double new_border_width) {a_border_width = glm::vec4(new_border_width, new_border_width, new_border_width, new_border_width);};
+        inline void set_border_width(double new_border_width) {set_border_width(glm::vec4(new_border_width));};
+        inline void set_border_width(glm::vec4 new_border_width) {a_border_width = new_border_width;};
         virtual void set_object_scale(double new_scale) {
             double absolute_width = static_cast<double>(window_struct()->window_ratio());
             if(transform_parent() != 0)absolute_width *= transform_parent()->absolute_scale()[0] / transform_parent()->absolute_scale()[1];

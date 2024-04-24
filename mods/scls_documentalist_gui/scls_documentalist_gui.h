@@ -39,16 +39,24 @@ namespace scls_documentalist_gui {
 
         // Load the entire gui
         void load();
+        // Load the welcome page body
+        void load_help_body();
         // Load the help navigation
         void load_help_navigation();
         // Load the main header
         void load_main_header();
+        // Load the needed textures
+        void load_textures();
         // Load the welcome page footer
         void load_welcome_page_footer();
 
         // Run the gui
         void start();
     private:
+        // Body of the help
+        // Parent page of the help body
+        scls::HUD_Page* a_help_body = 0;
+
         // Navigation for the help
         // Parent page of the navigation
         scls::HUD_Page* a_help_navigation = 0;

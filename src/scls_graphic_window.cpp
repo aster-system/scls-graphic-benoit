@@ -254,7 +254,7 @@ namespace scls {
     // Render the scene
     void Window::render() {
         // Clear OpenGL window
-        glClearColor(background_color().red(), background_color().green(), background_color().blue(), background_color().alpha());
+        glClearColor(background_color().red() / 255.0, background_color().green() / 255.0, background_color().blue() / 255.0, background_color().alpha() / 255.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Update the cursor texture
