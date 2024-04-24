@@ -61,59 +61,6 @@ namespace scls {
 
     //*********
     //
-    // _Page hiddens methods
-    //
-    //*********
-
-    // _Page base constructor
-    _Page::_Page(_Window_Advanced_Struct* window_struct, std::string name) : Object(window_struct, name) {
-
-    }
-
-    // _Page base destructor
-    _Page::~_Page() {
-        for(std::map<std::string, Object*>::iterator it = objects().begin();it!=objects().end();it++) {
-            delete it->second; it->second = 0;
-        }
-    }
-
-    //*********
-    //
-    // _Page operating
-    //
-    //*********
-
-    // Render the page
-    void _Page::render() {
-        Object::render();
-
-        for(int i = 0;i<static_cast<int>(children().size());i++) {
-            Object* ob = children()[i];
-            if(ob->visible()) {
-                ob->render();
-            }
-        }
-    }
-
-    // Soft reset the page
-    void _Page::soft_reset() {
-        for(std::map<std::string, Object*>::iterator it = objects().begin();it!=objects().end();it++) {
-            it->second->soft_reset();
-        }
-    }
-
-    // Update the page
-    void _Page::update() {
-        for(std::map<std::string, Object*>::iterator it = objects().begin();it!=objects().end();it++) {
-            Object* ob = it->second;
-            if(ob->visible()) {
-                ob->update();
-            }
-        }
-    }
-
-    //*********
-    //
     // Window main functions
     //
     //*********
@@ -207,8 +154,8 @@ namespace scls {
         // Destroy the cursor
         if(cursor() != 0) glfwDestroyCursor(cursor());
 
-        std::map<std::string, _Page*>& all_pages = pages();
-        for (std::map<std::string, _Page*>::iterator it = all_pages.begin(); it != all_pages.end(); it++)
+        std::map<std::string, Object*>& all_pages = pages();
+        for (std::map<std::string, Object*>::iterator it = all_pages.begin(); it != all_pages.end(); it++)
         {
             delete it->second; // Destroy each pages
             it->second = 0;
@@ -325,7 +272,7 @@ namespace scls {
         glDepthFunc(GL_ALWAYS);
         if (displayed_pages_names().size() > 0)
         {
-            std::vector<_Page*> to_display = displayed_pages();
+            std::vector<Object*> to_display = displayed_pages();
             for(int i = 0;i<static_cast<int>(to_display.size());i++) {
                 to_display[i]->render();
             }
@@ -340,7 +287,7 @@ namespace scls {
     void Window::update() {
         if (displayed_pages_names().size() > 0)
         {
-            std::vector<_Page*> to_display = displayed_pages();
+            std::vector<Object*> to_display = displayed_pages();
             for(int i = 0;i<static_cast<int>(to_display.size());i++) {
                 to_display[i]->update();
             }
@@ -433,7 +380,7 @@ namespace scls {
         // Update the event of the pages
         if (displayed_pages_names().size() > 0)
         {
-            std::vector<_Page*> to_display = displayed_pages();
+            std::vector<Object*> to_display = displayed_pages();
             for(int i = 0;i<static_cast<int>(to_display.size());i++) {
                 to_display[i]->update_event();
             }

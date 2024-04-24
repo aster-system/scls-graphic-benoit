@@ -207,7 +207,7 @@ namespace scls {
         glm::vec4 a_text_offset = glm::vec4(0, 0, 0, 0);
     };
 
-    class HUD_Page : public _Page, public HUD_Object {
+    class HUD_Page : public HUD_Object {
         // Class representing an HUD page to display on the window
     public:
 
@@ -225,10 +225,10 @@ namespace scls {
         // Render the page
         virtual void render();
         // Function called when the page is unload
-        virtual void unload_page() {
-            _Page::unload_page();
+        virtual void unload() {
+            HUD_Object::unload();
             // Soft reset the page
-            _Page::soft_reset();
+            soft_reset();
 
             // Check the overflighted cursor
             a_overflighted_object = 0;
@@ -238,14 +238,6 @@ namespace scls {
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline HUD_Object* overflighted_object(){return a_overflighted_object;};
-        inline _Window_Advanced_Struct* window_struct() {return _Page::window_struct();};
-
-        // Change the position of the page
-        inline void set_position(glm::vec2 new_position) {_Page::set_position(new_position);};
-        // Change the scale of the page
-        inline void set_scale(double new_scale) {_Page::set_scale(new_scale);};
-        // Change the scale of the page
-        inline void set_scale(glm::vec2 new_scale) {_Page::set_scale(new_scale);};
     private:
         // Handle the overflighted object
         // Pointer to the overflighted object

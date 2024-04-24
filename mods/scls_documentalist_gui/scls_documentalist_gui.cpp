@@ -46,6 +46,7 @@ namespace scls_documentalist_gui {
     void SCLS_Documentalist_GUI::load_help_navigation() {
         // Navigation for the help
         a_help_navigation = new_page<scls::HUD_Page>("help_navigation");
+        a_help_navigation->set_border_width(0.01);
         a_help_navigation->set_position(glm::vec3(-0.75, 1.0/3.0 - MAIN_HEADER_HEIGHT, 1));
         a_help_navigation->set_scale(glm::vec3(1.0/2.0, 4.0/3.0 - MAIN_HEADER_HEIGHT, 1));
     }

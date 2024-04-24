@@ -42,104 +42,6 @@ namespace scls {
 
     //*********
     //
-    // Page class
-    //
-    //*********
-
-    class _Page : public Object {
-        // Class representing a page in the window
-    public:
-
-        //*********
-        //
-        // _Page hiddens methods
-        //
-        //*********
-
-        // _Page base constructor
-        _Page(_Window_Advanced_Struct* window_struct, std::string name);
-        // _Page base destructor
-        virtual ~_Page();
-
-        // Getters and setters (ONLY WITH ATTRIBUTES)
-        inline GLFWcursor* cursor() {return a_cursor;};
-        inline std::string name() const {return a_name;};
-
-        //*********
-        //
-        // _Page operating
-        //
-        //*********
-
-        // Render the page
-        virtual void render();
-        // Soft reset the page
-        virtual void soft_reset();
-        // Function called when the page is unload
-        virtual void unload_page() {};
-        // Update the page
-        virtual void update();
-        // Update the event of the page
-        virtual void update_event(){soft_reset();};
-
-        //*********
-        //
-        // _Page transform system
-        //
-        //*********
-
-        // Change the position of the page
-        inline void set_position(glm::vec2 new_position) {transform()->set_position(glm::vec3(new_position[0], new_position[1], 0));};
-        // Change the scale of the page
-        inline void set_scale(double new_scale) {transform()->set_scale(glm::vec3(new_scale, new_scale, new_scale));};
-        // Change the scale of the page
-        inline void set_scale(glm::vec2 new_scale) {transform()->set_scale(glm::vec3(new_scale[0], new_scale[1], 1));};
-
-        //*********
-        //
-        // Window page handling
-        //
-        //*********
-
-        // Returns if the page contains an object or not
-        inline bool contains_object(std::string object_name) {for(std::map<std::string, Object*>::iterator it = objects().begin();it!=objects().end();it++) if(it->first == object_name) return true; return false;};
-        // Creates an object into the page and returns it
-        template <typename O = Object>
-        O* new_object(std::string object_name, Object* parent = 0, std::string object_texture = "");
-
-        // Getters and setters (ONLY WITH ATTRIBUTES)
-        inline std::vector<Object*>& children(){return a_children;};
-        std::map<std::string, Object*>& objects() {return a_objects;};
-
-    protected:
-
-        //*********
-        //
-        // _Page hiddens attributes
-        //
-        //*********
-
-        // Pointer to the cursor
-        GLFWcursor* a_cursor = 0;
-
-    private:
-
-        //*********
-        //
-        // _Page hiddens attributes
-        //
-        //*********
-
-        // Direct children of the page
-        std::vector<Object*> a_children = std::vector<Object*>();
-        // Objects in the page
-        std::map<std::string, Object*> a_objects = std::map<std::string, Object*>();
-        // Name of the page
-        std::string a_name = "";
-    };
-
-    //*********
-    //
     // Window class
     //
     //*********
@@ -203,10 +105,10 @@ namespace scls {
         _P* new_page(std::string name);
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
-        inline bool contains_page(std::string name) { for(std::map<std::string, _Page*>::iterator it = pages().begin();it!=pages().end();it++) if(it->first == name) return true; return false;};
+        inline bool contains_page(std::string name) { for(std::map<std::string, Object*>::iterator it = pages().begin();it!=pages().end();it++) if(it->first == name) return true; return false;};
         inline bool contains_displayed_page(std::string name) { for(int i = 0;i<static_cast<int>(displayed_pages_names().size());i++) { if(displayed_pages_names()[i] == name) return true;} return false;};
-        inline std::vector<_Page*> displayed_pages() {
-            std::vector<_Page*> to_return = std::vector<_Page*>();
+        inline std::vector<Object*> displayed_pages() {
+            std::vector<Object*> to_return = std::vector<Object*>();
             if(displayed_pages_names().size() > 0) {
                 for(int i = 0;i<static_cast<int>(displayed_pages_names().size());i++) {
                     to_return.push_back(pages()[displayed_pages_names()[i]]);
@@ -220,11 +122,11 @@ namespace scls {
         };
         inline void hide_all_pages() {
             for(int i = 0;i<static_cast<int>(displayed_pages_names().size());i++) {
-                pages()[displayed_pages_names()[i]]->unload_page();
+                pages()[displayed_pages_names()[i]]->unload();
             }
             displayed_pages_names().clear();
         };
-        inline _Page* page(std::string name) {
+        inline Object* page(std::string name) {
             if(contains_page(name)) return pages()[name];
             scls::print("Warning", "SCLS Window", "The \"" + name + "\" page you want to get does not exists.");
             return 0;
@@ -233,7 +135,7 @@ namespace scls {
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline std::vector<std::string>& displayed_pages_names() {return a_displayed_pages;};
         inline bool is_resize_possible() {return a_is_resize_possible;};
-        inline std::map<std::string, _Page*>& pages() {return a_pages;};
+        inline std::map<std::string, Object*>& pages() {return a_pages;};
         inline void set_is_resize_possible(bool new_is_resize_possible) {a_is_resize_possible = new_is_resize_possible;resize_window(window_width(), window_height());};
 
         //*********
@@ -285,7 +187,7 @@ namespace scls {
         // Names of the displayed page
         std::vector<std::string> a_displayed_pages = std::vector<std::string>();
         // Map containing each pages in the window with their name as key
-        std::map<std::string, _Page*> a_pages = std::map<std::string, _Page*>();
+        std::map<std::string, Object*> a_pages = std::map<std::string, Object*>();
 
         //*********
         //
@@ -298,54 +200,19 @@ namespace scls {
 
     //*********
     //
-    // _Page template
-    //
-    //*********
-
-    // Creates an object into the page and returns it
-    template <typename O>
-    O* _Page::new_object(std::string object_name, Object* parent, std::string object_texture) {
-        if(contains_object(object_name)) {
-            scls::print("Warning", "SCLS Page", "The \"" + object_name + "\" object you want to add in the page \"" + name() + "\" already exist.");
-            return 0;
-        }
-
-        if(object_texture == "") {
-            object_texture = object_name + "_texture";
-            window_struct()->new_texture(object_texture);
-        }
-
-        O* object = 0;
-        if(parent == 0) {
-            object = new O(window_struct(), this, object_name, object_texture);
-        }
-        else {
-            object = new O(window_struct(), parent, object_name, object_texture);
-        }
-        objects()[object_name] = object;
-
-        if(parent == 0) {
-            children().push_back(object);
-        }
-
-        return object;
-    }
-
-    //*********
-    //
     // Window template
     //
     //*********
 
     // Create a new page to the Window and return it
-    template <typename _P>
-    _P* Window::new_page(std::string name) {
+    template <typename O>
+    O* Window::new_page(std::string name) {
         if(contains_page(name)) {
             scls::print("Warning", "SCLS Window", "The \"" + name + "\" page you want to add in the window already exist.");
             return 0;
         }
 
-        _P* page = new _P(this, name);
+        O* page = new O(this, name);
         pages()[name] = page;
 
         return page;

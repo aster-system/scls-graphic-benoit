@@ -46,8 +46,14 @@ namespace scls {
 
         vao()->get_shader_program()->set_uniform4f_value("background_color", glm::vec4(background_color().red() / 255.0, background_color().green() / 255.0, background_color().blue() / 255.0, background_color().alpha() / 255.0));
         vao()->get_shader_program()->set_uniform4f_value("border_color", glm::vec4(0, 0, 0, 1));
-        vao()->get_shader_program()->set_uniform4f_value("border_width", border_width() / glm::vec4(1, texture_ratio(), 1, texture_ratio()));
         vao()->get_shader_program()->set_uniform4f_value("texture_rect", texture_rect());
+
+        if(texture() == 0) {
+            vao()->get_shader_program()->set_uniform4f_value("border_width", border_width());
+        }
+        else {
+            vao()->get_shader_program()->set_uniform4f_value("border_width", border_width() / glm::vec4(1, texture_ratio(), 1, texture_ratio()));
+        }
 
         // Call the hidden render part
         _render(matrix);
@@ -107,17 +113,17 @@ namespace scls {
     //*********
 
     // HUD_Page most basic constructor
-    HUD_Page::HUD_Page(_Window_Advanced_Struct* window_struct, std::string name) : _Page(window_struct, name), HUD_Object(window_struct, name) {
-        _Page::set_vao("hud_default");
-        HUD_Object::set_vao("hud_default");
+    HUD_Page::HUD_Page(_Window_Advanced_Struct* window_struct, std::string name) : HUD_Object(window_struct, name) {
+        set_vao("hud_default");
+        set_vao("hud_default");
     }
 
     // Render the page
     void HUD_Page::render(){
         HUD_Object::render();
 
-        for(int i = 0;i<static_cast<int>(_Page::children().size());i++) {
-            Object* ob = _Page::children()[i];
+        for(int i = 0;i<static_cast<int>(children().size());i++) {
+            Object* ob = children()[i];
             if(ob->visible()) {
                 ob->render();
             }
@@ -127,11 +133,11 @@ namespace scls {
     // Update the event of the page
     void HUD_Page::update_event() {
         // Soft reset the page
-        _Page::soft_reset();
+        soft_reset();
 
         // Check the overflighted cursor
         HUD_Object* current_overflighted_object = 0;
-        std::vector<Object*>* to_analyse = (&_Page::children());
+        std::vector<Object*>* to_analyse = (&children());
         for(int i = 0;i<static_cast<int>(to_analyse->size());i++) {
             Object* analyzed_object = (*to_analyse)[to_analyse->size() - (i + 1)];
             if(analyzed_object->type(1) == SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME) {

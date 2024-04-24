@@ -44,8 +44,13 @@ namespace scls {
         // Object destructor
         virtual ~Object();
 
+        // Creates an object into the page and returns it
+        template <typename O>
+        O* new_object(std::string object_name, std::string object_texture = "");
+
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         inline bool contains_child(Object* child) { for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] == child) {return true;}}return false;};
+        inline bool contains_child_by_name(std::string child) { for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i]->name() == child) {return true;}}return false;};
         inline bool contains_tag(std::string tag) { for (int i = 0; i < static_cast<int>(tags().size()); i++) { if (tags()[i] == tag) { return true; } } return false; };
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
@@ -81,6 +86,10 @@ namespace scls {
         void _render(glm::mat4 matrix);
         // Render the object on the window
         virtual void render();
+        // Function called when the events are updated
+        virtual void update_event(){};
+        // Function called when the object is unloaded
+        virtual void unload() {};
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         inline double texture_ratio() {return texture()->image_ratio();};
@@ -169,4 +178,23 @@ namespace scls {
         // Pointer to the Texture used to render the object
         Texture *a_texture = 0;
     };
+
+    // Creates an object into the page and returns it
+    template <typename O>
+    O* Object::new_object(std::string object_name, std::string object_texture) {
+        if(contains_child_by_name(object_name)) {
+            scls::print("Warning", "SCLS Page", "The \"" + object_name + "\" object you want to add in the page \"" + name() + "\" already exist.");
+            return 0;
+        }
+
+        if(object_texture == "") {
+            object_texture = object_name + "_texture";
+            window_struct()->new_texture(object_texture);
+        }
+
+        O* object = new O(window_struct(), this, object_name, object_texture);
+        children().push_back(object);
+
+        return object;
+    }
 }
