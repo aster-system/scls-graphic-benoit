@@ -86,7 +86,7 @@ namespace scls_documentalist_gui {
         a_help_body->set_background_color(scls::white);
         a_help_body->set_position(glm::vec3(0.25, 1.0/3.0 - MAIN_HEADER_HEIGHT, 1));
         a_help_body->set_scale(glm::vec3(3.0/2.0 * scale_multiplier, (4.0/3.0 - MAIN_HEADER_HEIGHT * 2.0) * scale_multiplier, 1));
-        a_help_body->set_object_border_width(0.003);
+        a_help_body->set_object_border_width(a_help_body->one_pixel_scale()[1]);
         // Create the logo of the help page
         scls::HUD_Object* help_body_logo = a_help_body->new_object<scls::HUD_Object>("help_body_logo", "scls_documentalist_logo");
         help_body_logo->set_object_scale(0.6);
@@ -96,7 +96,7 @@ namespace scls_documentalist_gui {
     // Load the welcome page footer
     void SCLS_Documentalist_GUI::load_welcome_page_footer() {
         // Footer of the welcome page
-        double scale_multiplier = 0.99;
+        double scale_multiplier = 0.98;
         a_welcome_footer = new_page<scls::HUD_Page>("welcome_footer");
         a_welcome_footer->set_background_color(scls::white);
         a_welcome_footer->set_position(glm::vec3(0, -2.0/3.0, 1));

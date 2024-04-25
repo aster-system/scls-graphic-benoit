@@ -77,8 +77,7 @@ public:
 		to_return += "uniform bool texture_binded;";
 		to_return += "void main(){";
 		to_return += "vec4 color = background_color;";
-		to_return += "if(tex_pos[0]<one_pixel[0]||tex_pos[1]<one_pixel[1]){";
-		//to_return += "if(tex_pos[0]<one_pixel[0]||tex_pos[1]<one_pixel[1]||tex_pos[0]<border_width[1]||tex_pos[1]<border_width[0]||tex_pos[0]>1.0-(border_width[3])||tex_pos[1]>1.0-(border_width[2])){";
+		to_return += "if(tex_pos[0]<border_width[1]||tex_pos[1]<border_width[0]||tex_pos[0]>1.0-(border_width[3])||tex_pos[1]>1.0-(border_width[2])){";
 		to_return += "color = border_color;}";
 		to_return += "else if(texture_binded && (tex_pos[0] >= texture_rect[0] && tex_pos[0] <= texture_rect[0] + texture_rect[2] && tex_pos[1] > texture_rect[1] && tex_pos[1] < texture_rect[1] + texture_rect[3])){";
 		to_return += "vec2 texture_pos = tex_pos;texture_pos[0]-=texture_rect[0];texture_pos[1]-=texture_rect[1];texture_pos[0]/=texture_rect[2];texture_pos[1]/=texture_rect[3];";

@@ -50,8 +50,6 @@ namespace scls {
         vao()->get_shader_program()->set_uniform2f_value("one_pixel", one_pixel_scale()[0], one_pixel_scale()[1]);
         vao()->get_shader_program()->set_uniform4f_value("texture_rect", texture_rect());
 
-        std::cout << "T " << name() << " " << absolute_scale()[0] << " " << absolute_scale()[1] << " " << one_pixel_scale()[0] << " " << one_pixel_scale()[1] << " " << pixel_scale()[0] << " " << pixel_scale()[1] << std::endl;
-
         // Call the hidden render part
         _render(matrix);
     }
