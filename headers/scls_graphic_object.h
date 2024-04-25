@@ -84,6 +84,8 @@ namespace scls {
 
         // Hidden parts of the render object
         void _render(glm::mat4 matrix);
+        // Function called after that the window is resized
+        virtual void after_window_resizing(glm::vec2 last_scale){for(int i = 0;i<static_cast<int>(children().size());i++){children()[i]->after_window_resizing(last_scale);}};
         // Render the object on the window
         virtual void render();
         // Function called when the events are updated
@@ -135,7 +137,7 @@ namespace scls {
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline glm::vec3 absolute_scale() {return transform()->absolute_scale();};
         inline void set_position(glm::vec3 new_position) {transform()->set_position(new_position);};
-        void set_scale(double new_scale) {transform()->set_scale(glm::vec3(new_scale, new_scale, new_scale));};
+        void set_scale(double new_scale) {set_scale(glm::vec3(new_scale, new_scale, new_scale));};
         void set_scale(glm::vec3 new_scale) {transform()->set_scale(new_scale);};
         inline glm::vec3 scale() {return transform()->get_scale();};
         Transform_Object* transform_parent() {if(transform() == 0)return 0;return transform()->get_parent();};

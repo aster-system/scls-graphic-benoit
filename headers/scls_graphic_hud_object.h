@@ -54,6 +54,13 @@
 
 // Using of the "scls" namespace to simplify the programmation
 namespace scls {
+
+    // Type of border width definition
+    enum _Border_Width_Definition {
+        Direct,
+        Pixel
+    };
+
     class HUD_Object : public Object {
         // Class representing an HUD object displayed into the window
     public:
@@ -73,6 +80,8 @@ namespace scls {
         // HUD_Object destructor
         ~HUD_Object();
 
+        // Function called after that the window is resized
+        virtual void after_window_resizing(glm::vec2 last_scale){update_hud_scale();Object::after_window_resizing(last_scale);};
         // Convert a proportion of this object height to pixels
         inline double proportion_height_to_pixel(double proportion) {double absolute_height = transform()->absolute_scale()[1]/2.0;return (absolute_height * static_cast<double>(window_struct()->window_height())) * proportion;};
         // Convert a proportion of this object width to pixels
@@ -81,6 +90,8 @@ namespace scls {
         virtual void render();
         // Reset the object without changing it
         virtual void soft_reset() {Object::soft_reset();set_is_overflighted(false);};
+        // Update the size of the HUD elements
+        virtual void update_hud_scale();
 
         // Pixel size handler
         inline unsigned int absolute_hud_x_in_pixel() {double absolute_x = (1.0 + transform()->get_absolute_position()[0]) / 2.0; return static_cast<double>(window_struct()->window_width()) * absolute_x - static_cast<double>(width_in_pixel()) / 2.0;};
@@ -89,6 +100,21 @@ namespace scls {
         inline unsigned int absolute_y_in_pixel() {double absolute_y = (1.0 + transform()->get_absolute_position()[1]) / 2.0; return static_cast<double>(window_struct()->window_height()) * absolute_y;};
         inline unsigned int height_in_pixel() {double absolute_height = absolute_object_scale()[1]/2.0;return absolute_height * static_cast<double>(window_struct()->window_height());};
         inline bool is_in_pixel(unsigned int x, unsigned int y) {return x > absolute_hud_x_in_pixel() && y > absolute_hud_y_in_pixel() && x < absolute_hud_x_in_pixel() + width_in_pixel() && y < absolute_hud_y_in_pixel() + height_in_pixel();};
+        inline glm::vec2 one_pixel_scale() {
+            return glm::vec2(static_cast<double>(2.0/(static_cast<double>(window_struct()->window_width()) * (absolute_scale()[0]))),
+                             static_cast<double>(2.0/(static_cast<double>(window_struct()->window_height()) * (absolute_scale()[1]))));
+        };
+        inline glm::vec2 pixel_scale() {
+            return glm::vec2(static_cast<double>(window_struct()->window_width()) * (absolute_scale()[0] / 2.0),
+                             static_cast<double>(window_struct()->window_height()) * (absolute_scale()[1] / 2.0));
+        };
+        inline void set_pixel_border_width(unsigned short pixel) {set_pixel_border_width(glm::vec4(pixel));};
+        inline void set_pixel_border_width(glm::vec4 pixels) {
+            glm::vec2 border_scale = one_pixel_scale();
+            set_border_width(glm::vec4(border_scale[1] * static_cast<double>(pixels[0]), border_scale[0] * static_cast<double>(pixels[1]), border_scale[1] * static_cast<double>(pixels[2]), border_scale[0] * static_cast<double>(pixels[3])));
+            a_last_border_width=pixels;
+            a_last_border_width_definition_type = _Border_Width_Definition::Pixel;
+        };
         inline void set_width_in_pixel(unsigned int width) {
             double absolute_width = width / static_cast<double>(window_struct()->window_width());
             double final_width = (absolute_width * 2) * window_struct()->window_ratio();
@@ -101,17 +127,8 @@ namespace scls {
         // Getters and setters (ONLY WITHOUT ATRIBUTES)
         inline glm::vec2 absolute_object_scale() {double absolute_width = static_cast<double>(window_struct()->window_ratio());if(parent_hud() != 0)absolute_width *= parent_hud()->absolute_scale_ratio();double new_width = absolute_scale()[1] * (texture_ratio() / absolute_width);return glm::vec2(new_width, absolute_scale()[1]);};
         inline double absolute_scale_ratio() {return absolute_scale()[0] / absolute_scale()[1];};
-        inline glm::vec2 one_pixel_scale() {
-            return glm::vec2(static_cast<double>(2.0/(static_cast<double>(window_struct()->window_width()) * (absolute_scale()[0]))),
-                             static_cast<double>(2.0/(static_cast<double>(window_struct()->window_height()) * (absolute_scale()[1]))));
-        };
         inline HUD_Object* parent_hud() {if(parent() == 0 || parent()->type(1) != SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME)return 0;return reinterpret_cast<HUD_Object*>(parent());};
-        inline glm::vec2 pixel_scale() {
-            return glm::vec2(static_cast<double>(window_struct()->window_width()) * (absolute_scale()[0] / 2.0),
-                             static_cast<double>(window_struct()->window_height()) * (absolute_scale()[1] / 2.0));
-        };
         inline double scale_ratio() {return absolute_scale_ratio();};
-        inline void set_object_border_width(double new_border_width) {set_border_width(glm::vec4(new_border_width, new_border_width / scale_ratio(), new_border_width, new_border_width / scale_ratio()));};
 
         // Getters and setters (ONLY WITH ATRIBUTES)
         inline Color background_color() {return a_background_color;};
@@ -122,7 +139,8 @@ namespace scls {
         inline unsigned long overflighted_cursor() {return a_overflighted_cursor;};
         inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
         inline void set_border_width(double new_border_width) {set_border_width(glm::vec4(new_border_width));};
-        inline void set_border_width(glm::vec4 new_border_width) {a_border_width = new_border_width;};
+        inline void set_border_width(glm::vec4 new_border_width) {a_border_width = new_border_width;a_last_border_width=new_border_width;a_last_border_width_definition_type = _Border_Width_Definition::Direct;};
+        inline void set_is_overflighted(bool new_is_overflighted) {a_is_overflighted = new_is_overflighted;};
         virtual void set_object_scale(double new_scale) {
             double absolute_width = static_cast<double>(window_struct()->window_ratio());
             if(transform_parent() != 0)absolute_width *= transform_parent()->absolute_scale()[0] / transform_parent()->absolute_scale()[1];
@@ -135,7 +153,6 @@ namespace scls {
             new_scale[0] = new_scale[0] * (texture_ratio() / absolute_width);
             set_scale(glm::vec3(new_scale[0], new_scale[1], 1));
         };
-        inline void set_is_overflighted(bool new_is_overflighted) {a_is_overflighted = new_is_overflighted;};
         inline void set_overflighted_cursor(unsigned long new_overflighted_cursor) {a_overflighted_cursor = new_overflighted_cursor;};
         inline void set_position(glm::vec2 new_position) {Object::set_position(glm::vec3(new_position[0], new_position[1], 0));};
         inline void set_texture_rect(glm::vec4 new_texture_rect) {a_texture_rect = new_texture_rect;};
@@ -151,6 +168,10 @@ namespace scls {
         Color a_background_color = Color(0, 0, 0, 0);
         // Width of the border
         glm::vec4 a_border_width = glm::vec4(0, 0, 0, 0);
+        // Contains the last user defined border width
+        glm::vec4 a_last_border_width = glm::vec4(0);
+        // Type of the last border width definition
+        _Border_Width_Definition a_last_border_width_definition_type = _Border_Width_Definition::Direct;
         // If the object is overfighted or not
         bool a_is_overflighted = false;
         // Id of the overflighted cursor

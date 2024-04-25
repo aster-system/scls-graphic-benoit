@@ -51,12 +51,15 @@ namespace scls {
 
     int _global_screen_width = 1280; // Global variable representing the width of the screen
     int _global_screen_height = 720; // Global variable representing the height of the screen
+    // If the screen as been resized and processed or not
+    bool _screen_resized = false;
 
     // Callback function for window resizing
     void _framebuffer_size_callback(GLFWwindow* window, int width, int height) {
         glViewport(0, 0, width, height);
         _global_screen_height = height;
         _global_screen_width = width;
+        _screen_resized = true;
     }
 
     //*********
@@ -230,6 +233,7 @@ namespace scls {
 
     // Properly resize the window
     void Window::resize_window(unsigned int width, unsigned int height) {
+        glm::vec2 last_size = glm::vec2(width, height);
         glfwSetWindowSize(window(), width, height);
         if(is_resize_possible()) {
             glfwSetWindowSizeLimits(window(), minimum_window_width(), minimum_window_height(), maximum_window_width(), maximum_window_height());
@@ -237,6 +241,8 @@ namespace scls {
         else {
             glfwSetWindowSizeLimits(window(), width, height, width, height);
         }
+
+        after_window_resizing(last_size);
     }
 
     //*********
@@ -314,6 +320,14 @@ namespace scls {
         {
             a_frame_count++;
         }
+
+        // Calculate the resizing of the window
+        if(_screen_resized) {
+            _screen_resized = false;
+            after_window_resizing(glm::vec2(a_last_window_width, a_last_window_height));
+        }
+        a_last_window_height = window_height();
+        a_last_window_width = window_width();
 
         // Calculate mouse move and button
         double mouse_move_x = mouse_x() - last_mouse_x();

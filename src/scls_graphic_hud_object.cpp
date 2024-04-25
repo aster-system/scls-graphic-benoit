@@ -54,6 +54,13 @@ namespace scls {
         _render(matrix);
     }
 
+    // Update the size of the HUD elements
+    void HUD_Object::update_hud_scale() {
+        if(a_last_border_width_definition_type == _Border_Width_Definition::Pixel) {
+            set_pixel_border_width(a_last_border_width);
+        }
+    }
+
     // HUD_Object destructor
     HUD_Object::~HUD_Object() {
 

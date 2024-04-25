@@ -144,6 +144,10 @@ namespace scls {
         //
         //*********
 
+        // Function called after that the window has been resized
+        virtual void after_window_resizing(glm::vec2 last_size){apply_window_resizing(last_size);};
+        // Hidden function to call the children that there has been a resizing
+        inline void apply_window_resizing(glm::vec2 last_size){for(std::map<std::string, Object*>::iterator it = pages().begin(); it != pages().end(); it++) {it->second->after_window_resizing(last_size);}};
         // Render the scene
         virtual void render();
         // Update one frame of the game
@@ -196,6 +200,10 @@ namespace scls {
         //*********
 
         float a_last_frame_time = 0; // Time when the last frame occurs, for calculating delta_time and FPS
+        // Last height of the window
+        unsigned short a_last_window_height = 0;
+        // Last width of the window
+        unsigned short a_last_window_width = 0;
     };
 
     //*********
