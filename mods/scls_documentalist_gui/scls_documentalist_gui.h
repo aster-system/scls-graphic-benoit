@@ -64,16 +64,18 @@ namespace scls_documentalist_gui {
         // Body of the help
         // Parent page of the help body
         scls::HUD_Page* a_help_body = 0;
-        // Welcome text of the help body
-        scls::HUD_Text* a_help_body_welcome = 0;
-        // Description text of the welcome part of the help body
-        scls::HUD_Text* a_help_body_welcome_description = 0;
-        // Part text of the welcome part of the help body
-        scls::HUD_Text* a_help_body_welcome_part = 0;
+        // Home text of the help body
+        scls::HUD_Text* a_help_body_home = 0;
+        // Description text of the home part of the help body
+        scls::HUD_Text* a_help_body_home_description = 0;
+        // Part text of the home part of the help body
+        scls::HUD_Text* a_help_body_home_part = 0;
 
         // Navigation for the help
         // Parent page of the navigation
         scls::HUD_Page* a_help_navigation = 0;
+        // Home text of the help body
+        scls::HUD_Text* a_help_navigation_home_button = 0;
 
         // Content of each HUD text in a specified language
         std::map<std::string, std::string> a_hud_text_content = std::map<std::string, std::string>();

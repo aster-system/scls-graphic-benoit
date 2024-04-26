@@ -46,6 +46,41 @@ namespace scls_documentalist_gui {
         load_welcome_page_footer();
     }
 
+    // Load the welcome page body
+    void SCLS_Documentalist_GUI::load_help_body() {
+        // Body of the welcome page
+        double scale_multiplier = 0.99;
+        a_help_body = new_page<scls::HUD_Page>("help_body");
+        a_help_body->set_background_color(scls::white);
+        a_help_body->set_position(glm::vec3(0.25, 1.0/3.0 - MAIN_HEADER_HEIGHT, 1));
+        a_help_body->set_scale(glm::vec3(3.0/2.0 * scale_multiplier, (4.0/3.0 - MAIN_HEADER_HEIGHT * 2.0) * scale_multiplier, 1));
+        a_help_body->set_pixel_border_width(1);
+        // Create the logo of the help page
+        scls::HUD_Object* help_body_logo = a_help_body->new_object<scls::HUD_Object>("help_body_logo", "scls_documentalist_logo");
+        help_body_logo->set_object_scale(0.6);
+        help_body_logo->set_position(glm::vec2(0, 0.19));
+        // Create the home text of the help page
+        a_help_body_home = a_help_body->new_object<scls::HUD_Text>("help_body_welcome");
+        a_help_body_home->set_font_size(50);
+        a_help_body_home->set_text(a_hud_text_content["help_body_home"]);
+        a_help_body_home->set_object_scale_width(1.75);
+        a_help_body_home->set_position(glm::vec2(0, -0.15));
+        // Create the the description text of the home part of the help page
+        a_help_body_home_description = a_help_body->new_object<scls::HUD_Text>("help_body_welcome_description");
+        a_help_body_home_description->set_font_size(30);
+        a_help_body_home_description->set_text_alignment(scls::Text_Alignment::Center);
+        a_help_body_home_description->set_text(a_hud_text_content["help_body_home_description"]);
+        a_help_body_home_description->set_object_scale_width(1.75);
+        a_help_body_home_description->set_position(glm::vec2(0, -0.3));
+        // Create the part text of the home part of the help page
+        a_help_body_home_part = a_help_body->new_object<scls::HUD_Text>("help_body_welcome_part");
+        a_help_body_home_part->set_font_size(50);
+        a_help_body_home_part->set_text_alignment(scls::Text_Alignment::Center);
+        a_help_body_home_part->set_text(a_hud_text_content["help_body_home_part"]);
+        a_help_body_home_part->set_object_scale_width(1.15);
+        a_help_body_home_part->set_position(glm::vec2(0, -0.425));
+    }
+
     // Load the help navigation
     void SCLS_Documentalist_GUI::load_help_navigation() {
         // Navigation for the help
@@ -54,26 +89,38 @@ namespace scls_documentalist_gui {
         a_help_navigation->set_position(glm::vec3(-0.75, 1.0/3.0 - MAIN_HEADER_HEIGHT, 1));
         a_help_navigation->set_scale(glm::vec3(1.0/2.0, 4.0/3.0 - MAIN_HEADER_HEIGHT * 2.0, 1));
         a_help_navigation->set_pixel_border_width(1);
+        // Y position of the buttons
+        double buttons_y = 0;
+        // Create the home button of the navigation
+        a_help_navigation_home_button = a_help_navigation->new_object<scls::HUD_Text>("help_navigation_home_button");
+        a_help_navigation_home_button->set_font_size(100);
+        a_help_navigation_home_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_help_navigation_home_button->set_text(a_hud_text_content["home"]);
+        a_help_navigation_home_button->set_object_scale_width(0.3);
+        a_help_navigation_home_button->set_position(glm::vec2(0, buttons_y));
+        buttons_y += a_help_navigation_home_button->scale()[0];
     }
 
     // Load english
     void SCLS_Documentalist_GUI::load_language_en() {
-        a_hud_text_content["help_body_welcome"] = "Welcome to SCLS Documentalist \"Agatha\" GUI !";
+        a_hud_text_content["help_body_home"] = "Welcome to SCLS Documentalist \"Agatha\" GUI";
         std::string help_body_welcome_description = "This software, made by Aster System, provides a simply use to SCLS Documentalist \"Agatha\", whitout having to\n";
         help_body_welcome_description += "handle a lot of lines of code. You can use it, as as a developer who wants to easily documentate its code, or as\n";
         help_body_welcome_description += "anybody else. The software is published under the terms of the license GPL V3.0.";
-        a_hud_text_content["help_body_welcome_description"] = scls::to_utf_8(help_body_welcome_description);
-        a_hud_text_content["help_body_welcome_part"] = scls::to_utf_8("You currently are in the help page. Browse with the\nselector at your left.");
+        a_hud_text_content["help_body_home_description"] = scls::to_utf_8(help_body_welcome_description);
+        a_hud_text_content["help_body_home_part"] = scls::to_utf_8("You currently are in the help page. Browse with the\nselector at your left.");
+        a_hud_text_content["home"] = "Home";
     }
 
     // Load french
     void SCLS_Documentalist_GUI::load_language_fr() {
-        a_hud_text_content["help_body_welcome"] = "Bienvenue sur la GUI de SCLS Documentalist \"Agatha\" !";
+        a_hud_text_content["help_body_home"] = "Bienvenue sur la GUI de SCLS Documentalist \"Agatha\"";
         std::string help_body_welcome_description = "Ce logiciel, fait par Aster Système, vous permet d'utiliser SCLS Documentalist \"Agatha\" simplement, sans avoir\n";
         help_body_welcome_description += "à manipuler de lignes de code. Vous pouvez l'utiliser, que vous soyez un développeur qui veut documenter facilement\n";
         help_body_welcome_description += "son code, soit que vous êtes quoi que ce soit d'autre. Il vous est distribué sous la license libre GPL V3.0.";
-        a_hud_text_content["help_body_welcome_description"] = scls::to_utf_8(help_body_welcome_description);
-        a_hud_text_content["help_body_welcome_part"] = scls::to_utf_8("Vous êtes actuellement sur la page d'aide. Naviguez\navec le sélécteur à gauche.");
+        a_hud_text_content["help_body_home_description"] = scls::to_utf_8(help_body_welcome_description);
+        a_hud_text_content["help_body_home_part"] = scls::to_utf_8("Vous êtes actuellement sur la page d'aide. Naviguez\navec le sélécteur à gauche.");
+        a_hud_text_content["home"] = "Accueil";
     }
 
     // Load the main header
@@ -99,41 +146,6 @@ namespace scls_documentalist_gui {
         new_texture("scls_documentalist_logo", "assets/textures/scls_documentalist_logo.png", false);
     }
 
-    // Load the welcome page body
-    void SCLS_Documentalist_GUI::load_help_body() {
-        // Body of the welcome page
-        double scale_multiplier = 0.99;
-        a_help_body = new_page<scls::HUD_Page>("help_body");
-        a_help_body->set_background_color(scls::white);
-        a_help_body->set_position(glm::vec3(0.25, 1.0/3.0 - MAIN_HEADER_HEIGHT, 1));
-        a_help_body->set_scale(glm::vec3(3.0/2.0 * scale_multiplier, (4.0/3.0 - MAIN_HEADER_HEIGHT * 2.0) * scale_multiplier, 1));
-        a_help_body->set_pixel_border_width(1);
-        // Create the logo of the help page
-        scls::HUD_Object* help_body_logo = a_help_body->new_object<scls::HUD_Object>("help_body_logo", "scls_documentalist_logo");
-        help_body_logo->set_object_scale(0.6);
-        help_body_logo->set_position(glm::vec2(0, 0.19));
-        // Create the welcome text of the help page
-        a_help_body_welcome = a_help_body->new_object<scls::HUD_Text>("help_body_welcome");
-        a_help_body_welcome->set_font_size(50);
-        a_help_body_welcome->set_text(a_hud_text_content["help_body_welcome"]);
-        a_help_body_welcome->set_object_scale_width(1.75);
-        a_help_body_welcome->set_position(glm::vec2(0, -0.15));
-        // Create the the description text of the welcome part of the help page
-        a_help_body_welcome_description = a_help_body->new_object<scls::HUD_Text>("help_body_welcome_description");
-        a_help_body_welcome_description->set_font_size(30);
-        a_help_body_welcome_description->set_text_alignment(scls::Text_Alignment::Center);
-        a_help_body_welcome_description->set_text(a_hud_text_content["help_body_welcome_description"]);
-        a_help_body_welcome_description->set_object_scale_width(1.75);
-        a_help_body_welcome_description->set_position(glm::vec2(0, -0.3));
-        // Create the part text of the welcome part of the help page
-        a_help_body_welcome_part = a_help_body->new_object<scls::HUD_Text>("help_body_welcome_part");
-        a_help_body_welcome_part->set_font_size(50);
-        a_help_body_welcome_part->set_text_alignment(scls::Text_Alignment::Center);
-        a_help_body_welcome_part->set_text(a_hud_text_content["help_body_welcome_part"]);
-        a_help_body_welcome_part->set_object_scale_width(1.15);
-        a_help_body_welcome_part->set_position(glm::vec2(0, -0.425));
-    }
-
     // Load the welcome page footer
     void SCLS_Documentalist_GUI::load_welcome_page_footer() {
         // Footer of the welcome page
@@ -147,7 +159,10 @@ namespace scls_documentalist_gui {
 
     // Reload each HUD text
     void SCLS_Documentalist_GUI::reload_text() {
-        a_help_body_welcome->set_text(a_hud_text_content["help_body_welcome"]);
+        a_help_body_home->set_text(a_hud_text_content["help_body_home"]);
+        a_help_body_home_description->set_text(a_hud_text_content["help_body_home_description"]);
+        a_help_body_home_part->set_text(a_hud_text_content["help_body_home_part"]);
+        a_help_navigation_home_button->set_text(a_hud_text_content["home"]);
     }
 
     // Run the GUI
