@@ -57,8 +57,14 @@ namespace scls {
 
     // Type of border width definition
     enum _Border_Width_Definition {
-        Direct,
-        Pixel
+        Direct_Border_Width,
+        Pixel_Border_Width
+    };
+
+    // Type of scale definition
+    enum _Scale_Definition {
+        Direct_Scale,
+        Object_Scale
     };
 
     class HUD_Object : public Object {
@@ -113,13 +119,7 @@ namespace scls {
             glm::vec2 border_scale = one_pixel_scale();
             set_border_width(glm::vec4(border_scale[1] * static_cast<double>(pixels[0]), border_scale[0] * static_cast<double>(pixels[1]), border_scale[1] * static_cast<double>(pixels[2]), border_scale[0] * static_cast<double>(pixels[3])));
             a_last_border_width=pixels;
-            a_last_border_width_definition_type = _Border_Width_Definition::Pixel;
-        };
-        inline void set_width_in_pixel(unsigned int width) {
-            double absolute_width = width / static_cast<double>(window_struct()->window_width());
-            double final_width = (absolute_width * 2) * window_struct()->window_ratio();
-            if(parent() != 0) final_width = parent_hud()->absolute_scale()[1] / final_width;
-            set_scale(final_width / texture_ratio());
+            a_last_border_width_definition_type = _Border_Width_Definition::Pixel_Border_Width;
         };
         inline glm::vec2 size_in_pixel() {return glm::vec2(width_in_pixel(), height_in_pixel());};
         inline unsigned int width_in_pixel() {double absolute_width = (absolute_scale()[0]/2.0);return absolute_width * static_cast<double>(window_struct()->window_width());};
@@ -139,22 +139,25 @@ namespace scls {
         inline unsigned long overflighted_cursor() {return a_overflighted_cursor;};
         inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
         inline void set_border_width(double new_border_width) {set_border_width(glm::vec4(new_border_width));};
-        inline void set_border_width(glm::vec4 new_border_width) {a_border_width = new_border_width;a_last_border_width=new_border_width;a_last_border_width_definition_type = _Border_Width_Definition::Direct;};
+        inline void set_border_width(glm::vec4 new_border_width) {a_border_width = new_border_width;a_last_border_width=new_border_width;a_last_border_width_definition_type = _Border_Width_Definition::Direct_Border_Width;};
         inline void set_is_overflighted(bool new_is_overflighted) {a_is_overflighted = new_is_overflighted;};
-        virtual void set_object_scale(double new_scale) {
-            double absolute_width = static_cast<double>(window_struct()->window_ratio());
-            if(transform_parent() != 0)absolute_width *= transform_parent()->absolute_scale()[0] / transform_parent()->absolute_scale()[1];
-            double new_width = new_scale * (texture_ratio() / absolute_width);
-            set_scale(glm::vec3(new_width, new_scale, 1));
-        };
-        virtual void set_object_scale(glm::vec2 new_scale) {
+        virtual void set_object_scale(double new_scale) {set_object_scale(glm::vec2(new_scale));};
+        virtual void set_object_scale(glm::vec2 new_scale, bool register_scaling = true) {
+            glm::vec2 new_scale_unmodified = new_scale;
             double absolute_width = static_cast<double>(window_struct()->window_ratio());
             if(transform_parent() != 0)absolute_width *= transform_parent()->absolute_scale()[0] / transform_parent()->absolute_scale()[1];
             new_scale[0] = new_scale[0] * (texture_ratio() / absolute_width);
-            set_scale(glm::vec3(new_scale[0], new_scale[1], 1));
+            set_scale(new_scale);
+            a_last_scale = new_scale_unmodified;
+            a_last_scale_definition_type = _Scale_Definition::Object_Scale;
         };
         inline void set_overflighted_cursor(unsigned long new_overflighted_cursor) {a_overflighted_cursor = new_overflighted_cursor;};
         inline void set_position(glm::vec2 new_position) {Object::set_position(glm::vec3(new_position[0], new_position[1], 0));};
+        void set_scale(glm::vec2 new_scale) {
+            Object::set_scale(glm::vec3(new_scale[0], new_scale[1], 1));
+            a_last_scale = new_scale;
+            a_last_scale_definition_type = _Scale_Definition::Direct_Scale;
+        };
         inline void set_texture_rect(glm::vec4 new_texture_rect) {a_texture_rect = new_texture_rect;};
         inline glm::vec4 texture_rect() {return a_texture_rect;};
     private:
@@ -168,16 +171,27 @@ namespace scls {
         Color a_background_color = Color(0, 0, 0, 0);
         // Width of the border
         glm::vec4 a_border_width = glm::vec4(0, 0, 0, 0);
-        // Contains the last user defined border width
-        glm::vec4 a_last_border_width = glm::vec4(0);
-        // Type of the last border width definition
-        _Border_Width_Definition a_last_border_width_definition_type = _Border_Width_Definition::Direct;
         // If the object is overfighted or not
         bool a_is_overflighted = false;
         // Id of the overflighted cursor
         unsigned long a_overflighted_cursor = GLFW_ARROW_CURSOR;
         // Rect of the texture
         glm::vec4 a_texture_rect = glm::vec4(0, 0, 1, 1);
+
+        //*********
+        //
+        // Last modified attributes
+        //
+        //*********
+
+        // Contains the last user defined border width
+        glm::vec4 a_last_border_width = glm::vec4(0);
+        // Type of the last border width definition
+        _Border_Width_Definition a_last_border_width_definition_type = _Border_Width_Definition::Direct_Border_Width;
+        // Contains the last user defined scale
+        glm::vec2 a_last_scale = glm::vec2(1);
+        // Type of the last scale definition
+        _Scale_Definition a_last_scale_definition_type = _Scale_Definition::Direct_Scale;
     };
 
     class HUD_Text : public HUD_Object {
