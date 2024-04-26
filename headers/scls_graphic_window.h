@@ -89,10 +89,22 @@ namespace scls {
         inline void show_cursor() { glfwSetInputMode(window(), GLFW_CURSOR, GLFW_CURSOR_NORMAL); _cursor_state = GLFW_CURSOR_NORMAL; };
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
-        void set_maximum_window_height(unsigned short new_max_window_height) { _Window_Base_Struct::set_maximum_window_height(new_max_window_height); resize_window(window_width(), window_height()); };
-        void set_maximum_window_width(unsigned short new_max_window_width) { _Window_Base_Struct::set_maximum_window_width(new_max_window_width); resize_window(window_width(), window_height()); };
-        void set_minimum_window_height(unsigned short new_min_window_height) { _Window_Base_Struct::set_minimum_window_height(new_min_window_height); resize_window(window_width(), window_height()); };
-        void set_minimum_window_width(unsigned short new_min_window_width) { _Window_Base_Struct::set_minimum_window_width(new_min_window_width); resize_window(window_width(), window_height()); };
+        void set_maximum_window_height(unsigned short new_max_window_height) {
+            _Window_Base_Struct::set_maximum_window_height(new_max_window_height);
+            resize_window(window_width(), window_height());
+        };
+        void set_maximum_window_width(unsigned short new_max_window_width) {
+            _Window_Base_Struct::set_maximum_window_width(new_max_window_width);
+            resize_window(window_width(), window_height());
+        };
+        void set_minimum_window_height(unsigned short new_min_window_height) {
+            _Window_Base_Struct::set_minimum_window_height(new_min_window_height);
+            resize_window(window_width(), window_height());
+        };
+        void set_minimum_window_width(unsigned short new_min_window_width) {
+            _Window_Base_Struct::set_minimum_window_width(new_min_window_width);
+            resize_window(window_width(), window_height());
+        };
 
         //*********
         //
@@ -169,7 +181,7 @@ namespace scls {
         // Pointer to the GLFW window
         GLFWwindow* a_window = 0;
         // If the window can resize or not or not
-        bool a_is_resize_possible = false;
+        bool a_is_resize_possible = true;
         // If the window should continue to run or not
         bool a_is_running = true;
 

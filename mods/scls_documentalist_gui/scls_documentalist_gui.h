@@ -50,16 +50,33 @@ namespace scls_documentalist_gui {
         // Load the welcome page footer
         void load_welcome_page_footer();
 
+        // Load each language
+        // Load english
+        void load_language_en();
+        // Load french
+        void load_language_fr();
+        // Reload each HUD text
+        void reload_text();
+
         // Run the gui
         void start();
     private:
         // Body of the help
         // Parent page of the help body
         scls::HUD_Page* a_help_body = 0;
+        // Welcome text of the help body
+        scls::HUD_Text* a_help_body_welcome = 0;
+        // Description text of the welcome part of the help body
+        scls::HUD_Text* a_help_body_welcome_description = 0;
+        // Part text of the welcome part of the help body
+        scls::HUD_Text* a_help_body_welcome_part = 0;
 
         // Navigation for the help
         // Parent page of the navigation
         scls::HUD_Page* a_help_navigation = 0;
+
+        // Content of each HUD text in a specified language
+        std::map<std::string, std::string> a_hud_text_content = std::map<std::string, std::string>();
 
         // Main header for the mains buttons
         // Parent page of the header

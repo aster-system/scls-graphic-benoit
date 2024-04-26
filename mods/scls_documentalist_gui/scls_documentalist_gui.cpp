@@ -37,6 +37,7 @@ namespace scls_documentalist_gui {
 
     // Load the entire gui
     void SCLS_Documentalist_GUI::load() {
+        load_language_fr();
         load_textures();
 
         load_help_navigation();
@@ -53,6 +54,26 @@ namespace scls_documentalist_gui {
         a_help_navigation->set_position(glm::vec3(-0.75, 1.0/3.0 - MAIN_HEADER_HEIGHT, 1));
         a_help_navigation->set_scale(glm::vec3(1.0/2.0, 4.0/3.0 - MAIN_HEADER_HEIGHT * 2.0, 1));
         a_help_navigation->set_pixel_border_width(1);
+    }
+
+    // Load english
+    void SCLS_Documentalist_GUI::load_language_en() {
+        a_hud_text_content["help_body_welcome"] = "Welcome to SCLS Documentalist \"Agatha\" GUI !";
+        std::string help_body_welcome_description = "This software, made by Aster System, provides a simply use to SCLS Documentalist \"Agatha\", whitout having to\n";
+        help_body_welcome_description += "handle a lot of lines of code. You can use it, as as a developer who wants to easily documentate its code, or as\n";
+        help_body_welcome_description += "anybody else. The software is published under the terms of the license GPL V3.0.";
+        a_hud_text_content["help_body_welcome_description"] = scls::to_utf_8(help_body_welcome_description);
+        a_hud_text_content["help_body_welcome_part"] = scls::to_utf_8("You currently are in the help page. Browse with the\nselector at your left.");
+    }
+
+    // Load french
+    void SCLS_Documentalist_GUI::load_language_fr() {
+        a_hud_text_content["help_body_welcome"] = "Bienvenue sur la GUI de SCLS Documentalist \"Agatha\" !";
+        std::string help_body_welcome_description = "Ce logiciel, fait par Aster Système, vous permet d'utiliser SCLS Documentalist \"Agatha\" simplement, sans avoir\n";
+        help_body_welcome_description += "à manipuler de lignes de code. Vous pouvez l'utiliser, que vous soyez un développeur qui veut documenter facilement\n";
+        help_body_welcome_description += "son code, soit que vous êtes quoi que ce soit d'autre. Il vous est distribué sous la license libre GPL V3.0.";
+        a_hud_text_content["help_body_welcome_description"] = scls::to_utf_8(help_body_welcome_description);
+        a_hud_text_content["help_body_welcome_part"] = scls::to_utf_8("Vous êtes actuellement sur la page d'aide. Naviguez\navec le sélécteur à gauche.");
     }
 
     // Load the main header
@@ -91,6 +112,26 @@ namespace scls_documentalist_gui {
         scls::HUD_Object* help_body_logo = a_help_body->new_object<scls::HUD_Object>("help_body_logo", "scls_documentalist_logo");
         help_body_logo->set_object_scale(0.6);
         help_body_logo->set_position(glm::vec2(0, 0.19));
+        // Create the welcome text of the help page
+        a_help_body_welcome = a_help_body->new_object<scls::HUD_Text>("help_body_welcome");
+        a_help_body_welcome->set_font_size(50);
+        a_help_body_welcome->set_text(a_hud_text_content["help_body_welcome"]);
+        a_help_body_welcome->set_object_scale_width(1.75);
+        a_help_body_welcome->set_position(glm::vec2(0, -0.15));
+        // Create the the description text of the welcome part of the help page
+        a_help_body_welcome_description = a_help_body->new_object<scls::HUD_Text>("help_body_welcome_description");
+        a_help_body_welcome_description->set_font_size(30);
+        a_help_body_welcome_description->set_text_alignment(scls::Text_Alignment::Center);
+        a_help_body_welcome_description->set_text(a_hud_text_content["help_body_welcome_description"]);
+        a_help_body_welcome_description->set_object_scale_width(1.75);
+        a_help_body_welcome_description->set_position(glm::vec2(0, -0.3));
+        // Create the part text of the welcome part of the help page
+        a_help_body_welcome_part = a_help_body->new_object<scls::HUD_Text>("help_body_welcome_part");
+        a_help_body_welcome_part->set_font_size(50);
+        a_help_body_welcome_part->set_text_alignment(scls::Text_Alignment::Center);
+        a_help_body_welcome_part->set_text(a_hud_text_content["help_body_welcome_part"]);
+        a_help_body_welcome_part->set_object_scale_width(1.15);
+        a_help_body_welcome_part->set_position(glm::vec2(0, -0.425));
     }
 
     // Load the welcome page footer
@@ -102,6 +143,11 @@ namespace scls_documentalist_gui {
         a_welcome_footer->set_position(glm::vec3(0, -2.0/3.0, 1));
         a_welcome_footer->set_scale(glm::vec3(2.0 * scale_multiplier, (2.0/3.0) * scale_multiplier, 1));
         a_welcome_footer->set_pixel_border_width(1);
+    }
+
+    // Reload each HUD text
+    void SCLS_Documentalist_GUI::reload_text() {
+        a_help_body_welcome->set_text(a_hud_text_content["help_body_welcome"]);
     }
 
     // Run the GUI
@@ -124,8 +170,10 @@ namespace scls_documentalist_gui {
 
     // Use the agatha gui easily with a function
     void use_scls_documentalist_gui(std::string exec_path) {
-        SCLS_Documentalist_GUI* window = new SCLS_Documentalist_GUI(900, 900, exec_path);
+        SCLS_Documentalist_GUI* window = new SCLS_Documentalist_GUI(960, 540, exec_path);
         window->load();
+        window->set_minimum_window_height(540);
+        window->set_minimum_window_width(960);
         window->start();
 
         delete window; window = 0;
