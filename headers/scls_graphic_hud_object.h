@@ -235,11 +235,11 @@ namespace scls {
         inline void set_font_family(std::string new_font_family) {a_font_family = new_font_family;a_modified = true;};
         inline void set_font_size(unsigned short new_font_size) {a_font_size = new_font_size;a_modified = true;};
         inline void set_text(std::string new_text) {if(new_text == a_text)return;a_text = new_text;a_modified = true;};
-        inline void set_text_alignment(Text_Alignment new_text_alignment) {a_text_alignment = new_text_alignment;};
+        inline void set_text_alignment(Text_Alignment_Horizontal new_text_alignment) {a_text_alignment = new_text_alignment;};
         inline void set_text_offset(double new_text_offset) {a_text_offset = glm::vec4(new_text_offset);set_texture_rect(glm::vec4(new_text_offset, new_text_offset, 1.0 - new_text_offset * 2.0, 1.0 - new_text_offset * 2.0));};
         inline void set_text_offset(glm::vec4 new_text_offset) {a_text_offset = new_text_offset;set_texture_rect(glm::vec4(new_text_offset[1], new_text_offset[0], 1.0 - (new_text_offset[1] + new_text_offset[3]), 1.0 - (new_text_offset[0] + new_text_offset[2])));};
         inline std::string text() {return a_text;};
-        inline Text_Alignment text_alignment() {return a_text_alignment;};
+        inline Text_Alignment_Horizontal text_alignment() {return a_text_alignment;};
         inline glm::vec4 text_offset() {return a_text_offset;};
     private:
         //*********
@@ -259,7 +259,7 @@ namespace scls {
         // Text in the object
         std::string a_text = "";
         // Alignment of the text
-        Text_Alignment a_text_alignment = Text_Alignment::Left;
+        Text_Alignment_Horizontal a_text_alignment = Text_Alignment_Horizontal::Left;
         // Offset of the text
         glm::vec4 a_text_offset = glm::vec4(0, 0, 0, 0);
     };

@@ -341,6 +341,42 @@ namespace scls {
         inline int window_height() const { return a_window_height; };
         inline int window_width() const { return a_window_width; };
 
+        //*********
+        //
+        // SCLS Text generator
+        //
+        //*********
+
+        // Returns if the struct contains a text generator
+        inline bool contains_text_image_generator(std::string generator_name) {
+            for(std::map<std::string, Text_Image_Generator*>::iterator it = text_image_generators().begin();it!=text_image_generators().end();it++) {
+                if(it->first == generator_name) return true;
+            }
+            return false;
+        };
+        // Returns a text generator in the struct, or 0 if it does not exist
+        inline Text_Image_Generator* text_image_generator(std::string generator_name) {
+            for(std::map<std::string, Text_Image_Generator*>::iterator it = text_image_generators().begin();it!=text_image_generators().end();it++) {
+                if(it->first == generator_name) return it->second;
+            }
+
+            if(generator_name == "default") {
+                Text_Image_Generator* to_return = new Text_Image_Generator();
+                text_image_generators()["default"] = to_return;
+                return to_return;
+            }
+
+            return 0;
+        };
+        // Returns the default text generator in the struct
+        Text_Image_Generator* text_image_generator() {
+            Text_Image_Generator* to_return = text_image_generator("default");
+            return to_return;
+        };
+
+        // Getters and setters
+        inline std::map<std::string, Text_Image_Generator*>& text_image_generators() {return a_text_image_generator;};
+
     protected:
 
         //*********
@@ -390,6 +426,14 @@ namespace scls {
         // Time since the last FPS calculation
         double a_time_since_last_fps_calculation = 0;
 
+        //*********
+        //
+        // SCLS Text generator
+        //
+        //*********
+
+        // Each text generator, with their name as key
+        std::map<std::string, Text_Image_Generator*> a_text_image_generator = std::map<std::string, Text_Image_Generator*>();
     private:
 
         //*********
