@@ -99,10 +99,11 @@ namespace scls {
         if(!a_modified) return;
 
         // Create the texture
-        Text_Image_Data datas; datas.red = font_color().red(); datas.green = font_color().green(); datas.blue = font_color().blue(); datas.alpha = font_color().alpha();
-        datas.background_red = background_color().red(); datas.background_green = background_color().green(); datas.background_blue = background_color().blue(); datas.background_alpha = background_color().alpha();
-        datas.font = scls::get_system_font(font_family()); datas.font_size = font_size(); datas.alignment = text_alignment();
-        Image* new_image_texture = text_image(text(), datas);
+        Text_Image* current_text_image = window_struct()->text_image_generator()->new_text_image(text());
+        current_text_image->global_style().font_size = font_size();
+        current_text_image->global_style().alignment_horizontal = Text_Alignment_Horizontal::Center;
+        Image* new_image_texture = current_text_image->image();
+        delete current_text_image; current_text_image = 0;
 
         // Update the texture
         texture()->set_image(new_image_texture);

@@ -104,22 +104,22 @@ namespace scls_documentalist_gui {
     // Load english
     void SCLS_Documentalist_GUI::load_language_en() {
         a_hud_text_content["help_body_home"] = "Welcome to SCLS Documentalist \"Agatha\" GUI";
-        std::string help_body_welcome_description = "This software, made by Aster System, provides a simply use to SCLS Documentalist \"Agatha\", whitout having to\n";
-        help_body_welcome_description += "handle a lot of lines of code. You can use it, as as a developer who wants to easily documentate its code, or as\n";
+        std::string help_body_welcome_description = "This software, made by Aster System, provides a simply use to SCLS Documentalist \"Agatha\", whitout having to</br>";
+        help_body_welcome_description += "handle a lot of lines of code. You can use it, as as a developer who wants to easily documentate its code, or as</br>";
         help_body_welcome_description += "anybody else. The software is published under the terms of the license GPL V3.0.";
         a_hud_text_content["help_body_home_description"] = scls::to_utf_8(help_body_welcome_description);
-        a_hud_text_content["help_body_home_part"] = scls::to_utf_8("You currently are in the help page. Browse with the\nselector at your left.");
+        a_hud_text_content["help_body_home_part"] = scls::to_utf_8("You currently are in the help page. Browse with the</br>selector at your left.");
         a_hud_text_content["home"] = "Home";
     }
 
     // Load french
     void SCLS_Documentalist_GUI::load_language_fr() {
         a_hud_text_content["help_body_home"] = "Bienvenue sur la GUI de SCLS Documentalist \"Agatha\"";
-        std::string help_body_welcome_description = "Ce logiciel, fait par Aster Système, vous permet d'utiliser SCLS Documentalist \"Agatha\" simplement, sans avoir\n";
-        help_body_welcome_description += "à manipuler de lignes de code. Vous pouvez l'utiliser, que vous soyez un développeur qui veut documenter facilement\n";
+        std::string help_body_welcome_description = "Ce logiciel, fait par Aster Système, vous permet d'utiliser SCLS Documentalist \"Agatha\" simplement, sans avoir</br>";
+        help_body_welcome_description += "à manipuler de lignes de code. Vous pouvez l'utiliser, que vous soyez un développeur qui veut documenter facilement</br>";
         help_body_welcome_description += "son code, soit que vous êtes quoi que ce soit d'autre. Il vous est distribué sous la license libre GPL V3.0.";
         a_hud_text_content["help_body_home_description"] = scls::to_utf_8(help_body_welcome_description);
-        a_hud_text_content["help_body_home_part"] = scls::to_utf_8("Vous êtes actuellement sur la page d'aide. Naviguez\navec le sélécteur à gauche.");
+        a_hud_text_content["help_body_home_part"] = scls::to_utf_8("Vous êtes actuellement sur la page d'aide. Naviguez</br>avec le sélécteur à gauche.");
         a_hud_text_content["home"] = "Accueil";
     }
 
