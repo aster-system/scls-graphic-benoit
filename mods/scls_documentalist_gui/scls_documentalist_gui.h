@@ -37,6 +37,32 @@ namespace scls_documentalist_gui {
         // SCLS_Documentalist_GUI base destructor
         virtual ~SCLS_Documentalist_GUI();
 
+        // Clear the memory from the loaded projects
+        inline void clear_memory_from_loaded_projects() {for(std::map<std::string, scls::Project*>::iterator it = loaded_projects().begin();it!=loaded_projects().end();it++){delete it->second;it->second=0;}loaded_projects().clear();};
+        // Create a new project
+        void create_project();
+        // Load a project in the GUI with its name
+        void load_project(scls::Project* project_to_load);
+        // Load a project in the GUI with its name
+        inline void load_project(std::string name) {
+            scls::Project* project_to_load = loaded_project(name);
+            if(project_to_load != 0) load_project(project_to_load);
+        };
+
+        // Return if the gui contains a project by its name
+        inline bool contains_loaded_project(std::string project_name) {for(std::map<std::string, scls::Project*>::iterator it = loaded_projects().begin();it!=loaded_projects().end();it++){if(it->first == project_name){return true;}}return false;};
+        // Return a project by its name
+        inline scls::Project* loaded_project(std::string project_name) {for(std::map<std::string, scls::Project*>::iterator it = loaded_projects().begin();it!=loaded_projects().end();it++){if(it->first == project_name){return it->second;}}return 0;};
+
+        // Getters and setters
+        inline std::map<std::string, scls::Project*>& loaded_projects() {return a_loaded_projects;};
+
+        //*********
+        //
+        // Annoying GUI stuff
+        //
+        //*********
+
         // Load the entire gui
         void load();
         // Load the welcome page body
@@ -45,6 +71,10 @@ namespace scls_documentalist_gui {
         void load_help_navigation();
         // Load the main header
         void load_main_header();
+        // Load the project page body
+        void load_project_body();
+        // Load the project page navigation
+        void load_project_navigation();
         // Load the needed textures
         void load_textures();
         // Load the welcome page footer
@@ -61,6 +91,18 @@ namespace scls_documentalist_gui {
         // Run the gui
         void start();
     private:
+
+        // All the loaded project in the GUI
+        std::map<std::string, scls::Project*> a_loaded_projects = std::map<std::string, scls::Project*>();
+        // Project main button
+        scls::HUD_Text* a_project_navigation_home_button = 0;
+
+        //*********
+        //
+        // Annoying GUI stuff
+        //
+        //*********
+
         // Body of the help
         // Parent page of the help body
         scls::HUD_Page* a_help_body = 0;
@@ -70,6 +112,14 @@ namespace scls_documentalist_gui {
         scls::HUD_Text* a_help_body_home_description = 0;
         // Part text of the home part of the help body
         scls::HUD_Text* a_help_body_home_part = 0;
+
+        // Body of the project
+        // Parent page of the project body
+        scls::HUD_Page* a_project_body = 0;
+
+        // Navigation of the project
+        // Parent page of the project Navigation
+        scls::HUD_Page* a_project_navigation = 0;
 
         // Navigation for the help
         // Parent page of the navigation
@@ -89,6 +139,8 @@ namespace scls_documentalist_gui {
         // Footer of the welcome
         // Parent page of the welcome footer
         scls::HUD_Page* a_welcome_footer = 0;
+        // Button of creation of project in the welcome footer
+        scls::HUD_Text* a_welcome_footer_create_project = 0;
     };
 
     // Use scls_documentalist_gui easily with a function

@@ -87,7 +87,7 @@ namespace scls {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        a_window = glfwCreateWindow(window_width(), window_height(), "Fenêtre OpenGL", NULL, NULL);
+        a_window = glfwCreateWindow(window_width(), window_height(), "SCLS Graphic Benoit", NULL, NULL);
         if (a_window == NULL)
         {
             print("Error", "GLFW Loader", "Failed to create GLFW window");

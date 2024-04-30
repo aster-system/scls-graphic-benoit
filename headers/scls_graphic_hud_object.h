@@ -95,7 +95,7 @@ namespace scls {
         // Render the HUD object on the window
         virtual void render();
         // Reset the object without changing it
-        virtual void soft_reset() {Object::soft_reset();set_is_overflighted(false);};
+        virtual void soft_reset() {set_is_overflighted(false);Object::soft_reset();};
         // Update the size of the HUD elements
         virtual void update_hud_scale();
 

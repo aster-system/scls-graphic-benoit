@@ -121,12 +121,16 @@ namespace scls {
         //
         //*********
 
-        virtual void after_loading() {}; // Function called after loading
-        virtual void* clone(Object* parent, std::string a_name, std::string texture_name, std::string vao_name = "hud_default"); // Clone the object
-        virtual void last_update() {}; // Function called after every updates
+        // Function called after loading
+        virtual void after_loading() {};
+        // Clone the object
+        virtual void* clone(Object* parent, std::string a_name, std::string texture_name, std::string vao_name = "hud_default");
+        // Function called after every updates
+        virtual void last_update() {};
         // Reset the object without changing it
-        virtual void soft_reset() {};
-        virtual void update() {}; // Function called during every updates
+        virtual void soft_reset() {for(int i = 0;i<children().size();i++){children()[i]->soft_reset();}};
+        // Function called during every updates
+        virtual void update() {};
 
         //*********
         //
@@ -195,7 +199,6 @@ namespace scls {
         }
 
         O* object = new O(window_struct(), this, object_name, object_texture);
-        children().push_back(object);
 
         return object;
     }

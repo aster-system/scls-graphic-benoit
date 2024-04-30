@@ -33,6 +33,35 @@ namespace scls_documentalist_gui {
 
     // SCLS_Documentalist_GUI base destructor
     SCLS_Documentalist_GUI::~SCLS_Documentalist_GUI() {
+        clear_memory_from_loaded_projects();
+    }
+
+    // Create a new project
+    void SCLS_Documentalist_GUI::create_project() {
+        std::string project_name = "project";
+        scls::Project* created_project = new scls::Project(project_name);
+
+        a_loaded_projects[project_name] = created_project;
+        load_project(created_project);
+    }
+
+    // Load a project in the GUI with its name
+    void SCLS_Documentalist_GUI::load_project(scls::Project* project_to_load) {
+        hide_all_pages();
+        display_page("header");
+        display_page("project_body");
+        display_page("project_navigation");
+        display_page("welcome_footer");
+
+        set_window_title("SCLS Documentalist \"Agatha\" - " + project_to_load->name());
+
+        // Load the project navigation
+        a_project_navigation_home_button = a_project_navigation->new_object<scls::HUD_Text>("project_navigation_home_button");
+        a_project_navigation_home_button->set_font_size(100);
+        a_project_navigation_home_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_project_navigation_home_button->set_text(a_hud_text_content["home_project"]);
+        a_project_navigation_home_button->set_object_scale_width(0.6);
+        a_project_navigation_home_button->set_position(glm::vec2(0, 0));
     }
 
     // Load the entire gui
@@ -42,8 +71,14 @@ namespace scls_documentalist_gui {
 
         load_help_navigation();
         load_main_header();
-        load_help_body();
+        load_project_navigation();
         load_welcome_page_footer();
+
+        // Load bodies
+        load_help_body();
+        load_project_body();
+
+        set_window_title("SCLS Documentalist \"Agatha\"");
     }
 
     // Load the welcome page body
@@ -101,8 +136,19 @@ namespace scls_documentalist_gui {
         buttons_y += a_help_navigation_home_button->scale()[0];
     }
 
+    // Load the project page navigation
+    void SCLS_Documentalist_GUI::load_project_navigation() {
+        // Navigation for the project
+        a_project_navigation = new_page<scls::HUD_Page>("project_navigation");
+        a_project_navigation->set_background_color(scls::white);
+        a_project_navigation->set_position(glm::vec3(-0.75, 1.0/3.0 - MAIN_HEADER_HEIGHT, 1));
+        a_project_navigation->set_scale(glm::vec3(1.0/2.0, 4.0/3.0 - MAIN_HEADER_HEIGHT * 2.0, 1));
+        a_project_navigation->set_pixel_border_width(1);
+    }
+
     // Load english
     void SCLS_Documentalist_GUI::load_language_en() {
+        a_hud_text_content["create_a_project"] = scls::to_utf_8("Create a project");
         a_hud_text_content["help_body_home"] = "Welcome to SCLS Documentalist \"Agatha\" GUI";
         std::string help_body_welcome_description = "This software, made by Aster System, provides a simply use to SCLS Documentalist \"Agatha\", whitout having to</br>";
         help_body_welcome_description += "handle a lot of lines of code. You can use it, as as a developer who wants to easily documentate its code, or as</br>";
@@ -110,17 +156,20 @@ namespace scls_documentalist_gui {
         a_hud_text_content["help_body_home_description"] = scls::to_utf_8(help_body_welcome_description);
         a_hud_text_content["help_body_home_part"] = scls::to_utf_8("You currently are in the help page. Browse with the</br>selector at your left.");
         a_hud_text_content["home"] = "Home";
+        a_hud_text_content["home_project"] = "Project home";
     }
 
     // Load french
     void SCLS_Documentalist_GUI::load_language_fr() {
+        a_hud_text_content["create_a_project"] = scls::to_utf_8("Créer un projet");
         a_hud_text_content["help_body_home"] = "Bienvenue sur la GUI de SCLS Documentalist \"Agatha\"";
-        std::string help_body_welcome_description = "Ce logiciel, fait par Aster Système, vous permet d'utiliser SCLS Documentalist \"Agatha\" simplement, sans avoir</br>";
-        help_body_welcome_description += "à manipuler de lignes de code. Vous pouvez l'utiliser, que vous soyez un développeur qui veut documenter facilement</br>";
+        std::string help_body_welcome_description = "Ce logiciel, fait par Aster Système, vous permet d'utiliser SCLS Documentalist \"Agatha\" simplement, sans avoir à</br>";
+        help_body_welcome_description += "manipuler de lignes de code. Vous pouvez l'utiliser, que vous soyez un développeur qui veut documenter facilement</br>";
         help_body_welcome_description += "son code, soit que vous êtes quoi que ce soit d'autre. Il vous est distribué sous la license libre GPL V3.0.";
         a_hud_text_content["help_body_home_description"] = scls::to_utf_8(help_body_welcome_description);
         a_hud_text_content["help_body_home_part"] = scls::to_utf_8("Vous êtes actuellement sur la page d'aide. Naviguez</br>avec le sélécteur à gauche.");
         a_hud_text_content["home"] = "Accueil";
+        a_hud_text_content["home_project"] = "Accueil du projet";
     }
 
     // Load the main header
@@ -140,6 +189,17 @@ namespace scls_documentalist_gui {
         a_main_header_file_button->set_position(glm::vec2(main_header_buttons_x, 0));
     }
 
+    // Load the project page body
+    void SCLS_Documentalist_GUI::load_project_body() {
+        // Body of the welcome page
+        double scale_multiplier = 0.99;
+        a_project_body = new_page<scls::HUD_Page>("project_body");
+        a_project_body->set_background_color(scls::white);
+        a_project_body->set_position(glm::vec3(0.25, 1.0/3.0 - MAIN_HEADER_HEIGHT, 1));
+        a_project_body->set_scale(glm::vec3(3.0/2.0 * scale_multiplier, (4.0/3.0 - MAIN_HEADER_HEIGHT * 2.0) * scale_multiplier, 1));
+        a_project_body->set_pixel_border_width(1);
+    }
+
     // Load the needed textures
     void SCLS_Documentalist_GUI::load_textures() {
         // Load the SCLS Documentalist logo
@@ -155,6 +215,15 @@ namespace scls_documentalist_gui {
         a_welcome_footer->set_position(glm::vec3(0, -2.0/3.0, 1));
         a_welcome_footer->set_scale(glm::vec3(2.0 * scale_multiplier, (2.0/3.0) * scale_multiplier, 1));
         a_welcome_footer->set_pixel_border_width(1);
+        // Create the button of creation of project in the welcome footer
+        a_welcome_footer_create_project = a_welcome_footer->new_object<scls::HUD_Text>("welcome_footer_create_project");
+        a_welcome_footer_create_project->set_font_size(100);
+        a_welcome_footer_create_project->set_text_offset(0.05);
+        a_welcome_footer_create_project->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_welcome_footer_create_project->set_text(a_hud_text_content["create_a_project"]);
+        a_welcome_footer_create_project->set_pixel_border_width(1);
+        a_welcome_footer_create_project->set_object_scale(0.2);
+        a_welcome_footer_create_project->set_position(glm::vec2(-0.3, 0));
     }
 
     // Reload each HUD text
@@ -163,6 +232,7 @@ namespace scls_documentalist_gui {
         a_help_body_home_description->set_text(a_hud_text_content["help_body_home_description"]);
         a_help_body_home_part->set_text(a_hud_text_content["help_body_home_part"]);
         a_help_navigation_home_button->set_text(a_hud_text_content["home"]);
+        a_welcome_footer_create_project->set_text(a_hud_text_content["create_a_project"]);
     }
 
     // Run the GUI
@@ -177,7 +247,9 @@ namespace scls_documentalist_gui {
             update_event();
             update();
 
-
+            if(a_welcome_footer_create_project->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                create_project();
+            }
 
             render();
         }

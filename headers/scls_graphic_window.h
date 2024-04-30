@@ -71,7 +71,9 @@ namespace scls {
         inline bool is_running() {return a_is_running;};
         inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
         inline void set_is_running(bool new_is_runnig) { a_is_running = new_is_runnig; };
+        inline void set_window_title(std::string new_window_title) {a_window_title = new_window_title;glfwSetWindowTitle(window(), new_window_title.c_str());};
         inline GLFWwindow* window() {return a_window;};
+        inline std::string window_title() {return a_window_title;};
 
         //*********
         //
@@ -180,6 +182,8 @@ namespace scls {
         Color a_background_color = white;
         // Pointer to the GLFW window
         GLFWwindow* a_window = 0;
+        // Title of the window
+        std::string a_window_title = "";
         // If the window can resize or not or not
         bool a_is_resize_possible = true;
         // If the window should continue to run or not
