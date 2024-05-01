@@ -137,6 +137,7 @@ namespace scls {
         inline bool is_clicked_during_this_frame(unsigned int button) { return is_overflighted() && window_struct()->mouse_button_clicked_during_this_frame(button); };
         inline bool is_overflighted() const {return a_is_overflighted;};
         inline unsigned long overflighted_cursor() {return a_overflighted_cursor;};
+        inline glm::vec2 position() {return glm::vec2(transform()->get_position()[0], transform()->get_position()[1]);};
         inline bool resize_texture_with_scale() {return a_resize_texture_with_scale;};
         inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
         inline void set_border_width(double new_border_width) {set_border_width(glm::vec4(new_border_width));};
@@ -163,8 +164,18 @@ namespace scls {
             a_last_scale = new_scale;
             a_last_scale_definition_type = _Scale_Definition::Direct_Scale;
         };
+        inline void set_texture_aligmnent_horizontal(Text_Alignment_Horizontal new_texture_aligmnent_horizontal) {a_texture_aligmnent_horizontal = new_texture_aligmnent_horizontal;};
         inline void set_texture_rect(glm::vec4 new_texture_rect) {a_texture_rect = new_texture_rect;};
+        inline Text_Alignment_Horizontal texture_aligmnent_horizontal() {return a_texture_aligmnent_horizontal;};
         inline glm::vec4 texture_rect() {return a_texture_rect;};
+
+        //*********
+        //
+        // Easy position system
+        //
+        //*********
+
+        inline void move_top_of_parent() {double new_y = 0.5 - scale()[1] / 2.0;if(parent_hud()!=0){new_y -= parent_hud()->border_width()[0];}set_position(glm::vec2(position()[0], new_y));};
     private:
         //*********
         //
@@ -182,6 +193,8 @@ namespace scls {
         unsigned long a_overflighted_cursor = GLFW_ARROW_CURSOR;
         // If the texture can be resized or not
         bool a_resize_texture_with_scale = true;
+        // Horizontal alignment of the texture if the texture can not be resized
+        Text_Alignment_Horizontal a_texture_aligmnent_horizontal = Text_Alignment_Horizontal::Center;
         // Rect of the texture
         glm::vec4 a_texture_rect = glm::vec4(0, 0, 1, 1);
 
@@ -236,14 +249,14 @@ namespace scls {
         inline std::string font_family() {return a_font_family;};
         inline unsigned short font_size() {return a_font_size;};
         inline void set_font_color(Color new_font_color) {a_font_color = new_font_color;};
-        inline void set_font_family(std::string new_font_family) {a_font_family = new_font_family;a_modified = true;};
-        inline void set_font_size(unsigned short new_font_size) {a_font_size = new_font_size;a_modified = true;};
-        inline void set_text(std::string new_text) {if(new_text == a_text)return;a_text = new_text;a_modified = true;};
-        inline void set_text_alignment(Text_Alignment_Horizontal new_text_alignment) {a_text_alignment = new_text_alignment;};
+        inline void set_font_family(std::string new_font_family) {a_font_family = new_font_family;a_modified = true;update_text_texture();};
+        inline void set_font_size(unsigned short new_font_size) {a_font_size = new_font_size;a_modified = true;update_text_texture();};
+        inline void set_text(std::string new_text) {if(new_text == a_text)return;a_text = new_text;a_modified = true;update_text_texture();};
+        inline void set_text_alignment_horizontal(Text_Alignment_Horizontal new_text_alignment_horizontal) {a_text_alignment_horizontal = new_text_alignment_horizontal;a_modified = true;update_text_texture();};
         inline void set_text_offset(double new_text_offset) {a_text_offset = glm::vec4(new_text_offset);set_texture_rect(glm::vec4(new_text_offset, new_text_offset, 1.0 - new_text_offset * 2.0, 1.0 - new_text_offset * 2.0));};
         inline void set_text_offset(glm::vec4 new_text_offset) {a_text_offset = new_text_offset;set_texture_rect(glm::vec4(new_text_offset[1], new_text_offset[0], 1.0 - (new_text_offset[1] + new_text_offset[3]), 1.0 - (new_text_offset[0] + new_text_offset[2])));};
-        inline std::string text() {return a_text;};
-        inline Text_Alignment_Horizontal text_alignment() {return a_text_alignment;};
+        inline std::string text() {return a_text;update_text_texture();};
+        inline Text_Alignment_Horizontal text_alignment_horizontal() {return a_text_alignment_horizontal;};
         inline glm::vec4 text_offset() {return a_text_offset;};
     private:
         //*********
@@ -263,7 +276,7 @@ namespace scls {
         // Text in the object
         std::string a_text = "";
         // Alignment of the text
-        Text_Alignment_Horizontal a_text_alignment = Text_Alignment_Horizontal::Left;
+        Text_Alignment_Horizontal a_text_alignment_horizontal = Text_Alignment_Horizontal::Left;
         // Offset of the text
         glm::vec4 a_text_offset = glm::vec4(0, 0, 0, 0);
     };

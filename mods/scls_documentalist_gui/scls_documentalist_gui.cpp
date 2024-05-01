@@ -42,26 +42,44 @@ namespace scls_documentalist_gui {
         scls::Project* created_project = new scls::Project(project_name);
 
         a_loaded_projects[project_name] = created_project;
-        load_project(created_project);
+        set_currently_dispalyed_project(created_project);
+    }
+
+    // Create a new file pattern in the currently displayed project
+    void SCLS_Documentalist_GUI::create_project_file_pattern() {
+        std::string file_name = "file";
+
+        scls::Project* current_project = a_loaded_projects["project"];
+        current_project->new_pattern(file_name, "Salut salut voisin !");
+
+        load_project_file_pattern(file_name);
     }
 
     // Load a project in the GUI with its name
     void SCLS_Documentalist_GUI::load_project(scls::Project* project_to_load) {
+        set_window_title("SCLS Documentalist \"Agatha\" - " + project_to_load->name());
+
+        load_project_home(project_to_load);
+    }
+
+    // Load a file pattern of a project in the GUI
+    void SCLS_Documentalist_GUI::load_project_file_pattern(std::string file_pattern) {
+        hide_all_pages();
+        display_page("header");
+        display_page("project_file_pattern_body");
+        display_page("project_navigation");
+        display_page("project_footer");
+
+        std::cout << "T " << file_pattern << std::endl;
+    }
+
+    // Load the home page of a project in the GUI
+    void SCLS_Documentalist_GUI::load_project_home(scls::Project* project_to_load) {
         hide_all_pages();
         display_page("header");
         display_page("project_body");
         display_page("project_navigation");
-        display_page("welcome_footer");
-
-        set_window_title("SCLS Documentalist \"Agatha\" - " + project_to_load->name());
-
-        // Load the project navigation
-        a_project_navigation_home_button = a_project_navigation->new_object<scls::HUD_Text>("project_navigation_home_button");
-        a_project_navigation_home_button->set_font_size(100);
-        a_project_navigation_home_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
-        a_project_navigation_home_button->set_text(a_hud_text_content["home_project"]);
-        a_project_navigation_home_button->set_object_scale_width(0.6);
-        a_project_navigation_home_button->set_position(glm::vec2(0, 0));
+        display_page("project_footer");
     }
 
     // Load the entire gui
@@ -72,11 +90,15 @@ namespace scls_documentalist_gui {
         load_help_navigation();
         load_main_header();
         load_project_navigation();
+
+        // Load footers
+        load_project_footer();
         load_welcome_page_footer();
 
         // Load bodies
         load_help_body();
         load_project_body();
+        load_project_file_pattern();
 
         set_window_title("SCLS Documentalist \"Agatha\"");
     }
@@ -102,15 +124,15 @@ namespace scls_documentalist_gui {
         a_help_body_home->set_position(glm::vec2(0, -0.15));
         // Create the the description text of the home part of the help page
         a_help_body_home_description = a_help_body->new_object<scls::HUD_Text>("help_body_welcome_description");
-        a_help_body_home_description->set_font_size(20);
-        a_help_body_home_description->set_text_alignment(scls::Text_Alignment_Horizontal::Center);
+        a_help_body_home_description->set_font_size(30);
+        a_help_body_home_description->set_text_alignment_horizontal(scls::Text_Alignment_Horizontal::Center);
         a_help_body_home_description->set_text(a_hud_text_content["help_body_home_description"]);
         a_help_body_home_description->set_object_scale_width(1.75);
         a_help_body_home_description->set_position(glm::vec2(0, -0.3));
         // Create the part text of the home part of the help page
         a_help_body_home_part = a_help_body->new_object<scls::HUD_Text>("help_body_welcome_part");
         a_help_body_home_part->set_font_size(50);
-        a_help_body_home_part->set_text_alignment(scls::Text_Alignment_Horizontal::Center);
+        a_help_body_home_part->set_text_alignment_horizontal(scls::Text_Alignment_Horizontal::Center);
         a_help_body_home_part->set_text(a_hud_text_content["help_body_home_part"]);
         a_help_body_home_part->set_object_scale_width(1.15);
         a_help_body_home_part->set_position(glm::vec2(0, -0.425));
@@ -124,16 +146,13 @@ namespace scls_documentalist_gui {
         a_help_navigation->set_position(glm::vec3(-0.75, 1.0/3.0 - MAIN_HEADER_HEIGHT, 1));
         a_help_navigation->set_scale(glm::vec3(1.0/2.0, 4.0/3.0 - MAIN_HEADER_HEIGHT * 2.0, 1));
         a_help_navigation->set_pixel_border_width(1);
-        // Y position of the buttons
-        double buttons_y = 0;
         // Create the home button of the navigation
         a_help_navigation_home_button = a_help_navigation->new_object<scls::HUD_Text>("help_navigation_home_button");
         a_help_navigation_home_button->set_font_size(100);
         a_help_navigation_home_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
         a_help_navigation_home_button->set_text(a_hud_text_content["home"]);
         a_help_navigation_home_button->set_object_scale_width(0.3);
-        a_help_navigation_home_button->set_position(glm::vec2(0, buttons_y));
-        buttons_y += a_help_navigation_home_button->scale()[0];
+        a_help_navigation_home_button->move_top_of_parent();
     }
 
     // Load the project page navigation
@@ -148,6 +167,7 @@ namespace scls_documentalist_gui {
 
     // Load english
     void SCLS_Documentalist_GUI::load_language_en() {
+        a_hud_text_content["create_a_file_pattern"] = scls::to_utf_8("Create a pattern file");
         a_hud_text_content["create_a_project"] = scls::to_utf_8("Create a project");
         a_hud_text_content["help_body_home"] = "Welcome to SCLS Documentalist \"Agatha\" GUI";
         std::string help_body_welcome_description = "This software, made by Aster System, provides a simply use to SCLS Documentalist \"Agatha\", whitout having to</br>";
@@ -161,6 +181,7 @@ namespace scls_documentalist_gui {
 
     // Load french
     void SCLS_Documentalist_GUI::load_language_fr() {
+        a_hud_text_content["create_a_file_pattern"] = scls::to_utf_8("Créer un fichier modèle");
         a_hud_text_content["create_a_project"] = scls::to_utf_8("Créer un projet");
         a_hud_text_content["help_body_home"] = "Bienvenue sur la GUI de SCLS Documentalist \"Agatha\"";
         std::string help_body_welcome_description = "Ce logiciel, fait par Aster Système, vous permet d'utiliser SCLS Documentalist \"Agatha\" simplement, sans avoir à</br>";
@@ -198,6 +219,54 @@ namespace scls_documentalist_gui {
         a_project_body->set_position(glm::vec3(0.25, 1.0/3.0 - MAIN_HEADER_HEIGHT, 1));
         a_project_body->set_scale(glm::vec3(3.0/2.0 * scale_multiplier, (4.0/3.0 - MAIN_HEADER_HEIGHT * 2.0) * scale_multiplier, 1));
         a_project_body->set_pixel_border_width(1);
+        // Load the project home button
+        a_project_navigation_home_button = a_project_navigation->new_object<scls::HUD_Text>("project_navigation_home_button");
+        a_project_navigation_home_button->set_font_size(100);
+        a_project_navigation_home_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_project_navigation_home_button->set_text(a_hud_text_content["home_project"]);
+        a_project_navigation_home_button->set_object_scale_width(0.6);
+        a_project_navigation_home_button->move_top_of_parent();
+    }
+
+    // Load a file pattern of a project
+    void SCLS_Documentalist_GUI::load_project_file_pattern() {
+        // Body of a project file pattern page
+        double scale_multiplier = 0.99;
+        a_project_file_pattern_body = new_page<scls::HUD_Page>("project_file_pattern_body");
+        a_project_file_pattern_body->set_background_color(scls::white);
+        a_project_file_pattern_body->set_position(glm::vec3(0.25, 1.0/3.0 - MAIN_HEADER_HEIGHT, 1));
+        a_project_file_pattern_body->set_scale(glm::vec3(3.0/2.0 * scale_multiplier, (4.0/3.0 - MAIN_HEADER_HEIGHT * 2.0) * scale_multiplier, 1));
+        a_project_file_pattern_body->set_pixel_border_width(1);
+        // Load the content of a project file pattern
+        a_project_file_pattern_content = a_project_file_pattern_body->new_object<scls::HUD_Text>("project_file_pattern_content");
+        a_project_file_pattern_content->set_font_size(20);
+        a_project_file_pattern_content->set_resize_texture_with_scale(false);
+        a_project_file_pattern_content->set_text_alignment_horizontal(scls::Text_Alignment_Horizontal::Left);
+        a_project_file_pattern_content->set_text_offset(0);
+        a_project_file_pattern_content->set_text(scls::to_utf_8("Le char Leclerc</br>Leclerc great because Leclerc good."));
+        a_project_file_pattern_content->set_texture_aligmnent_horizontal(scls::Text_Alignment_Horizontal::Left);
+        a_project_file_pattern_content->set_position(glm::vec2(0, 0));
+        a_project_file_pattern_content->set_scale(glm::vec2(0.98));
+    }
+
+    // Load the project page footer
+    void SCLS_Documentalist_GUI::load_project_footer() {
+        // Footer of the project page
+        double scale_multiplier = 0.98;
+        a_project_footer = new_page<scls::HUD_Page>("project_footer");
+        a_project_footer->set_background_color(scls::white);
+        a_project_footer->set_position(glm::vec3(0, -2.0/3.0, 1));
+        a_project_footer->set_scale(glm::vec3(2.0 * scale_multiplier, (2.0/3.0) * scale_multiplier, 1));
+        a_project_footer->set_pixel_border_width(1);
+        // Create the button of creation of file in the project footer
+        a_project_footer_create_file_pattern = a_project_footer->new_object<scls::HUD_Text>("project_footer_create_file_pattern");
+        a_project_footer_create_file_pattern->set_font_size(100);
+        a_project_footer_create_file_pattern->set_text_offset(0.05);
+        a_project_footer_create_file_pattern->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_project_footer_create_file_pattern->set_text(a_hud_text_content["create_a_file_pattern"]);
+        a_project_footer_create_file_pattern->set_pixel_border_width(1);
+        a_project_footer_create_file_pattern->set_object_scale(0.125);
+        a_project_footer_create_file_pattern->set_position(glm::vec2(-0.3, 0));
     }
 
     // Load the needed textures
@@ -249,6 +318,10 @@ namespace scls_documentalist_gui {
 
             if(a_welcome_footer_create_project->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
                 create_project();
+            }
+
+            if(a_project_footer_create_file_pattern->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                create_project_file_pattern();
             }
 
             render();

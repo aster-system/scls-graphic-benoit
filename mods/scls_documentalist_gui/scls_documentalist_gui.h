@@ -41,12 +41,23 @@ namespace scls_documentalist_gui {
         inline void clear_memory_from_loaded_projects() {for(std::map<std::string, scls::Project*>::iterator it = loaded_projects().begin();it!=loaded_projects().end();it++){delete it->second;it->second=0;}loaded_projects().clear();};
         // Create a new project
         void create_project();
-        // Load a project in the GUI with its name
+        // Create a new file pattern in the currently displayed project
+        void create_project_file_pattern();
+        // Load a project in the GUI
         void load_project(scls::Project* project_to_load);
         // Load a project in the GUI with its name
         inline void load_project(std::string name) {
             scls::Project* project_to_load = loaded_project(name);
             if(project_to_load != 0) load_project(project_to_load);
+        };
+        // Load a file pattern of a project in the GUI
+        void load_project_file_pattern(std::string file_pattern);
+        // Load the home page of a project in the GUI
+        void load_project_home(scls::Project* project_to_load);
+        // Load the home page of a project in the GUI with its name
+        inline void load_project_home(std::string name) {
+            scls::Project* project_to_load = loaded_project(name);
+            if(project_to_load != 0) load_project_home(project_to_load);
         };
 
         // Return if the gui contains a project by its name
@@ -55,7 +66,10 @@ namespace scls_documentalist_gui {
         inline scls::Project* loaded_project(std::string project_name) {for(std::map<std::string, scls::Project*>::iterator it = loaded_projects().begin();it!=loaded_projects().end();it++){if(it->first == project_name){return it->second;}}return 0;};
 
         // Getters and setters
+        inline scls::Project* currently_displayed_project() {return a_currently_displayed_project;};
+        inline std::string currently_displayed_project_name() {return currently_displayed_project()->name();};
         inline std::map<std::string, scls::Project*>& loaded_projects() {return a_loaded_projects;};
+        inline void set_currently_dispalyed_project(scls::Project* project_to_display) {a_currently_displayed_project = project_to_display;load_project(project_to_display);};
 
         //*********
         //
@@ -73,6 +87,10 @@ namespace scls_documentalist_gui {
         void load_main_header();
         // Load the project page body
         void load_project_body();
+        // Load a file pattern of a project
+        void load_project_file_pattern();
+        // Load the project page footer
+        void load_project_footer();
         // Load the project page navigation
         void load_project_navigation();
         // Load the needed textures
@@ -92,8 +110,12 @@ namespace scls_documentalist_gui {
         void start();
     private:
 
+        // Currently displayed project
+        scls::Project* a_currently_displayed_project = 0;
         // All the loaded project in the GUI
         std::map<std::string, scls::Project*> a_loaded_projects = std::map<std::string, scls::Project*>();
+        // Project files pattern button
+        std::vector<scls::HUD_Text*> a_project_navigation_file_pattern_button = std::vector<scls::HUD_Text*>();
         // Project main button
         scls::HUD_Text* a_project_navigation_home_button = 0;
 
@@ -116,6 +138,18 @@ namespace scls_documentalist_gui {
         // Body of the project
         // Parent page of the project body
         scls::HUD_Page* a_project_body = 0;
+
+        // Body of a project file pattern
+        // Parent page of a project file pattern
+        scls::HUD_Page* a_project_file_pattern_body = 0;
+        // Content of a project file pattern
+        scls::HUD_Text* a_project_file_pattern_content = 0;
+
+        // Footer of the project
+        // Parent page of the project footer
+        scls::HUD_Page* a_project_footer = 0;
+        // Button of creation of file in the project footer
+        scls::HUD_Text* a_project_footer_create_file_pattern = 0;
 
         // Navigation of the project
         // Parent page of the project Navigation

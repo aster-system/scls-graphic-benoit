@@ -56,9 +56,16 @@ namespace scls {
             double hud_pixel_height = height_in_pixel();
             double hud_pixel_width = width_in_pixel();
 
-            final_texture_rect = glm::vec4(0, 0, texture()->get_texture_size()[0] / hud_pixel_width, texture()->get_texture_size()[1] / hud_pixel_height);
+            double texture_width = texture()->get_texture_size()[0] / hud_pixel_width;
+            double texture_x = 0;
+            if(texture_aligmnent_horizontal() == Text_Alignment_Horizontal::Center) {
+                texture_x = 0.5 - texture_width / 2.0;
+            }
+            else if(texture_aligmnent_horizontal() == Text_Alignment_Horizontal::Right) {
+                texture_x = 1.0 - texture_width;
+            }
 
-            std::cout << "A" << std::endl;
+            final_texture_rect = glm::vec4(texture_x, 0, texture_width, texture()->get_texture_size()[1] / hud_pixel_height);
         }
         vao()->get_shader_program()->set_uniform4f_value("texture_rect", final_texture_rect);
 
@@ -108,12 +115,12 @@ namespace scls {
 
     // Update the text texture
     void HUD_Text::update_text_texture() {
-        if(!a_modified) return;
+        if(!a_modified || text() == "") return;
 
         // Create the texture
         Text_Image* current_text_image = window_struct()->text_image_generator()->new_text_image(text());
         current_text_image->global_style().font_size = font_size();
-        current_text_image->global_style().alignment_horizontal = Text_Alignment_Horizontal::Center;
+        current_text_image->global_style().alignment_horizontal = text_alignment_horizontal();
         Image* new_image_texture = current_text_image->image();
         delete current_text_image; current_text_image = 0;
 

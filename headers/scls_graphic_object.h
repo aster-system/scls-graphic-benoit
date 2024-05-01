@@ -128,7 +128,7 @@ namespace scls {
         // Function called after every updates
         virtual void last_update() {};
         // Reset the object without changing it
-        virtual void soft_reset() {for(int i = 0;i<children().size();i++){children()[i]->soft_reset();}};
+        virtual void soft_reset() {for(int i = 0;i<static_cast<int>(children().size());i++){children()[i]->soft_reset();}};
         // Function called during every updates
         virtual void update() {};
 
