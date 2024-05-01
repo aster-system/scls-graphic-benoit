@@ -48,7 +48,19 @@ namespace scls {
         vao()->get_shader_program()->set_uniform4f_value("border_color", glm::vec4(0, 0, 0, 1));
         vao()->get_shader_program()->set_uniform4f_value("border_width", border_width());
         vao()->get_shader_program()->set_uniform2f_value("one_pixel", one_pixel_scale()[0], one_pixel_scale()[1]);
-        vao()->get_shader_program()->set_uniform4f_value("texture_rect", texture_rect());
+
+
+        // Resize texture if necessary
+        glm::vec4 final_texture_rect = texture_rect();
+        if(!resize_texture_with_scale()) {
+            double hud_pixel_height = height_in_pixel();
+            double hud_pixel_width = width_in_pixel();
+
+            final_texture_rect = glm::vec4(0, 0, texture()->get_texture_size()[0] / hud_pixel_width, texture()->get_texture_size()[1] / hud_pixel_height);
+
+            std::cout << "A" << std::endl;
+        }
+        vao()->get_shader_program()->set_uniform4f_value("texture_rect", final_texture_rect);
 
         // Call the hidden render part
         _render(matrix);

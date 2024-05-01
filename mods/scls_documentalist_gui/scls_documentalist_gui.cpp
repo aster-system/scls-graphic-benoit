@@ -102,7 +102,7 @@ namespace scls_documentalist_gui {
         a_help_body_home->set_position(glm::vec2(0, -0.15));
         // Create the the description text of the home part of the help page
         a_help_body_home_description = a_help_body->new_object<scls::HUD_Text>("help_body_welcome_description");
-        a_help_body_home_description->set_font_size(30);
+        a_help_body_home_description->set_font_size(20);
         a_help_body_home_description->set_text_alignment(scls::Text_Alignment_Horizontal::Center);
         a_help_body_home_description->set_text(a_hud_text_content["help_body_home_description"]);
         a_help_body_home_description->set_object_scale_width(1.75);

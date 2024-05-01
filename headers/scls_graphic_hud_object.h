@@ -137,6 +137,7 @@ namespace scls {
         inline bool is_clicked_during_this_frame(unsigned int button) { return is_overflighted() && window_struct()->mouse_button_clicked_during_this_frame(button); };
         inline bool is_overflighted() const {return a_is_overflighted;};
         inline unsigned long overflighted_cursor() {return a_overflighted_cursor;};
+        inline bool resize_texture_with_scale() {return a_resize_texture_with_scale;};
         inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
         inline void set_border_width(double new_border_width) {set_border_width(glm::vec4(new_border_width));};
         inline void set_border_width(glm::vec4 new_border_width) {a_border_width = new_border_width;a_last_border_width=new_border_width;a_last_border_width_definition_type = _Border_Width_Definition::Direct_Border_Width;};
@@ -156,6 +157,7 @@ namespace scls {
         };
         inline void set_overflighted_cursor(unsigned long new_overflighted_cursor) {a_overflighted_cursor = new_overflighted_cursor;};
         inline void set_position(glm::vec2 new_position) {Object::set_position(glm::vec3(new_position[0], new_position[1], 0));};
+        inline void set_resize_texture_with_scale(bool new_resize_texture_with_scale) {a_resize_texture_with_scale = new_resize_texture_with_scale;};
         void set_scale(glm::vec2 new_scale) {
             Object::set_scale(glm::vec3(new_scale[0], new_scale[1], 1));
             a_last_scale = new_scale;
@@ -178,6 +180,8 @@ namespace scls {
         bool a_is_overflighted = false;
         // Id of the overflighted cursor
         unsigned long a_overflighted_cursor = GLFW_ARROW_CURSOR;
+        // If the texture can be resized or not
+        bool a_resize_texture_with_scale = true;
         // Rect of the texture
         glm::vec4 a_texture_rect = glm::vec4(0, 0, 1, 1);
 
