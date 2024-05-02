@@ -143,7 +143,7 @@ namespace scls_documentalist_gui {
         // Parent page of a project file pattern
         scls::HUD_Page* a_project_file_pattern_body = 0;
         // Content of a project file pattern
-        scls::HUD_Text* a_project_file_pattern_content = 0;
+        scls::HUD_Text_Input* a_project_file_pattern_content = 0;
 
         // Footer of the project
         // Parent page of the project footer

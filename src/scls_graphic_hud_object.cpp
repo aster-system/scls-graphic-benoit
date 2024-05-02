@@ -56,16 +56,27 @@ namespace scls {
             double hud_pixel_height = height_in_pixel();
             double hud_pixel_width = width_in_pixel();
 
+            // Set the X position
             double texture_width = texture()->get_texture_size()[0] / hud_pixel_width;
             double texture_x = 0;
-            if(texture_aligmnent_horizontal() == Text_Alignment_Horizontal::Center) {
+            if(texture_aligmnent_horizontal() == Alignment_Horizontal::H_Center) {
                 texture_x = 0.5 - texture_width / 2.0;
             }
-            else if(texture_aligmnent_horizontal() == Text_Alignment_Horizontal::Right) {
+            else if(texture_aligmnent_horizontal() == Alignment_Horizontal::H_Right) {
                 texture_x = 1.0 - texture_width;
             }
 
-            final_texture_rect = glm::vec4(texture_x, 0, texture_width, texture()->get_texture_size()[1] / hud_pixel_height);
+            // Set the Y position
+            double texture_height = texture()->get_texture_size()[1] / hud_pixel_height;
+            double texture_y = 0;
+            if(texture_aligmnent_vertical() == Alignment_Vertical::V_Center) {
+                texture_y = 0.5 - texture_height / 2.0;
+            }
+            else if(texture_aligmnent_vertical() == Alignment_Vertical::V_Top) {
+                texture_y = 1.0 - texture_height;
+            }
+
+            final_texture_rect = glm::vec4(texture_x, texture_y, texture_width, texture_height);
         }
         vao()->get_shader_program()->set_uniform4f_value("texture_rect", final_texture_rect);
 
@@ -109,29 +120,158 @@ namespace scls {
 
     // Update the text
     void HUD_Text::update() {
+        HUD_Object::update();
+
         // Update the texture of the text
         update_text_texture();
     }
 
     // Update the text texture
     void HUD_Text::update_text_texture() {
-        if(!a_modified || text() == "") return;
+        if(!a_modified) return;
 
-        // Create the texture
-        Text_Image* current_text_image = window_struct()->text_image_generator()->new_text_image(text());
-        current_text_image->global_style().font_size = font_size();
-        current_text_image->global_style().alignment_horizontal = text_alignment_horizontal();
-        Image* new_image_texture = current_text_image->image();
-        delete current_text_image; current_text_image = 0;
+        if(text() != "") {
+            // Create the texture
+            Text_Image* current_text_image = window_struct()->text_image_generator()->new_text_image(text());
+            current_text_image->global_style().font_size = font_size();
+            current_text_image->global_style().alignment_horizontal = text_alignment_horizontal();
+            Image* new_image_texture = current_text_image->image();
+            delete current_text_image; current_text_image = 0;
 
-        // Update the texture
-        texture()->set_image(new_image_texture);
+            // Update the texture
+            texture()->set_image(new_image_texture);
+        }
+        else {
+            texture()->set_image(new Image(1, 1, background_color(), 0));
+        }
         a_modified = false;
     }
 
     // HUD_Text destructor
     HUD_Text::~HUD_Text() {
 
+    }
+
+    //*********
+    //
+    // HUD_Text_Input main functions
+    //
+    //*********
+
+    // Most parent HUD_Text_Input constructor used for displaying
+    HUD_Text_Input::HUD_Text_Input(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : HUD_Text(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), transform_parent, name, texture_name, vao_name) {
+
+    }
+
+    // HUD_Text_Input constructor used for displaying
+    HUD_Text_Input::HUD_Text_Input(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name) : HUD_Text(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), parent, name, texture_name, vao_name) {
+
+    }
+
+    // HUD_Text_Input destructor
+    HUD_Text_Input::~HUD_Text_Input() {
+
+    }
+
+    // Capitalize a std::string
+    std::string HUD_Text_Input::_capitalize(std::string letter, bool apply) {
+        if(!apply) return letter;
+
+        // Alphabet letter
+        if(letter == "a") return "A";
+        if(letter == "b") return "B";
+        if(letter == "c") return "C";
+        if(letter == "d") return "D";
+        if(letter == "e") return "E";
+        if(letter == "f") return "F";
+        if(letter == "g") return "G";
+        if(letter == "h") return "H";
+        if(letter == "i") return "I";
+        if(letter == "j") return "J";
+        if(letter == "k") return "K";
+        if(letter == "l") return "L";
+        if(letter == "m") return "M";
+        if(letter == "n") return "N";
+        if(letter == "o") return "O";
+        if(letter == "p") return "P";
+        if(letter == "q") return "Q";
+        if(letter == "r") return "R";
+        if(letter == "s") return "S";
+        if(letter == "t") return "T";
+        if(letter == "u") return "U";
+        if(letter == "v") return "V";
+        if(letter == "w") return "W";
+        if(letter == "x") return "X";
+        if(letter == "y") return "Y";
+        if(letter == "z") return "Z";
+        return letter;
+    }
+
+    // Input the inputed text
+    void HUD_Text_Input::input_text() {
+        if(!is_focused()) return;
+
+        std::string final_text = text();
+
+        // Handle letters
+        bool should_capitalize = (window_struct()->key_state("left shift") == Key_State::Pressed || window_struct()->key_state("right shift") == Key_State::Pressed);
+        if(window_struct()->key_state_frame("a") == Key_State::Pressed) { final_text += _capitalize("a", should_capitalize);  }
+        if(window_struct()->key_state_frame("b") == Key_State::Pressed) { final_text += _capitalize("b", should_capitalize);  }
+        if(window_struct()->key_state_frame("c") == Key_State::Pressed) { final_text += _capitalize("c", should_capitalize);  }
+        if(window_struct()->key_state_frame("d") == Key_State::Pressed) { final_text += _capitalize("d", should_capitalize);  }
+        if(window_struct()->key_state_frame("e") == Key_State::Pressed) { final_text += _capitalize("e", should_capitalize);  }
+        if(window_struct()->key_state_frame("f") == Key_State::Pressed) { final_text += _capitalize("f", should_capitalize);  }
+        if(window_struct()->key_state_frame("g") == Key_State::Pressed) { final_text += _capitalize("g", should_capitalize);  }
+        if(window_struct()->key_state_frame("h") == Key_State::Pressed) { final_text += _capitalize("h", should_capitalize);  }
+        if(window_struct()->key_state_frame("i") == Key_State::Pressed) { final_text += _capitalize("i", should_capitalize);  }
+        if(window_struct()->key_state_frame("j") == Key_State::Pressed) { final_text += _capitalize("j", should_capitalize);  }
+        if(window_struct()->key_state_frame("k") == Key_State::Pressed) { final_text += _capitalize("k", should_capitalize);  }
+        if(window_struct()->key_state_frame("l") == Key_State::Pressed) { final_text += _capitalize("l", should_capitalize);  }
+        if(window_struct()->key_state_frame("m") == Key_State::Pressed) { final_text += _capitalize("m", should_capitalize);  }
+        if(window_struct()->key_state_frame("n") == Key_State::Pressed) { final_text += _capitalize("n", should_capitalize);  }
+        if(window_struct()->key_state_frame("o") == Key_State::Pressed) { final_text += _capitalize("o", should_capitalize);  }
+        if(window_struct()->key_state_frame("p") == Key_State::Pressed) { final_text += _capitalize("p", should_capitalize);  }
+        if(window_struct()->key_state_frame("q") == Key_State::Pressed) { final_text += _capitalize("q", should_capitalize);  }
+        if(window_struct()->key_state_frame("r") == Key_State::Pressed) { final_text += _capitalize("r", should_capitalize);  }
+        if(window_struct()->key_state_frame("s") == Key_State::Pressed) { final_text += _capitalize("s", should_capitalize);  }
+        if(window_struct()->key_state_frame("t") == Key_State::Pressed) { final_text += _capitalize("t", should_capitalize);  }
+        if(window_struct()->key_state_frame("u") == Key_State::Pressed) { final_text += _capitalize("u", should_capitalize);  }
+        if(window_struct()->key_state_frame("v") == Key_State::Pressed) { final_text += _capitalize("v", should_capitalize);  }
+        if(window_struct()->key_state_frame("w") == Key_State::Pressed) { final_text += _capitalize("w", should_capitalize);  }
+        if(window_struct()->key_state_frame("x") == Key_State::Pressed) { final_text += _capitalize("x", should_capitalize);  }
+        if(window_struct()->key_state_frame("y") == Key_State::Pressed) { final_text += _capitalize("y", should_capitalize);  }
+        if(window_struct()->key_state_frame("z") == Key_State::Pressed) { final_text += _capitalize("z", should_capitalize);  }
+
+        // Handle numbers
+        if(window_struct()->key_state_frame("0") == Key_State::Pressed) { final_text += "0";  }
+        if(window_struct()->key_state_frame("1") == Key_State::Pressed) { final_text += "1";  }
+        if(window_struct()->key_state_frame("2") == Key_State::Pressed) { final_text += "2";  }
+        if(window_struct()->key_state_frame("3") == Key_State::Pressed) { final_text += "3";  }
+        if(window_struct()->key_state_frame("4") == Key_State::Pressed) { final_text += "4";  }
+        if(window_struct()->key_state_frame("5") == Key_State::Pressed) { final_text += "5";  }
+        if(window_struct()->key_state_frame("6") == Key_State::Pressed) { final_text += "6";  }
+        if(window_struct()->key_state_frame("7") == Key_State::Pressed) { final_text += "7";  }
+        if(window_struct()->key_state_frame("8") == Key_State::Pressed) { final_text += "8";  }
+        if(window_struct()->key_state_frame("9") == Key_State::Pressed) { final_text += "9";  }
+
+        // Handle special characters
+        if(window_struct()->key_state_frame("backspace") == Key_State::Pressed && final_text.size() > 0) {
+            unsigned int size_to_delete = 1;
+            if(final_text[final_text.size() - size_to_delete] == '>') {
+                while(final_text[final_text.size() - size_to_delete] != '<' && size_to_delete < final_text.size() - 1) size_to_delete++;
+            }
+            final_text = final_text.substr(0, final_text.size() - size_to_delete);
+        }
+        if(window_struct()->key_state_frame("enter") == Key_State::Pressed) { final_text += "</br>";  }
+        if(window_struct()->key_state_frame("space") == Key_State::Pressed) { final_text += " ";  }
+
+        if(final_text != text()) set_text(to_utf_8(final_text));
+    }
+
+    // Update the text
+    void HUD_Text_Input::update() {
+        HUD_Text::update();
+        input_text();
     }
 
     //*********
@@ -190,6 +330,19 @@ namespace scls {
         a_overflighted_object = current_overflighted_object;
         if(a_overflighted_object != 0) {
             a_overflighted_object->set_is_overflighted(true);
+        }
+
+        // Check the focused object
+        if(window_struct()->mouse_button_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+            if(a_overflighted_object != 0) {
+                a_focused_object = a_overflighted_object;
+            }
+            else {
+                a_focused_object = 0;
+            }
+        }
+        if(a_focused_object != 0) {
+            a_focused_object->set_is_focused(true);
         }
     }
 

@@ -125,14 +125,14 @@ namespace scls_documentalist_gui {
         // Create the the description text of the home part of the help page
         a_help_body_home_description = a_help_body->new_object<scls::HUD_Text>("help_body_welcome_description");
         a_help_body_home_description->set_font_size(30);
-        a_help_body_home_description->set_text_alignment_horizontal(scls::Text_Alignment_Horizontal::Center);
+        a_help_body_home_description->set_text_alignment_horizontal(scls::Alignment_Horizontal::H_Center);
         a_help_body_home_description->set_text(a_hud_text_content["help_body_home_description"]);
         a_help_body_home_description->set_object_scale_width(1.75);
         a_help_body_home_description->set_position(glm::vec2(0, -0.3));
         // Create the part text of the home part of the help page
         a_help_body_home_part = a_help_body->new_object<scls::HUD_Text>("help_body_welcome_part");
         a_help_body_home_part->set_font_size(50);
-        a_help_body_home_part->set_text_alignment_horizontal(scls::Text_Alignment_Horizontal::Center);
+        a_help_body_home_part->set_text_alignment_horizontal(scls::Alignment_Horizontal::H_Center);
         a_help_body_home_part->set_text(a_hud_text_content["help_body_home_part"]);
         a_help_body_home_part->set_object_scale_width(1.15);
         a_help_body_home_part->set_position(glm::vec2(0, -0.425));
@@ -238,13 +238,13 @@ namespace scls_documentalist_gui {
         a_project_file_pattern_body->set_scale(glm::vec3(3.0/2.0 * scale_multiplier, (4.0/3.0 - MAIN_HEADER_HEIGHT * 2.0) * scale_multiplier, 1));
         a_project_file_pattern_body->set_pixel_border_width(1);
         // Load the content of a project file pattern
-        a_project_file_pattern_content = a_project_file_pattern_body->new_object<scls::HUD_Text>("project_file_pattern_content");
+        a_project_file_pattern_content = a_project_file_pattern_body->new_object<scls::HUD_Text_Input>("project_file_pattern_content");
         a_project_file_pattern_content->set_font_size(20);
         a_project_file_pattern_content->set_resize_texture_with_scale(false);
-        a_project_file_pattern_content->set_text_alignment_horizontal(scls::Text_Alignment_Horizontal::Left);
+        a_project_file_pattern_content->set_text_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
         a_project_file_pattern_content->set_text_offset(0);
         a_project_file_pattern_content->set_text(scls::to_utf_8("Le char Leclerc</br>Leclerc great because Leclerc good."));
-        a_project_file_pattern_content->set_texture_aligmnent_horizontal(scls::Text_Alignment_Horizontal::Left);
+        a_project_file_pattern_content->set_texture_aligmnent_horizontal(scls::Alignment_Horizontal::H_Left);
         a_project_file_pattern_content->set_position(glm::vec2(0, 0));
         a_project_file_pattern_content->set_scale(glm::vec2(0.98));
     }

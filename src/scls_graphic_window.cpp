@@ -229,6 +229,12 @@ namespace scls {
         a_keys["space"] = GLFW_KEY_SPACE;
         a_keys["tab"] = GLFW_KEY_TAB;
         a_keys["up arrow"] = GLFW_KEY_UP;
+
+        for (std::map<std::string, unsigned int>::iterator it = a_keys.begin(); it != a_keys.end(); it++)
+        {
+            keys_state()[it->first] = Key_State::Nothing; // Reset keys
+            keys_state_frame()[it->first] = Key_State::Nothing; // Reset keys
+        }
     }
 
     // Properly resize the window

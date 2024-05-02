@@ -130,7 +130,7 @@ namespace scls {
         // Reset the object without changing it
         virtual void soft_reset() {for(int i = 0;i<static_cast<int>(children().size());i++){children()[i]->soft_reset();}};
         // Function called during every updates
-        virtual void update() {};
+        virtual void update() {for(int i = 0;i<static_cast<int>(children().size());i++){children()[i]->update();}};
 
         //*********
         //

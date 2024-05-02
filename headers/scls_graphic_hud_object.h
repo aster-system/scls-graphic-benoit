@@ -84,7 +84,7 @@ namespace scls {
         // HUD_Object constructor used for displaying
         HUD_Object(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name = "hud_default");
         // HUD_Object destructor
-        ~HUD_Object();
+        virtual ~HUD_Object();
 
         // Function called after that the window is resized
         virtual void after_window_resizing(glm::vec2 last_scale){update_hud_scale();Object::after_window_resizing(last_scale);};
@@ -95,7 +95,7 @@ namespace scls {
         // Render the HUD object on the window
         virtual void render();
         // Reset the object without changing it
-        virtual void soft_reset() {set_is_overflighted(false);Object::soft_reset();};
+        virtual void soft_reset() {set_is_overflighted(false);set_is_focused(false);Object::soft_reset();};
         // Update the size of the HUD elements
         virtual void update_hud_scale();
 
@@ -135,6 +135,7 @@ namespace scls {
         inline glm::vec4 border_width() {return a_border_width;};
         inline bool is_clicked(unsigned int button) { return is_overflighted() && window_struct()->mouse_button_clicked(button); };
         inline bool is_clicked_during_this_frame(unsigned int button) { return is_overflighted() && window_struct()->mouse_button_clicked_during_this_frame(button); };
+        inline bool is_focused() {return a_is_focused;};
         inline bool is_overflighted() const {return a_is_overflighted;};
         inline unsigned long overflighted_cursor() {return a_overflighted_cursor;};
         inline glm::vec2 position() {return glm::vec2(transform()->get_position()[0], transform()->get_position()[1]);};
@@ -142,6 +143,7 @@ namespace scls {
         inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
         inline void set_border_width(double new_border_width) {set_border_width(glm::vec4(new_border_width));};
         inline void set_border_width(glm::vec4 new_border_width) {a_border_width = new_border_width;a_last_border_width=new_border_width;a_last_border_width_definition_type = _Border_Width_Definition::Direct_Border_Width;};
+        inline void set_is_focused(bool new_is_focused) {a_is_focused = new_is_focused;};
         inline void set_is_overflighted(bool new_is_overflighted) {a_is_overflighted = new_is_overflighted;};
         virtual void set_object_scale(double new_scale) {set_object_scale(glm::vec2(new_scale));};
         virtual void set_object_scale(glm::vec2 new_scale, bool register_scaling = true) {
@@ -164,9 +166,11 @@ namespace scls {
             a_last_scale = new_scale;
             a_last_scale_definition_type = _Scale_Definition::Direct_Scale;
         };
-        inline void set_texture_aligmnent_horizontal(Text_Alignment_Horizontal new_texture_aligmnent_horizontal) {a_texture_aligmnent_horizontal = new_texture_aligmnent_horizontal;};
+        inline void set_texture_aligmnent_horizontal(Alignment_Horizontal new_texture_aligmnent_horizontal) {a_texture_aligmnent_horizontal = new_texture_aligmnent_horizontal;};
+        inline void set_texture_alignment_vertical(Alignment_Vertical new_texture_alignment_vertical) {a_texture_aligmnent_vertical = new_texture_alignment_vertical;};
         inline void set_texture_rect(glm::vec4 new_texture_rect) {a_texture_rect = new_texture_rect;};
-        inline Text_Alignment_Horizontal texture_aligmnent_horizontal() {return a_texture_aligmnent_horizontal;};
+        inline Alignment_Horizontal texture_aligmnent_horizontal() {return a_texture_aligmnent_horizontal;};
+        inline Alignment_Vertical texture_aligmnent_vertical() {return a_texture_aligmnent_vertical;};
         inline glm::vec4 texture_rect() {return a_texture_rect;};
 
         //*********
@@ -187,6 +191,8 @@ namespace scls {
         Color a_background_color = Color(0, 0, 0, 0);
         // Width of the border
         glm::vec4 a_border_width = glm::vec4(0, 0, 0, 0);
+        // If the object is focused or not
+        bool a_is_focused = false;
         // If the object is overfighted or not
         bool a_is_overflighted = false;
         // Id of the overflighted cursor
@@ -194,7 +200,9 @@ namespace scls {
         // If the texture can be resized or not
         bool a_resize_texture_with_scale = true;
         // Horizontal alignment of the texture if the texture can not be resized
-        Text_Alignment_Horizontal a_texture_aligmnent_horizontal = Text_Alignment_Horizontal::Center;
+        Alignment_Horizontal a_texture_aligmnent_horizontal = Alignment_Horizontal::H_Center;
+        // Vertical alignment of the texture if the texture can not be resized
+        Alignment_Vertical a_texture_aligmnent_vertical = Alignment_Vertical::V_Top;
         // Rect of the texture
         glm::vec4 a_texture_rect = glm::vec4(0, 0, 1, 1);
 
@@ -229,7 +237,7 @@ namespace scls {
         // HUD_Text constructor used for displaying
         HUD_Text(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name = "hud_default");
         // HUD_Text destructor
-        ~HUD_Text();
+        virtual ~HUD_Text();
 
         // Update the text
         virtual void update();
@@ -252,11 +260,11 @@ namespace scls {
         inline void set_font_family(std::string new_font_family) {a_font_family = new_font_family;a_modified = true;update_text_texture();};
         inline void set_font_size(unsigned short new_font_size) {a_font_size = new_font_size;a_modified = true;update_text_texture();};
         inline void set_text(std::string new_text) {if(new_text == a_text)return;a_text = new_text;a_modified = true;update_text_texture();};
-        inline void set_text_alignment_horizontal(Text_Alignment_Horizontal new_text_alignment_horizontal) {a_text_alignment_horizontal = new_text_alignment_horizontal;a_modified = true;update_text_texture();};
+        inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {a_text_alignment_horizontal = new_text_alignment_horizontal;a_modified = true;update_text_texture();};
         inline void set_text_offset(double new_text_offset) {a_text_offset = glm::vec4(new_text_offset);set_texture_rect(glm::vec4(new_text_offset, new_text_offset, 1.0 - new_text_offset * 2.0, 1.0 - new_text_offset * 2.0));};
         inline void set_text_offset(glm::vec4 new_text_offset) {a_text_offset = new_text_offset;set_texture_rect(glm::vec4(new_text_offset[1], new_text_offset[0], 1.0 - (new_text_offset[1] + new_text_offset[3]), 1.0 - (new_text_offset[0] + new_text_offset[2])));};
         inline std::string text() {return a_text;update_text_texture();};
-        inline Text_Alignment_Horizontal text_alignment_horizontal() {return a_text_alignment_horizontal;};
+        inline Alignment_Horizontal text_alignment_horizontal() {return a_text_alignment_horizontal;};
         inline glm::vec4 text_offset() {return a_text_offset;};
     private:
         //*********
@@ -276,9 +284,34 @@ namespace scls {
         // Text in the object
         std::string a_text = "";
         // Alignment of the text
-        Text_Alignment_Horizontal a_text_alignment_horizontal = Text_Alignment_Horizontal::Left;
+        Alignment_Horizontal a_text_alignment_horizontal = Alignment_Horizontal::H_Left;
         // Offset of the text
         glm::vec4 a_text_offset = glm::vec4(0, 0, 0, 0);
+    };
+
+    class HUD_Text_Input : public HUD_Text {
+        // Class representing an HUD object displaying and getting a text into the window
+    public:
+
+        //*********
+        //
+        // HUD_Text_Input main functions
+        //
+        //*********
+
+        // Most parent HUD_Text_Input constructor used for displaying
+        HUD_Text_Input(_Window_Advanced_Struct* window_struct, Transform_Object* transform_object, std::string name, std::string texture_name, std::string vao_name = "hud_default");
+        // HUD_Text_Input constructor used for displaying
+        HUD_Text_Input(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name = "hud_default");
+        // HUD_Text_Input destructor
+        virtual ~HUD_Text_Input();
+
+        // Capitalize a std::string
+        std::string _capitalize(std::string letter, bool apply = true);
+        // Input the inputed text
+        void input_text();
+        // Update the text
+        virtual void update();
     };
 
     class HUD_Page : public HUD_Object {
@@ -304,6 +337,8 @@ namespace scls {
             // Soft reset the page
             soft_reset();
 
+            // Check the focused object
+            a_focused_object = 0;
             // Check the overflighted cursor
             a_overflighted_object = 0;
         };
@@ -311,8 +346,13 @@ namespace scls {
         virtual void update_event();
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
-        inline HUD_Object* overflighted_object(){return a_overflighted_object;};
+        inline HUD_Object* focused_object() {return a_focused_object;};
+        inline HUD_Object* overflighted_object() {return a_overflighted_object;};
     private:
+        // Handle the focused object
+        // Pointer to the focused object
+        HUD_Object* a_focused_object = 0;
+
         // Handle the overflighted object
         // Pointer to the overflighted object
         HUD_Object* a_overflighted_object = 0;
