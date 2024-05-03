@@ -212,47 +212,60 @@ namespace scls {
         if(!is_focused()) return;
 
         std::string final_text = text();
+        std::string to_add = "";
 
         // Handle letters
         bool should_capitalize = (window_struct()->key_state("left shift") == Key_State::Pressed || window_struct()->key_state("right shift") == Key_State::Pressed);
-        if(window_struct()->key_state_frame("a") == Key_State::Pressed) { final_text += _capitalize("a", should_capitalize);  }
-        if(window_struct()->key_state_frame("b") == Key_State::Pressed) { final_text += _capitalize("b", should_capitalize);  }
-        if(window_struct()->key_state_frame("c") == Key_State::Pressed) { final_text += _capitalize("c", should_capitalize);  }
-        if(window_struct()->key_state_frame("d") == Key_State::Pressed) { final_text += _capitalize("d", should_capitalize);  }
-        if(window_struct()->key_state_frame("e") == Key_State::Pressed) { final_text += _capitalize("e", should_capitalize);  }
-        if(window_struct()->key_state_frame("f") == Key_State::Pressed) { final_text += _capitalize("f", should_capitalize);  }
-        if(window_struct()->key_state_frame("g") == Key_State::Pressed) { final_text += _capitalize("g", should_capitalize);  }
-        if(window_struct()->key_state_frame("h") == Key_State::Pressed) { final_text += _capitalize("h", should_capitalize);  }
-        if(window_struct()->key_state_frame("i") == Key_State::Pressed) { final_text += _capitalize("i", should_capitalize);  }
-        if(window_struct()->key_state_frame("j") == Key_State::Pressed) { final_text += _capitalize("j", should_capitalize);  }
-        if(window_struct()->key_state_frame("k") == Key_State::Pressed) { final_text += _capitalize("k", should_capitalize);  }
-        if(window_struct()->key_state_frame("l") == Key_State::Pressed) { final_text += _capitalize("l", should_capitalize);  }
-        if(window_struct()->key_state_frame("m") == Key_State::Pressed) { final_text += _capitalize("m", should_capitalize);  }
-        if(window_struct()->key_state_frame("n") == Key_State::Pressed) { final_text += _capitalize("n", should_capitalize);  }
-        if(window_struct()->key_state_frame("o") == Key_State::Pressed) { final_text += _capitalize("o", should_capitalize);  }
-        if(window_struct()->key_state_frame("p") == Key_State::Pressed) { final_text += _capitalize("p", should_capitalize);  }
-        if(window_struct()->key_state_frame("q") == Key_State::Pressed) { final_text += _capitalize("q", should_capitalize);  }
-        if(window_struct()->key_state_frame("r") == Key_State::Pressed) { final_text += _capitalize("r", should_capitalize);  }
-        if(window_struct()->key_state_frame("s") == Key_State::Pressed) { final_text += _capitalize("s", should_capitalize);  }
-        if(window_struct()->key_state_frame("t") == Key_State::Pressed) { final_text += _capitalize("t", should_capitalize);  }
-        if(window_struct()->key_state_frame("u") == Key_State::Pressed) { final_text += _capitalize("u", should_capitalize);  }
-        if(window_struct()->key_state_frame("v") == Key_State::Pressed) { final_text += _capitalize("v", should_capitalize);  }
-        if(window_struct()->key_state_frame("w") == Key_State::Pressed) { final_text += _capitalize("w", should_capitalize);  }
-        if(window_struct()->key_state_frame("x") == Key_State::Pressed) { final_text += _capitalize("x", should_capitalize);  }
-        if(window_struct()->key_state_frame("y") == Key_State::Pressed) { final_text += _capitalize("y", should_capitalize);  }
-        if(window_struct()->key_state_frame("z") == Key_State::Pressed) { final_text += _capitalize("z", should_capitalize);  }
+        if(window_struct()->key_state_frame("a") == Key_State::Pressed) { to_add += _capitalize("a", should_capitalize);  }
+        if(window_struct()->key_state_frame("b") == Key_State::Pressed) { to_add += _capitalize("b", should_capitalize);  }
+        if(window_struct()->key_state_frame("c") == Key_State::Pressed) { to_add += _capitalize("c", should_capitalize);  }
+        if(window_struct()->key_state_frame("d") == Key_State::Pressed) { to_add += _capitalize("d", should_capitalize);  }
+        if(window_struct()->key_state_frame("e") == Key_State::Pressed) { to_add += _capitalize("e", should_capitalize);  }
+        if(window_struct()->key_state_frame("f") == Key_State::Pressed) { to_add += _capitalize("f", should_capitalize);  }
+        if(window_struct()->key_state_frame("g") == Key_State::Pressed) { to_add += _capitalize("g", should_capitalize);  }
+        if(window_struct()->key_state_frame("h") == Key_State::Pressed) { to_add += _capitalize("h", should_capitalize);  }
+        if(window_struct()->key_state_frame("i") == Key_State::Pressed) { to_add += _capitalize("i", should_capitalize);  }
+        if(window_struct()->key_state_frame("j") == Key_State::Pressed) { to_add += _capitalize("j", should_capitalize);  }
+        if(window_struct()->key_state_frame("k") == Key_State::Pressed) { to_add += _capitalize("k", should_capitalize);  }
+        if(window_struct()->key_state_frame("l") == Key_State::Pressed) { to_add += _capitalize("l", should_capitalize);  }
+        if(window_struct()->key_state_frame("m") == Key_State::Pressed) { to_add += _capitalize("m", should_capitalize);  }
+        if(window_struct()->key_state_frame("n") == Key_State::Pressed) { to_add += _capitalize("n", should_capitalize);  }
+        if(window_struct()->key_state_frame("o") == Key_State::Pressed) { to_add += _capitalize("o", should_capitalize);  }
+        if(window_struct()->key_state_frame("p") == Key_State::Pressed) { to_add += _capitalize("p", should_capitalize);  }
+        if(window_struct()->key_state_frame("q") == Key_State::Pressed) { to_add += _capitalize("q", should_capitalize);  }
+        if(window_struct()->key_state_frame("r") == Key_State::Pressed) { to_add += _capitalize("r", should_capitalize);  }
+        if(window_struct()->key_state_frame("s") == Key_State::Pressed) { to_add += _capitalize("s", should_capitalize);  }
+        if(window_struct()->key_state_frame("t") == Key_State::Pressed) { to_add += _capitalize("t", should_capitalize);  }
+        if(window_struct()->key_state_frame("u") == Key_State::Pressed) { to_add += _capitalize("u", should_capitalize);  }
+        if(window_struct()->key_state_frame("v") == Key_State::Pressed) { to_add += _capitalize("v", should_capitalize);  }
+        if(window_struct()->key_state_frame("w") == Key_State::Pressed) { to_add += _capitalize("w", should_capitalize);  }
+        if(window_struct()->key_state_frame("x") == Key_State::Pressed) { to_add += _capitalize("x", should_capitalize);  }
+        if(window_struct()->key_state_frame("y") == Key_State::Pressed) { to_add += _capitalize("y", should_capitalize);  }
+        if(window_struct()->key_state_frame("z") == Key_State::Pressed) { to_add += _capitalize("z", should_capitalize);  }
 
         // Handle numbers
-        if(window_struct()->key_state_frame("0") == Key_State::Pressed) { final_text += "0";  }
-        if(window_struct()->key_state_frame("1") == Key_State::Pressed) { final_text += "1";  }
-        if(window_struct()->key_state_frame("2") == Key_State::Pressed) { final_text += "2";  }
-        if(window_struct()->key_state_frame("3") == Key_State::Pressed) { final_text += "3";  }
-        if(window_struct()->key_state_frame("4") == Key_State::Pressed) { final_text += "4";  }
-        if(window_struct()->key_state_frame("5") == Key_State::Pressed) { final_text += "5";  }
-        if(window_struct()->key_state_frame("6") == Key_State::Pressed) { final_text += "6";  }
-        if(window_struct()->key_state_frame("7") == Key_State::Pressed) { final_text += "7";  }
-        if(window_struct()->key_state_frame("8") == Key_State::Pressed) { final_text += "8";  }
-        if(window_struct()->key_state_frame("9") == Key_State::Pressed) { final_text += "9";  }
+        if(window_struct()->key_state_frame("0") == Key_State::Pressed) { to_add += "0";  }
+        if(window_struct()->key_state_frame("1") == Key_State::Pressed) { to_add += "1";  }
+        if(window_struct()->key_state_frame("2") == Key_State::Pressed) { to_add += "2";  }
+        if(window_struct()->key_state_frame("3") == Key_State::Pressed) { to_add += "3";  }
+        if(window_struct()->key_state_frame("4") == Key_State::Pressed) { to_add += "4";  }
+        if(window_struct()->key_state_frame("5") == Key_State::Pressed) { to_add += "5";  }
+        if(window_struct()->key_state_frame("6") == Key_State::Pressed) { to_add += "6";  }
+        if(window_struct()->key_state_frame("7") == Key_State::Pressed) { to_add += "7";  }
+        if(window_struct()->key_state_frame("8") == Key_State::Pressed) { to_add += "8";  }
+        if(window_struct()->key_state_frame("9") == Key_State::Pressed) { to_add += "9";  }
+
+        // Handle numbers / special characters
+        if(window_struct()->key_state_frame("&") == Key_State::Pressed) { to_add += _capitalize("&", should_capitalize);  }
+        if(window_struct()->key_state_frame("é") == Key_State::Pressed) { to_add += _capitalize("é", should_capitalize);  }
+        if(window_struct()->key_state_frame("\"") == Key_State::Pressed) { to_add += _capitalize("\"", should_capitalize);  }
+        if(window_struct()->key_state_frame("'") == Key_State::Pressed) { to_add += _capitalize("'", should_capitalize);  }
+        if(window_struct()->key_state_frame("(") == Key_State::Pressed) { to_add += _capitalize("(", should_capitalize);  }
+        if(window_struct()->key_state_frame("-") == Key_State::Pressed) { to_add += _capitalize("-", should_capitalize);  }
+        if(window_struct()->key_state_frame("è") == Key_State::Pressed) { to_add += _capitalize("è", should_capitalize);  }
+        if(window_struct()->key_state_frame("_") == Key_State::Pressed) { to_add += _capitalize("_", should_capitalize);  }
+        if(window_struct()->key_state_frame("ç") == Key_State::Pressed) { to_add += _capitalize("ç", should_capitalize);  }
+        if(window_struct()->key_state_frame("à") == Key_State::Pressed) { to_add += _capitalize("à", should_capitalize);  }
 
         // Handle special characters
         if(window_struct()->key_state_frame("backspace") == Key_State::Pressed && final_text.size() > 0) {
@@ -262,10 +275,11 @@ namespace scls {
             }
             final_text = final_text.substr(0, final_text.size() - size_to_delete);
         }
-        if(window_struct()->key_state_frame("enter") == Key_State::Pressed) { final_text += "</br>";  }
-        if(window_struct()->key_state_frame("space") == Key_State::Pressed) { final_text += " ";  }
+        if(window_struct()->key_state_frame("enter") == Key_State::Pressed) { to_add += "</br>";  }
+        if(window_struct()->key_state_frame("space") == Key_State::Pressed) { to_add += " ";  }
 
-        if(final_text != text()) set_text(to_utf_8(final_text));
+        final_text += to_utf_8(to_add);
+        if(final_text != text()) set_text(final_text);
     }
 
     // Update the text

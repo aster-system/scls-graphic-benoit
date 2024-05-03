@@ -214,7 +214,16 @@ namespace scls {
         a_keys["9"] = GLFW_KEY_KP_9;
 
         // Poncutation
+        a_keys["&"] = GLFW_KEY_1;
+        a_keys["é"] = GLFW_KEY_2;
+        a_keys["\""] = GLFW_KEY_3;
+        a_keys["'"] = GLFW_KEY_4;
+        a_keys["("] = GLFW_KEY_5;
+        a_keys["-"] = GLFW_KEY_6;
+        a_keys["è"] = GLFW_KEY_7;
         a_keys["_"] = GLFW_KEY_8;
+        a_keys["ç"] = GLFW_KEY_9;
+        a_keys["à"] = GLFW_KEY_0;
         a_keys[":"] = GLFW_KEY_PERIOD;
         a_keys[";"] = GLFW_KEY_COMMA;
 
