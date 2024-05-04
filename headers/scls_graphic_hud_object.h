@@ -263,9 +263,11 @@ namespace scls {
         inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {a_text_alignment_horizontal = new_text_alignment_horizontal;a_modified = true;update_text_texture();};
         inline void set_text_offset(double new_text_offset) {a_text_offset = glm::vec4(new_text_offset);set_texture_rect(glm::vec4(new_text_offset, new_text_offset, 1.0 - new_text_offset * 2.0, 1.0 - new_text_offset * 2.0));};
         inline void set_text_offset(glm::vec4 new_text_offset) {a_text_offset = new_text_offset;set_texture_rect(glm::vec4(new_text_offset[1], new_text_offset[0], 1.0 - (new_text_offset[1] + new_text_offset[3]), 1.0 - (new_text_offset[0] + new_text_offset[2])));};
+        inline void set_use_cursor(bool new_use_cursor) {a_use_cursor = new_use_cursor;};
         inline std::string text() {return a_text;update_text_texture();};
         inline Alignment_Horizontal text_alignment_horizontal() {return a_text_alignment_horizontal;};
         inline glm::vec4 text_offset() {return a_text_offset;};
+        inline bool use_cursor() {return a_use_cursor;};
     private:
         //*********
         //
@@ -287,6 +289,15 @@ namespace scls {
         Alignment_Horizontal a_text_alignment_horizontal = Alignment_Horizontal::H_Left;
         // Offset of the text
         glm::vec4 a_text_offset = glm::vec4(0, 0, 0, 0);
+
+        //*********
+        //
+        // Cursor handling
+        //
+        //*********
+
+        // If the text use a cursor or not
+        bool a_use_cursor = false;
     };
 
     class HUD_Text_Input : public HUD_Text {

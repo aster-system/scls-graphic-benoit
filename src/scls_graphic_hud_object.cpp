@@ -135,6 +135,8 @@ namespace scls {
             Text_Image* current_text_image = window_struct()->text_image_generator()->new_text_image(text());
             current_text_image->global_style().font_size = font_size();
             current_text_image->global_style().alignment_horizontal = text_alignment_horizontal();
+            std::cout << "O " << use_cursor() << std::endl;
+            current_text_image->set_use_cursor(use_cursor());
             Image* new_image_texture = current_text_image->image();
             delete current_text_image; current_text_image = 0;
 
@@ -160,12 +162,12 @@ namespace scls {
 
     // Most parent HUD_Text_Input constructor used for displaying
     HUD_Text_Input::HUD_Text_Input(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : HUD_Text(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), transform_parent, name, texture_name, vao_name) {
-
+        set_use_cursor(true);
     }
 
     // HUD_Text_Input constructor used for displaying
     HUD_Text_Input::HUD_Text_Input(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name) : HUD_Text(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), parent, name, texture_name, vao_name) {
-
+        set_use_cursor(true);
     }
 
     // HUD_Text_Input destructor
