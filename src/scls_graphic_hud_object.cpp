@@ -135,7 +135,7 @@ namespace scls {
             Text_Image* current_text_image = window_struct()->text_image_generator()->new_text_image(text());
             current_text_image->global_style().font_size = font_size();
             current_text_image->global_style().alignment_horizontal = text_alignment_horizontal();
-            std::cout << "O " << use_cursor() << std::endl;
+            current_text_image->set_cursor_position(cursor_position());
             current_text_image->set_use_cursor(use_cursor());
             Image* new_image_texture = current_text_image->image();
             delete current_text_image; current_text_image = 0;
@@ -275,13 +275,16 @@ namespace scls {
             if(final_text[final_text.size() - size_to_delete] == '>') {
                 while(final_text[final_text.size() - size_to_delete] != '<' && size_to_delete < final_text.size() - 1) size_to_delete++;
             }
+            set_cursor_position(cursor_position() - window_struct()->text_image_generator()->defined_balises()->plain_text_size(final_text.substr(final_text.size() - size_to_delete, size_to_delete)));
             final_text = final_text.substr(0, final_text.size() - size_to_delete);
         }
         if(window_struct()->key_state_frame("enter") == Key_State::Pressed) { to_add += "</br>";  }
         if(window_struct()->key_state_frame("space") == Key_State::Pressed) { to_add += " ";  }
 
-        final_text += to_utf_8(to_add);
-        if(final_text != text()) set_text(final_text);
+        to_add = to_utf_8(to_add);
+        set_cursor_position(cursor_position() + window_struct()->text_image_generator()->defined_balises()->plain_text_size(to_add));
+        final_text += to_add;
+        if(final_text != text()) set_text(final_text, false);
     }
 
     // Update the text
