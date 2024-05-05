@@ -118,6 +118,24 @@ namespace scls {
 
     }
 
+    // Move the cursor in the text
+    void HUD_Text::move_cursor(int movement) {
+        int final_cursor_position = cursor_position() + movement;
+        if(movement < 0) {
+            if(final_cursor_position < 0) {
+                final_cursor_position = 0;
+            }
+        }
+        else if(movement > 0) {
+            if(final_cursor_position > static_cast<int>(plain_text_size())) {
+                final_cursor_position = plain_text_size();
+            }
+        }
+        else if(final_cursor_position == static_cast<int>(cursor_position())) return;
+        set_cursor_position(final_cursor_position);
+        a_modified = true; update_text_texture();
+    }
+
     // Update the text
     void HUD_Text::update() {
         HUD_Object::update();
@@ -291,6 +309,13 @@ namespace scls {
     void HUD_Text_Input::update() {
         HUD_Text::update();
         input_text();
+        update_cursor();
+    }
+
+    // Update the cursor behavior
+    void HUD_Text_Input::update_cursor() {
+        if(window_struct()->key_state_frame("left arrow") == Key_State::Pressed) move_cursor(-1);
+        if(window_struct()->key_state_frame("right arrow") == Key_State::Pressed) move_cursor(1);
     }
 
     //*********

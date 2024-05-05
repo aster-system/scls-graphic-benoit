@@ -12,7 +12,7 @@
 #include <map>
 #include <random>
 #include <scls_foundation.h>
-#include <scls_image.h>
+#include <scls-image/scls_image.h>
 #include <string>
 #include <sstream>
 #include <vector>

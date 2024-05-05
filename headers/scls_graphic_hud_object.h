@@ -239,12 +239,17 @@ namespace scls {
         // HUD_Text destructor
         virtual ~HUD_Text();
 
+        // Move the cursor in the text
+        void move_cursor(int movement);
+
         // Update the text
         virtual void update();
         // Update the text texture
         void update_text_texture();
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
+        inline std::string plain_text(){return window_struct()->text_image_generator()->defined_balises()->plain_text(text());};
+        inline unsigned int plain_text_size() {return plain_text().size();};
         virtual void set_object_scale(double new_scale) {update_text_texture();HUD_Object::set_object_scale(new_scale);};
         virtual void set_object_scale(glm::vec2 new_scale) {update_text_texture();HUD_Object::set_object_scale(new_scale);};
         virtual void set_object_scale_width(double new_width) {
@@ -327,6 +332,8 @@ namespace scls {
         void input_text();
         // Update the text
         virtual void update();
+        // Update the cursor behavior
+        void update_cursor();
     };
 
     class HUD_Page : public HUD_Object {
