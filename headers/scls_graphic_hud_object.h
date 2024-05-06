@@ -180,7 +180,8 @@ namespace scls {
         //*********
 
         inline void move_bottom_of_object_in_parent(HUD_Object* object, double y_offset = 0) {double new_y = object->position()[1] - (scale()[1] + y_offset);if(parent_hud()!=0){new_y -= parent_hud()->border_width()[0];}set_position(glm::vec2(position()[0], new_y));};
-        inline void move_left_of_parent() {double new_x = -1.0 + scale()[0] / 2.0;if(parent_hud()!=0){new_x -= parent_hud()->border_width()[0];}set_position(glm::vec2(new_x, position()[1]));};
+        inline void move_left_of_parent() {double new_x = -1.0 + scale()[0] / 2.0;if(parent_hud()!=0){new_x -= parent_hud()->border_width()[1];}set_position(glm::vec2(new_x, position()[1]));};
+        inline void move_right_of_parent() {double new_x = 1.0 - scale()[0] / 2.0;if(parent_hud()!=0){new_x -= parent_hud()->border_width()[3];}set_position(glm::vec2(new_x, position()[1]));};
         inline void move_top_of_parent() {double new_y = 0.5 - scale()[1] / 2.0;if(parent_hud()!=0){new_y -= parent_hud()->border_width()[0];}set_position(glm::vec2(position()[0], new_y));};
     private:
         //*********
@@ -250,7 +251,7 @@ namespace scls {
         void update_text_texture();
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
-        inline std::string plain_text(){return window_struct()->text_image_generator()->defined_balises()->plain_text(text());};
+        inline std::string plain_text(){return window_struct()->text_image_generator()->plain_text(text());};
         inline unsigned int plain_text_size() {return plain_text().size();};
         virtual void set_object_scale(double new_scale) {update_text_texture();HUD_Object::set_object_scale(new_scale);};
         virtual void set_object_scale(glm::vec2 new_scale) {update_text_texture();HUD_Object::set_object_scale(new_scale);};
@@ -268,7 +269,7 @@ namespace scls {
         inline void set_font_color(Color new_font_color) {a_font_color = new_font_color;};
         inline void set_font_family(std::string new_font_family) {a_font_family = new_font_family;a_modified = true;update_text_texture();};
         inline void set_font_size(unsigned short new_font_size) {a_font_size = new_font_size;a_modified = true;update_text_texture();};
-        inline void set_text(std::string new_text, bool move_cursor = true) {if(new_text == a_text)return;a_text = new_text;if(move_cursor)set_cursor_position(window_struct()->text_image_generator()->defined_balises()->plain_text_size(a_text));a_modified = true;update_text_texture();};
+        inline void set_text(std::string new_text, bool move_cursor = true) {if(new_text == a_text)return;a_text = new_text;if(move_cursor)set_cursor_position(window_struct()->text_image_generator()->plain_text_size(a_text));a_modified = true;update_text_texture();};
         inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {a_text_alignment_horizontal = new_text_alignment_horizontal;a_modified = true;update_text_texture();};
         inline void set_text_offset(double new_text_offset) {a_text_offset = glm::vec4(new_text_offset);set_texture_rect(glm::vec4(new_text_offset, new_text_offset, 1.0 - new_text_offset * 2.0, 1.0 - new_text_offset * 2.0));};
         inline void set_text_offset(glm::vec4 new_text_offset) {a_text_offset = new_text_offset;set_texture_rect(glm::vec4(new_text_offset[1], new_text_offset[0], 1.0 - (new_text_offset[1] + new_text_offset[3]), 1.0 - (new_text_offset[0] + new_text_offset[2])));};

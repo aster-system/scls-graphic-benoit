@@ -294,14 +294,14 @@ namespace scls {
             if(final_text[final_text.size() - size_to_delete] == '>') {
                 while(final_text[final_text.size() - size_to_delete] != '<' && size_to_delete < final_text.size() - 1) size_to_delete++;
             }
-            set_cursor_position(cursor_position() - window_struct()->text_image_generator()->defined_balises()->plain_text_size(final_text.substr(final_text.size() - size_to_delete, size_to_delete)));
+            set_cursor_position(cursor_position() - window_struct()->text_image_generator()->plain_text_size(final_text.substr(final_text.size() - size_to_delete, size_to_delete)));
             final_text = final_text.substr(0, final_text.size() - size_to_delete);
         }
         if(window_struct()->key_state_frame("enter") == Key_State::Pressed) { to_add += "</br>";  }
         if(window_struct()->key_state_frame("space") == Key_State::Pressed) { to_add += " ";  }
 
         to_add = to_utf_8(to_add);
-        set_cursor_position(cursor_position() + window_struct()->text_image_generator()->defined_balises()->plain_text_size(to_add));
+        set_cursor_position(cursor_position() + window_struct()->text_image_generator()->plain_text_size(to_add));
         final_text += to_add;
         if(final_text != text()) set_text(final_text, false);
     }

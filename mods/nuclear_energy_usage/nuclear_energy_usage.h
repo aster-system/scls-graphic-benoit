@@ -39,20 +39,39 @@ namespace pleos {
 
         // Charger toute la fenêtre
         void load();
+        // Charger la langue anglaise
+        void load_en();
+        // Charger la page d'explication
+        void load_explaination_page();
+        // Charger la langue française
+        void load_fr();
         // Charger la page de navigation
         void load_navigation_page();
         // Charger la page d'accueil
         void load_welcome_page();
+        // Affiche la page d'explication
+        void set_explaination_page();
+        // Affiche la page d'accueil
+        void set_welcome_page();
+        // Remet les boutons à leur endroit initial
+        void unset_navigation_buttons();
 
         // Commencer le programme
         void start();
     private:
+
+        // Contenu des différents textes dans le programme
+        std::map<std::string, std::string> a_text_content = std::map<std::string, std::string>();
 
         //*********
         //
         // Trucs de GUI ennuyants
         //
         //*********
+
+        // Page d'explication
+        // Page parent de la page d'explication
+        scls::HUD_Page* a_explaination_page = 0;
 
         // Page de navigation
         // Page parent de la page de navigation
