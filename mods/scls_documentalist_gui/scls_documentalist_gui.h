@@ -59,6 +59,8 @@ namespace scls_documentalist_gui {
             scls::Project* project_to_load = loaded_project(name);
             if(project_to_load != 0) load_project_home(project_to_load);
         };
+        // Save the loaded file pattern
+        void save_loaded_file_pattern();
 
         // Return if the gui contains a project by its name
         inline bool contains_loaded_project(std::string project_name) {for(std::map<std::string, scls::Project*>::iterator it = loaded_projects().begin();it!=loaded_projects().end();it++){if(it->first == project_name){return true;}}return false;};
@@ -150,6 +152,8 @@ namespace scls_documentalist_gui {
         scls::HUD_Page* a_project_footer = 0;
         // Button of creation of file in the project footer
         scls::HUD_Text* a_project_footer_create_file_pattern = 0;
+        // Button of saving of a file in the project footer
+        scls::HUD_Text* a_project_footer_save_file_pattern = 0;
 
         // Navigation of the project
         // Parent page of the project Navigation

@@ -16,6 +16,7 @@
 
 #include "scls_graphic.h"
 #include "mods/scls_documentalist_gui/scls_documentalist_gui.h"
+#include "../genetique.h"
 
 int main(int argc, char* argv[]) {
     srand(time(0));

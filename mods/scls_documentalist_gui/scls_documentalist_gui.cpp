@@ -177,6 +177,7 @@ namespace scls_documentalist_gui {
         a_hud_text_content["help_body_home_part"] = scls::to_utf_8("You currently are in the help page. Browse with the</br>selector at your left.");
         a_hud_text_content["home"] = "Home";
         a_hud_text_content["home_project"] = "Project home";
+        a_hud_text_content["save"] = "Save";
     }
 
     // Load french
@@ -191,6 +192,7 @@ namespace scls_documentalist_gui {
         a_hud_text_content["help_body_home_part"] = scls::to_utf_8("Vous êtes actuellement sur la page d'aide. Naviguez</br>avec le sélécteur à gauche.");
         a_hud_text_content["home"] = "Accueil";
         a_hud_text_content["home_project"] = "Accueil du projet";
+        a_hud_text_content["save"] = "Sauvegarder";
     }
 
     // Load the main header
@@ -267,6 +269,15 @@ namespace scls_documentalist_gui {
         a_project_footer_create_file_pattern->set_pixel_border_width(1);
         a_project_footer_create_file_pattern->set_object_scale(0.125);
         a_project_footer_create_file_pattern->set_position(glm::vec2(-0.3, 0));
+        // Create the button of saving of a file in the project footer
+        a_project_footer_save_file_pattern = a_project_footer->new_object<scls::HUD_Text>("project_footer_save_file_pattern");
+        a_project_footer_save_file_pattern->set_font_size(100);
+        a_project_footer_save_file_pattern->set_text_offset(0.05);
+        a_project_footer_save_file_pattern->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_project_footer_save_file_pattern->set_text(a_hud_text_content["save"]);
+        a_project_footer_save_file_pattern->set_pixel_border_width(1);
+        a_project_footer_save_file_pattern->set_object_scale(0.125);
+        a_project_footer_save_file_pattern->set_position(glm::vec2(0.3, 0));
     }
 
     // Load the needed textures
@@ -304,6 +315,11 @@ namespace scls_documentalist_gui {
         a_welcome_footer_create_project->set_text(a_hud_text_content["create_a_project"]);
     }
 
+    void SCLS_Documentalist_GUI::save_loaded_file_pattern() {
+        std::string to_save = a_project_file_pattern_content->text();
+        scls::write_in_file("lesson.html", to_save);
+    };
+
     // Run the GUI
     void SCLS_Documentalist_GUI::start() {
         hide_all_pages();
@@ -322,6 +338,10 @@ namespace scls_documentalist_gui {
 
             if(a_project_footer_create_file_pattern->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
                 create_project_file_pattern();
+            }
+
+            if(a_project_footer_save_file_pattern->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                save_loaded_file_pattern();
             }
 
             render();
