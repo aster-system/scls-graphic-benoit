@@ -151,6 +151,7 @@ namespace scls {
         if(text() != "") {
             // Create the texture
             Text_Image* current_text_image = window_struct()->text_image_generator()->new_text_image(text());
+            current_text_image->global_style().background_color = background_color();
             current_text_image->global_style().font_size = font_size();
             current_text_image->global_style().alignment_horizontal = text_alignment_horizontal();
             current_text_image->set_cursor_position(cursor_position());

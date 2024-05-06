@@ -179,6 +179,8 @@ namespace scls {
         //
         //*********
 
+        inline void move_bottom_of_object_in_parent(HUD_Object* object, double y_offset = 0) {double new_y = object->position()[1] - (scale()[1] + y_offset);if(parent_hud()!=0){new_y -= parent_hud()->border_width()[0];}set_position(glm::vec2(position()[0], new_y));};
+        inline void move_left_of_parent() {double new_x = -1.0 + scale()[0] / 2.0;if(parent_hud()!=0){new_x -= parent_hud()->border_width()[0];}set_position(glm::vec2(new_x, position()[1]));};
         inline void move_top_of_parent() {double new_y = 0.5 - scale()[1] / 2.0;if(parent_hud()!=0){new_y -= parent_hud()->border_width()[0];}set_position(glm::vec2(position()[0], new_y));};
     private:
         //*********

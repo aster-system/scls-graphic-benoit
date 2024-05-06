@@ -1,0 +1,80 @@
+//******************
+//
+// nuclear_energy_usage.h
+//
+//******************
+// Presentation :
+//
+// SCLS is a project containing base functions for C++.
+// It can also be use in any projects.
+//
+// The Graphic "Benoit" part allows the user to simply display a graphic window.
+// It is named after the Mandelbrot fractal discoverer, Benoit Mandelbrot.
+//
+// This file contains a mod made for a school project.
+// The documentations / comments will be made in french for clarity purpose.
+//
+
+#ifndef PLEOS_NUCLEAR_ENERGY_USAGE
+#define PLEOS_NUCLEAR_ENERGY_USAGE
+
+#include "../../scls_graphic.h"
+#include "../../mods_hidden/scls_documentalist.h"
+
+// Utilisation de l'espace de nom "pleos" pour simplifier le code
+namespace pleos {
+    class Nuclear_Energy_Usage : public scls::Window {
+        // Classe représentant la base du project Nuclear_Energy_Usage
+    public:
+        // Constructeur de base de Nuclear_Energy_Usage
+        Nuclear_Energy_Usage(int window_width, int window_height, std::string exec_path);
+        // Destructeur de base de Nuclear_Energy_Usage
+        virtual ~Nuclear_Energy_Usage();
+
+        //*********
+        //
+        // Trucs de GUI ennuyants
+        //
+        //*********
+
+        // Charger toute la fenêtre
+        void load();
+        // Charger la page de navigation
+        void load_navigation_page();
+        // Charger la page d'accueil
+        void load_welcome_page();
+
+        // Commencer le programme
+        void start();
+    private:
+
+        //*********
+        //
+        // Trucs de GUI ennuyants
+        //
+        //*********
+
+        // Page de navigation
+        // Page parent de la page de navigation
+        scls::HUD_Page* a_navigation_page = 0;
+        // Bouton d'accueil de la page de navigation
+        scls::HUD_Text* a_navigation_welcome_button = 0;
+        // Bouton d'explication de la page de navigation
+        scls::HUD_Text* a_navigation_explaination_button = 0;
+        // Bouton de politique de la page de navigation
+        scls::HUD_Text* a_navigation_politic_button = 0;
+        // Bouton de production de la page de navigation
+        scls::HUD_Text* a_navigation_production_button = 0;
+        // Bouton d'ecology de la page de navigation
+        scls::HUD_Text* a_navigation_ecology_button = 0;
+
+        // Page d'accueil
+        // Page parent de la page d'accueil
+        scls::HUD_Page* a_welcome_page = 0;
+    };
+
+    // Utiliser facilement le projet
+    void use_nuclear_energy_usage(std::string exec_path);
+}
+
+#endif // PLEOS_NUCLEAR_ENERGY_USAGE
