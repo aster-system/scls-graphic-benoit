@@ -52,6 +52,8 @@ namespace pleos {
         void load_navigation_page();
         // Charger la page d'accueil
         void load_welcome_page();
+        // Affiche la page d'explication de l'énergie
+        void set_explaination_energy_page();
         // Affiche la page d'explication
         void set_explaination_page();
         // Met les boutons à leur endroit actuel
@@ -82,6 +84,12 @@ namespace pleos {
         scls::HUD_Page* a_explaination_page = 0;
         // Texte d'explication de la page d'explication
         scls::HUD_Text* a_explaination_text = 0;
+
+        // Page d'explication de l'énergie
+        // Page parent de la page d'explication
+        scls::HUD_Page* a_explaination_energy_page = 0;
+        // Texte d'explication de la page d'explication
+        scls::HUD_Text* a_explaination_energy_text = 0;
 
         // Page de navigation
         // Page parent de la page de navigation

@@ -44,6 +44,7 @@ namespace pleos {
     // Charger la langue anglaise
     void Nuclear_Energy_Usage::load_en() {
         a_text_content["explaination"] = "Explaination";
+        a_text_content["explaination_energy_text"] = scls::to_utf_8(scls::read_file("assets_nuclear_energy_usage/texts/explaination_energy_text_en.html"));
         a_text_content["explaination_text"] = scls::to_utf_8(scls::read_file("assets_nuclear_energy_usage/texts/explaination_text_en.html"));
         a_text_content["politic"] = "Politic";
         a_text_content["the_atoms"] = "Atoms";
@@ -65,11 +66,23 @@ namespace pleos {
         a_explaination_text->set_text(a_text_content["explaination_text"]);
         a_explaination_text->set_object_scale_width(0.9);
         a_explaination_text->set_position(glm::vec2(0));
+        // Page parent de la page d'explication de l'énergie
+        a_explaination_energy_page = new_page<scls::HUD_Page>("explaination_energy");
+        a_explaination_energy_page->set_scale(glm::vec2(1.6, 2.0));
+        a_explaination_energy_page->move_right_of_parent();
+        // Charge le texte d'explication de la page d'explication de l'énergie
+        a_explaination_energy_text = a_explaination_energy_page->new_object<scls::HUD_Text>("explaination_energy_text");
+        a_explaination_energy_text->set_background_color(scls::white);
+        a_explaination_energy_text->set_font_size(50);
+        a_explaination_energy_text->set_text(a_text_content["explaination_energy_text"]);
+        a_explaination_energy_text->set_object_scale_width(0.9);
+        a_explaination_energy_text->set_position(glm::vec2(0));
     }
 
     // Charger la langue française
     void Nuclear_Energy_Usage::load_fr() {
         a_text_content["explaination"] = "Explication";
+        a_text_content["explaination_energy_text"] = scls::to_utf_8(scls::read_file("assets_nuclear_energy_usage/texts/explaination_energy_text_fr.html"));
         a_text_content["explaination_text"] = scls::to_utf_8(scls::read_file("assets_nuclear_energy_usage/texts/explaination_text_fr.html"));
         a_text_content["politic"] = "Politique";
         a_text_content["the_atoms"] = "Les atomes";
@@ -147,6 +160,15 @@ namespace pleos {
         a_welcome_text->set_position(glm::vec2(0));
     }
 
+    // Affiche la page d'explication de l'énergie
+    void Nuclear_Energy_Usage::set_explaination_energy_page() {
+        a_current_page = "explaination-energy";
+        set_navigation_button();
+        hide_all_pages();
+        display_page("navigation");
+        display_page("explaination_energy");
+    }
+
     // Affiche la page d'explication
     void Nuclear_Energy_Usage::set_explaination_page() {
         a_current_page = "explaination-atoms";
@@ -207,6 +229,7 @@ namespace pleos {
                 a_navigation_explaination_energy_button->move_bottom_of_object_in_parent(a_navigation_explaination_atoms_button);
                 a_navigation_explaination_energy_button->set_visible(true);
                 if(cutted.size() > 1 && cutted[1] == "energy") a_navigation_explaination_energy_button->set_background_color(scls::Color(202, 202, 255));
+                else a_navigation_explaination_energy_button->set_background_color(scls::Color(102, 102, 255));
             }
             if(a_navigation_politic_button != 0) {
                 a_navigation_politic_button->move_bottom_of_object_in_parent(a_navigation_explaination_energy_button);
@@ -226,7 +249,10 @@ namespace pleos {
             update();
 
             // Changer de page grâce à la barre de navigation
-            if(a_navigation_explaination_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+            if(a_navigation_explaination_energy_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                set_explaination_energy_page();
+            }
+            if(a_navigation_explaination_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT) || a_navigation_explaination_atoms_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
                 set_explaination_page();
             }
             if(a_navigation_welcome_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
