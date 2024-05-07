@@ -46,6 +46,8 @@ namespace pleos {
         a_text_content["explaination"] = "Explaination";
         a_text_content["explaination_text"] = scls::to_utf_8(scls::read_file("assets_nuclear_energy_usage/texts/explaination_text_en.html"));
         a_text_content["politic"] = "Politic";
+        a_text_content["the_atoms"] = "Atoms";
+        a_text_content["the_energy"] = "Energy";
         a_text_content["welcome"] = "Welcome";
         a_text_content["welcome_text"] = scls::to_utf_8(scls::read_file("assets_nuclear_energy_usage/texts/welcome_text_en.html"));
     }
@@ -70,6 +72,8 @@ namespace pleos {
         a_text_content["explaination"] = "Explication";
         a_text_content["explaination_text"] = scls::to_utf_8(scls::read_file("assets_nuclear_energy_usage/texts/explaination_text_fr.html"));
         a_text_content["politic"] = "Politique";
+        a_text_content["the_atoms"] = "Les atomes";
+        a_text_content["the_energy"] = scls::to_utf_8("L'énergie");
         a_text_content["welcome"] = "Accueil";
         a_text_content["welcome_text"] = scls::to_utf_8(scls::read_file("assets_nuclear_energy_usage/texts/welcome_text_fr.html"));
     }
@@ -84,27 +88,48 @@ namespace pleos {
         // Bouton d'accueil de la page de navigation
         a_navigation_welcome_button = a_navigation_page->new_object<scls::HUD_Text>("navigation_welcome_button");
         a_navigation_welcome_button->set_background_color(scls::Color(102, 102, 255));
-        a_navigation_welcome_button->set_font_size(75);
+        a_navigation_welcome_button->set_font_size(100);
         a_navigation_welcome_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_navigation_welcome_button->set_text_offset(0.15);
         a_navigation_welcome_button->set_text(a_text_content["welcome"]);
         a_navigation_welcome_button->set_object_scale_width(1.0);
         a_navigation_welcome_button->move_top_of_parent();
         // Bouton d'explication de la page de navigation
         a_navigation_explaination_button = a_navigation_page->new_object<scls::HUD_Text>("navigation_explaination_button");
         a_navigation_explaination_button->set_background_color(scls::Color(102, 102, 255));
-        a_navigation_explaination_button->set_font_size(75);
+        a_navigation_explaination_button->set_font_size(100);
         a_navigation_explaination_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_navigation_explaination_button->set_text_offset(0.15);
         a_navigation_explaination_button->set_text(a_text_content["explaination"]);
         a_navigation_explaination_button->set_object_scale_width(1.0);
-        a_navigation_explaination_button->move_bottom_of_object_in_parent(a_navigation_welcome_button, 0.02);
+        a_navigation_explaination_button->move_bottom_of_object_in_parent(a_navigation_welcome_button);
+        // Bouton d'explication des atomes de la page de navigation
+        a_navigation_explaination_atoms_button = a_navigation_page->new_object<scls::HUD_Text>("navigation_explaination_atoms_button");
+        a_navigation_explaination_atoms_button->set_background_color(scls::Color(102, 102, 255));
+        a_navigation_explaination_atoms_button->set_font_size(75);
+        a_navigation_explaination_atoms_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_navigation_explaination_atoms_button->set_text_offset(0.1);
+        a_navigation_explaination_atoms_button->set_text(a_text_content["the_atoms"]);
+        a_navigation_explaination_atoms_button->set_object_scale_width(0.75);
+        a_navigation_explaination_atoms_button->move_bottom_of_object_in_parent(a_navigation_explaination_button);
+        // Bouton d'explication de l'énergie nucléaire de la page de navigation
+        a_navigation_explaination_energy_button = a_navigation_page->new_object<scls::HUD_Text>("navigation_explaination_energy_button");
+        a_navigation_explaination_energy_button->set_background_color(scls::Color(102, 102, 255));
+        a_navigation_explaination_energy_button->set_font_size(75);
+        a_navigation_explaination_energy_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_navigation_explaination_energy_button->set_text_offset(0.2);
+        a_navigation_explaination_energy_button->set_text(a_text_content["the_energy"]);
+        a_navigation_explaination_energy_button->set_object_scale_width(0.75);
+        a_navigation_explaination_energy_button->move_bottom_of_object_in_parent(a_navigation_explaination_atoms_button);
         // Bouton de politique de la page de navigation
         a_navigation_politic_button = a_navigation_page->new_object<scls::HUD_Text>("navigation_politic_button");
         a_navigation_politic_button->set_background_color(scls::Color(102, 102, 255));
-        a_navigation_politic_button->set_font_size(75);
+        a_navigation_politic_button->set_font_size(100);
         a_navigation_politic_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_navigation_politic_button->set_text_offset(0.15);
         a_navigation_politic_button->set_text(a_text_content["politic"]);
         a_navigation_politic_button->set_object_scale_width(1.0);
-        a_navigation_politic_button->move_bottom_of_object_in_parent(a_navigation_explaination_button, 0.02);
+        a_navigation_politic_button->move_bottom_of_object_in_parent(a_navigation_explaination_button);
     }
 
     // Charger la page d'accueil
@@ -124,7 +149,8 @@ namespace pleos {
 
     // Affiche la page d'explication
     void Nuclear_Energy_Usage::set_explaination_page() {
-        unset_navigation_buttons();
+        a_current_page = "explaination-atoms";
+        set_navigation_button();
         hide_all_pages();
         display_page("navigation");
         display_page("explaination");
@@ -132,11 +158,61 @@ namespace pleos {
 
     // Affiche la page d'accueil
     void Nuclear_Energy_Usage::set_welcome_page() {
-        unset_navigation_buttons();
-        a_navigation_welcome_button->set_background_color(scls::Color(202, 202, 255));
+        a_current_page = "welcome";
+        set_navigation_button();
         hide_all_pages();
         display_page("navigation");
         display_page("welcome");
+    }
+
+    // Met les boutons à leur endroit actuel
+    void Nuclear_Energy_Usage::set_navigation_button() {
+        // Cacher les boutons inutiles
+        if(a_navigation_explaination_atoms_button != 0) a_navigation_explaination_atoms_button->set_visible(false);
+        if(a_navigation_explaination_energy_button != 0) a_navigation_explaination_energy_button->set_visible(false);
+
+        std::vector<std::string> cutted = scls::cut_string(a_current_page, "-");
+        if(cutted.size() == 0 || cutted[0] == "welcome") {
+            // Ajuster les boutons globaux
+            if(a_navigation_welcome_button != 0) {
+                a_navigation_welcome_button->move_top_of_parent();
+                a_navigation_welcome_button->set_background_color(scls::Color(202, 202, 255));
+            }
+            if(a_navigation_explaination_button != 0) {
+                a_navigation_explaination_button->move_bottom_of_object_in_parent(a_navigation_welcome_button);
+                a_navigation_explaination_button->set_background_color(scls::Color(102, 102, 255));
+            }
+            if(a_navigation_politic_button != 0) {
+                a_navigation_politic_button->move_bottom_of_object_in_parent(a_navigation_explaination_button);
+                a_navigation_politic_button->set_background_color(scls::Color(102, 102, 255));
+            }
+        }
+        else if(cutted[0] == "explaination") {
+            // Ajuster les boutons globaux
+            if(a_navigation_welcome_button != 0) {
+                a_navigation_welcome_button->move_top_of_parent();
+                a_navigation_welcome_button->set_background_color(scls::Color(102, 102, 255));
+            }
+            if(a_navigation_explaination_button != 0) {
+                a_navigation_explaination_button->move_bottom_of_object_in_parent(a_navigation_welcome_button);
+                a_navigation_explaination_button->set_background_color(scls::Color(202, 202, 255));
+            }
+            if(a_navigation_explaination_atoms_button != 0) {
+                a_navigation_explaination_atoms_button->move_bottom_of_object_in_parent(a_navigation_explaination_button);
+                a_navigation_explaination_atoms_button->set_visible(true);
+                if(cutted.size() > 1 && cutted[1] == "atoms") a_navigation_explaination_atoms_button->set_background_color(scls::Color(202, 202, 255));
+                else a_navigation_explaination_atoms_button->set_background_color(scls::Color(102, 102, 255));
+            }
+            if(a_navigation_explaination_energy_button != 0) {
+                a_navigation_explaination_energy_button->move_bottom_of_object_in_parent(a_navigation_explaination_atoms_button);
+                a_navigation_explaination_energy_button->set_visible(true);
+                if(cutted.size() > 1 && cutted[1] == "energy") a_navigation_explaination_energy_button->set_background_color(scls::Color(202, 202, 255));
+            }
+            if(a_navigation_politic_button != 0) {
+                a_navigation_politic_button->move_bottom_of_object_in_parent(a_navigation_explaination_energy_button);
+                a_navigation_politic_button->set_background_color(scls::Color(102, 102, 255));
+            }
+        }
     }
 
     // Commencer le programme
@@ -159,13 +235,6 @@ namespace pleos {
 
             render();
         }
-    }
-
-    // Remet les boutons à leur endroit initial
-    void Nuclear_Energy_Usage::unset_navigation_buttons() {
-        a_navigation_welcome_button->move_top_of_parent();
-        a_navigation_explaination_button->move_bottom_of_object_in_parent(a_navigation_welcome_button, 0.02);
-        a_navigation_politic_button->move_bottom_of_object_in_parent(a_navigation_explaination_button, 0.02);
     }
 
     // Destructeur de base de Nuclear_Energy_Usage

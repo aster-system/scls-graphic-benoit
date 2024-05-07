@@ -37,6 +37,10 @@
 // - The direct referencial
 //   The lowest tier transformation way, where the coordonate system always start at the bottom left at (-1;-1) and end at the top right at (1;1) in the object.
 //   For using it, the scale (1, 1) correspond to its full parent and its position (0;0) is the middle of its parent.
+// - The square referencial
+//   The parent tier transformation of the direct referencial, where the height of the object is always 1, but the width of the object is the ratio width / height of the absolute scale of the parent of the object.
+//   To be adapted with the direct referencial, the width should be multiplied by the absolute width ratio of the parent.
+//   For using it, its position (0;0) is the middle of its parent.
 // - The object referencial
 //   The second lowest tier transformation way, where the height of the object is always 1, but the width of the object is the ratio width / height of the texture of the object.
 //   To be adapted with the direct referencial, the width should be divided with the absolute witdh of the parent, then multiplied by the scale.
@@ -187,7 +191,10 @@ namespace scls {
         //
         //*********
 
-        inline void move_bottom_of_object_in_parent(HUD_Object* object, double y_offset = 0) {double new_y = object->position()[1] - (scale()[1] + y_offset);if(parent_hud()!=0){new_y -= parent_hud()->border_width()[0];}set_position(glm::vec2(position()[0], new_y));};
+        inline void move_bottom_of_object_in_parent(HUD_Object* object, double y_offset = 0) {
+            double new_y = object->position()[1] - (object->scale()[1] / 2.0 + scale()[1] / 2.0 + y_offset);
+            set_position(glm::vec2(position()[0], new_y));
+        };
         inline void move_left_of_parent() {double new_x = -1.0 + scale()[0] / 2.0;if(parent_hud()!=0){new_x -= parent_hud()->border_width()[1];}set_position(glm::vec2(new_x, position()[1]));};
         inline void move_right_of_parent() {double new_x = 1.0 - scale()[0] / 2.0;if(parent_hud()!=0){new_x -= parent_hud()->border_width()[3];}set_position(glm::vec2(new_x, position()[1]));};
         inline void move_top_of_parent() {double new_y = 0.5 - scale()[1] / 2.0;if(parent_hud()!=0){new_y -= parent_hud()->border_width()[0];}set_position(glm::vec2(position()[0], new_y));};

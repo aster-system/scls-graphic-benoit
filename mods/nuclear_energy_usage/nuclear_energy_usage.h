@@ -31,6 +31,9 @@ namespace pleos {
         // Destructeur de base de Nuclear_Energy_Usage
         virtual ~Nuclear_Energy_Usage();
 
+        // Function called after that the window has been resized
+        virtual void after_window_resizing(glm::vec2 last_size){Window::after_window_resizing(last_size);set_navigation_button();};
+
         //*********
         //
         // Trucs de GUI ennuyants
@@ -51,6 +54,8 @@ namespace pleos {
         void load_welcome_page();
         // Affiche la page d'explication
         void set_explaination_page();
+        // Met les boutons à leur endroit actuel
+        void set_navigation_button();
         // Affiche la page d'accueil
         void set_welcome_page();
         // Remet les boutons à leur endroit initial
@@ -69,6 +74,9 @@ namespace pleos {
         //
         //*********
 
+        // Page actuellement chargée
+        std::string a_current_page = "";
+
         // Page d'explication
         // Page parent de la page d'explication
         scls::HUD_Page* a_explaination_page = 0;
@@ -80,8 +88,12 @@ namespace pleos {
         scls::HUD_Page* a_navigation_page = 0;
         // Bouton d'accueil de la page de navigation
         scls::HUD_Text* a_navigation_welcome_button = 0;
+        // Bouton d'explication des atomes de la page de navigation
+        scls::HUD_Text* a_navigation_explaination_atoms_button = 0;
         // Bouton d'explication de la page de navigation
         scls::HUD_Text* a_navigation_explaination_button = 0;
+        // Bouton d'explication de l'énergie nucléaire de la page de navigation
+        scls::HUD_Text* a_navigation_explaination_energy_button = 0;
         // Bouton de politique de la page de navigation
         scls::HUD_Text* a_navigation_politic_button = 0;
         // Bouton de production de la page de navigation
