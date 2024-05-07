@@ -44,6 +44,7 @@ namespace pleos {
     // Charger la langue anglaise
     void Nuclear_Energy_Usage::load_en() {
         a_text_content["explaination"] = "Explaination";
+        a_text_content["explaination_text"] = scls::to_utf_8(scls::read_file("assets_nuclear_energy_usage/texts/explaination_text_en.html"));
         a_text_content["politic"] = "Politic";
         a_text_content["welcome"] = "Welcome";
         a_text_content["welcome_text"] = scls::to_utf_8(scls::read_file("assets_nuclear_energy_usage/texts/welcome_text_en.html"));
@@ -55,11 +56,19 @@ namespace pleos {
         a_explaination_page = new_page<scls::HUD_Page>("explaination");
         a_explaination_page->set_scale(glm::vec2(1.6, 2.0));
         a_explaination_page->move_right_of_parent();
+        // Charge le texte d'explication de la page d'explication
+        a_explaination_text = a_explaination_page->new_object<scls::HUD_Text>("explaination_text");
+        a_explaination_text->set_background_color(scls::white);
+        a_explaination_text->set_font_size(50);
+        a_explaination_text->set_text(a_text_content["explaination_text"]);
+        a_explaination_text->set_object_scale_width(0.9);
+        a_explaination_text->set_position(glm::vec2(0));
     }
 
     // Charger la langue française
     void Nuclear_Energy_Usage::load_fr() {
         a_text_content["explaination"] = "Explication";
+        a_text_content["explaination_text"] = scls::to_utf_8(scls::read_file("assets_nuclear_energy_usage/texts/explaination_text_fr.html"));
         a_text_content["politic"] = "Politique";
         a_text_content["welcome"] = "Accueil";
         a_text_content["welcome_text"] = scls::to_utf_8(scls::read_file("assets_nuclear_energy_usage/texts/welcome_text_fr.html"));
@@ -78,7 +87,7 @@ namespace pleos {
         a_navigation_welcome_button->set_font_size(75);
         a_navigation_welcome_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
         a_navigation_welcome_button->set_text(a_text_content["welcome"]);
-        a_navigation_welcome_button->set_object_scale(0.075);
+        a_navigation_welcome_button->set_object_scale_width(1.0);
         a_navigation_welcome_button->move_top_of_parent();
         // Bouton d'explication de la page de navigation
         a_navigation_explaination_button = a_navigation_page->new_object<scls::HUD_Text>("navigation_explaination_button");
@@ -86,7 +95,7 @@ namespace pleos {
         a_navigation_explaination_button->set_font_size(75);
         a_navigation_explaination_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
         a_navigation_explaination_button->set_text(a_text_content["explaination"]);
-        a_navigation_explaination_button->set_object_scale(0.075);
+        a_navigation_explaination_button->set_object_scale_width(1.0);
         a_navigation_explaination_button->move_bottom_of_object_in_parent(a_navigation_welcome_button, 0.02);
         // Bouton de politique de la page de navigation
         a_navigation_politic_button = a_navigation_page->new_object<scls::HUD_Text>("navigation_politic_button");
@@ -94,7 +103,7 @@ namespace pleos {
         a_navigation_politic_button->set_font_size(75);
         a_navigation_politic_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
         a_navigation_politic_button->set_text(a_text_content["politic"]);
-        a_navigation_politic_button->set_object_scale(0.075);
+        a_navigation_politic_button->set_object_scale_width(1.0);
         a_navigation_politic_button->move_bottom_of_object_in_parent(a_navigation_explaination_button, 0.02);
     }
 
@@ -109,7 +118,7 @@ namespace pleos {
         a_welcome_text->set_background_color(scls::white);
         a_welcome_text->set_font_size(50);
         a_welcome_text->set_text(a_text_content["welcome_text"]);
-        a_welcome_text->set_object_scale_width(1.25);
+        a_welcome_text->set_object_scale_width(0.9);
         a_welcome_text->set_position(glm::vec2(0));
     }
 
@@ -124,6 +133,7 @@ namespace pleos {
     // Affiche la page d'accueil
     void Nuclear_Energy_Usage::set_welcome_page() {
         unset_navigation_buttons();
+        a_navigation_welcome_button->set_background_color(scls::Color(202, 202, 255));
         hide_all_pages();
         display_page("navigation");
         display_page("welcome");
@@ -166,9 +176,9 @@ namespace pleos {
     // Utiliser facilement le projet
     void use_nuclear_energy_usage(std::string exec_path) {
         Nuclear_Energy_Usage *neu = new Nuclear_Energy_Usage(960, 540, exec_path);
-        neu->load();
         neu->set_minimum_window_height(540);
         neu->set_minimum_window_width(960);
+        neu->load();
         neu->start();
 
         delete neu; neu = 0;

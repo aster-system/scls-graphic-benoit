@@ -72,6 +72,8 @@ namespace pleos {
         // Page d'explication
         // Page parent de la page d'explication
         scls::HUD_Page* a_explaination_page = 0;
+        // Texte d'explication de la page d'explication
+        scls::HUD_Text* a_explaination_text = 0;
 
         // Page de navigation
         // Page parent de la page de navigation

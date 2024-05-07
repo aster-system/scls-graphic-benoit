@@ -95,6 +95,9 @@ namespace scls {
         if(a_last_scale_definition_type == _Scale_Definition::Object_Scale) {
             set_object_scale(a_last_scale);
         }
+        else if(a_last_scale_definition_type == _Scale_Definition::Object_Scale_Width) {
+            set_object_scale_width(a_last_scale[0]);
+        }
     }
 
     // HUD_Object destructor
@@ -152,6 +155,7 @@ namespace scls {
             // Create the texture
             Text_Image* current_text_image = window_struct()->text_image_generator()->new_text_image(text());
             current_text_image->global_style().background_color = background_color();
+            current_text_image->global_style().color = font_color();
             current_text_image->global_style().font_size = font_size();
             current_text_image->global_style().alignment_horizontal = text_alignment_horizontal();
             current_text_image->set_cursor_position(cursor_position());

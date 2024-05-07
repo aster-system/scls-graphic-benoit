@@ -64,7 +64,8 @@ namespace scls {
     // Type of scale definition
     enum _Scale_Definition {
         Direct_Scale,
-        Object_Scale
+        Object_Scale,
+        Object_Scale_Width
     };
 
     class HUD_Object : public Object {
@@ -128,7 +129,7 @@ namespace scls {
         inline glm::vec2 absolute_object_scale() {double absolute_width = static_cast<double>(window_struct()->window_ratio());if(parent_hud() != 0)absolute_width *= parent_hud()->absolute_scale_ratio();double new_width = absolute_scale()[1] * (texture_ratio() / absolute_width);return glm::vec2(new_width, absolute_scale()[1]);};
         inline double absolute_scale_ratio() {return absolute_scale()[0] / absolute_scale()[1];};
         inline HUD_Object* parent_hud() {if(parent() == 0 || parent()->type(1) != SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME)return 0;return reinterpret_cast<HUD_Object*>(parent());};
-        inline double scale_ratio() {return absolute_scale_ratio();};
+        inline double scale_ratio() {return scale()[0] / scale()[1];};
 
         // Getters and setters (ONLY WITH ATRIBUTES)
         inline Color background_color() {return a_background_color;};
@@ -140,7 +141,7 @@ namespace scls {
         inline unsigned long overflighted_cursor() {return a_overflighted_cursor;};
         inline glm::vec2 position() {return glm::vec2(transform()->get_position()[0], transform()->get_position()[1]);};
         inline bool resize_texture_with_scale() {return a_resize_texture_with_scale;};
-        inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
+        virtual void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
         inline void set_border_width(double new_border_width) {set_border_width(glm::vec4(new_border_width));};
         inline void set_border_width(glm::vec4 new_border_width) {a_border_width = new_border_width;a_last_border_width=new_border_width;a_last_border_width_definition_type = _Border_Width_Definition::Direct_Border_Width;};
         inline void set_is_focused(bool new_is_focused) {a_is_focused = new_is_focused;};
@@ -148,15 +149,22 @@ namespace scls {
         virtual void set_object_scale(double new_scale) {set_object_scale(glm::vec2(new_scale));};
         virtual void set_object_scale(glm::vec2 new_scale, bool register_scaling = true) {
             glm::vec2 new_scale_unmodified = new_scale;
+            // Calculate the square scale
             double absolute_width = static_cast<double>(window_struct()->window_ratio());
-            if(transform_parent() != 0)absolute_width *= transform_parent()->absolute_scale()[0] / transform_parent()->absolute_scale()[1];
+            if(transform_parent() != 0) absolute_width *= transform_parent()->absolute_scale()[0] / transform_parent()->absolute_scale()[1];
+            // Calculate the texture ratio
             new_scale[0] = new_scale[0] * (texture_ratio() / absolute_width);
             set_scale(new_scale);
             a_last_scale = new_scale_unmodified;
             a_last_scale_definition_type = _Scale_Definition::Object_Scale;
         };
         virtual void set_object_scale_width(double new_width) {
-            set_object_scale(new_width / texture_ratio());
+            double multiplier = static_cast<double>(window_struct()->window_ratio());
+            if(transform_parent() != 0) multiplier *= transform_parent()->absolute_scale()[0] / transform_parent()->absolute_scale()[1];
+            double new_scale = new_width * (multiplier / texture_ratio());
+            HUD_Object::set_object_scale(new_scale);
+            a_last_scale = glm::vec2(new_width);
+            a_last_scale_definition_type = _Scale_Definition::Object_Scale_Width;
         };
         inline void set_overflighted_cursor(unsigned long new_overflighted_cursor) {a_overflighted_cursor = new_overflighted_cursor;};
         inline void set_position(glm::vec2 new_position) {Object::set_position(glm::vec3(new_position[0], new_position[1], 0));};
@@ -265,8 +273,9 @@ namespace scls {
         inline Color font_color() {return a_font_color;};
         inline std::string font_family() {return a_font_family;};
         inline unsigned short font_size() {return a_font_size;};
+        virtual void set_background_color(Color new_background_color) {HUD_Object::set_background_color(new_background_color);a_modified = true;update_text_texture();};
         inline void set_cursor_position(unsigned int new_cursor_position) {a_cursor_position = new_cursor_position;};
-        inline void set_font_color(Color new_font_color) {a_font_color = new_font_color;};
+        inline void set_font_color(Color new_font_color) {a_font_color = new_font_color;a_modified = true;update_text_texture();};
         inline void set_font_family(std::string new_font_family) {a_font_family = new_font_family;a_modified = true;update_text_texture();};
         inline void set_font_size(unsigned short new_font_size) {a_font_size = new_font_size;a_modified = true;update_text_texture();};
         inline void set_text(std::string new_text, bool move_cursor = true) {if(new_text == a_text)return;a_text = new_text;if(move_cursor)set_cursor_position(window_struct()->text_image_generator()->plain_text_size(a_text));a_modified = true;update_text_texture();};
