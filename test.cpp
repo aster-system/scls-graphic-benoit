@@ -14,9 +14,7 @@
 // This file contains allows to test the library.
 //
 
-#include "scls_graphic.h"
 #include "mods/nuclear_energy_usage/nuclear_energy_usage.h"
-#include "mods/scls_documentalist_gui/scls_documentalist_gui.h"
 
 int main(int argc, char* argv[]) {
     srand(time(0));

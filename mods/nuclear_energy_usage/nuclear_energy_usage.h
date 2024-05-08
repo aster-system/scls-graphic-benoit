@@ -19,7 +19,6 @@
 #define PLEOS_NUCLEAR_ENERGY_USAGE
 
 #include "../../scls_graphic.h"
-#include "../../mods_hidden/scls_documentalist.h"
 
 // Utilisation de l'espace de nom "pleos" pour simplifier le code
 namespace pleos {

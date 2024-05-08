@@ -1,5 +1,11 @@
 #pragma once
 
+#ifdef __ASTER_DEV
+#include "../../scls-image-michelangelo/scls_image.h"
+#else
+#include <scls_image.h>
+#endif // __ASTER_DEV
+
 #include <algorithm>
 #include <fstream>
 #include <iomanip>
@@ -11,8 +17,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <map>
 #include <random>
-#include <scls_foundation.h>
-#include <scls-image/scls_image.h>
 #include <string>
 #include <sstream>
 #include <vector>

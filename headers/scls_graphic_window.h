@@ -17,9 +17,9 @@
 #ifndef SCLS_WINDOW
 #define SCLS_WINDOW
 
-#include "../headers/scls_graphic_window_advanced_struct.h"
-#include "../headers/scls_graphic_window_base_struct.h"
-#include "../headers/model.h"
+#include "scls_graphic_window_advanced_struct.h"
+#include "scls_graphic_window_base_struct.h"
+#include "model.h"
 #include "scls_graphic_object.h"
 
 // The namespace "scls" is used to simplify the all.
