@@ -20,7 +20,9 @@ Le reste = beaucoup +
 Parties / sous parties du logiciel :
 
 - Explication de fonctionnement du nucléaire
-     - Théorie
+     - Atomes
+     - Énergie
+     - Radioactivité
      - Simulation
 - Politique
      - Économique

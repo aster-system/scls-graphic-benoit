@@ -56,6 +56,8 @@ namespace pleos {
         void set_explaination_energy_page();
         // Affiche la page d'explication
         void set_explaination_page();
+        // Affiche la page d'explication de la radioactivité
+        void set_explaination_radioactivity_page();
         // Met les boutons à leur endroit actuel
         void set_navigation_button();
         // Affiche la page d'accueil
@@ -91,6 +93,12 @@ namespace pleos {
         // Texte d'explication de la page d'explication
         scls::HUD_Text* a_explaination_energy_text = 0;
 
+        // Page d'explication de la radioactivité
+        // Page parent de la page d'explication de la radioactivité
+        scls::HUD_Page* a_explaination_radioactivity_page = 0;
+        // Texte d'explication de la page d'explication de la radioactivité
+        scls::HUD_Text* a_explaination_radioactivity_text = 0;
+
         // Page de navigation
         // Page parent de la page de navigation
         scls::HUD_Page* a_navigation_page = 0;
@@ -102,6 +110,8 @@ namespace pleos {
         scls::HUD_Text* a_navigation_explaination_button = 0;
         // Bouton d'explication de l'énergie nucléaire de la page de navigation
         scls::HUD_Text* a_navigation_explaination_energy_button = 0;
+        // Bouton d'explication de la radioactivité de la page de navigation
+        scls::HUD_Text* a_navigation_explaination_radioactivity_button = 0;
         // Bouton de politique de la page de navigation
         scls::HUD_Text* a_navigation_politic_button = 0;
         // Bouton de production de la page de navigation

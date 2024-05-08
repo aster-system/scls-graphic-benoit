@@ -45,8 +45,10 @@ namespace pleos {
     void Nuclear_Energy_Usage::load_en() {
         a_text_content["explaination"] = "Explaination";
         a_text_content["explaination_energy_text"] = scls::to_utf_8(scls::read_file("assets_nuclear_energy_usage/texts/explaination_energy_text_en.html"));
+        a_text_content["explaination_radioactivity_text"] = scls::to_utf_8(scls::read_file("assets_nuclear_energy_usage/texts/explaination_radioactivity_en.html"));
         a_text_content["explaination_text"] = scls::to_utf_8(scls::read_file("assets_nuclear_energy_usage/texts/explaination_text_en.html"));
         a_text_content["politic"] = "Politic";
+        a_text_content["the_radioactivity"] = "Radioactivity";
         a_text_content["the_atoms"] = "Atoms";
         a_text_content["the_energy"] = "Energy";
         a_text_content["welcome"] = "Welcome";
@@ -64,7 +66,7 @@ namespace pleos {
         a_explaination_text->set_background_color(scls::white);
         a_explaination_text->set_font_size(50);
         a_explaination_text->set_text(a_text_content["explaination_text"]);
-        a_explaination_text->set_object_scale_width(0.9);
+        a_explaination_text->set_object_scale_width(0.8);
         a_explaination_text->set_position(glm::vec2(0));
         // Page parent de la page d'explication de l'énergie
         a_explaination_energy_page = new_page<scls::HUD_Page>("explaination_energy");
@@ -75,16 +77,29 @@ namespace pleos {
         a_explaination_energy_text->set_background_color(scls::white);
         a_explaination_energy_text->set_font_size(50);
         a_explaination_energy_text->set_text(a_text_content["explaination_energy_text"]);
-        a_explaination_energy_text->set_object_scale_width(0.9);
+        a_explaination_energy_text->set_object_scale_width(0.7);
         a_explaination_energy_text->set_position(glm::vec2(0));
+        // Page parent de la page d'explication de la radioactivité
+        a_explaination_radioactivity_page = new_page<scls::HUD_Page>("explaination_radioactivity");
+        a_explaination_radioactivity_page->set_scale(glm::vec2(1.6, 2.0));
+        a_explaination_radioactivity_page->move_right_of_parent();
+        // Charge le texte d'explication de la page d'explication de l'énergie
+        a_explaination_radioactivity_text = a_explaination_radioactivity_page->new_object<scls::HUD_Text>("explaination_radioactivity_text");
+        a_explaination_radioactivity_text->set_background_color(scls::white);
+        a_explaination_radioactivity_text->set_font_size(50);
+        a_explaination_radioactivity_text->set_text(a_text_content["explaination_radioactivity_text"]);
+        a_explaination_radioactivity_text->set_object_scale_width(0.7);
+        a_explaination_radioactivity_text->set_position(glm::vec2(0));
     }
 
     // Charger la langue française
     void Nuclear_Energy_Usage::load_fr() {
         a_text_content["explaination"] = "Explication";
         a_text_content["explaination_energy_text"] = scls::to_utf_8(scls::read_file("assets_nuclear_energy_usage/texts/explaination_energy_text_fr.html"));
+        a_text_content["explaination_radioactivity_text"] = scls::to_utf_8(scls::read_file("assets_nuclear_energy_usage/texts/explaination_radioactivity_fr.html"));
         a_text_content["explaination_text"] = scls::to_utf_8(scls::read_file("assets_nuclear_energy_usage/texts/explaination_text_fr.html"));
         a_text_content["politic"] = "Politique";
+        a_text_content["the_radioactivity"] = scls::to_utf_8("La radioactivité");
         a_text_content["the_atoms"] = "Les atomes";
         a_text_content["the_energy"] = scls::to_utf_8("L'énergie");
         a_text_content["welcome"] = "Accueil";
@@ -134,6 +149,15 @@ namespace pleos {
         a_navigation_explaination_energy_button->set_text(a_text_content["the_energy"]);
         a_navigation_explaination_energy_button->set_object_scale_width(0.75);
         a_navigation_explaination_energy_button->move_bottom_of_object_in_parent(a_navigation_explaination_atoms_button);
+        // Bouton d'explication de la radioactivité de la page de navigation
+        a_navigation_explaination_radioactivity_button = a_navigation_page->new_object<scls::HUD_Text>("navigation_explaination_radioactivity_button");
+        a_navigation_explaination_radioactivity_button->set_background_color(scls::Color(102, 102, 255));
+        a_navigation_explaination_radioactivity_button->set_font_size(75);
+        a_navigation_explaination_radioactivity_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_navigation_explaination_radioactivity_button->set_text_offset(0.1);
+        a_navigation_explaination_radioactivity_button->set_text(a_text_content["the_radioactivity"]);
+        a_navigation_explaination_radioactivity_button->set_object_scale_width(0.75);
+        a_navigation_explaination_radioactivity_button->move_bottom_of_object_in_parent(a_navigation_explaination_energy_button);
         // Bouton de politique de la page de navigation
         a_navigation_politic_button = a_navigation_page->new_object<scls::HUD_Text>("navigation_politic_button");
         a_navigation_politic_button->set_background_color(scls::Color(102, 102, 255));
@@ -178,6 +202,15 @@ namespace pleos {
         display_page("explaination");
     }
 
+    // Affiche la page d'explication de la radioactivité
+    void Nuclear_Energy_Usage::set_explaination_radioactivity_page() {
+        a_current_page = "explaination-radioactivity";
+        set_navigation_button();
+        hide_all_pages();
+        display_page("navigation");
+        display_page("explaination_radioactivity");
+    }
+
     // Affiche la page d'accueil
     void Nuclear_Energy_Usage::set_welcome_page() {
         a_current_page = "welcome";
@@ -192,6 +225,7 @@ namespace pleos {
         // Cacher les boutons inutiles
         if(a_navigation_explaination_atoms_button != 0) a_navigation_explaination_atoms_button->set_visible(false);
         if(a_navigation_explaination_energy_button != 0) a_navigation_explaination_energy_button->set_visible(false);
+        if(a_navigation_explaination_radioactivity_button != 0) a_navigation_explaination_radioactivity_button->set_visible(false);
 
         std::vector<std::string> cutted = scls::cut_string(a_current_page, "-");
         if(cutted.size() == 0 || cutted[0] == "welcome") {
@@ -231,8 +265,14 @@ namespace pleos {
                 if(cutted.size() > 1 && cutted[1] == "energy") a_navigation_explaination_energy_button->set_background_color(scls::Color(202, 202, 255));
                 else a_navigation_explaination_energy_button->set_background_color(scls::Color(102, 102, 255));
             }
+            if(a_navigation_explaination_radioactivity_button != 0) {
+                a_navigation_explaination_radioactivity_button->move_bottom_of_object_in_parent(a_navigation_explaination_energy_button);
+                a_navigation_explaination_radioactivity_button->set_visible(true);
+                if(cutted.size() > 1 && cutted[1] == "radioactivity") a_navigation_explaination_radioactivity_button->set_background_color(scls::Color(202, 202, 255));
+                else a_navigation_explaination_radioactivity_button->set_background_color(scls::Color(102, 102, 255));
+            }
             if(a_navigation_politic_button != 0) {
-                a_navigation_politic_button->move_bottom_of_object_in_parent(a_navigation_explaination_energy_button);
+                a_navigation_politic_button->move_bottom_of_object_in_parent(a_navigation_explaination_radioactivity_button);
                 a_navigation_politic_button->set_background_color(scls::Color(102, 102, 255));
             }
         }
@@ -241,6 +281,7 @@ namespace pleos {
     // Commencer le programme
     void Nuclear_Energy_Usage::start() {
         // Affiche la page d'accueil
+
         set_welcome_page();
 
         // Boucle infini de programme
@@ -254,6 +295,9 @@ namespace pleos {
             }
             if(a_navigation_explaination_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT) || a_navigation_explaination_atoms_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
                 set_explaination_page();
+            }
+            if(a_navigation_explaination_radioactivity_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                set_explaination_radioactivity_page();
             }
             if(a_navigation_welcome_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
                 set_welcome_page();
