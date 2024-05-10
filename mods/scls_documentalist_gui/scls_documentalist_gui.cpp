@@ -36,23 +36,45 @@ namespace scls_documentalist_gui {
         clear_memory_from_loaded_projects();
     }
 
+    // Check if a project can be created
+    void SCLS_Documentalist_GUI::check_project_creation() {
+        std::string project_name = a_create_project_body_name->plain_text();
+
+        if(project_name == "") {
+            return;
+        }
+        create_project(a_create_project_body_name->plain_text());
+    }
+
+    // Check if a file pattern in a project can be created
+    void SCLS_Documentalist_GUI::check_project_file_pattern_creation() {
+        if(currently_displayed_project() == 0) {
+            return;
+        }
+        std::string file_name = a_create_project_file_pattern_body_name->plain_text();
+
+        if(file_name == "") {
+            return;
+        }
+        create_project_file_pattern(file_name, currently_displayed_project());
+    }
+
     // Create a new project
-    void SCLS_Documentalist_GUI::create_project() {
-        std::string project_name = "project";
+    void SCLS_Documentalist_GUI::create_project(std::string project_name) {
         scls::Project* created_project = new scls::Project(project_name);
 
         a_loaded_projects[project_name] = created_project;
         set_currently_dispalyed_project(created_project);
+        save_loaded_project();
     }
 
     // Create a new file pattern in the currently displayed project
-    void SCLS_Documentalist_GUI::create_project_file_pattern() {
-        std::string file_name = "file";
+    void SCLS_Documentalist_GUI::create_project_file_pattern(std::string file_name, scls::Project* project) {
+        project->new_pattern(file_name, "");
 
-        scls::Project* current_project = a_loaded_projects["project"];
-        current_project->new_pattern(file_name, "Salut salut voisin !");
-
-        load_project_file_pattern(file_name);
+        load_navigation_project_buttons();
+        save_loaded_project();
+        set_project_file_pattern_body(file_name, project);
     }
 
     // Load a project in the GUI with its name
@@ -64,7 +86,7 @@ namespace scls_documentalist_gui {
 
     // Load a file pattern of a project in the GUI
     void SCLS_Documentalist_GUI::load_project_file_pattern(std::string file_pattern) {
-        hide_all_pages();
+        unset_all();
         display_page("header");
         display_page("project_file_pattern_body");
         display_page("project_navigation");
@@ -75,12 +97,64 @@ namespace scls_documentalist_gui {
 
     // Load the home page of a project in the GUI
     void SCLS_Documentalist_GUI::load_project_home(scls::Project* project_to_load) {
-        hide_all_pages();
+        unset_all();
         display_page("header");
         display_page("project_body");
         display_page("project_navigation");
         display_page("project_footer");
     }
+
+    // Load the navigation buttons of the project
+    void SCLS_Documentalist_GUI::load_navigation_project_buttons() {
+        // Delete each buttons in the file
+        for(int i = 0;i<static_cast<int>(a_project_navigation_file_pattern_button.size());i++) {
+            a_project_navigation->delete_children(a_project_navigation_file_pattern_button[i]);
+        }
+        a_project_navigation_file_pattern_button.clear();
+
+        // Create each buttons
+        scls::Project* current_project = currently_displayed_project();
+        scls::HUD_Object* last_object = a_project_navigation_home_button;
+        for(int i = 0;i<static_cast<int>(current_project->patterns().size());i++) {
+            std::string file_name = current_project->patterns()[i]->name();
+
+            scls::HUD_Text* button = a_project_navigation->new_object<scls::HUD_Text>("help_navigation_home_button_" + file_name);
+            button->set_font_size(100);
+            button->set_overflighted_cursor(GLFW_HAND_CURSOR);
+            button->set_text(file_name);
+            button->set_object_scale(0.1);
+            button->move_bottom_of_object_in_parent(last_object);
+            last_object = button;
+            a_project_navigation_file_pattern_button.push_back(button);
+        }
+    }
+
+    // Set a project file pattern body
+    void SCLS_Documentalist_GUI::set_project_file_pattern_body(std::string file_name, scls::Project* project) {
+        unset_all();
+        display_page("header");
+        display_page("project_file_pattern_body");
+        display_page("project_navigation");
+        display_page("project_footer");
+
+        if(contains_loaded_file(file_name)) {
+            a_project_file_pattern_content->set_text(loaded_files()[file_name].text);
+        }
+        else {
+            scls::Text_Pattern* pattern = project->pattern_by_name(file_name);
+            std::string file_content = pattern->base_text();
+            _SCLS_Documentalist_GUI_File file; file.text = file_content; file.base_project = project;
+            loaded_files()[file_name] = file;
+            a_project_file_pattern_content->set_text(file_content);
+        }
+        a_currently_displayed_file_pattern = file_name;
+    }
+
+    //*********
+    //
+    // Annoying GUI stuff
+    //
+    //*********
 
     // Load the entire gui
     void SCLS_Documentalist_GUI::load() {
@@ -96,11 +170,85 @@ namespace scls_documentalist_gui {
         load_welcome_page_footer();
 
         // Load bodies
+        load_create_project_body();
+        load_create_project_file_pattern_body();
         load_help_body();
         load_project_body();
         load_project_file_pattern();
 
         set_window_title("SCLS Documentalist \"Agatha\"");
+    }
+
+    // Load the page to create a project
+    void SCLS_Documentalist_GUI::load_create_project_body() {
+        // Body of the create a project
+        double scale_multiplier = 0.99;
+        a_create_project_body = new_page<scls::HUD_Page>("create_project_body");
+        a_create_project_body->set_background_color(scls::white);
+        a_create_project_body->set_position(glm::vec3(0.25, 1.0/3.0 - MAIN_HEADER_HEIGHT, 1));
+        a_create_project_body->set_scale(glm::vec3(3.0/2.0 * scale_multiplier, (4.0/3.0 - MAIN_HEADER_HEIGHT * 2.0) * scale_multiplier, 1));
+        a_create_project_body->set_pixel_border_width(1);
+        // Button of validation of creation of project in the page to create a project
+        a_create_project_body_create = a_create_project_body->new_object<scls::HUD_Text>("create_project_body_create");
+        a_create_project_body_create->set_font_size(50);
+        a_create_project_body_create->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_create_project_body_create->set_text_offset(0.1);
+        a_create_project_body_create->set_text(a_hud_text_content["create_a_project"]);
+        a_create_project_body_create->set_pixel_border_width(1);
+        a_create_project_body_create->set_object_scale_width(0.3);
+        a_create_project_body_create->set_position(glm::vec2(-0.3, -0.4));
+        // Title of the name of the page to create a project
+        a_create_project_body_name_title = a_create_project_body->new_object<scls::HUD_Text>("create_project_body_name_title");
+        a_create_project_body_name_title->set_font_size(50);
+        a_create_project_body_name_title->set_text(a_hud_text_content["name_project"] + " :");
+        a_create_project_body_name_title->set_object_scale_width(0.3);
+        a_create_project_body_name_title->set_position(glm::vec2(-0.3, 0.4));
+        // Input of the name of the page to create a project
+        a_create_project_body_name = a_create_project_body->new_object<scls::HUD_Text_Input>("create_project_body_name");
+        a_create_project_body_name->set_pixel_border_width(1);
+        a_create_project_body_name->set_font_size(25);
+        a_create_project_body_name->set_resize_texture_with_scale(false);
+        a_create_project_body_name->set_texture_aligmnent_horizontal(scls::Alignment_Horizontal::H_Left);
+        a_create_project_body_name->set_texture_alignment_vertical(scls::Alignment_Vertical::V_Center);
+        a_create_project_body_name->set_text("");
+        a_create_project_body_name->set_scale(glm::vec2(0.4, 0.1));
+        a_create_project_body_name->set_position(glm::vec2(0.15, 0.4));
+    }
+
+    // Load the page to create a file pattern in a project
+    void SCLS_Documentalist_GUI::load_create_project_file_pattern_body() {
+        // Body of the create a project
+        double scale_multiplier = 0.99;
+        a_create_project_file_pattern_body = new_page<scls::HUD_Page>("create_project_file_pattern_body");
+        a_create_project_file_pattern_body->set_background_color(scls::white);
+        a_create_project_file_pattern_body->set_position(glm::vec3(0.25, 1.0/3.0 - MAIN_HEADER_HEIGHT, 1));
+        a_create_project_file_pattern_body->set_scale(glm::vec3(3.0/2.0 * scale_multiplier, (4.0/3.0 - MAIN_HEADER_HEIGHT * 2.0) * scale_multiplier, 1));
+        a_create_project_file_pattern_body->set_pixel_border_width(1);
+        // Button of validation of creation of project in the page to create a project
+        a_create_project_file_pattern_body_create = a_create_project_file_pattern_body->new_object<scls::HUD_Text>("create_project_file_pattern_body_create");
+        a_create_project_file_pattern_body_create->set_font_size(50);
+        a_create_project_file_pattern_body_create->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_create_project_file_pattern_body_create->set_text_offset(0.1);
+        a_create_project_file_pattern_body_create->set_text(a_hud_text_content["create_a_file_pattern"]);
+        a_create_project_file_pattern_body_create->set_pixel_border_width(1);
+        a_create_project_file_pattern_body_create->set_object_scale_width(0.3);
+        a_create_project_file_pattern_body_create->set_position(glm::vec2(-0.3, -0.4));
+        // Title of the name of the page to create a project
+        a_create_project_file_pattern_body_name_title = a_create_project_file_pattern_body->new_object<scls::HUD_Text>("create_project_file_pattern_body_name_title");
+        a_create_project_file_pattern_body_name_title->set_font_size(50);
+        a_create_project_file_pattern_body_name_title->set_text(a_hud_text_content["name_file_pattern"] + " :");
+        a_create_project_file_pattern_body_name_title->set_object_scale_width(0.3);
+        a_create_project_file_pattern_body_name_title->set_position(glm::vec2(-0.3, 0.4));
+        // Input of the name of the page to create a project
+        a_create_project_file_pattern_body_name = a_create_project_file_pattern_body->new_object<scls::HUD_Text_Input>("create_project_file_pattern_body_name");
+        a_create_project_file_pattern_body_name->set_pixel_border_width(1);
+        a_create_project_file_pattern_body_name->set_font_size(25);
+        a_create_project_file_pattern_body_name->set_resize_texture_with_scale(false);
+        a_create_project_file_pattern_body_name->set_texture_aligmnent_horizontal(scls::Alignment_Horizontal::H_Left);
+        a_create_project_file_pattern_body_name->set_texture_alignment_vertical(scls::Alignment_Vertical::V_Center);
+        a_create_project_file_pattern_body_name->set_text("");
+        a_create_project_file_pattern_body_name->set_scale(glm::vec2(0.4, 0.1));
+        a_create_project_file_pattern_body_name->set_position(glm::vec2(0.15, 0.4));
     }
 
     // Load the welcome page body
@@ -120,21 +268,21 @@ namespace scls_documentalist_gui {
         a_help_body_home = a_help_body->new_object<scls::HUD_Text>("help_body_welcome");
         a_help_body_home->set_font_size(50);
         a_help_body_home->set_text(a_hud_text_content["help_body_home"]);
-        a_help_body_home->set_object_scale_width(1.75);
+        a_help_body_home->set_object_scale_width(0.75);
         a_help_body_home->set_position(glm::vec2(0, -0.15));
         // Create the the description text of the home part of the help page
         a_help_body_home_description = a_help_body->new_object<scls::HUD_Text>("help_body_welcome_description");
         a_help_body_home_description->set_font_size(30);
         a_help_body_home_description->set_text_alignment_horizontal(scls::Alignment_Horizontal::H_Center);
         a_help_body_home_description->set_text(a_hud_text_content["help_body_home_description"]);
-        a_help_body_home_description->set_object_scale_width(1.75);
+        a_help_body_home_description->set_object_scale_width(0.75);
         a_help_body_home_description->set_position(glm::vec2(0, -0.3));
         // Create the part text of the home part of the help page
         a_help_body_home_part = a_help_body->new_object<scls::HUD_Text>("help_body_welcome_part");
         a_help_body_home_part->set_font_size(50);
         a_help_body_home_part->set_text_alignment_horizontal(scls::Alignment_Horizontal::H_Center);
         a_help_body_home_part->set_text(a_hud_text_content["help_body_home_part"]);
-        a_help_body_home_part->set_object_scale_width(1.15);
+        a_help_body_home_part->set_object_scale_width(0.6);
         a_help_body_home_part->set_position(glm::vec2(0, -0.425));
     }
 
@@ -163,6 +311,13 @@ namespace scls_documentalist_gui {
         a_project_navigation->set_position(glm::vec3(-0.75, 1.0/3.0 - MAIN_HEADER_HEIGHT, 1));
         a_project_navigation->set_scale(glm::vec3(1.0/2.0, 4.0/3.0 - MAIN_HEADER_HEIGHT * 2.0, 1));
         a_project_navigation->set_pixel_border_width(1);
+        // Load the project home button
+        a_project_navigation_home_button = a_project_navigation->new_object<scls::HUD_Text>("project_navigation_home_button");
+        a_project_navigation_home_button->set_font_size(100);
+        a_project_navigation_home_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_project_navigation_home_button->set_text(a_hud_text_content["home_project"]);
+        a_project_navigation_home_button->set_object_scale_width(0.6);
+        a_project_navigation_home_button->move_top_of_parent();
     }
 
     // Load english
@@ -177,7 +332,10 @@ namespace scls_documentalist_gui {
         a_hud_text_content["help_body_home_part"] = scls::to_utf_8("You currently are in the help page. Browse with the</br>selector at your left.");
         a_hud_text_content["home"] = "Home";
         a_hud_text_content["home_project"] = "Project home";
+        a_hud_text_content["name_file_pattern"] = "Name of the file pattern";
+        a_hud_text_content["name_project"] = "Name of the project";
         a_hud_text_content["save"] = "Save";
+        a_hud_text_content["save_all"] = "Save all";
     }
 
     // Load french
@@ -192,7 +350,10 @@ namespace scls_documentalist_gui {
         a_hud_text_content["help_body_home_part"] = scls::to_utf_8("Vous êtes actuellement sur la page d'aide. Naviguez</br>avec le sélécteur à gauche.");
         a_hud_text_content["home"] = "Accueil";
         a_hud_text_content["home_project"] = "Accueil du projet";
+        a_hud_text_content["name_file_pattern"] = scls::to_utf_8("Nom du fichier modèle");
+        a_hud_text_content["name_project"] = "Nom du project";
         a_hud_text_content["save"] = "Sauvegarder";
+        a_hud_text_content["save_all"] = "Sauvegarder tout";
     }
 
     // Load the main header
@@ -221,13 +382,6 @@ namespace scls_documentalist_gui {
         a_project_body->set_position(glm::vec3(0.25, 1.0/3.0 - MAIN_HEADER_HEIGHT, 1));
         a_project_body->set_scale(glm::vec3(3.0/2.0 * scale_multiplier, (4.0/3.0 - MAIN_HEADER_HEIGHT * 2.0) * scale_multiplier, 1));
         a_project_body->set_pixel_border_width(1);
-        // Load the project home button
-        a_project_navigation_home_button = a_project_navigation->new_object<scls::HUD_Text>("project_navigation_home_button");
-        a_project_navigation_home_button->set_font_size(100);
-        a_project_navigation_home_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
-        a_project_navigation_home_button->set_text(a_hud_text_content["home_project"]);
-        a_project_navigation_home_button->set_object_scale_width(0.6);
-        a_project_navigation_home_button->move_top_of_parent();
     }
 
     // Load a file pattern of a project
@@ -269,6 +423,15 @@ namespace scls_documentalist_gui {
         a_project_footer_create_file_pattern->set_pixel_border_width(1);
         a_project_footer_create_file_pattern->set_object_scale(0.125);
         a_project_footer_create_file_pattern->set_position(glm::vec2(-0.3, 0));
+        // Create the button of saving all the project
+        a_project_footer_save_all = a_project_footer->new_object<scls::HUD_Text>("project_footer_save_all");
+        a_project_footer_save_all->set_font_size(100);
+        a_project_footer_save_all->set_text_offset(0.05);
+        a_project_footer_save_all->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_project_footer_save_all->set_text(a_hud_text_content["save_all"]);
+        a_project_footer_save_all->set_pixel_border_width(1);
+        a_project_footer_save_all->set_object_scale(0.2);
+        a_project_footer_save_all->set_position(glm::vec2(0.3, -0.2));
         // Create the button of saving of a file in the project footer
         a_project_footer_save_file_pattern = a_project_footer->new_object<scls::HUD_Text>("project_footer_save_file_pattern");
         a_project_footer_save_file_pattern->set_font_size(100);
@@ -276,8 +439,8 @@ namespace scls_documentalist_gui {
         a_project_footer_save_file_pattern->set_overflighted_cursor(GLFW_HAND_CURSOR);
         a_project_footer_save_file_pattern->set_text(a_hud_text_content["save"]);
         a_project_footer_save_file_pattern->set_pixel_border_width(1);
-        a_project_footer_save_file_pattern->set_object_scale(0.125);
-        a_project_footer_save_file_pattern->set_position(glm::vec2(0.3, 0));
+        a_project_footer_save_file_pattern->set_object_scale(0.2);
+        a_project_footer_save_file_pattern->set_position(glm::vec2(0.3, 0.2));
     }
 
     // Load the needed textures
@@ -308,6 +471,10 @@ namespace scls_documentalist_gui {
 
     // Reload each HUD text
     void SCLS_Documentalist_GUI::reload_text() {
+        a_create_project_body_create->set_text(a_hud_text_content["create_a_project"]);
+        a_create_project_body_name_title->set_text(a_hud_text_content["name_project"] + " :");
+        a_create_project_file_pattern_body_create->set_text(a_hud_text_content["create_a_file_pattern"]);
+        a_create_project_file_pattern_body_name_title->set_text(a_hud_text_content["name_file_pattern"] + " :");
         a_help_body_home->set_text(a_hud_text_content["help_body_home"]);
         a_help_body_home_description->set_text(a_hud_text_content["help_body_home_description"]);
         a_help_body_home_part->set_text(a_hud_text_content["help_body_home_part"]);
@@ -315,14 +482,71 @@ namespace scls_documentalist_gui {
         a_welcome_footer_create_project->set_text(a_hud_text_content["create_a_project"]);
     }
 
+    // Save the loaded file pattern
     void SCLS_Documentalist_GUI::save_loaded_file_pattern() {
         std::string to_save = a_project_file_pattern_content->text();
         scls::write_in_file("lesson.html", to_save);
     };
 
+    // Save the entire loaded project
+    void SCLS_Documentalist_GUI::save_loaded_project() {
+        // Check the currently edited file
+        if(currently_displayed_file_pattern() != "") {
+            if(contains_loaded_file(currently_displayed_file_pattern())) {
+                loaded_files()[currently_displayed_file_pattern()].text = a_project_file_pattern_content->text();
+            }
+            a_currently_displayed_file_pattern = "";
+        }
+
+        if(currently_displayed_project() == 0) return;
+        std::string base_path = currently_displayed_project_name() + "/";
+        std::string project_path = currently_displayed_project_name() + "/";
+
+        if(!std::filesystem::exists(project_path)) {
+            std::filesystem::create_directory(project_path);
+        }
+
+        // Save the main file
+
+
+        // Save each files in the project
+        for(std::map<std::string, _SCLS_Documentalist_GUI_File>::iterator it = loaded_files().begin();it!=loaded_files().end();it++) {
+            if(it->second.base_project == currently_displayed_project()) {
+                scls::Text_Pattern* current_pattern = currently_displayed_project()->pattern_by_name(it->first);
+                if(current_pattern != 0) {
+                    current_pattern->set_base_text(it->second.text);
+                }
+            }
+        }
+
+        // Save each files
+        for(int i = 0;i<static_cast<int>(currently_displayed_project()->patterns().size());i++) {
+            std::string file_name = base_path + currently_displayed_project()->patterns()[i]->name();
+            scls::write_in_file(file_name, currently_displayed_project()->patterns()[i]->base_text());
+        }
+    }
+
+    // Set the create project page
+    void SCLS_Documentalist_GUI::set_create_project_body() {
+        unset_all();
+        display_page("header");
+        display_page("create_project_body");
+        display_page("help_navigation");
+        display_page("welcome_footer");
+    }
+
+    // Set the create file pattern in project page
+    void SCLS_Documentalist_GUI::set_create_project_file_pattern_body() {
+        unset_all();
+        display_page("header");
+        display_page("create_project_file_pattern_body");
+        display_page("project_navigation");
+        display_page("project_footer");
+    }
+
     // Run the GUI
     void SCLS_Documentalist_GUI::start() {
-        hide_all_pages();
+        unset_all();
         display_page("header");
         display_page("help_body");
         display_page("help_navigation");
@@ -332,19 +556,49 @@ namespace scls_documentalist_gui {
             update_event();
             update();
 
+            // Check if a project creation is needed
             if(a_welcome_footer_create_project->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
-                create_project();
+                set_create_project_body();
+            }
+            if(a_create_project_body_create->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                check_project_creation();
             }
 
+            // Check if a pattern file creation is needed
             if(a_project_footer_create_file_pattern->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
-                create_project_file_pattern();
+                set_create_project_file_pattern_body();
+            }
+            if(a_create_project_file_pattern_body_create->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                check_project_file_pattern_creation();
+            }
+            for(int i = 0;i<static_cast<int>(a_project_navigation_file_pattern_button.size());i++) {
+                if(a_project_navigation_file_pattern_button[i]->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                    set_project_file_pattern_body(a_project_navigation_file_pattern_button[i]->plain_text(), currently_displayed_project());
+                }
             }
 
+            // Save a project
+            if(a_project_footer_save_all->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                save_loaded_project();
+            }
             if(a_project_footer_save_file_pattern->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
                 save_loaded_file_pattern();
             }
 
             render();
+        }
+    }
+
+    // Unset all the pages in the window
+    void SCLS_Documentalist_GUI::unset_all() {
+        hide_all_pages();
+
+        // Check the currently edited file
+        if(currently_displayed_file_pattern() != "") {
+            if(contains_loaded_file(currently_displayed_file_pattern())) {
+                loaded_files()[currently_displayed_file_pattern()].text = a_project_file_pattern_content->text();
+            }
+            a_currently_displayed_file_pattern = "";
         }
     }
 

@@ -74,7 +74,7 @@ namespace scls {
         // Returns if the struct contains a textures
         inline bool contains_texture(std::string name) {
             for (std::map<std::string, Texture*>::iterator it = textures().begin(); it != textures().end(); it++) {
-                    if (it->first == name) return true;
+                if (it->first == name) return true;
             }
             return false;
         };
@@ -85,6 +85,8 @@ namespace scls {
 
         // Loads the built-in VAOs in the _Window_Advanced_Struct
         void load_VAOs();
+        // Remove a texture in the window
+        void remove_texture(Texture* texture);
         // Unload all the textures
         void unload_textures();
         // Unload all the VAOs

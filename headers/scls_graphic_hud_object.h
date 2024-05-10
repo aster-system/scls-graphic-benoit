@@ -260,8 +260,8 @@ namespace scls {
         // Move the cursor in the text
         void move_cursor(int movement);
 
-        // Update the text
-        virtual void update();
+        // Soft reset the text
+        virtual void soft_reset() {HUD_Object::soft_reset();a_text_modified_during_this_frame = false;};
         // Update the text texture
         void update_text_texture();
 
@@ -285,13 +285,14 @@ namespace scls {
         inline void set_font_color(Color new_font_color) {a_font_color = new_font_color;a_modified = true;update_text_texture();};
         inline void set_font_family(std::string new_font_family) {a_font_family = new_font_family;a_modified = true;update_text_texture();};
         inline void set_font_size(unsigned short new_font_size) {a_font_size = new_font_size;a_modified = true;update_text_texture();};
-        inline void set_text(std::string new_text, bool move_cursor = true) {if(new_text == a_text)return;a_text = new_text;if(move_cursor)set_cursor_position(window_struct()->text_image_generator()->plain_text_size(a_text));a_modified = true;update_text_texture();};
+        inline void set_text(std::string new_text, bool move_cursor = true) {if(new_text == a_text)return;a_text = new_text;if(move_cursor)set_cursor_position(window_struct()->text_image_generator()->plain_text_size(a_text));a_modified = true;update_text_texture();a_text_modified_during_this_frame = true;};
         inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {a_text_alignment_horizontal = new_text_alignment_horizontal;a_modified = true;update_text_texture();};
         inline void set_text_offset(double new_text_offset) {a_text_offset = glm::vec4(new_text_offset);set_texture_rect(glm::vec4(new_text_offset, new_text_offset, 1.0 - new_text_offset * 2.0, 1.0 - new_text_offset * 2.0));};
         inline void set_text_offset(glm::vec4 new_text_offset) {a_text_offset = new_text_offset;set_texture_rect(glm::vec4(new_text_offset[1], new_text_offset[0], 1.0 - (new_text_offset[1] + new_text_offset[3]), 1.0 - (new_text_offset[0] + new_text_offset[2])));};
         inline void set_use_cursor(bool new_use_cursor) {a_use_cursor = new_use_cursor;};
         inline std::string text() {return a_text;update_text_texture();};
         inline Alignment_Horizontal text_alignment_horizontal() {return a_text_alignment_horizontal;};
+        inline bool text_modified_during_this_frame() {return a_text_modified_during_this_frame;};
         inline glm::vec4 text_offset() {return a_text_offset;};
         inline bool use_cursor() {return a_use_cursor;};
     private:
@@ -313,6 +314,8 @@ namespace scls {
         std::string a_text = "";
         // Alignment of the text
         Alignment_Horizontal a_text_alignment_horizontal = Alignment_Horizontal::H_Left;
+        // If the text has been modified during this frame
+        bool a_text_modified_during_this_frame = false;
         // Offset of the text
         glm::vec4 a_text_offset = glm::vec4(0, 0, 0, 0);
 
@@ -350,7 +353,7 @@ namespace scls {
         // Input the inputed text
         void input_text();
         // Update the text
-        virtual void update();
+        virtual void update_event();
         // Update the cursor behavior
         void update_cursor();
     };
@@ -372,11 +375,16 @@ namespace scls {
 
         // Render the page
         virtual void render();
-        // Function called when the page is unload
-        virtual void unload() {
-            HUD_Object::unload();
+        // Function called when the page is hidden
+        virtual void after_hiding() {
+            HUD_Object::after_hiding();
             // Soft reset the page
             soft_reset();
+
+            // Update the cursor if necessary
+            if(a_overflighted_object == 0) {
+                window_struct()->set_cursor(glfwCreateStandardCursor(GLFW_ARROW_CURSOR));
+            }
 
             // Check the focused object
             a_focused_object = 0;

@@ -189,4 +189,17 @@ namespace scls {
         print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to add already exists.");
         return 0;
     }
+
+    // Remove a texture in the window
+    void _Window_Advanced_Struct::remove_texture(Texture* texture) {
+        unsigned int i = 0;
+        for (std::map<std::string, Texture*>::iterator it = textures().begin(); it != textures().end(); it++) {
+            if (it->second == texture) {
+                textures().erase(it);
+                delete texture;
+                return;
+            }
+            i++;
+        }
+    }
 }

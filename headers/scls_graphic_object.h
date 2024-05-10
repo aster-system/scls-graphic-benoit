@@ -44,6 +44,8 @@ namespace scls {
         // Object destructor
         virtual ~Object();
 
+        // Delete a children of the object
+        void delete_children(Object* child);
         // Creates an object into the page and returns it
         template <typename O>
         O* new_object(std::string object_name, std::string object_texture = "");
@@ -88,15 +90,14 @@ namespace scls {
         virtual void after_window_resizing(glm::vec2 last_scale){for(int i = 0;i<static_cast<int>(children().size());i++){children()[i]->after_window_resizing(last_scale);}};
         // Render the object on the window
         virtual void render();
-        // Function called when the events are updated
-        virtual void update_event(){};
-        // Function called when the object is unloaded
-        virtual void unload() {};
+        // Function called when the object is hidden
+        virtual void after_hiding() {};
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         inline double texture_ratio() {return texture()->image_ratio();};
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
+        inline bool only_texture_use() {return a_only_texture_user;};
         inline void set_texture(std::string new_texture) {
             if(new_texture == "")a_texture = 0;
             if(!window_struct()->contains_texture(new_texture)) {
@@ -131,6 +132,8 @@ namespace scls {
         virtual void soft_reset() {for(int i = 0;i<static_cast<int>(children().size());i++){children()[i]->soft_reset();}};
         // Function called during every updates
         virtual void update() {for(int i = 0;i<static_cast<int>(children().size());i++){children()[i]->update();}};
+        // Function called when the events are updated
+        virtual void update_event(){for(int i = 0;i<static_cast<int>(children().size());i++){children()[i]->update_event();}};
 
         //*********
         //
@@ -149,6 +152,9 @@ namespace scls {
         // Basic object descriptor
         // Type of the object
         std::vector<std::string> a_type = std::vector<std::string>();
+
+        // If the object is the only object to use its texture
+        bool a_only_texture_user = false;
     private:
         // Remove a children
         inline void _remove_child(Object* child) {

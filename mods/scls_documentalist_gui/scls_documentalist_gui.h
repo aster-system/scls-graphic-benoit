@@ -29,6 +29,14 @@
 
 // The namespace "scls_documentalist_gui" is used to simplify the all.
 namespace scls_documentalist_gui {
+    struct _SCLS_Documentalist_GUI_File {
+        // Struct representing a loaded file in SCLS_Documentalist_GUI
+        // Base project of the file
+        scls::Project* base_project = 0;
+        // Text in the file
+        std::string text = "";
+    };
+
     class SCLS_Documentalist_GUI : public scls::Window {
         // Class representing the page for an SCLS Documentalist "Agatha" GUI
     public:
@@ -37,12 +45,16 @@ namespace scls_documentalist_gui {
         // SCLS_Documentalist_GUI base destructor
         virtual ~SCLS_Documentalist_GUI();
 
+        // Check if a project can be created
+        void check_project_creation();
+        // Check if a file pattern in a project can be created
+        void check_project_file_pattern_creation();
         // Clear the memory from the loaded projects
         inline void clear_memory_from_loaded_projects() {for(std::map<std::string, scls::Project*>::iterator it = loaded_projects().begin();it!=loaded_projects().end();it++){delete it->second;it->second=0;}loaded_projects().clear();};
         // Create a new project
-        void create_project();
+        void create_project(std::string project_name);
         // Create a new file pattern in the currently displayed project
-        void create_project_file_pattern();
+        void create_project_file_pattern(std::string file_name, scls::Project* project);
         // Load a project in the GUI
         void load_project(scls::Project* project_to_load);
         // Load a project in the GUI with its name
@@ -59,17 +71,27 @@ namespace scls_documentalist_gui {
             scls::Project* project_to_load = loaded_project(name);
             if(project_to_load != 0) load_project_home(project_to_load);
         };
+        // Load the navigation buttons of the project
+        void load_navigation_project_buttons();
         // Save the loaded file pattern
         void save_loaded_file_pattern();
+        // Save the entire loaded project
+        void save_loaded_project();
+        // Set a project file pattern body
+        void set_project_file_pattern_body(std::string file_name, scls::Project* project);
 
+        // Returns if the gui contains a loaded file in it
+        inline bool contains_loaded_file(std::string file_name) {for(std::map<std::string, _SCLS_Documentalist_GUI_File>::iterator it = loaded_files().begin();it!=loaded_files().end();it++){if(it->first == file_name){return true;}}return false;};
         // Return if the gui contains a project by its name
         inline bool contains_loaded_project(std::string project_name) {for(std::map<std::string, scls::Project*>::iterator it = loaded_projects().begin();it!=loaded_projects().end();it++){if(it->first == project_name){return true;}}return false;};
         // Return a project by its name
         inline scls::Project* loaded_project(std::string project_name) {for(std::map<std::string, scls::Project*>::iterator it = loaded_projects().begin();it!=loaded_projects().end();it++){if(it->first == project_name){return it->second;}}return 0;};
 
         // Getters and setters
+        inline std::string currently_displayed_file_pattern() const {return a_currently_displayed_file_pattern;};
         inline scls::Project* currently_displayed_project() {return a_currently_displayed_project;};
         inline std::string currently_displayed_project_name() {return currently_displayed_project()->name();};
+        inline std::map<std::string, _SCLS_Documentalist_GUI_File>& loaded_files() {return a_loaded_files;};
         inline std::map<std::string, scls::Project*>& loaded_projects() {return a_loaded_projects;};
         inline void set_currently_dispalyed_project(scls::Project* project_to_display) {a_currently_displayed_project = project_to_display;load_project(project_to_display);};
 
@@ -81,6 +103,10 @@ namespace scls_documentalist_gui {
 
         // Load the entire gui
         void load();
+        // Load the page to create a project
+        void load_create_project_body();
+        // Load the page to create a file pattern in a project
+        void load_create_project_file_pattern_body();
         // Load the welcome page body
         void load_help_body();
         // Load the help navigation
@@ -108,12 +134,24 @@ namespace scls_documentalist_gui {
         // Reload each HUD text
         void reload_text();
 
+        // Set each pages
+        // Set the create project page
+        void set_create_project_body();
+        // Set the create file pattern in project page
+        void set_create_project_file_pattern_body();
+        // Unset all the pages in the window
+        void unset_all();
+
         // Run the gui
         void start();
     private:
 
+        // Currently displayed file pattern
+        std::string a_currently_displayed_file_pattern = "";
         // Currently displayed project
         scls::Project* a_currently_displayed_project = 0;
+        // Loaded pattern files
+        std::map<std::string, _SCLS_Documentalist_GUI_File> a_loaded_files = std::map<std::string, _SCLS_Documentalist_GUI_File>();
         // All the loaded project in the GUI
         std::map<std::string, scls::Project*> a_loaded_projects = std::map<std::string, scls::Project*>();
         // Project files pattern button
@@ -126,6 +164,26 @@ namespace scls_documentalist_gui {
         // Annoying GUI stuff
         //
         //*********
+
+        // Body of the page to create a project
+        // Parent page of the page to create a project
+        scls::HUD_Page* a_create_project_body = 0;
+        // Button of validation of creation of project in the page to create a project
+        scls::HUD_Text* a_create_project_body_create = 0;
+        // Title of the name of the page to create a project
+        scls::HUD_Text* a_create_project_body_name_title = 0;
+        // Input of the name of the page to create a project
+        scls::HUD_Text_Input* a_create_project_body_name = 0;
+
+        // Body of the page to create a file pattern in a project
+        // Parent page of the page to create a file pattern in a project
+        scls::HUD_Page* a_create_project_file_pattern_body = 0;
+        // Button of validation of creation of project in the page to create a file pattern in a project
+        scls::HUD_Text* a_create_project_file_pattern_body_create = 0;
+        // Title of the name of the page to create a file pattern in a project
+        scls::HUD_Text* a_create_project_file_pattern_body_name_title = 0;
+        // Input of the name of the page to create a file pattern in a project
+        scls::HUD_Text_Input* a_create_project_file_pattern_body_name = 0;
 
         // Body of the help
         // Parent page of the help body
@@ -152,6 +210,8 @@ namespace scls_documentalist_gui {
         scls::HUD_Page* a_project_footer = 0;
         // Button of creation of file in the project footer
         scls::HUD_Text* a_project_footer_create_file_pattern = 0;
+        // Button of saving all the project
+        scls::HUD_Text* a_project_footer_save_all = 0;
         // Button of saving of a file in the project footer
         scls::HUD_Text* a_project_footer_save_file_pattern = 0;
 

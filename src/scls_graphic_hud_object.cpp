@@ -113,12 +113,12 @@ namespace scls {
 
     // Most parent HUD_Object constructor used for displaying
     HUD_Text::HUD_Text(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : HUD_Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), transform_parent, name, texture_name, vao_name) {
-
+        a_only_texture_user = true;
     }
 
     // HUD_Text constructor used for displaying
     HUD_Text::HUD_Text(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name) : HUD_Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), parent, name, texture_name, vao_name) {
-
+        a_only_texture_user = true;
     }
 
     // Move the cursor in the text
@@ -137,14 +137,6 @@ namespace scls {
         else if(final_cursor_position == static_cast<int>(cursor_position())) return;
         set_cursor_position(final_cursor_position);
         a_modified = true; update_text_texture();
-    }
-
-    // Update the text
-    void HUD_Text::update() {
-        HUD_Object::update();
-
-        // Update the texture of the text
-        update_text_texture();
     }
 
     // Update the text texture
@@ -311,8 +303,8 @@ namespace scls {
     }
 
     // Update the text
-    void HUD_Text_Input::update() {
-        HUD_Text::update();
+    void HUD_Text_Input::update_event() {
+        HUD_Text::update_event();
         input_text();
         update_cursor();
     }
@@ -359,7 +351,7 @@ namespace scls {
             Object* analyzed_object = (*to_analyse)[to_analyse->size() - (i + 1)];
             if(analyzed_object->type(1) == SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME) {
                 HUD_Object* current_object = reinterpret_cast<HUD_Object*>(analyzed_object);
-                if(current_object->is_in_pixel(window_struct()->mouse_x(), window_struct()->window_height() - window_struct()->mouse_y())) {
+                if(current_object->visible() && current_object->is_in_pixel(window_struct()->mouse_x(), window_struct()->window_height() - window_struct()->mouse_y())) {
                     current_overflighted_object = current_object;
                     i = -1;
                     to_analyse = (&current_overflighted_object->children());
@@ -393,6 +385,8 @@ namespace scls {
         if(a_focused_object != 0) {
             a_focused_object->set_is_focused(true);
         }
+
+        HUD_Object::update_event();
     }
 
     // HUD_Page destructor

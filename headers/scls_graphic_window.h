@@ -136,7 +136,7 @@ namespace scls {
         };
         inline void hide_all_pages() {
             for(int i = 0;i<static_cast<int>(displayed_pages_names().size());i++) {
-                pages()[displayed_pages_names()[i]]->unload();
+                pages()[displayed_pages_names()[i]]->after_hiding();
             }
             displayed_pages_names().clear();
         };

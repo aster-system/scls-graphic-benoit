@@ -9,8 +9,7 @@ struct Shader_Program_Variable
 	unsigned short vector_size = 1;
 };
 
-class Shader_Program
-{
+class Shader_Program {
 	// Class representing a shader program interface
 public:
 	// Every type of built-in shaders
@@ -108,8 +107,7 @@ private:
 	std::string vertex_shader = ""; // Content of the vertex shader
 };
 
-class VBO
-{
+class VBO {
 	// Class representing a VBO interface
 public:
 	// Most basic VBO constructor
@@ -265,8 +263,7 @@ protected:
 	std::vector<float> a_datas = std::vector<float>(); // Each vertices in the VBO
 };
 
-class VAO
-{
+class VAO {
 	// Class representing a VAO interface
 public:
 	// Most basic VAO constructor
@@ -301,8 +298,7 @@ protected:
 	VBO *a_vbo = 0; // Pointer to the VBO
 };
 
-class Texture
-{
+class Texture {
 	// Class representing a texture interface
 public:
 	Texture(std::string a_texture_path, bool a_resize = true); // Texture constructor

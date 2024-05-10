@@ -62,7 +62,24 @@ namespace scls {
 
     // Object destructor
     Object::~Object() {
+        if(only_texture_use()) {
+            window_struct()->remove_texture(texture());
+        }
+
         delete a_transform; a_transform = 0;
+    }
+
+    // Delete a children of the object
+    void Object::delete_children(Object* child) {
+        if(child == 0) return;
+
+        for(int i = 0;i<static_cast<int>(children().size());i++) {
+            if(children()[i] == child) {
+                children().erase(children().begin() + i);
+                delete child;
+                return;
+            }
+        }
     }
 
     //*********
