@@ -61,7 +61,9 @@ namespace scls_documentalist_gui {
 
     // Create a new project
     void SCLS_Documentalist_GUI::create_project(std::string project_name) {
-        scls::Project* created_project = new scls::Project(project_name);
+        scls::Project* created_project = 0;
+        // created_project = new scls::Project(project_name);
+        created_project = scls::cpp_scls_format_project(project_name);
 
         a_loaded_projects[project_name] = created_project;
         set_currently_dispalyed_project(created_project);
@@ -81,6 +83,7 @@ namespace scls_documentalist_gui {
     void SCLS_Documentalist_GUI::load_project(scls::Project* project_to_load) {
         set_window_title("SCLS Documentalist \"Agatha\" - " + project_to_load->name());
 
+        load_navigation_project_buttons();
         load_project_home(project_to_load);
     }
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef __ASTER_DEV
-#include "../../scls-image-michelangelo/scls_image.h"
+#include "../dev_part/scls_image.h"
 #else
 #include <scls_image.h>
 #endif // __ASTER_DEV

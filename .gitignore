@@ -400,6 +400,7 @@ FodyWeavers.xsd
 
 # Added by developer
 glad.c
+dev_part/
 matix/
 mods_hidden/
 *.vcxproj
