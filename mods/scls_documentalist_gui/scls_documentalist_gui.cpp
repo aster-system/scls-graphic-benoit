@@ -119,7 +119,7 @@ namespace scls_documentalist_gui {
         scls::Project* current_project = currently_displayed_project();
         scls::HUD_Object* last_object = a_project_navigation_home_button;
         for(int i = 0;i<static_cast<int>(current_project->patterns().size());i++) {
-            std::string file_name = current_project->patterns()[i]->name();
+            std::string file_name = current_project->patterns()[i]->name().to_std_string();
 
             scls::HUD_Text* button = a_project_navigation->new_object<scls::HUD_Text>("help_navigation_home_button_" + file_name);
             button->set_font_size(100);
@@ -141,14 +141,14 @@ namespace scls_documentalist_gui {
         display_page("project_footer");
 
         if(contains_loaded_file(file_name)) {
-            a_project_file_pattern_content->set_text(loaded_files()[file_name].text);
+            a_project_file_pattern_content->set_text(scls::format_string_from_plain_text(loaded_files()[file_name].text));
         }
         else {
             scls::Text_Pattern* pattern = project->pattern_by_name(file_name);
-            std::string file_content = pattern->base_text();
-            _SCLS_Documentalist_GUI_File file; file.text = file_content; file.base_project = project;
+            scls::String file_content = pattern->base_text().formatted_from_plain_text();
+            _SCLS_Documentalist_GUI_File file; file.text = file_content.to_std_string(); file.base_project = project;
             loaded_files()[file_name] = file;
-            a_project_file_pattern_content->set_text(file_content);
+            a_project_file_pattern_content->set_text(file_content.to_std_string());
         }
         a_currently_displayed_file_pattern = file_name;
     }
@@ -509,9 +509,6 @@ namespace scls_documentalist_gui {
             std::filesystem::create_directory(project_path);
         }
 
-        // Save the main file
-
-
         // Save each files in the project
         for(std::map<std::string, _SCLS_Documentalist_GUI_File>::iterator it = loaded_files().begin();it!=loaded_files().end();it++) {
             if(it->second.base_project == currently_displayed_project()) {
@@ -524,7 +521,7 @@ namespace scls_documentalist_gui {
 
         // Save each files
         for(int i = 0;i<static_cast<int>(currently_displayed_project()->patterns().size());i++) {
-            std::string file_name = base_path + currently_displayed_project()->patterns()[i]->name();
+            std::string file_name = base_path + currently_displayed_project()->patterns()[i]->name().to_std_string();
             scls::write_in_file(file_name, currently_displayed_project()->patterns()[i]->base_text());
         }
     }
