@@ -1,7 +1,0 @@
-////////////////////////////
-//
-// Avoid multiple header repetitions
-//
-////////////////////////////
-
-#endif // &lt;var avoid_header_repetition&gt;
