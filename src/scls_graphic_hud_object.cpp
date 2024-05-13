@@ -48,41 +48,39 @@ namespace scls {
         vao()->get_shader_program()->set_uniform4f_value("border_color", glm::vec4(0, 0, 0, 1));
         vao()->get_shader_program()->set_uniform4f_value("border_width", border_width());
         vao()->get_shader_program()->set_uniform2f_value("one_pixel", one_pixel_scale()[0], one_pixel_scale()[1]);
-
-
-        // Resize texture if necessary
-        glm::vec4 final_texture_rect = texture_rect();
-        if(!resize_texture_with_scale()) {
-            double hud_pixel_height = height_in_pixel();
-            double hud_pixel_width = width_in_pixel();
-
-            // Set the X position
-            double texture_width = texture()->get_texture_size()[0] / hud_pixel_width;
-            double texture_x = 0;
-            if(texture_aligmnent_horizontal() == Alignment_Horizontal::H_Center) {
-                texture_x = 0.5 - texture_width / 2.0;
-            }
-            else if(texture_aligmnent_horizontal() == Alignment_Horizontal::H_Right) {
-                texture_x = 1.0 - texture_width;
-            }
-
-            // Set the Y position
-            double texture_height = texture()->get_texture_size()[1] / hud_pixel_height;
-            double texture_y = 0;
-            if(texture_aligmnent_vertical() == Alignment_Vertical::V_Center) {
-                texture_y = 0.5 - texture_height / 2.0;
-            }
-            else if(texture_aligmnent_vertical() == Alignment_Vertical::V_Top) {
-                texture_y = 1.0 - texture_height;
-            }
-
-            final_texture_rect = glm::vec4(texture_x, texture_y, texture_width, texture_height);
-        }
-        vao()->get_shader_program()->set_uniform4f_value("texture_rect", final_texture_rect);
+        vao()->get_shader_program()->set_uniform4f_value("texture_rect", final_texture_rect());
 
         // Call the hidden render part
         _render(matrix);
     }
+
+    // Returns the final rect of the texture
+    glm::vec4 HUD_Object::final_texture_rect() {
+        glm::vec2 texture_size = final_texture_size();
+
+        // Set the X position
+        double texture_x = 0;
+        if(texture_aligmnent_horizontal() == Alignment_Horizontal::H_Center) {
+            texture_x = 0.5 - texture_size[0] / 2.0;
+        }
+        else if(texture_aligmnent_horizontal() == Alignment_Horizontal::H_Right) {
+            texture_x = 1.0 - texture_size[0];
+        }
+
+        // Set the Y position
+        double final_texture_y = 0;
+        if(texture_aligmnent_vertical() == Alignment_Vertical::V_Center) {
+            final_texture_y = 0.5 - texture_size[1] / 2.0;
+        }
+        else if(texture_aligmnent_vertical() == Alignment_Vertical::V_Top) {
+            final_texture_y = 1.0 - texture_size[1];
+        }
+        else if(texture_aligmnent_vertical() == Alignment_Vertical::V_User_Defined) {
+            final_texture_y = texture_y();
+        }
+
+        return glm::vec4(texture_x, final_texture_y, texture_size[0], texture_size[1]);
+    };
 
     // Update the size of the HUD elements
     void HUD_Object::update_hud_scale() {
@@ -97,6 +95,11 @@ namespace scls {
         }
         else if(a_last_scale_definition_type == _Scale_Definition::Object_Scale_Width) {
             set_object_scale_width(a_last_scale[0]);
+        }
+
+        // Check texture size
+        if(a_last_texture_scale_definition_type == _Scale_Definition::Object_Scale) {
+            set_texture_object_scale(a_last_texture_scale[1]);
         }
     }
 
@@ -162,6 +165,8 @@ namespace scls {
             texture()->set_image(new Image(1, 1, background_color(), 0));
         }
         a_modified = false;
+        set_texture_y_max();
+        update_hud_scale();
     }
 
     // HUD_Text destructor

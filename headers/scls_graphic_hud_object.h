@@ -144,7 +144,6 @@ namespace scls {
         inline bool is_overflighted() const {return a_is_overflighted;};
         inline unsigned long overflighted_cursor() {return a_overflighted_cursor;};
         inline glm::vec2 position() {return glm::vec2(transform()->get_position()[0], transform()->get_position()[1]);};
-        inline bool resize_texture_with_scale() {return a_resize_texture_with_scale;};
         virtual void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
         inline void set_border_width(double new_border_width) {set_border_width(glm::vec4(new_border_width));};
         inline void set_border_width(glm::vec4 new_border_width) {a_border_width = new_border_width;a_last_border_width=new_border_width;a_last_border_width_definition_type = _Border_Width_Definition::Direct_Border_Width;};
@@ -178,12 +177,6 @@ namespace scls {
             a_last_scale = new_scale;
             a_last_scale_definition_type = _Scale_Definition::Direct_Scale;
         };
-        inline void set_texture_aligmnent_horizontal(Alignment_Horizontal new_texture_aligmnent_horizontal) {a_texture_aligmnent_horizontal = new_texture_aligmnent_horizontal;};
-        inline void set_texture_alignment_vertical(Alignment_Vertical new_texture_alignment_vertical) {a_texture_aligmnent_vertical = new_texture_alignment_vertical;};
-        inline void set_texture_rect(glm::vec4 new_texture_rect) {a_texture_rect = new_texture_rect;};
-        inline Alignment_Horizontal texture_aligmnent_horizontal() {return a_texture_aligmnent_horizontal;};
-        inline Alignment_Vertical texture_aligmnent_vertical() {return a_texture_aligmnent_vertical;};
-        inline glm::vec4 texture_rect() {return a_texture_rect;};
 
         //*********
         //
@@ -198,6 +191,52 @@ namespace scls {
         inline void move_left_of_parent() {double new_x = -1.0 + scale()[0] / 2.0;if(parent_hud()!=0){new_x -= parent_hud()->border_width()[1];}set_position(glm::vec2(new_x, position()[1]));};
         inline void move_right_of_parent() {double new_x = 1.0 - scale()[0] / 2.0;if(parent_hud()!=0){new_x -= parent_hud()->border_width()[3];}set_position(glm::vec2(new_x, position()[1]));};
         inline void move_top_of_parent() {double new_y = 0.5 - scale()[1] / 2.0;if(parent_hud()!=0){new_y -= parent_hud()->border_width()[0];}set_position(glm::vec2(position()[0], new_y));};
+
+        //*********
+        //
+        // Texture handling
+        //
+        //*********
+
+        // Final rect of the text
+        glm::vec4 final_texture_rect();
+        // Final size of the texture
+        inline glm::vec2 final_texture_size() {
+            if(texture() == 0) return glm::vec2(1, 1);
+            else if(resize_texture_with_scale()) return glm::vec2(texture_rect()[2], texture_rect()[3]);
+            return glm::vec2(texture()->get_texture_size()[0] / width_in_pixel(), texture()->get_texture_size()[1] / height_in_pixel());
+        };
+        // Change the object scale of the texture
+        virtual void set_texture_object_scale(double new_texture_scale) {
+            glm::vec4 new_scale = texture_rect();
+            double object_scale = (scale_ratio() * static_cast<double>(window_struct()->window_ratio()));
+            // Calculate the new scale of the texture
+            new_scale[2] = (texture_ratio() * new_texture_scale * 2.0) / object_scale;
+            new_scale[3] = new_texture_scale;
+            set_texture_rect(new_scale);
+            a_last_texture_scale = glm::vec2(new_scale[2], new_scale[3]);
+            a_last_texture_scale_definition_type = _Scale_Definition::Object_Scale;
+        };
+        // Set the texture y to its max value
+        inline void set_texture_y_max() { set_texture_y(texture_y_max()); };
+        // Returns the max texture y value
+        inline double texture_y_max() { double texture_height = final_texture_size()[1]; double final_y = 1.0 - texture_height; if(texture_height <= 1)return final_y; return final_y+=texture_height-1.0; };
+
+        // Getters and setters
+        inline bool resize_texture_with_scale() {return a_resize_texture_with_scale;};
+        inline void set_texture_aligmnent_horizontal(Alignment_Horizontal new_texture_aligmnent_horizontal) {a_texture_aligmnent_horizontal = new_texture_aligmnent_horizontal;};
+        inline void set_texture_alignment_vertical(Alignment_Vertical new_texture_alignment_vertical) {a_texture_aligmnent_vertical = new_texture_alignment_vertical;};
+        inline void set_texture_rect(glm::vec4 new_texture_rect) {
+            a_texture_rect = new_texture_rect;
+            a_last_texture_scale = glm::vec2(new_texture_rect[2], new_texture_rect[3]);
+            a_last_texture_scale_definition_type = _Scale_Definition::Direct_Scale;
+        };
+        inline void set_texture_y(double new_texture_y) {a_texture_y = new_texture_y;};
+        inline Alignment_Horizontal texture_aligmnent_horizontal() {return a_texture_aligmnent_horizontal;};
+        inline Alignment_Vertical texture_aligmnent_vertical() {return a_texture_aligmnent_vertical;};
+        inline glm::vec4 texture_rect() {return a_texture_rect;};
+        inline double texture_y() {return a_texture_y;};
+
     private:
         //*********
         //
@@ -215,14 +254,6 @@ namespace scls {
         bool a_is_overflighted = false;
         // Id of the overflighted cursor
         unsigned long a_overflighted_cursor = GLFW_ARROW_CURSOR;
-        // If the texture can be resized or not
-        bool a_resize_texture_with_scale = true;
-        // Horizontal alignment of the texture if the texture can not be resized
-        Alignment_Horizontal a_texture_aligmnent_horizontal = Alignment_Horizontal::H_Center;
-        // Vertical alignment of the texture if the texture can not be resized
-        Alignment_Vertical a_texture_aligmnent_vertical = Alignment_Vertical::V_Top;
-        // Rect of the texture
-        glm::vec4 a_texture_rect = glm::vec4(0, 0, 1, 1);
 
         //*********
         //
@@ -238,6 +269,27 @@ namespace scls {
         glm::vec2 a_last_scale = glm::vec2(1);
         // Type of the last scale definition
         _Scale_Definition a_last_scale_definition_type = _Scale_Definition::Direct_Scale;
+        // Contains the last user defined texture scale
+        glm::vec2 a_last_texture_scale = glm::vec2(1);
+        // Type of the last scale definition
+        _Scale_Definition a_last_texture_scale_definition_type = _Scale_Definition::Direct_Scale;
+
+        //*********
+        //
+        // Texture handling
+        //
+        //*********
+
+        // If the texture can be resized or not
+        bool a_resize_texture_with_scale = true;
+        // Horizontal alignment of the texture if the texture can not be resized
+        Alignment_Horizontal a_texture_aligmnent_horizontal = Alignment_Horizontal::H_Center;
+        // Vertical alignment of the texture if the texture can not be resized
+        Alignment_Vertical a_texture_aligmnent_vertical = Alignment_Vertical::V_Top;
+        // Rect of the texture
+        glm::vec4 a_texture_rect = glm::vec4(0, 0, 1, 1);
+        // Y position of the texture, if the texture vertical alignment is V_User_Defined
+        double a_texture_y = 0;
     };
 
     class HUD_Text : public HUD_Object {

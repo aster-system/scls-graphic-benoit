@@ -125,7 +125,8 @@ namespace scls_documentalist_gui {
             button->set_font_size(100);
             button->set_overflighted_cursor(GLFW_HAND_CURSOR);
             button->set_text(file_name);
-            button->set_object_scale(0.1);
+            button->set_scale(glm::vec2(1.0, 0.15));
+            button->set_texture_object_scale(0.75);
             button->move_bottom_of_object_in_parent(last_object);
             last_object = button;
             a_project_navigation_file_pattern_button.push_back(button);
@@ -319,7 +320,8 @@ namespace scls_documentalist_gui {
         a_project_navigation_home_button->set_font_size(100);
         a_project_navigation_home_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
         a_project_navigation_home_button->set_text(a_hud_text_content["home_project"]);
-        a_project_navigation_home_button->set_object_scale_width(0.6);
+        a_project_navigation_home_button->set_scale(glm::vec2(1.0, 0.15));
+        a_project_navigation_home_button->set_texture_object_scale(0.75);
         a_project_navigation_home_button->move_top_of_parent();
     }
 
@@ -404,6 +406,7 @@ namespace scls_documentalist_gui {
         a_project_file_pattern_content->set_text_offset(0);
         a_project_file_pattern_content->set_text(scls::to_utf_8("Le char Leclerc</br>Leclerc great because Leclerc good."));
         a_project_file_pattern_content->set_texture_aligmnent_horizontal(scls::Alignment_Horizontal::H_Left);
+        a_project_file_pattern_content->set_texture_alignment_vertical(scls::Alignment_Vertical::V_User_Defined);
         a_project_file_pattern_content->set_position(glm::vec2(0, 0));
         a_project_file_pattern_content->set_scale(glm::vec2(0.98));
     }

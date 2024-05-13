@@ -1,0 +1,51 @@
+//
+// &lt;project_name&gt; -> &lt;file_path&gt;
+//
+//
+// &lt;project_name&gt; description
+//
+// &lt;project_description&gt;
+//
+//
+// &lt;file_name_extension&gt; description
+//
+// &lt;file_description-*>
+//
+//
+// License description (&lt;licence_name&gt;)
+//
+// &lt;licence_description&gt;
+//
+//
+// This project uses the Aster System SCLS Format "Mary" code format, in the public domain.
+// It is also formatted using the Aster System SCLS Documentalist "Agatha" library under the GPL V3.0 license.
+// See https://aster-system.github.io/aster-system/projects/scls.html for more informations.
+//
+////////////////////////////
+//
+// Included files
+//
+////////////////////////////
+
+// &lt;include_path[]&gt; -> &lt;include_description[]&gt;
+#include &lt;include_path[]&gt;
+
+////////////////////////////
+//
+// Macros definitions
+//
+////////////////////////////
+
+// &lt;macro_name[]&gt; -> &lt;macro_description[]&gt;
+#ifndef &lt;macro_name[]&gt;
+#define &lt;macro_name[]&gt; &lt;macro_content[]&gt;
+#endif // &lt;macro_name[]&gt;
+////////////////////////////
+//
+// &lt;part_title[]&gt;
+//
+////////////////////////////
+
+// &lt;code_part_title[][]&gt;
+&lt;code_part[][]&gt;
+
