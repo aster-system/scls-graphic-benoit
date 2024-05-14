@@ -501,7 +501,7 @@ namespace scls_documentalist_gui {
     // Save the loaded file pattern
     void SCLS_Documentalist_GUI::save_loaded_file_pattern() {
         std::string to_save = a_project_file_pattern_content->text();
-        scls::write_in_file("lesson.html", to_save);
+        scls::print("Information", "SCLS Documentalist Agatha", "Saving a single project is not possible yet");
     };
 
     // Save the entire loaded project
@@ -514,14 +514,6 @@ namespace scls_documentalist_gui {
             a_currently_displayed_file_pattern = "";
         }
 
-        if(currently_displayed_project() == 0) return;
-        std::string base_path = currently_displayed_project_name() + "/";
-        std::string project_path = currently_displayed_project_name() + "/";
-
-        if(!std::filesystem::exists(project_path)) {
-            std::filesystem::create_directory(project_path);
-        }
-
         // Save each files in the project
         for(std::map<std::string, _SCLS_Documentalist_GUI_File>::iterator it = loaded_files().begin();it!=loaded_files().end();it++) {
             if(it->second.base_project == currently_displayed_project()) {
@@ -532,11 +524,16 @@ namespace scls_documentalist_gui {
             }
         }
 
-        // Save each files
-        for(int i = 0;i<static_cast<int>(currently_displayed_project()->patterns().size());i++) {
-            std::string file_name = base_path + currently_displayed_project()->patterns()[i]->name().to_std_string();
-            scls::write_in_file(file_name, currently_displayed_project()->patterns()[i]->base_text());
+        if(currently_displayed_project() == 0) return;
+        std::string base_path = currently_displayed_project_name() + "/";
+        std::string project_path = currently_displayed_project_name() + "/";
+
+        if(!std::filesystem::exists(project_path)) {
+            std::filesystem::create_directory(project_path);
         }
+
+        // Save the project
+        currently_displayed_project()->save_sda_0_1(project_path);
     }
 
     // Set the create project page
