@@ -26,7 +26,7 @@
 //   In this referencial, (0, 0) represent the middle of the window.
 //   This is the referencial used by OpenGL at the lowest tier of the drawing.
 // - The window referencial :
-//   The second lowest tier transformation way, where the height of the window is always 1, but the width of the window is the ratio width / height of the window.
+//   In this referencial, the height of the window is always 1, but the width of the window is the ratio width / height of the window.
 //   In this referencial, (0, 0) represent the middle of the window.
 // - The pixel window referencial :
 //   The simplest window referencial, where the height of the window is its width in pixel, and the height of the window is its height in pixel.
@@ -34,16 +34,18 @@
 //
 // For an object in the window, it's a little more complicated.
 // Here the used referencials :
-// - The direct referencial
+// - The direct referencial (scale())
 //   The lowest tier transformation way, where the coordonate system always start at the bottom left at (-1;-1) and end at the top right at (1;1) in the object.
 //   For using it, the scale (1, 1) correspond to its full parent and its position (0;0) is the middle of its parent.
-// - The square referencial
-//   The parent tier transformation of the direct referencial, where the height of the object is always 1, but the width of the object is the ratio width / height of the absolute scale of the parent of the object.
-//   To be adapted with the direct referencial, the width should be multiplied by the absolute width ratio of the parent.
+// - The absolute direct referencial (absolute_scale())
+//   The same referencial as the direct referencial, but not limited at its parent scale, but to the window.
+//   For using it, the scale (1, 1) correspond to its the full window and its position (0;0) is the middle of the window.
+//   This is the referencial used by OpenGL at the lowest tier of the drawing.
+// - The square referencial (one_square_absolute_scale())
+//   In this referencial, the height of the object is always 1, but the width of the object is the ratio width / height of the object, defined by the user.
 //   For using it, its position (0;0) is the middle of its parent.
-// - The object referencial
-//   The second lowest tier transformation way, where the height of the object is always 1, but the width of the object is the ratio width / height of the texture of the object.
-//   To be adapted with the direct referencial, the width should be divided with the absolute witdh of the parent, then multiplied by the scale.
+// - The object referencial (one_object_absolute_scale())
+//   In this referencial, the height of the object is always 1, but the width of the object is the ratio width / height of the texture of the object.
 //   For using it, its position (0;0) is the middle of its parent.
 //
 
@@ -152,19 +154,13 @@ namespace scls {
         virtual void set_object_scale(double new_scale) {set_object_scale(glm::vec2(new_scale));};
         virtual void set_object_scale(glm::vec2 new_scale, bool register_scaling = true) {
             glm::vec2 new_scale_unmodified = new_scale;
-            // Calculate the square scale
-            double absolute_width = static_cast<double>(window_struct()->window_ratio());
-            if(transform_parent() != 0) absolute_width *= transform_parent()->absolute_scale()[0] / transform_parent()->absolute_scale()[1];
-            // Calculate the texture ratio
-            new_scale[0] = new_scale[0] * (texture_ratio() / absolute_width);
+            new_scale[0] = new_scale[0] * one_object_absolute_scale();
             set_scale(new_scale);
             a_last_scale = new_scale_unmodified;
             a_last_scale_definition_type = _Scale_Definition::Object_Scale;
         };
         virtual void set_object_scale_width(double new_width) {
-            double multiplier = static_cast<double>(window_struct()->window_ratio());
-            if(transform_parent() != 0) multiplier *= transform_parent()->absolute_scale()[0] / transform_parent()->absolute_scale()[1];
-            double new_scale = new_width * (multiplier / texture_ratio());
+            double new_scale = new_width / one_object_absolute_scale();
             HUD_Object::set_object_scale(new_scale);
             a_last_scale = glm::vec2(new_width);
             a_last_scale_definition_type = _Scale_Definition::Object_Scale_Width;
@@ -184,13 +180,26 @@ namespace scls {
         //
         //*********
 
+        // Move the object at the bottom of an object in their parent
         inline void move_bottom_of_object_in_parent(HUD_Object* object, double y_offset = 0) {
             double new_y = object->position()[1] - (object->scale()[1] / 2.0 + scale()[1] / 2.0 + y_offset);
             set_position(glm::vec2(position()[0], new_y));
         };
+        // Move the object at the left of its parent
         inline void move_left_of_parent() {double new_x = -1.0 + scale()[0] / 2.0;if(parent_hud()!=0){new_x -= parent_hud()->border_width()[1];}set_position(glm::vec2(new_x, position()[1]));};
+        // Move the object at the right of its parent
         inline void move_right_of_parent() {double new_x = 1.0 - scale()[0] / 2.0;if(parent_hud()!=0){new_x -= parent_hud()->border_width()[3];}set_position(glm::vec2(new_x, position()[1]));};
+        // Move the object at the top of its parent
         inline void move_top_of_parent() {double new_y = 0.5 - scale()[1] / 2.0;if(parent_hud()!=0){new_y -= parent_hud()->border_width()[0];}set_position(glm::vec2(position()[0], new_y));};
+
+        // Returns the abolute size of one object scale
+        inline double one_object_absolute_scale() {
+            double absolute_width = static_cast<double>(window_struct()->window_ratio());
+            if(transform_parent() != 0) absolute_width *= transform_parent()->absolute_scale()[0] / transform_parent()->absolute_scale()[1];
+            return texture_ratio() / absolute_width;
+        };
+        // Returns the abolute size of one object scale
+        inline double one_square_absolute_scale() { return static_cast<double>(window_struct()->window_ratio()) * absolute_scale_ratio(); };
 
         //*********
         //
@@ -209,9 +218,9 @@ namespace scls {
         // Change the object scale of the texture
         virtual void set_texture_object_scale(double new_texture_scale) {
             glm::vec4 new_scale = texture_rect();
-            double object_scale = (scale_ratio() * static_cast<double>(window_struct()->window_ratio()));
             // Calculate the new scale of the texture
-            new_scale[2] = (texture_ratio() * new_texture_scale * 2.0) / object_scale;
+            double object_scale = one_square_absolute_scale();
+            new_scale[2] = (texture_ratio() * new_texture_scale) / object_scale;
             new_scale[3] = new_texture_scale;
             set_texture_rect(new_scale);
             a_last_texture_scale = glm::vec2(new_scale[2], new_scale[3]);
@@ -400,14 +409,25 @@ namespace scls {
         // HUD_Text_Input destructor
         virtual ~HUD_Text_Input();
 
-        // Capitalize a std::string
-        std::string _capitalize(std::string letter, bool apply = true);
+        // Format a std::string
+        std::string _format(std::string letter, bool apply_capitalisation = true);
+        // Format an only letter
+        std::string _format_one_letter(std::string letter, bool apply_capitalisation = true);
         // Input the inputed text
         void input_text();
         // Update the text
         virtual void update_event();
         // Update the cursor behavior
         void update_cursor();
+    private:
+        //*********
+        //
+        // HUD_Text_Input main atrtibutes
+        //
+        //*********
+
+        // Last outputted descriptive character (^, ¨...)
+        std::string a_last_descriptive_character = "";
     };
 
     class HUD_Page : public HUD_Object {

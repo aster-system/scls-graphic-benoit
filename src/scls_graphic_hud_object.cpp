@@ -195,61 +195,118 @@ namespace scls {
 
     }
 
+    // Format a char
+    std::string HUD_Text_Input::_format(std::string letter, bool apply_capitalisation) {
+        std::string result = "";
+
+        for(int i = 0;i<letter.size();i++) {
+            std::string to_analyse = ""; to_analyse += letter[i];
+            result += _format_one_letter(to_analyse, apply_capitalisation);
+        }
+
+        return result;
+    }
+
     // Capitalize a std::string
-    std::string HUD_Text_Input::_capitalize(std::string letter, bool apply) {
-        if(!apply) return letter;
+    std::string HUD_Text_Input::_format_one_letter(std::string letter, bool apply_capitalisation) {
+        if(apply_capitalisation) {
+            // Alphabet letter
+            if(letter == "a") letter = "A";
+            if(letter == "b") letter = "B";
+            if(letter == "c") letter = "C";
+            if(letter == "d") letter = "D";
+            if(letter == "e") letter = "E";
+            if(letter == "f") letter = "F";
+            if(letter == "g") letter = "G";
+            if(letter == "h") letter = "H";
+            if(letter == "i") letter = "I";
+            if(letter == "j") letter = "J";
+            if(letter == "k") letter = "K";
+            if(letter == "l") letter = "L";
+            if(letter == "m") letter = "M";
+            if(letter == "n") letter = "N";
+            if(letter == "o") letter = "O";
+            if(letter == "p") letter = "P";
+            if(letter == "q") letter = "Q";
+            if(letter == "r") letter = "R";
+            if(letter == "s") letter = "S";
+            if(letter == "t") letter = "T";
+            if(letter == "u") letter = "U";
+            if(letter == "v") letter = "V";
+            if(letter == "w") letter = "W";
+            if(letter == "x") letter = "X";
+            if(letter == "y") letter = "Y";
+            if(letter == "z") letter = "Z";
+            // Extended alphabet
+            if(letter == "ù") letter = "%";
+            if(letter == "^") letter = "¨";
 
-        // Alphabet letter
-        if(letter == "a") return "A";
-        if(letter == "b") return "B";
-        if(letter == "c") return "C";
-        if(letter == "d") return "D";
-        if(letter == "e") return "E";
-        if(letter == "f") return "F";
-        if(letter == "g") return "G";
-        if(letter == "h") return "H";
-        if(letter == "i") return "I";
-        if(letter == "j") return "J";
-        if(letter == "k") return "K";
-        if(letter == "l") return "L";
-        if(letter == "m") return "M";
-        if(letter == "n") return "N";
-        if(letter == "o") return "O";
-        if(letter == "p") return "P";
-        if(letter == "q") return "Q";
-        if(letter == "r") return "R";
-        if(letter == "s") return "S";
-        if(letter == "t") return "T";
-        if(letter == "u") return "U";
-        if(letter == "v") return "V";
-        if(letter == "w") return "W";
-        if(letter == "x") return "X";
-        if(letter == "y") return "Y";
-        if(letter == "z") return "Z";
-        // Extended alphabet
-        if(letter == "ù") return "%";
+            // Top bar
+            if(letter == "&") letter = "1";
+            if(letter == "é") letter = "2";
+            if(letter == "\"") letter = "3";
+            if(letter == "'") letter = "4";
+            if(letter == "(") letter = "5";
+            if(letter == "-") letter = "6";
+            if(letter == "è") letter = "7";
+            if(letter == "_") letter = "8";
+            if(letter == "ç") letter = "9";
+            if(letter == "à") letter = "0";
 
-        // Top bar
-        if(letter == "&") return "1";
-        if(letter == "é") return "2";
-        if(letter == "\"") return "3";
-        if(letter == "'") return "4";
-        if(letter == "(") return "5";
-        if(letter == "-") return "6";
-        if(letter == "è") return "7";
-        if(letter == "_") return "8";
-        if(letter == "ç") return "9";
-        if(letter == "à") return "0";
+            // Ponctuation
+            if(letter == ":") letter = "/";
+            if(letter == ";") letter = ".";
+            if(letter == ",") letter = "?";
+            if(letter == "!") letter = "§";
 
-        // Ponctuation
-        if(letter == ":") return "/";
-        if(letter == ";") return ".";
-        if(letter == ",") return "?";
-        if(letter == "!") return "§";
+            // Other
+            if(letter == ")") letter = "°";
+            if(letter == "=") letter = "+";
+            if(letter == "$") letter = "£";
+        }
 
-        // Other
-        if(letter == ")") return "°";
-        if(letter == "=") return "+";
+        // Set the last descriptive character
+        if(a_last_descriptive_character == ""){
+            if(letter == "^" || letter == "¨") {
+                a_last_descriptive_character = letter;
+                letter = "";
+            }
+        }
+        else {
+            if(a_last_descriptive_character == "^") {
+                if(letter == "e") letter = "ê";
+                else if(letter == "E") letter = "Ê";
+                else if(letter == "a") letter = "â";
+                else if(letter == "A") letter = "Â";
+                else if(letter == "u") letter = "û";
+                else if(letter == "U") letter = "Û";
+                else if(letter == "i") letter = "î";
+                else if(letter == "I") letter = "Î";
+                else if(letter == "o") letter = "ô";
+                else if(letter == "O") letter = "Ô";
+                else {
+                    if(letter == " ") letter = a_last_descriptive_character;
+                    else letter = a_last_descriptive_character + letter;
+                }
+            }
+            else if(a_last_descriptive_character == "¨") {
+                if(letter == "e") letter = "ë";
+                else if(letter == "E") letter = "Ë";
+                else if(letter == "a") letter = "ä";
+                else if(letter == "A") letter = "Ä";
+                else if(letter == "u") letter = "ü";
+                else if(letter == "U") letter = "Ü";
+                else if(letter == "i") letter = "ï";
+                else if(letter == "I") letter = "Ï";
+                else if(letter == "o") letter = "ö";
+                else if(letter == "O") letter = "Ö";
+                else {
+                    if(letter == " ") letter = a_last_descriptive_character;
+                    else letter = a_last_descriptive_character + letter;
+                }
+            }
+            a_last_descriptive_character = "";
+        }
 
         return letter;
     }
@@ -262,35 +319,35 @@ namespace scls {
         std::string to_add = "";
 
         // Handle letters
-        bool should_capitalize = (window_struct()->key_state("left shift") == Key_State::Pressed || window_struct()->key_state("right shift") == Key_State::Pressed);
-        if(window_struct()->key_state_frame("a") == Key_State::Pressed) { to_add += _capitalize("a", should_capitalize);  }
-        if(window_struct()->key_state_frame("b") == Key_State::Pressed) { to_add += _capitalize("b", should_capitalize);  }
-        if(window_struct()->key_state_frame("c") == Key_State::Pressed) { to_add += _capitalize("c", should_capitalize);  }
-        if(window_struct()->key_state_frame("d") == Key_State::Pressed) { to_add += _capitalize("d", should_capitalize);  }
-        if(window_struct()->key_state_frame("e") == Key_State::Pressed) { to_add += _capitalize("e", should_capitalize);  }
-        if(window_struct()->key_state_frame("f") == Key_State::Pressed) { to_add += _capitalize("f", should_capitalize);  }
-        if(window_struct()->key_state_frame("g") == Key_State::Pressed) { to_add += _capitalize("g", should_capitalize);  }
-        if(window_struct()->key_state_frame("h") == Key_State::Pressed) { to_add += _capitalize("h", should_capitalize);  }
-        if(window_struct()->key_state_frame("i") == Key_State::Pressed) { to_add += _capitalize("i", should_capitalize);  }
-        if(window_struct()->key_state_frame("j") == Key_State::Pressed) { to_add += _capitalize("j", should_capitalize);  }
-        if(window_struct()->key_state_frame("k") == Key_State::Pressed) { to_add += _capitalize("k", should_capitalize);  }
-        if(window_struct()->key_state_frame("l") == Key_State::Pressed) { to_add += _capitalize("l", should_capitalize);  }
-        if(window_struct()->key_state_frame("m") == Key_State::Pressed) { to_add += _capitalize("m", should_capitalize);  }
-        if(window_struct()->key_state_frame("n") == Key_State::Pressed) { to_add += _capitalize("n", should_capitalize);  }
-        if(window_struct()->key_state_frame("o") == Key_State::Pressed) { to_add += _capitalize("o", should_capitalize);  }
-        if(window_struct()->key_state_frame("p") == Key_State::Pressed) { to_add += _capitalize("p", should_capitalize);  }
-        if(window_struct()->key_state_frame("q") == Key_State::Pressed) { to_add += _capitalize("q", should_capitalize);  }
-        if(window_struct()->key_state_frame("r") == Key_State::Pressed) { to_add += _capitalize("r", should_capitalize);  }
-        if(window_struct()->key_state_frame("s") == Key_State::Pressed) { to_add += _capitalize("s", should_capitalize);  }
-        if(window_struct()->key_state_frame("t") == Key_State::Pressed) { to_add += _capitalize("t", should_capitalize);  }
-        if(window_struct()->key_state_frame("u") == Key_State::Pressed) { to_add += _capitalize("u", should_capitalize);  }
-        if(window_struct()->key_state_frame("v") == Key_State::Pressed) { to_add += _capitalize("v", should_capitalize);  }
-        if(window_struct()->key_state_frame("w") == Key_State::Pressed) { to_add += _capitalize("w", should_capitalize);  }
-        if(window_struct()->key_state_frame("x") == Key_State::Pressed) { to_add += _capitalize("x", should_capitalize);  }
-        if(window_struct()->key_state_frame("y") == Key_State::Pressed) { to_add += _capitalize("y", should_capitalize);  }
-        if(window_struct()->key_state_frame("z") == Key_State::Pressed) { to_add += _capitalize("z", should_capitalize);  }
+        bool should_capitalise = (window_struct()->key_state("left shift") == Key_State::Pressed || window_struct()->key_state("right shift") == Key_State::Pressed);
+        if(window_struct()->key_state_frame("a") == Key_State::Pressed) { to_add += "a";  }
+        if(window_struct()->key_state_frame("b") == Key_State::Pressed) { to_add += "b";  }
+        if(window_struct()->key_state_frame("c") == Key_State::Pressed) { to_add += "c";  }
+        if(window_struct()->key_state_frame("d") == Key_State::Pressed) { to_add += "d";  }
+        if(window_struct()->key_state_frame("e") == Key_State::Pressed) { to_add += "e";  }
+        if(window_struct()->key_state_frame("f") == Key_State::Pressed) { to_add += "f";  }
+        if(window_struct()->key_state_frame("g") == Key_State::Pressed) { to_add += "g";  }
+        if(window_struct()->key_state_frame("h") == Key_State::Pressed) { to_add += "h";  }
+        if(window_struct()->key_state_frame("i") == Key_State::Pressed) { to_add += "i";  }
+        if(window_struct()->key_state_frame("j") == Key_State::Pressed) { to_add += "j";  }
+        if(window_struct()->key_state_frame("k") == Key_State::Pressed) { to_add += "k";  }
+        if(window_struct()->key_state_frame("l") == Key_State::Pressed) { to_add += "l";  }
+        if(window_struct()->key_state_frame("m") == Key_State::Pressed) { to_add += "m";  }
+        if(window_struct()->key_state_frame("n") == Key_State::Pressed) { to_add += "n";  }
+        if(window_struct()->key_state_frame("o") == Key_State::Pressed) { to_add += "o";  }
+        if(window_struct()->key_state_frame("p") == Key_State::Pressed) { to_add += "p";  }
+        if(window_struct()->key_state_frame("q") == Key_State::Pressed) { to_add += "q";  }
+        if(window_struct()->key_state_frame("r") == Key_State::Pressed) { to_add += "r";  }
+        if(window_struct()->key_state_frame("s") == Key_State::Pressed) { to_add += "s";  }
+        if(window_struct()->key_state_frame("t") == Key_State::Pressed) { to_add += "t";  }
+        if(window_struct()->key_state_frame("u") == Key_State::Pressed) { to_add += "u";  }
+        if(window_struct()->key_state_frame("v") == Key_State::Pressed) { to_add += "v";  }
+        if(window_struct()->key_state_frame("w") == Key_State::Pressed) { to_add += "w";  }
+        if(window_struct()->key_state_frame("x") == Key_State::Pressed) { to_add += "x";  }
+        if(window_struct()->key_state_frame("y") == Key_State::Pressed) { to_add += "y";  }
+        if(window_struct()->key_state_frame("z") == Key_State::Pressed) { to_add += "z";  }
         // Extended alphabet letter
-        if(window_struct()->key_state_frame("ù") == Key_State::Pressed) { to_add += _capitalize("ù", should_capitalize);  }
+        if(window_struct()->key_state_frame("ù") == Key_State::Pressed) { to_add += "ù";  }
 
         // Handle numbers
         if(window_struct()->key_state_frame("0") == Key_State::Pressed) { to_add += "0";  }
@@ -303,25 +360,26 @@ namespace scls {
         if(window_struct()->key_state_frame("7") == Key_State::Pressed) { to_add += "7";  }
         if(window_struct()->key_state_frame("8") == Key_State::Pressed) { to_add += "8";  }
         if(window_struct()->key_state_frame("9") == Key_State::Pressed) { to_add += "9";  }
-        if(window_struct()->key_state_frame("=") == Key_State::Pressed) { to_add += _capitalize("=", should_capitalize);  }
+        if(window_struct()->key_state_frame("=") == Key_State::Pressed) { to_add += "=";  }
 
         // Handle numbers / special characters
-        if(window_struct()->key_state_frame("&") == Key_State::Pressed) { to_add += _capitalize("&", should_capitalize);  }
-        if(window_struct()->key_state_frame("é") == Key_State::Pressed) { to_add += _capitalize("é", should_capitalize);  }
-        if(window_struct()->key_state_frame("\"") == Key_State::Pressed) { to_add += _capitalize("\"", should_capitalize);  }
-        if(window_struct()->key_state_frame("'") == Key_State::Pressed) { to_add += _capitalize("'", should_capitalize);  }
-        if(window_struct()->key_state_frame("(") == Key_State::Pressed) { to_add += _capitalize("(", should_capitalize);  }
-        if(window_struct()->key_state_frame("-") == Key_State::Pressed) { to_add += _capitalize("-", should_capitalize);  }
-        if(window_struct()->key_state_frame("è") == Key_State::Pressed) { to_add += _capitalize("è", should_capitalize);  }
-        if(window_struct()->key_state_frame("_") == Key_State::Pressed) { to_add += _capitalize("_", should_capitalize);  }
-        if(window_struct()->key_state_frame("ç") == Key_State::Pressed) { to_add += _capitalize("ç", should_capitalize);  }
-        if(window_struct()->key_state_frame("à") == Key_State::Pressed) { to_add += _capitalize("à", should_capitalize);  }
+        if(window_struct()->key_state_frame("&") == Key_State::Pressed) { to_add += "&";  }
+        if(window_struct()->key_state_frame("é") == Key_State::Pressed) { to_add += "é";  }
+        if(window_struct()->key_state_frame("\"") == Key_State::Pressed) { to_add += "\"";  }
+        if(window_struct()->key_state_frame("'") == Key_State::Pressed) { to_add += "'";  }
+        if(window_struct()->key_state_frame("(") == Key_State::Pressed) { to_add += "(";  }
+        if(window_struct()->key_state_frame("-") == Key_State::Pressed) { to_add += "-";  }
+        if(window_struct()->key_state_frame("è") == Key_State::Pressed) { to_add += "è";  }
+        if(window_struct()->key_state_frame("_") == Key_State::Pressed) { to_add += "_";  }
+        if(window_struct()->key_state_frame("ç") == Key_State::Pressed) { to_add += "ç";  }
+        if(window_struct()->key_state_frame("à") == Key_State::Pressed) { to_add += "à";  }
+        if(window_struct()->key_state_frame("^") == Key_State::Pressed) { to_add += "^";  }
 
         // Handle ponctuation
-        if(window_struct()->key_state_frame(":") == Key_State::Pressed) { to_add += _capitalize(":", should_capitalize);  }
-        if(window_struct()->key_state_frame(";") == Key_State::Pressed) { to_add += _capitalize(";", should_capitalize);  }
-        if(window_struct()->key_state_frame(",") == Key_State::Pressed) { to_add += _capitalize(",", should_capitalize);  }
-        if(window_struct()->key_state_frame("!") == Key_State::Pressed) { to_add += _capitalize("!", should_capitalize);  }
+        if(window_struct()->key_state_frame(":") == Key_State::Pressed) { to_add += ":";  }
+        if(window_struct()->key_state_frame(";") == Key_State::Pressed) { to_add += ";";  }
+        if(window_struct()->key_state_frame(",") == Key_State::Pressed) { to_add += ",";  }
+        if(window_struct()->key_state_frame("!") == Key_State::Pressed) { to_add += "!";  }
 
         // Handle special characters
         if(window_struct()->key_state_frame("backspace") == Key_State::Pressed && final_text.size() > 0) {
@@ -332,9 +390,12 @@ namespace scls {
             set_cursor_position(cursor_position() - window_struct()->text_image_generator()->plain_text_size(final_text.substr(final_text.size() - size_to_delete, size_to_delete)));
             final_text = final_text.substr(0, final_text.size() - size_to_delete);
         }
-        if(window_struct()->key_state_frame("enter") == Key_State::Pressed) { to_add += "</br>";  }
         if(window_struct()->key_state_frame("space") == Key_State::Pressed) { to_add += " ";  }
-        if(window_struct()->key_state_frame(")") == Key_State::Pressed) { to_add += _capitalize(")", should_capitalize);  }
+        if(window_struct()->key_state_frame(")") == Key_State::Pressed) { to_add += ")";  }
+        if(window_struct()->key_state_frame("$") == Key_State::Pressed) { to_add += "$";  }
+        to_add = _format(to_add, should_capitalise);
+
+        if(window_struct()->key_state_frame("enter") == Key_State::Pressed) { to_add += "</br>";  }
 
         to_add = to_utf_8(to_add);
         set_cursor_position(cursor_position() + window_struct()->text_image_generator()->plain_text_size(to_add));

@@ -219,6 +219,8 @@ namespace scls {
         a_keys["8"] = GLFW_KEY_KP_8;
         a_keys["9"] = GLFW_KEY_KP_9;
         a_keys[")"] = GLFW_KEY_MINUS;
+        a_keys["^"] = GLFW_KEY_LEFT_BRACKET;
+        a_keys["$"] = GLFW_KEY_RIGHT_BRACKET;
 
         // Poncutation
         a_keys["\""] = GLFW_KEY_3;
