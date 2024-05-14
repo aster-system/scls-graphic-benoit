@@ -185,6 +185,8 @@ namespace scls {
             double new_y = object->position()[1] - (object->scale()[1] / 2.0 + scale()[1] / 2.0 + y_offset);
             set_position(glm::vec2(position()[0], new_y));
         };
+        // Move the object at the bottom of its parent
+        inline void move_bottom_of_parent() {double new_y = -0.5 + scale()[1] / 2.0;set_position(glm::vec2(position()[0], new_y));};
         // Move the object at the left of its parent
         inline void move_left_of_parent() {double new_x = -1.0 + scale()[0] / 2.0;if(parent_hud()!=0){new_x -= parent_hud()->border_width()[1];}set_position(glm::vec2(new_x, position()[1]));};
         // Move the object at the right of its parent
@@ -219,12 +221,18 @@ namespace scls {
         virtual void set_texture_object_scale(double new_texture_scale) {
             glm::vec4 new_scale = texture_rect();
             // Calculate the new scale of the texture
-            double object_scale = one_square_absolute_scale();
-            new_scale[2] = (texture_ratio() * new_texture_scale) / object_scale;
+            new_scale[2] = (texture_ratio() * new_texture_scale) / one_square_absolute_scale();
             new_scale[3] = new_texture_scale;
             set_texture_rect(new_scale);
             a_last_texture_scale = glm::vec2(new_scale[2], new_scale[3]);
             a_last_texture_scale_definition_type = _Scale_Definition::Object_Scale;
+        };
+        // Change the object scale of the texture with the width
+        virtual void set_texture_object_scale_width(double new_texture_scale) {
+            double object_scale = (new_texture_scale * one_square_absolute_scale()) / texture_ratio();
+            set_texture_object_scale(object_scale);
+            a_last_texture_scale = glm::vec2(new_texture_scale, object_scale);
+            a_last_texture_scale_definition_type = _Scale_Definition::Object_Scale_Width;
         };
         // Set the texture y to its max value
         inline void set_texture_y_max() { set_texture_y(texture_y_max()); };

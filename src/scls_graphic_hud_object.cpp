@@ -101,6 +101,9 @@ namespace scls {
         if(a_last_texture_scale_definition_type == _Scale_Definition::Object_Scale) {
             set_texture_object_scale(a_last_texture_scale[1]);
         }
+        else if(a_last_texture_scale_definition_type == _Scale_Definition::Object_Scale_Width) {
+            set_texture_object_scale_width(a_last_texture_scale[0]);
+        }
     }
 
     // HUD_Object destructor

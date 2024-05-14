@@ -120,7 +120,7 @@ namespace scls_documentalist_gui {
         // Load the project page footer
         void load_project_footer();
         // Load the project page navigation
-        void load_project_navigation();
+        void load_pattern_project_navigation();
         // Load the needed textures
         void load_textures();
         // Load the welcome page footer
@@ -215,9 +215,11 @@ namespace scls_documentalist_gui {
         // Button of saving of a file in the project footer
         scls::HUD_Text* a_project_footer_save_file_pattern = 0;
 
-        // Navigation of the project
-        // Parent page of the project Navigation
-        scls::HUD_Page* a_project_navigation = 0;
+        // Navigation of a pattern project
+        // Parent page of the pattern project navigation
+        scls::HUD_Page* a_pattern_project_navigation = 0;
+        // Switch to text creation part button of the pattern project navigation
+        scls::HUD_Text* a_switch_to_text_creation_button_pattern_project_navigation = 0;
 
         // Navigation for the help
         // Parent page of the navigation

@@ -111,7 +111,7 @@ namespace scls_documentalist_gui {
     void SCLS_Documentalist_GUI::load_navigation_project_buttons() {
         // Delete each buttons in the file
         for(int i = 0;i<static_cast<int>(a_project_navigation_file_pattern_button.size());i++) {
-            a_project_navigation->delete_children(a_project_navigation_file_pattern_button[i]);
+            a_pattern_project_navigation->delete_children(a_project_navigation_file_pattern_button[i]);
         }
         a_project_navigation_file_pattern_button.clear();
 
@@ -121,7 +121,7 @@ namespace scls_documentalist_gui {
         for(int i = 0;i<static_cast<int>(current_project->patterns().size());i++) {
             std::string file_name = current_project->patterns()[i]->name().to_std_string();
 
-            scls::HUD_Text* button = a_project_navigation->new_object<scls::HUD_Text>("help_navigation_home_button_" + file_name);
+            scls::HUD_Text* button = a_pattern_project_navigation->new_object<scls::HUD_Text>("help_navigation_home_button_" + file_name);
             button->set_font_size(100);
             button->set_overflighted_cursor(GLFW_HAND_CURSOR);
             button->set_text(file_name);
@@ -167,7 +167,7 @@ namespace scls_documentalist_gui {
 
         load_help_navigation();
         load_main_header();
-        load_project_navigation();
+        load_pattern_project_navigation();
 
         // Load footers
         load_project_footer();
@@ -308,21 +308,29 @@ namespace scls_documentalist_gui {
     }
 
     // Load the project page navigation
-    void SCLS_Documentalist_GUI::load_project_navigation() {
+    void SCLS_Documentalist_GUI::load_pattern_project_navigation() {
         // Navigation for the project
-        a_project_navigation = new_page<scls::HUD_Page>("project_navigation");
-        a_project_navigation->set_background_color(scls::white);
-        a_project_navigation->set_position(glm::vec3(-0.75, 1.0/3.0 - MAIN_HEADER_HEIGHT, 1));
-        a_project_navigation->set_scale(glm::vec3(1.0/2.0, 4.0/3.0 - MAIN_HEADER_HEIGHT * 2.0, 1));
-        a_project_navigation->set_pixel_border_width(1);
+        a_pattern_project_navigation = new_page<scls::HUD_Page>("project_navigation");
+        a_pattern_project_navigation->set_background_color(scls::white);
+        a_pattern_project_navigation->set_position(glm::vec3(-0.75, 1.0/3.0 - MAIN_HEADER_HEIGHT, 1));
+        a_pattern_project_navigation->set_scale(glm::vec3(1.0/2.0, 4.0/3.0 - MAIN_HEADER_HEIGHT * 2.0, 1));
+        a_pattern_project_navigation->set_pixel_border_width(1);
         // Load the project home button
-        a_project_navigation_home_button = a_project_navigation->new_object<scls::HUD_Text>("project_navigation_home_button");
+        a_project_navigation_home_button = a_pattern_project_navigation->new_object<scls::HUD_Text>("project_navigation_home_button");
         a_project_navigation_home_button->set_font_size(100);
         a_project_navigation_home_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
         a_project_navigation_home_button->set_text(a_hud_text_content["home_project"]);
         a_project_navigation_home_button->set_scale(glm::vec2(1.0, 0.15));
         a_project_navigation_home_button->set_texture_object_scale(0.7);
         a_project_navigation_home_button->move_top_of_parent();
+        // Load the button to switch to text creation part of the pattern project navigation
+        a_switch_to_text_creation_button_pattern_project_navigation = a_pattern_project_navigation->new_object<scls::HUD_Text>("switch_to_text_creation_button_pattern_project_navigation");
+        a_switch_to_text_creation_button_pattern_project_navigation->set_font_size(100);
+        a_switch_to_text_creation_button_pattern_project_navigation->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_switch_to_text_creation_button_pattern_project_navigation->set_text(a_hud_text_content["switch_to_text_creation"]);
+        a_switch_to_text_creation_button_pattern_project_navigation->set_scale(glm::vec2(1.0, 0.1));
+        a_switch_to_text_creation_button_pattern_project_navigation->set_texture_object_scale_width(0.9);
+        a_switch_to_text_creation_button_pattern_project_navigation->move_bottom_of_parent();
     }
 
     // Load english
@@ -341,6 +349,7 @@ namespace scls_documentalist_gui {
         a_hud_text_content["name_project"] = "Name of the project";
         a_hud_text_content["save"] = "Save";
         a_hud_text_content["save_all"] = "Save all";
+        a_hud_text_content["switch_to_text_creation"] = "Switch to text creation";
     }
 
     // Load french
@@ -359,6 +368,7 @@ namespace scls_documentalist_gui {
         a_hud_text_content["name_project"] = "Nom du project";
         a_hud_text_content["save"] = "Sauvegarder";
         a_hud_text_content["save_all"] = "Sauvegarder tout";
+        a_hud_text_content["switch_to_text_creation"] = scls::to_utf_8("Passer à la création de texte");
     }
 
     // Load the main header
