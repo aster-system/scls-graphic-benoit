@@ -6,6 +6,11 @@
 #include <scls_image.h>
 #endif // __ASTER_DEV
 
+// Define a name for an empty texture
+#ifndef SCLS_GRAPHIC_NO_TEXTURE
+#define SCLS_GRAPHIC_NO_TEXTURE "no_texture"
+#endif // SCLS_GRAPHIC_NO_TEXTURE
+
 #include <algorithm>
 #include <fstream>
 #include <iomanip>

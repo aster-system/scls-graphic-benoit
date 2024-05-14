@@ -176,6 +176,7 @@ namespace scls_documentalist_gui {
         // Load bodies
         load_create_project_body();
         load_create_project_file_pattern_body();
+        load_file_explorer_body();
         load_help_body();
         load_project_body();
         load_project_file_pattern();
@@ -253,6 +254,21 @@ namespace scls_documentalist_gui {
         a_create_project_file_pattern_body_name->set_text("");
         a_create_project_file_pattern_body_name->set_scale(glm::vec2(0.4, 0.1));
         a_create_project_file_pattern_body_name->set_position(glm::vec2(0.15, 0.4));
+    }
+
+    // Load the file explorer body
+    void SCLS_Documentalist_GUI::load_file_explorer_body() {
+        // Body of the file explorer page
+        double scale_multiplier = 0.99;
+        a_file_explorer_body = new_page<scls::HUD_Page>("file_explorer_body");
+        a_file_explorer_body->set_background_color(scls::white);
+        a_file_explorer_body->set_position(glm::vec3(0.25, 1.0/3.0 - MAIN_HEADER_HEIGHT, 1));
+        a_file_explorer_body->set_scale(glm::vec3(3.0/2.0 * scale_multiplier, (4.0/3.0 - MAIN_HEADER_HEIGHT * 2.0) * scale_multiplier, 1));
+        a_file_explorer_body->set_pixel_border_width(1);
+        // File explorer in the file explorer page
+        a_file_exporer = a_file_explorer_body->new_object<scls::HUD_File_Explorer>("file_explorer");
+        a_file_exporer->set_scale(glm::vec2(0.98, 0.98));
+        a_file_exporer->move_top_of_parent();
     }
 
     // Load the welcome page body
@@ -554,6 +570,15 @@ namespace scls_documentalist_gui {
         display_page("project_footer");
     }
 
+    // Set the file explorer page
+    void SCLS_Documentalist_GUI::set_file_explorer_body() {
+        unset_all();
+        display_page("header");
+        display_page("file_explorer_body");
+        display_page("help_navigation");
+        display_page("welcome_footer");
+    }
+
     // Run the GUI
     void SCLS_Documentalist_GUI::start() {
         unset_all();
@@ -568,7 +593,8 @@ namespace scls_documentalist_gui {
 
             // Check if a project creation is needed
             if(a_welcome_footer_create_project->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
-                set_create_project_body();
+                set_file_explorer_body();
+                // set_create_project_body();
             }
             if(a_create_project_body_create->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
                 check_project_creation();

@@ -421,6 +421,36 @@ namespace scls {
 
     //*********
     //
+    // HUD_File_Explorer main function
+    //
+    //*********
+
+    // Most parent HUD_File_Explorer constructor used for displaying
+    HUD_File_Explorer::HUD_File_Explorer(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : HUD_Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), transform_parent, name, texture_name, vao_name) {
+        load();
+    }
+
+    // HUD_File_Explorer constructor used for displaying
+    HUD_File_Explorer::HUD_File_Explorer(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name) : HUD_Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), parent, name, texture_name, vao_name) {
+        load();
+    }
+
+    // Load the explorer
+    void HUD_File_Explorer::load() {
+        a_top_bar = new_object<HUD_Object>("top_bar", SCLS_GRAPHIC_NO_TEXTURE);
+        a_top_bar->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_top_bar->set_background_color(scls::Color(209, 209, 209));
+        a_top_bar->set_scale(glm::vec2(1.0, 0.075));
+        a_top_bar->move_top_of_parent();
+    }
+
+    // HUD_File_Explorer destructor
+    HUD_File_Explorer::~HUD_File_Explorer() {
+
+    }
+
+    //*********
+    //
     // HUD page
     //
     //*********

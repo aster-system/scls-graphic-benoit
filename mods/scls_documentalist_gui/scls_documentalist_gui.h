@@ -107,6 +107,8 @@ namespace scls_documentalist_gui {
         void load_create_project_body();
         // Load the page to create a file pattern in a project
         void load_create_project_file_pattern_body();
+        // Load the file explorer body
+        void load_file_explorer_body();
         // Load the welcome page body
         void load_help_body();
         // Load the help navigation
@@ -139,6 +141,8 @@ namespace scls_documentalist_gui {
         void set_create_project_body();
         // Set the create file pattern in project page
         void set_create_project_file_pattern_body();
+        // Set the file explorer page
+        void set_file_explorer_body();
         // Unset all the pages in the window
         void unset_all();
 
@@ -184,6 +188,12 @@ namespace scls_documentalist_gui {
         scls::HUD_Text* a_create_project_file_pattern_body_name_title = 0;
         // Input of the name of the page to create a file pattern in a project
         scls::HUD_Text_Input* a_create_project_file_pattern_body_name = 0;
+
+        // Body of the page of the file explorer
+        // Parent page of the page of the file explorer
+        scls::HUD_Page* a_file_explorer_body = 0;
+        // File explorer in the file explorer page
+        scls::HUD_File_Explorer* a_file_exporer = 0;
 
         // Body of the help
         // Parent page of the help body

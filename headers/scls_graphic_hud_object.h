@@ -438,6 +438,35 @@ namespace scls {
         std::string a_last_descriptive_character = "";
     };
 
+    class HUD_File_Explorer : public HUD_Object {
+        // Class representing an HUD object to explore files
+    public :
+        //*********
+        //
+        // HUD_File_Explorer main function
+        //
+        //*********
+
+        // HUD_File_Explorer most basic constructor
+        HUD_File_Explorer(_Window_Advanced_Struct* window_struct, Transform_Object* transform_object, std::string name, std::string texture_name, std::string vao_name = "hud_default");
+        // HUD_File_Explorer most basic constructor used for displaying
+        HUD_File_Explorer(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name = "hud_default");
+        // HUD_File_Explorer destructor
+        virtual ~HUD_File_Explorer();
+
+        // Load the explorer
+        void load();
+    private:
+        //*********
+        //
+        // Annoying GUI stuff
+        //
+        //*********
+
+        // Top bar of the explorer
+        scls::HUD_Object* a_top_bar = 0;
+    };
+
     class HUD_Page : public HUD_Object {
         // Class representing an HUD page to display on the window
     public:
