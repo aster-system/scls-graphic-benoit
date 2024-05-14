@@ -226,6 +226,31 @@ namespace scls {
         if(letter == "x") return "X";
         if(letter == "y") return "Y";
         if(letter == "z") return "Z";
+        // Extended alphabet
+        if(letter == "ù") return "%";
+
+        // Top bar
+        if(letter == "&") return "1";
+        if(letter == "é") return "2";
+        if(letter == "\"") return "3";
+        if(letter == "'") return "4";
+        if(letter == "(") return "5";
+        if(letter == "-") return "6";
+        if(letter == "è") return "7";
+        if(letter == "_") return "8";
+        if(letter == "ç") return "9";
+        if(letter == "à") return "0";
+
+        // Ponctuation
+        if(letter == ":") return "/";
+        if(letter == ";") return ".";
+        if(letter == ",") return "?";
+        if(letter == "!") return "§";
+
+        // Other
+        if(letter == ")") return "°";
+        if(letter == "=") return "+";
+
         return letter;
     }
 
@@ -264,6 +289,8 @@ namespace scls {
         if(window_struct()->key_state_frame("x") == Key_State::Pressed) { to_add += _capitalize("x", should_capitalize);  }
         if(window_struct()->key_state_frame("y") == Key_State::Pressed) { to_add += _capitalize("y", should_capitalize);  }
         if(window_struct()->key_state_frame("z") == Key_State::Pressed) { to_add += _capitalize("z", should_capitalize);  }
+        // Extended alphabet letter
+        if(window_struct()->key_state_frame("ù") == Key_State::Pressed) { to_add += _capitalize("ù", should_capitalize);  }
 
         // Handle numbers
         if(window_struct()->key_state_frame("0") == Key_State::Pressed) { to_add += "0";  }
@@ -276,6 +303,7 @@ namespace scls {
         if(window_struct()->key_state_frame("7") == Key_State::Pressed) { to_add += "7";  }
         if(window_struct()->key_state_frame("8") == Key_State::Pressed) { to_add += "8";  }
         if(window_struct()->key_state_frame("9") == Key_State::Pressed) { to_add += "9";  }
+        if(window_struct()->key_state_frame("=") == Key_State::Pressed) { to_add += _capitalize("=", should_capitalize);  }
 
         // Handle numbers / special characters
         if(window_struct()->key_state_frame("&") == Key_State::Pressed) { to_add += _capitalize("&", should_capitalize);  }
@@ -289,6 +317,12 @@ namespace scls {
         if(window_struct()->key_state_frame("ç") == Key_State::Pressed) { to_add += _capitalize("ç", should_capitalize);  }
         if(window_struct()->key_state_frame("à") == Key_State::Pressed) { to_add += _capitalize("à", should_capitalize);  }
 
+        // Handle ponctuation
+        if(window_struct()->key_state_frame(":") == Key_State::Pressed) { to_add += _capitalize(":", should_capitalize);  }
+        if(window_struct()->key_state_frame(";") == Key_State::Pressed) { to_add += _capitalize(";", should_capitalize);  }
+        if(window_struct()->key_state_frame(",") == Key_State::Pressed) { to_add += _capitalize(",", should_capitalize);  }
+        if(window_struct()->key_state_frame("!") == Key_State::Pressed) { to_add += _capitalize("!", should_capitalize);  }
+
         // Handle special characters
         if(window_struct()->key_state_frame("backspace") == Key_State::Pressed && final_text.size() > 0) {
             unsigned int size_to_delete = 1;
@@ -300,6 +334,7 @@ namespace scls {
         }
         if(window_struct()->key_state_frame("enter") == Key_State::Pressed) { to_add += "</br>";  }
         if(window_struct()->key_state_frame("space") == Key_State::Pressed) { to_add += " ";  }
+        if(window_struct()->key_state_frame(")") == Key_State::Pressed) { to_add += _capitalize(")", should_capitalize);  }
 
         to_add = to_utf_8(to_add);
         set_cursor_position(cursor_position() + window_struct()->text_image_generator()->plain_text_size(to_add));

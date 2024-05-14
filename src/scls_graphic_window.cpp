@@ -25,13 +25,11 @@ namespace scls {
 
     // Callback function for cursor enter in the window
     void _cursor_enter_callback(GLFWwindow* window, int entered) {
-        if (entered)
-        {
+        if (entered) {
             // The cursor entered the content area of the window
             cursor_on_window = true;
         }
-        else
-        {
+        else {
             // The cursor left the content area of the window
             cursor_on_window = false;
         }
@@ -200,8 +198,16 @@ namespace scls {
         a_keys["x"] = GLFW_KEY_X;
         a_keys["y"] = GLFW_KEY_Y;
         a_keys["z"] = GLFW_KEY_W;
+        // Extended alphabet
+        a_keys["&"] = GLFW_KEY_1;
+        a_keys["ç"] = GLFW_KEY_9;
+        a_keys["à"] = GLFW_KEY_0;
+        a_keys["é"] = GLFW_KEY_2;
+        a_keys["è"] = GLFW_KEY_7;
+        a_keys["ù"] = GLFW_KEY_APOSTROPHE;
 
         // Numbers
+        a_keys["="] = GLFW_KEY_EQUAL;
         a_keys["0"] = GLFW_KEY_KP_0;
         a_keys["1"] = GLFW_KEY_KP_1;
         a_keys["2"] = GLFW_KEY_KP_2;
@@ -212,20 +218,18 @@ namespace scls {
         a_keys["7"] = GLFW_KEY_KP_7;
         a_keys["8"] = GLFW_KEY_KP_8;
         a_keys["9"] = GLFW_KEY_KP_9;
+        a_keys[")"] = GLFW_KEY_MINUS;
 
         // Poncutation
-        a_keys["&"] = GLFW_KEY_1;
-        a_keys["é"] = GLFW_KEY_2;
         a_keys["\""] = GLFW_KEY_3;
         a_keys["'"] = GLFW_KEY_4;
         a_keys["("] = GLFW_KEY_5;
         a_keys["-"] = GLFW_KEY_6;
-        a_keys["è"] = GLFW_KEY_7;
         a_keys["_"] = GLFW_KEY_8;
-        a_keys["ç"] = GLFW_KEY_9;
-        a_keys["à"] = GLFW_KEY_0;
         a_keys[":"] = GLFW_KEY_PERIOD;
         a_keys[";"] = GLFW_KEY_COMMA;
+        a_keys[","] = GLFW_KEY_M;
+        a_keys["!"] = GLFW_KEY_SLASH;
 
         // Other
         a_keys["backspace"] = GLFW_KEY_BACKSPACE;
