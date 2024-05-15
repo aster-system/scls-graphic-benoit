@@ -164,7 +164,7 @@ namespace scls {
         // Move the object at the bottom of its parent
         inline void move_bottom_of_parent() {double new_y = -0.5 + scale()[1] / 2.0;set_position(glm::vec2(position()[0], new_y));};
         // Move the object at the left of its parent
-        inline void move_left_of_parent() {double new_x = -0.5 + scale()[0] / 2.0;if(parent_hud()!=0){new_x -= parent_hud()->border_width()[1];}set_position(glm::vec2(new_x, position()[1]));};
+        inline void move_left_of_parent(double offset = 0.0) {double new_x = -0.5 + scale()[0] / 2.0 + offset;if(parent_hud()!=0){new_x -= parent_hud()->border_width()[1];}set_position(glm::vec2(new_x, position()[1]));};
         // Move the object at the right of an object in their parent
         inline void move_right_of_object_in_parent(HUD_Object* object, double x_offset = 0) {
             double new_x = object->position()[0] + (object->scale()[0] / 2.0 + scale()[0] / 2.0 + x_offset);
@@ -378,9 +378,9 @@ namespace scls {
         inline Color font_color() {return a_font_color;};
         inline std::string font_family() {return a_font_family;};
         inline unsigned short font_size() {return a_font_size;};
-        virtual void set_background_color(Color new_background_color) {HUD_Object::set_background_color(new_background_color);a_modified = true;update_text_texture();};
+        virtual void set_background_color(Color new_background_color) {HUD_Object::set_background_color(new_background_color);a_modified = true;};
         inline void set_cursor_position(unsigned int new_cursor_position) {a_cursor_position = new_cursor_position;};
-        inline void set_font_color(Color new_font_color) {a_font_color = new_font_color;a_modified = true;update_text_texture();};
+        inline void set_font_color(Color new_font_color) {a_font_color = new_font_color;a_modified = true;};
         inline void set_font_family(std::string new_font_family) {a_font_family = new_font_family;a_modified = true;update_text_texture();};
         inline void set_font_size(unsigned short new_font_size) {a_font_size = new_font_size;a_modified = true;update_text_texture();};
         void set_text(std::string new_text, bool move_cursor = true) {if(new_text == a_text)return;a_text = new_text;if(move_cursor)set_cursor_position(window_struct()->text_image_generator()->plain_text_size(a_text));a_modified = true;update_text_texture();a_text_modified_during_this_frame = true;};
@@ -483,6 +483,11 @@ namespace scls {
         // HUD_File_Explorer destructor
         virtual ~HUD_File_Explorer();
 
+        // Returns if the explorer contains a selected file
+        inline bool contains_selected_file(std::string file) {
+            std::vector<std::string> selected_files = cut_string(a_currently_selected_files, ";");
+            return contains<std::string>(selected_files, file);
+        };
         // Load the explorer
         void load();
         // Load the browser of the explorer
@@ -493,10 +498,14 @@ namespace scls {
         void place_browser_buttons();
         // Place correctly all the buttons in the top bar
         void place_tob_bar_buttons();
+        // Set the current path to a new path
+        void set_path(std::string path);
         // Set the file explorer to the user current document directory
         void set_current_user_document_directory();
         // Update the browser of the file explorer
         void update_browser();
+        // Update the explorer during an event
+        virtual void update_event();
         // Update the size of the file explorer
         virtual void update_hud_scale();
         // Update the current path in the top bar
@@ -507,6 +516,8 @@ namespace scls {
     private:
         // Current path of the file explorer
         std::string a_current_path = "";
+        // Currently selected file in the current path
+        std::string a_currently_selected_files = "";
 
         //*********
         //
@@ -518,6 +529,8 @@ namespace scls {
         scls::HUD_Object* a_browser = 0;
         // List of every buttons in the browser
         std::vector<scls::HUD_Text*> a_browser_buttons = std::vector<scls::HUD_Text*>();
+        // List of every buttons in the browser to modify
+        std::vector<unsigned int> a_browser_buttons_to_modify = std::vector<unsigned int>();
         // Top bar of the explorer
         scls::HUD_Object* a_top_bar = 0;
         // List of every buttons in the top bar

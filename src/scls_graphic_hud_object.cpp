@@ -465,7 +465,7 @@ namespace scls {
         HUD_Text* last_button = 0;
         for(int i = 0;i<static_cast<int>(a_browser_buttons.size());i++) {
             a_browser_buttons[i]->set_object_scale(0.1);
-            a_browser_buttons[i]->move_left_of_parent();
+            a_browser_buttons[i]->move_left_of_parent(0.01);
             if(last_button == 0) a_browser_buttons[i]->move_top_of_parent();
             else a_browser_buttons[i]->move_bottom_of_object_in_parent(last_button);
             last_button = a_browser_buttons[i];
@@ -483,43 +483,138 @@ namespace scls {
         }
     }
 
+    // Set the current path to a new path
+    void HUD_File_Explorer::set_path(std::string path) {
+        if(path[path.size() - 1] == '/' && path[path.size() - 2] != ':') path = path.substr(0, path.size() - 1);
+
+        if(std::filesystem::is_directory(path)) {
+            // Handle a directory
+            a_browser_buttons_to_modify.clear();
+            a_current_path = path;
+            a_currently_selected_files = "";
+            update_browser();
+            update_top_bar();
+        }
+        else {
+            // Handle a single file
+            for(int i = 0;i<static_cast<int>(a_browser_buttons.size());i++) {
+                std::string file = a_browser_buttons[i]->plain_text();
+                if(contains_selected_file(file) || file == file_name(path, true)) {
+                    a_browser_buttons_to_modify.push_back(i);
+                }
+            }
+            if(a_browser_buttons_to_modify.size() > 0) {
+                a_currently_selected_files = file_name(path, true);
+                update_browser();
+            }
+        }
+    }
+
     // Set the file explorer to the user current document directory
     void HUD_File_Explorer::set_current_user_document_directory() {
-        a_current_path = current_user_home_directory() + "/documents";
-        update_browser();
-        update_top_bar();
+        set_path(current_user_home_directory() + "/documents");
     }
 
     // Update the browser of the file explorer
     void HUD_File_Explorer::update_browser() {
-        a_browser->delete_children(); a_browser_buttons.clear();
-
-        // Create the buttons
         std::vector<std::string> paths = directory_content(a_current_path);
         std::vector<std::thread*> threads = std::vector<std::thread*>();
-        for(int i = 0;i<static_cast<int>(paths.size());i++) {
-            std::string button_text = file_name(paths[i]);
-            HUD_Text* new_button = a_browser->new_object<HUD_Text>("browser_button_" + std::to_string(i));
-            new_button->set_font_size(50);
-            new_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
-            a_browser_buttons.push_back(new_button);
+        if(a_browser_buttons_to_modify.size() == 0) {
+            // Create the buttons from scratch
+            a_browser->delete_children(); a_browser_buttons.clear();
+            for(unsigned int i = 0;i<static_cast<unsigned int>(paths.size());i++) {
+                if(!std::filesystem::exists(paths[i]) || (a_browser_buttons_to_modify.size() > 0 && contains<unsigned int>(a_browser_buttons_to_modify, i))) continue;
 
-            // Create the thread
-            std::string& button_text_reference = button_text;
-            bool move_cursor = false;
-            std::thread* current_thread = new std::thread(&HUD_Text::set_text, new_button, button_text_reference, &move_cursor);
-            threads.push_back(current_thread);
+                // Create the button
+                std::string button_text = file_name(paths[i], true);
+                HUD_Text* new_button = a_browser->new_object<HUD_Text>("browser_button_" + std::to_string(i));
+                new_button->set_background_color(scls::white);
+                new_button->set_font_color(scls::black);
+                new_button->set_font_size(50);
+                new_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
+                a_browser_buttons.push_back(new_button);
+
+                // Create the thread
+                std::string& button_text_reference = button_text;
+                bool move_cursor = false;
+                std::thread* current_thread = new std::thread(&HUD_Text::set_text, new_button, button_text_reference, &move_cursor);
+                threads.push_back(current_thread);
+            }
+
+            // Let each thread work
+            for(int i = 0;i<static_cast<int>(threads.size());i++) {
+                std::thread* current_thread = threads[i];
+                current_thread->join();
+                delete current_thread; current_thread = 0;
+                a_browser_buttons[i]->texture()->change_texture();
+            }
+        }
+        else {
+            // Modify some buttons
+            std::vector<HUD_Text*> buttons_to_modify = std::vector<HUD_Text*>();
+            for(unsigned int i = 0;i<static_cast<unsigned int>(paths.size());i++) {
+                if(!std::filesystem::exists(paths[i]) || !contains<unsigned int>(a_browser_buttons_to_modify, i)) continue;
+
+                // Get the button
+                HUD_Text* new_button = a_browser_buttons[i];
+                std::string button_text = new_button->text();
+                buttons_to_modify.push_back(new_button);
+
+                // Change the specification of the button
+                if(contains_selected_file(button_text)) {
+                    new_button->set_background_color(scls::blue);
+                    new_button->set_font_color(scls::white);
+                }
+                else {
+                    new_button->set_background_color(scls::white);
+                    new_button->set_font_color(scls::black);
+                }
+
+                // Create the thread
+                std::string& button_text_reference = button_text;
+                bool move_cursor = false;
+                std::thread* current_thread = new std::thread(&HUD_Text::set_text, new_button, button_text_reference, &move_cursor);
+                threads.push_back(current_thread);
+            }
+            a_browser_buttons_to_modify.clear();
+
+            // Let each thread work
+            for(int i = 0;i<static_cast<int>(threads.size());i++) {
+                std::thread* current_thread = threads[i];
+                current_thread->join();
+                delete current_thread; current_thread = 0;
+                buttons_to_modify[i]->texture()->change_texture();
+            }
         }
 
-        // Let each thread work
-        for(int i = 0;i<static_cast<int>(threads.size());i++) {
-            std::thread* current_thread = threads[i];
-            current_thread->join();
-            delete current_thread; current_thread = 0;
-            a_browser_buttons[i]->texture()->change_texture();
-        }
         threads.clear();
         place_browser_buttons();
+    }
+
+    // Update the explorer during an event
+    void HUD_File_Explorer::update_event() {
+        HUD_Object::update_event();
+
+        // Check if a browser button is clicked
+        for(int i = 0;i<static_cast<int>(a_browser_buttons.size());i++) {
+            std::string path = a_current_path + "/" + a_browser_buttons[i]->plain_text();
+            if(a_browser_buttons[i]->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                set_path(path);
+                break;
+            }
+        }
+
+        // Check if a top button is clicked
+        std::string path = "";
+        for(int i = 0;i<static_cast<int>(a_top_bar_buttons.size());i++) {
+            if(i > 0) {
+                path += a_top_bar_buttons[i]->plain_text();
+            }
+            if(a_top_bar_buttons[i]->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                set_path(path);
+                break;
+            }
+        }
     }
 
     // Update the size of the file explorer
@@ -539,6 +634,7 @@ namespace scls {
         path_pieces.push_back(first_text);
         for(int i = 0;i<static_cast<int>(path_pieces.size());i++) {
             std::string button_text = path_pieces[path_pieces.size() - (1 + i)];
+            if(button_text == "") continue;
             if(button_text != first_text) button_text += "/";
             HUD_Text* new_button = a_top_bar->new_object<HUD_Text>("top_bar_button_" + std::to_string(i));
             new_button->set_resize_texture_with_scale(false);
