@@ -96,6 +96,9 @@ namespace scls {
         else if(a_last_scale_definition_type == _Scale_Definition::Object_Scale_Width) {
             set_object_scale_width(a_last_scale[0]);
         }
+        else if(a_last_scale_definition_type == _Scale_Definition::Object_Scale_Pixel) {
+            set_object_scale_pixel(a_last_scale[1]);
+        }
 
         // Check texture size
         if(a_last_texture_scale_definition_type == _Scale_Definition::Object_Scale) {
@@ -159,10 +162,8 @@ namespace scls {
             current_text_image->set_cursor_position(cursor_position());
             current_text_image->set_use_cursor(use_cursor());
             Image* new_image_texture = current_text_image->image();
-            delete current_text_image; current_text_image = 0;
-
-            // Update the texture
             texture()->set_image(new_image_texture);
+            delete current_text_image; current_text_image = 0;
         }
         else {
             texture()->set_image(new Image(1, 1, background_color(), 0));
@@ -437,11 +438,118 @@ namespace scls {
 
     // Load the explorer
     void HUD_File_Explorer::load() {
+        load_browser();
+        load_top_bar();
+    }
+
+    // Load the browser of the explorer
+    void HUD_File_Explorer::load_browser() {
+        a_browser = new_object<HUD_Object>("browser", SCLS_GRAPHIC_NO_TEXTURE);
+        a_browser->set_background_color(scls::white);
+        a_browser->set_pixel_border_width(1);
+        a_browser->set_scale(glm::vec2(0.8, 0.9));
+        a_browser->move_bottom_of_parent();
+        a_browser->move_right_of_parent();
+    }
+
+    // Load the top bar of the explorer
+    void HUD_File_Explorer::load_top_bar() {
         a_top_bar = new_object<HUD_Object>("top_bar", SCLS_GRAPHIC_NO_TEXTURE);
-        a_top_bar->set_overflighted_cursor(GLFW_HAND_CURSOR);
         a_top_bar->set_background_color(scls::Color(209, 209, 209));
         a_top_bar->set_scale(glm::vec2(1.0, 0.075));
         a_top_bar->move_top_of_parent();
+    }
+
+    // Place correctly all the buttons in the browser
+    void HUD_File_Explorer::place_browser_buttons() {
+        HUD_Text* last_button = 0;
+        for(int i = 0;i<static_cast<int>(a_browser_buttons.size());i++) {
+            a_browser_buttons[i]->set_object_scale(0.1);
+            a_browser_buttons[i]->move_left_of_parent();
+            if(last_button == 0) a_browser_buttons[i]->move_top_of_parent();
+            else a_browser_buttons[i]->move_bottom_of_object_in_parent(last_button);
+            last_button = a_browser_buttons[i];
+        }
+    }
+
+    // Place correctly all the buttons in the top bar
+    void HUD_File_Explorer::place_tob_bar_buttons() {
+        HUD_Text* last_button = 0;
+        for(int i = 0;i<static_cast<int>(a_top_bar_buttons.size());i++) {
+            a_top_bar_buttons[i]->set_object_scale_pixel(25);
+            if(last_button == 0) a_top_bar_buttons[i]->move_left_of_parent();
+            else a_top_bar_buttons[i]->move_right_of_object_in_parent(last_button);
+            last_button = a_top_bar_buttons[i];
+        }
+    }
+
+    // Set the file explorer to the user current document directory
+    void HUD_File_Explorer::set_current_user_document_directory() {
+        a_current_path = current_user_home_directory() + "/documents";
+        update_browser();
+        update_top_bar();
+    }
+
+    // Update the browser of the file explorer
+    void HUD_File_Explorer::update_browser() {
+        a_browser->delete_children(); a_browser_buttons.clear();
+
+        // Create the buttons
+        std::vector<std::string> paths = directory_content(a_current_path);
+        std::vector<std::thread*> threads = std::vector<std::thread*>();
+        for(int i = 0;i<static_cast<int>(paths.size());i++) {
+            std::string button_text = file_name(paths[i]);
+            HUD_Text* new_button = a_browser->new_object<HUD_Text>("browser_button_" + std::to_string(i));
+            new_button->set_font_size(50);
+            new_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
+            a_browser_buttons.push_back(new_button);
+
+            // Create the thread
+            std::string& button_text_reference = button_text;
+            bool move_cursor = false;
+            std::thread* current_thread = new std::thread(&HUD_Text::set_text, new_button, button_text_reference, &move_cursor);
+            threads.push_back(current_thread);
+        }
+
+        // Let each thread work
+        for(int i = 0;i<static_cast<int>(threads.size());i++) {
+            std::thread* current_thread = threads[i];
+            current_thread->join();
+            delete current_thread; current_thread = 0;
+            a_browser_buttons[i]->texture()->change_texture();
+        }
+        threads.clear();
+        place_browser_buttons();
+    }
+
+    // Update the size of the file explorer
+    void HUD_File_Explorer::update_hud_scale() {
+        HUD_Object::update_hud_scale();
+        place_browser_buttons();
+        place_tob_bar_buttons();
+    }
+
+    // Update the current path in the top bar
+    void HUD_File_Explorer::update_top_bar() {
+        a_top_bar->delete_children(); a_top_bar_buttons.clear();
+
+        // Create the buttons
+        std::string first_text = "Ce PC >";
+        std::vector<std::string> path_pieces = cut_path(current_path());
+        path_pieces.push_back(first_text);
+        for(int i = 0;i<static_cast<int>(path_pieces.size());i++) {
+            std::string button_text = path_pieces[path_pieces.size() - (1 + i)];
+            if(button_text != first_text) button_text += "/";
+            HUD_Text* new_button = a_top_bar->new_object<HUD_Text>("top_bar_button_" + std::to_string(i));
+            new_button->set_resize_texture_with_scale(false);
+            new_button->set_font_size(20);
+            new_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
+            new_button->set_text(button_text);
+            new_button->set_object_scale_pixel(25);
+            new_button->set_position(glm::vec2(0, 0));
+            a_top_bar_buttons.push_back(new_button);
+        }
+        place_tob_bar_buttons();
     }
 
     // HUD_File_Explorer destructor

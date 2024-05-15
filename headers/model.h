@@ -337,7 +337,7 @@ private:
     unsigned short a_copy_count = 0;
 	int height = 0; // Height of the texture
 	// SCLS image of this texture
-	scls::Image* a_image = 0;
+    scls::Image* a_image = 0;
 	bool a_loaded = false;
 	bool resize = true; // If the shader resize the texture or not
 	unsigned int texture_id = 0; // Handle to the texture

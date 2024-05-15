@@ -71,6 +71,7 @@ namespace scls {
     enum _Scale_Definition {
         Direct_Scale,
         Object_Scale,
+        Object_Scale_Pixel,
         Object_Scale_Width
     };
 
@@ -105,31 +106,6 @@ namespace scls {
         virtual void soft_reset() {set_is_overflighted(false);set_is_focused(false);Object::soft_reset();};
         // Update the size of the HUD elements
         virtual void update_hud_scale();
-
-        // Pixel size handler
-        inline unsigned int absolute_hud_x_in_pixel() {double absolute_x = (1.0 + transform()->get_absolute_position()[0]) / 2.0; return static_cast<double>(window_struct()->window_width()) * absolute_x - static_cast<double>(width_in_pixel()) / 2.0;};
-        inline unsigned int absolute_x_in_pixel() {double absolute_x = (1.0 + transform()->get_absolute_position()[0]) / 2.0; return static_cast<double>(window_struct()->window_width()) * absolute_x;};
-        inline unsigned int absolute_hud_y_in_pixel() {double absolute_y = (1.0 + transform()->get_absolute_position()[1]) / 2.0; return (static_cast<double>(window_struct()->window_height()) * absolute_y) - static_cast<double>(height_in_pixel()) / 2.0;};
-        inline unsigned int absolute_y_in_pixel() {double absolute_y = (1.0 + transform()->get_absolute_position()[1]) / 2.0; return static_cast<double>(window_struct()->window_height()) * absolute_y;};
-        inline unsigned int height_in_pixel() {double absolute_height = absolute_object_scale()[1]/2.0;return absolute_height * static_cast<double>(window_struct()->window_height());};
-        inline bool is_in_pixel(unsigned int x, unsigned int y) {return x > absolute_hud_x_in_pixel() && y > absolute_hud_y_in_pixel() && x < absolute_hud_x_in_pixel() + width_in_pixel() && y < absolute_hud_y_in_pixel() + height_in_pixel();};
-        inline glm::vec2 one_pixel_scale() {
-            return glm::vec2(static_cast<double>(2.0/(static_cast<double>(window_struct()->window_width()) * (absolute_scale()[0]))),
-                             static_cast<double>(2.0/(static_cast<double>(window_struct()->window_height()) * (absolute_scale()[1]))));
-        };
-        inline glm::vec2 pixel_scale() {
-            return glm::vec2(static_cast<double>(window_struct()->window_width()) * (absolute_scale()[0] / 2.0),
-                             static_cast<double>(window_struct()->window_height()) * (absolute_scale()[1] / 2.0));
-        };
-        inline void set_pixel_border_width(unsigned short pixel) {set_pixel_border_width(glm::vec4(pixel));};
-        inline void set_pixel_border_width(glm::vec4 pixels) {
-            glm::vec2 border_scale = one_pixel_scale();
-            set_border_width(glm::vec4(border_scale[1] * static_cast<double>(pixels[0]), border_scale[0] * static_cast<double>(pixels[1]), border_scale[1] * static_cast<double>(pixels[2]), border_scale[0] * static_cast<double>(pixels[3])));
-            a_last_border_width=pixels;
-            a_last_border_width_definition_type = _Border_Width_Definition::Pixel_Border_Width;
-        };
-        inline glm::vec2 size_in_pixel() {return glm::vec2(width_in_pixel(), height_in_pixel());};
-        inline unsigned int width_in_pixel() {double absolute_width = (absolute_scale()[0]/2.0);return absolute_width * static_cast<double>(window_struct()->window_width());};
 
         // Getters and setters (ONLY WITHOUT ATRIBUTES)
         inline glm::vec2 absolute_object_scale() {double absolute_width = static_cast<double>(window_struct()->window_ratio());if(parent_hud() != 0)absolute_width *= parent_hud()->absolute_scale_ratio();double new_width = absolute_scale()[1] * (texture_ratio() / absolute_width);return glm::vec2(new_width, absolute_scale()[1]);};
@@ -188,9 +164,14 @@ namespace scls {
         // Move the object at the bottom of its parent
         inline void move_bottom_of_parent() {double new_y = -0.5 + scale()[1] / 2.0;set_position(glm::vec2(position()[0], new_y));};
         // Move the object at the left of its parent
-        inline void move_left_of_parent() {double new_x = -1.0 + scale()[0] / 2.0;if(parent_hud()!=0){new_x -= parent_hud()->border_width()[1];}set_position(glm::vec2(new_x, position()[1]));};
+        inline void move_left_of_parent() {double new_x = -0.5 + scale()[0] / 2.0;if(parent_hud()!=0){new_x -= parent_hud()->border_width()[1];}set_position(glm::vec2(new_x, position()[1]));};
+        // Move the object at the right of an object in their parent
+        inline void move_right_of_object_in_parent(HUD_Object* object, double x_offset = 0) {
+            double new_x = object->position()[0] + (object->scale()[0] / 2.0 + scale()[0] / 2.0 + x_offset);
+            set_position(glm::vec2(new_x, position()[1]));
+        };
         // Move the object at the right of its parent
-        inline void move_right_of_parent() {double new_x = 1.0 - scale()[0] / 2.0;if(parent_hud()!=0){new_x -= parent_hud()->border_width()[3];}set_position(glm::vec2(new_x, position()[1]));};
+        inline void move_right_of_parent() {double new_x = 0.5 - scale()[0] / 2.0;if(parent_hud()!=0){new_x -= parent_hud()->border_width()[3];}set_position(glm::vec2(new_x, position()[1]));};
         // Move the object at the top of its parent
         inline void move_top_of_parent() {double new_y = 0.5 - scale()[1] / 2.0;if(parent_hud()!=0){new_y -= parent_hud()->border_width()[0];}set_position(glm::vec2(position()[0], new_y));};
 
@@ -202,6 +183,54 @@ namespace scls {
         };
         // Returns the abolute size of one object scale
         inline double one_square_absolute_scale() { return static_cast<double>(window_struct()->window_ratio()) * absolute_scale_ratio(); };
+
+        // Returns the absolute HUD x position of the object in pixel
+        inline unsigned int absolute_hud_x_in_pixel() {double absolute_x = (1.0 + transform()->get_absolute_position()[0]) / 2.0; return static_cast<double>(window_struct()->window_width()) * absolute_x - static_cast<double>(width_in_pixel()) / 2.0;};
+        // Returns the absolute x position of the object in pixel
+        inline unsigned int absolute_x_in_pixel() {double absolute_x = (1.0 + transform()->get_absolute_position()[0]) / 2.0; return static_cast<double>(window_struct()->window_width()) * absolute_x;};
+        // Returns the absolute HUD y position of the obejct in pixel
+        inline unsigned int absolute_hud_y_in_pixel() {double absolute_y = (1.0 + transform()->get_absolute_position()[1]) / 2.0; return (static_cast<double>(window_struct()->window_height()) * absolute_y) - static_cast<double>(height_in_pixel()) / 2.0;};
+        // Returns the absolute y position of the obejct in pixel
+        inline unsigned int absolute_y_in_pixel() {double absolute_y = (1.0 + transform()->get_absolute_position()[1]) / 2.0; return static_cast<double>(window_struct()->window_height()) * absolute_y;};
+        // Returns the height of the object in pixel
+        inline unsigned int height_in_pixel() {double absolute_height = absolute_object_scale()[1]/2.0;return absolute_height * static_cast<double>(window_struct()->window_height());};
+        // Returns if a x;y position is in the object
+        inline bool is_in_pixel(unsigned int x, unsigned int y) {return x > absolute_hud_x_in_pixel() && y > absolute_hud_y_in_pixel() && x < absolute_hud_x_in_pixel() + width_in_pixel() && y < absolute_hud_y_in_pixel() + height_in_pixel();};
+        // Set the object scale of the object in pixel
+        inline void set_object_scale_pixel(unsigned short pixel) {
+            set_object_scale(one_pixel_scale_parent()[1] * static_cast<double>(pixel));
+            a_last_scale = glm::vec2(pixel, pixel);
+
+            a_last_scale_definition_type = _Scale_Definition::Object_Scale_Pixel;
+        };
+        // Returns the size of one pixel in the object, in absolute scale
+        inline glm::vec2 one_pixel_scale() {
+            return glm::vec2(static_cast<double>(2.0/(static_cast<double>(window_struct()->window_width()) * (absolute_scale()[0]))),
+                             static_cast<double>(2.0/(static_cast<double>(window_struct()->window_height()) * (absolute_scale()[1]))));
+        };
+        // Returns the size of one pixel in the parent, in absolute scale
+        inline glm::vec2 one_pixel_scale_parent() {
+            if(parent_hud() == 0) {
+                return glm::vec2(static_cast<double>(1.0/(static_cast<double>(window_struct()->window_width()))),
+                             static_cast<double>(1.0/(static_cast<double>(window_struct()->window_height()))));
+            }
+            return glm::vec2(static_cast<double>(2.0/(static_cast<double>(window_struct()->window_width()) * (parent_hud()->absolute_scale()[0]))),
+                             static_cast<double>(2.0/(static_cast<double>(window_struct()->window_height()) * (parent_hud()->absolute_scale()[1]))));
+        };
+        inline glm::vec2 pixel_scale() {
+            return glm::vec2(static_cast<double>(window_struct()->window_width()) * (absolute_scale()[0] / 2.0),
+                             static_cast<double>(window_struct()->window_height()) * (absolute_scale()[1] / 2.0));
+        };
+        inline void set_pixel_border_width(unsigned short pixel) {set_pixel_border_width(glm::vec4(pixel));};
+        inline void set_pixel_border_width(glm::vec4 pixels) {
+            glm::vec2 border_scale = one_pixel_scale();
+            set_border_width(glm::vec4(border_scale[1] * static_cast<double>(pixels[0]), border_scale[0] * static_cast<double>(pixels[1]), border_scale[1] * static_cast<double>(pixels[2]), border_scale[0] * static_cast<double>(pixels[3])));
+            a_last_border_width = pixels;
+            a_last_border_width_definition_type = _Border_Width_Definition::Pixel_Border_Width;
+        };
+        inline glm::vec2 size_in_pixel() {return glm::vec2(width_in_pixel(), height_in_pixel());};
+        // Returns the width of the object in pixel
+        inline unsigned int width_in_pixel() {double absolute_width = (absolute_scale()[0]/2.0);return absolute_width * static_cast<double>(window_struct()->window_width());};
 
         //*********
         //
@@ -354,7 +383,7 @@ namespace scls {
         inline void set_font_color(Color new_font_color) {a_font_color = new_font_color;a_modified = true;update_text_texture();};
         inline void set_font_family(std::string new_font_family) {a_font_family = new_font_family;a_modified = true;update_text_texture();};
         inline void set_font_size(unsigned short new_font_size) {a_font_size = new_font_size;a_modified = true;update_text_texture();};
-        inline void set_text(std::string new_text, bool move_cursor = true) {if(new_text == a_text)return;a_text = new_text;if(move_cursor)set_cursor_position(window_struct()->text_image_generator()->plain_text_size(a_text));a_modified = true;update_text_texture();a_text_modified_during_this_frame = true;};
+        void set_text(std::string new_text, bool move_cursor = true) {if(new_text == a_text)return;a_text = new_text;if(move_cursor)set_cursor_position(window_struct()->text_image_generator()->plain_text_size(a_text));a_modified = true;update_text_texture();a_text_modified_during_this_frame = true;};
         inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {a_text_alignment_horizontal = new_text_alignment_horizontal;a_modified = true;update_text_texture();};
         inline void set_text_offset(double new_text_offset) {a_text_offset = glm::vec4(new_text_offset);set_texture_rect(glm::vec4(new_text_offset, new_text_offset, 1.0 - new_text_offset * 2.0, 1.0 - new_text_offset * 2.0));};
         inline void set_text_offset(glm::vec4 new_text_offset) {a_text_offset = new_text_offset;set_texture_rect(glm::vec4(new_text_offset[1], new_text_offset[0], 1.0 - (new_text_offset[1] + new_text_offset[3]), 1.0 - (new_text_offset[0] + new_text_offset[2])));};
@@ -456,15 +485,43 @@ namespace scls {
 
         // Load the explorer
         void load();
+        // Load the browser of the explorer
+        void load_browser();
+        // Load the top bar of the explorer
+        void load_top_bar();
+        // Place correctly all the buttons in the browser
+        void place_browser_buttons();
+        // Place correctly all the buttons in the top bar
+        void place_tob_bar_buttons();
+        // Set the file explorer to the user current document directory
+        void set_current_user_document_directory();
+        // Update the browser of the file explorer
+        void update_browser();
+        // Update the size of the file explorer
+        virtual void update_hud_scale();
+        // Update the current path in the top bar
+        void update_top_bar();
+
+        // Getters and setters
+        inline std::string current_path() {return a_current_path;};
     private:
+        // Current path of the file explorer
+        std::string a_current_path = "";
+
         //*********
         //
         // Annoying GUI stuff
         //
         //*********
 
+        // Browser of the explorer
+        scls::HUD_Object* a_browser = 0;
+        // List of every buttons in the browser
+        std::vector<scls::HUD_Text*> a_browser_buttons = std::vector<scls::HUD_Text*>();
         // Top bar of the explorer
         scls::HUD_Object* a_top_bar = 0;
+        // List of every buttons in the top bar
+        std::vector<scls::HUD_Text*> a_top_bar_buttons = std::vector<scls::HUD_Text*>();
     };
 
     class HUD_Page : public HUD_Object {

@@ -44,8 +44,10 @@ namespace scls {
         // Object destructor
         virtual ~Object();
 
-        // Delete a children of the object
-        void delete_children(Object* child);
+        // Delete a child of the object
+        void delete_child(Object* child);
+        // Delete all children of the object
+        void delete_children();
         // Creates an object into the page and returns it
         template <typename O>
         O* new_object(std::string object_name, std::string object_texture = "");

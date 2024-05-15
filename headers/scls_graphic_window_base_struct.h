@@ -12,6 +12,8 @@
 #endif // SCLS_GRAPHIC_NO_TEXTURE
 
 #include <algorithm>
+#include <atomic>
+#include <cstdint>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -24,6 +26,8 @@
 #include <random>
 #include <string>
 #include <sstream>
+#include <thread>
+#include <utility>
 #include <vector>
 
 glm::vec3 calculate_forward(glm::vec3 rotation); // Return the forward position according to a rotation

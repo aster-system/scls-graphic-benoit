@@ -111,7 +111,7 @@ namespace scls_documentalist_gui {
     void SCLS_Documentalist_GUI::load_navigation_project_buttons() {
         // Delete each buttons in the file
         for(int i = 0;i<static_cast<int>(a_project_navigation_file_pattern_button.size());i++) {
-            a_pattern_project_navigation->delete_children(a_project_navigation_file_pattern_button[i]);
+            a_pattern_project_navigation->delete_child(a_project_navigation_file_pattern_button[i]);
         }
         a_project_navigation_file_pattern_button.clear();
 
@@ -577,6 +577,8 @@ namespace scls_documentalist_gui {
         display_page("file_explorer_body");
         display_page("help_navigation");
         display_page("welcome_footer");
+
+        a_file_exporer->set_current_user_document_directory();
     }
 
     // Run the GUI

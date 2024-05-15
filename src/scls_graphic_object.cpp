@@ -66,11 +66,12 @@ namespace scls {
             window_struct()->remove_texture(texture());
         }
 
+        delete_children();
         delete a_transform; a_transform = 0;
     }
 
-    // Delete a children of the object
-    void Object::delete_children(Object* child) {
+    // Delete a child of the object
+    void Object::delete_child(Object* child) {
         if(child == 0) return;
 
         for(int i = 0;i<static_cast<int>(children().size());i++) {
@@ -80,6 +81,14 @@ namespace scls {
                 return;
             }
         }
+    }
+
+    // Delete all children of the object
+    void Object::delete_children() {
+        for(int i = 0;i<static_cast<int>(children().size());i++) {
+            if(children()[i] != 0) delete children()[i];
+        }
+        children().clear();
     }
 
     //*********
