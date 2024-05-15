@@ -267,6 +267,7 @@ namespace scls_documentalist_gui {
         a_file_explorer_body->set_pixel_border_width(1);
         // File explorer in the file explorer page
         a_file_exporer = a_file_explorer_body->new_object<scls::HUD_File_Explorer>("file_explorer");
+        a_file_exporer->set_final_path_text(a_hud_text_content["final_path"]);
         a_file_exporer->set_scale(glm::vec2(0.98, 0.98));
         a_file_exporer->move_top_of_parent();
     }
@@ -353,6 +354,7 @@ namespace scls_documentalist_gui {
     void SCLS_Documentalist_GUI::load_language_en() {
         a_hud_text_content["create_a_file_pattern"] = scls::to_utf_8("Create a pattern file");
         a_hud_text_content["create_a_project"] = scls::to_utf_8("Create a project");
+        a_hud_text_content["final_path"] = "Final path";
         a_hud_text_content["help_body_home"] = "Welcome to SCLS Documentalist \"Agatha\" GUI";
         std::string help_body_welcome_description = "This software, made by Aster System, provides a simply use to SCLS Documentalist \"Agatha\", whitout having to</br>";
         help_body_welcome_description += "handle a lot of lines of code. You can use it, as as a developer who wants to easily documentate its code, or as</br>";
@@ -372,6 +374,7 @@ namespace scls_documentalist_gui {
     void SCLS_Documentalist_GUI::load_language_fr() {
         a_hud_text_content["create_a_file_pattern"] = scls::to_utf_8("Créer un fichier modèle");
         a_hud_text_content["create_a_project"] = scls::to_utf_8("Créer un projet");
+        a_hud_text_content["final_path"] = "Fichier final";
         a_hud_text_content["help_body_home"] = "Bienvenue sur la GUI de SCLS Documentalist \"Agatha\"";
         std::string help_body_welcome_description = "Ce logiciel, fait par Aster Système, vous permet d'utiliser SCLS Documentalist \"Agatha\" simplement, sans avoir à</br>";
         help_body_welcome_description += "manipuler de lignes de code. Vous pouvez l'utiliser, que vous soyez un développeur qui veut documenter facilement</br>";
@@ -507,6 +510,7 @@ namespace scls_documentalist_gui {
         a_create_project_body_name_title->set_text(a_hud_text_content["name_project"] + " :");
         a_create_project_file_pattern_body_create->set_text(a_hud_text_content["create_a_file_pattern"]);
         a_create_project_file_pattern_body_name_title->set_text(a_hud_text_content["name_file_pattern"] + " :");
+        a_file_exporer->set_final_path_text(a_hud_text_content["final_path"]);
         a_help_body_home->set_text(a_hud_text_content["help_body_home"]);
         a_help_body_home_description->set_text(a_hud_text_content["help_body_home_description"]);
         a_help_body_home_part->set_text(a_hud_text_content["help_body_home_part"]);

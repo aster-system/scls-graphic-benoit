@@ -438,25 +438,27 @@ namespace scls {
 
     // Load the explorer
     void HUD_File_Explorer::load() {
-        load_browser();
-        load_top_bar();
-    }
-
-    // Load the browser of the explorer
-    void HUD_File_Explorer::load_browser() {
+        // Browser of the file explorer
         a_browser = new_object<HUD_Object>("browser", SCLS_GRAPHIC_NO_TEXTURE);
         a_browser->set_background_color(scls::white);
         a_browser->set_pixel_border_width(1);
-        a_browser->set_scale(glm::vec2(0.8, 0.9));
-        a_browser->move_bottom_of_parent();
-        a_browser->move_right_of_parent();
-    }
-
-    // Load the top bar of the explorer
-    void HUD_File_Explorer::load_top_bar() {
+        a_browser->set_scale(glm::vec2(0.8, 0.8));
+        // Final path of the file explorer
+        a_final_path = new_object<HUD_Text>("final_path");
+        a_final_path->set_font_size(50);
+        a_final_path->set_text(final_path_text());
+        a_final_path->set_scale(glm::vec2(0.8, 0.1));
+        a_final_path->set_texture_object_scale(0.9);
+        // Top bar of the file explorer
         a_top_bar = new_object<HUD_Object>("top_bar", SCLS_GRAPHIC_NO_TEXTURE);
         a_top_bar->set_background_color(scls::Color(209, 209, 209));
         a_top_bar->set_scale(glm::vec2(1.0, 0.075));
+
+        // Place each object
+        a_final_path->move_bottom_of_parent();
+        a_final_path->move_right_of_parent();
+        a_browser->move_right_of_parent();
+        a_browser->move_top_of_object_in_parent(a_final_path);
         a_top_bar->move_top_of_parent();
     }
 
@@ -508,6 +510,7 @@ namespace scls {
                 update_browser();
             }
         }
+        a_final_path->set_text(final_path_text() + " : " + replace(path, "/", "\\"));
     }
 
     // Set the file explorer to the user current document directory

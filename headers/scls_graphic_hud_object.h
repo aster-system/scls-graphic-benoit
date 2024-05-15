@@ -174,6 +174,11 @@ namespace scls {
         inline void move_right_of_parent() {double new_x = 0.5 - scale()[0] / 2.0;if(parent_hud()!=0){new_x -= parent_hud()->border_width()[3];}set_position(glm::vec2(new_x, position()[1]));};
         // Move the object at the top of its parent
         inline void move_top_of_parent() {double new_y = 0.5 - scale()[1] / 2.0;if(parent_hud()!=0){new_y -= parent_hud()->border_width()[0];}set_position(glm::vec2(position()[0], new_y));};
+        // Move the object at the top of an object in their parent
+        inline void move_top_of_object_in_parent(HUD_Object* object, double y_offset = 0) {
+            double new_y = object->position()[1] + (object->scale()[1] / 2.0 + scale()[1] / 2.0 + y_offset);
+            set_position(glm::vec2(position()[0], new_y));
+        };
 
         // Returns the abolute size of one object scale
         inline double one_object_absolute_scale() {
@@ -490,10 +495,6 @@ namespace scls {
         };
         // Load the explorer
         void load();
-        // Load the browser of the explorer
-        void load_browser();
-        // Load the top bar of the explorer
-        void load_top_bar();
         // Place correctly all the buttons in the browser
         void place_browser_buttons();
         // Place correctly all the buttons in the top bar
@@ -513,6 +514,8 @@ namespace scls {
 
         // Getters and setters
         inline std::string current_path() {return a_current_path;};
+        inline std::string final_path_text() {return a_final_path_text;};
+        inline void set_final_path_text(std::string new_final_path_text) {a_final_path_text = new_final_path_text;};
     private:
         // Current path of the file explorer
         std::string a_current_path = "";
@@ -531,6 +534,10 @@ namespace scls {
         std::vector<scls::HUD_Text*> a_browser_buttons = std::vector<scls::HUD_Text*>();
         // List of every buttons in the browser to modify
         std::vector<unsigned int> a_browser_buttons_to_modify = std::vector<unsigned int>();
+        // Final path selected
+        scls::HUD_Text* a_final_path = 0;
+        // Text in the final path
+        std::string a_final_path_text = "Final path";
         // Top bar of the explorer
         scls::HUD_Object* a_top_bar = 0;
         // List of every buttons in the top bar
