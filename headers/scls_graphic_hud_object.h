@@ -128,15 +128,24 @@ namespace scls {
         inline glm::vec4 absolute_rect() {
             return glm::vec4(absolute_position()[0], absolute_position()[1], absolute_scale()[0], absolute_scale()[1]);
         };
-        inline glm::vec4 absolute_rect_for_render() {
-            return glm::vec4(absolute_position()[0], absolute_position()[1], absolute_scale()[0], absolute_scale()[1]);
+        inline glm::vec4 absolute_rect_for_render(bool remove_border = false) {
+            glm::vec2 absolute_scale_to_apply = absolute_scale();
+            glm::vec4 to_return = glm::vec4(0,0,absolute_scale_to_apply[0],absolute_scale_to_apply[1]);
+            if(parent_hud() == 0) {
+                to_return += glm::vec4(position()[0], position()[1], 0, 0);
+            }
+            else {
+                to_return = parent_hud()->absolute_rect_for_render(true);
+                to_return += glm::vec4(position()[0] * parent_hud()->absolute_scale()[0], position()[1] * parent_hud()->absolute_scale()[1], 0, 0);
+                // Apply the border
+                to_return[2] = absolute_scale_to_apply[0];
+                to_return[3] = absolute_scale_to_apply[1];
+            }
+            return to_return;
         };
         inline glm::vec4 absolute_rect_parent_for_render() {
-            if(parent_hud() == 0)return glm::vec4(0,0,2,2);
-            glm::vec4 border = parent_hud()->absolute_border_width();
-            glm::vec4 to_return = parent_hud()->absolute_rect();
-            to_return -= glm::vec4(0, 0, (border[1] + border[3]), border[0] + border[2]);
-            return to_return;
+            if(parent_hud() == 0) return glm::vec4(0,0,2,2);
+            return parent_hud()->absolute_rect_for_render(true);
         };
         inline Color background_color() {return a_background_color;};
         inline glm::vec4 border_width() {return a_border_width;};
@@ -560,6 +569,8 @@ namespace scls {
 
         // Browser of the explorer
         scls::HUD_Object* a_browser = 0;
+        // Scroller in the browser of the explorer
+        scls::HUD_Object* a_browser_scroller = 0;
         // List of every buttons in the browser
         std::vector<scls::HUD_Text*> a_browser_buttons = std::vector<scls::HUD_Text*>();
         // List of every buttons in the browser to modify

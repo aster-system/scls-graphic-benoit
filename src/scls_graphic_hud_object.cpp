@@ -451,6 +451,11 @@ namespace scls {
         a_browser->set_background_color(scls::white);
         a_browser->set_pixel_border_width(1);
         a_browser->set_scale(glm::vec2(0.8, 0.8));
+        // Scroller of the browser of the file explorer
+        a_browser_scroller = a_browser->new_object<HUD_Object>("browser_scroller", SCLS_GRAPHIC_NO_TEXTURE);
+        a_browser_scroller->set_background_color(scls::white);
+        a_browser_scroller->set_position(glm::vec2(0, 0));
+        a_browser_scroller->set_scale(glm::vec2(0.99, 0.99));
         // Button to chose a file
         a_choose_button = new_object<HUD_Text>("choose_button");
         a_choose_button->set_pixel_border_width(1);
@@ -565,13 +570,13 @@ namespace scls {
         std::vector<std::thread*> threads = std::vector<std::thread*>();
         if(a_browser_buttons_to_modify.size() == 0) {
             // Create the buttons from scratch
-            a_browser->delete_children(); a_browser_buttons.clear();
+            a_browser_scroller->delete_children(); a_browser_buttons.clear();
             for(unsigned int i = 0;i<static_cast<unsigned int>(paths.size());i++) {
                 if(!std::filesystem::exists(paths[i]) || (a_browser_buttons_to_modify.size() > 0 && contains<unsigned int>(a_browser_buttons_to_modify, i))) continue;
 
                 // Create the button
                 std::string button_text = file_name(paths[i], true);
-                HUD_Text* new_button = a_browser->new_object<HUD_Text>("browser_button_" + std::to_string(i));
+                HUD_Text* new_button = a_browser_scroller->new_object<HUD_Text>("browser_button_" + std::to_string(i));
                 new_button->set_background_color(scls::white);
                 new_button->set_font_color(scls::black);
                 new_button->set_font_size(50);
