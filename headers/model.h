@@ -61,8 +61,7 @@ public:
 	{
 		return "#version 330 core\nin vec3 tex_multiplier;in vec2 tex_pos;in vec4 tex_rect;out vec4 FragColor;uniform vec3 scale;uniform sampler2D texture_0;void main(){vec2 final_tex_pos = (tex_pos - tex_rect.xy);if (tex_multiplier.x == 0)final_tex_pos.x = final_tex_pos.x * scale.x;else if (tex_multiplier.x == 1)final_tex_pos.y = final_tex_pos.y * scale.x;if (tex_multiplier.y == 0)final_tex_pos.x = final_tex_pos.x * scale.y;else if (tex_multiplier.y == 1)final_tex_pos.y = final_tex_pos.y * scale.y;if (tex_multiplier.z == 0)final_tex_pos.x = final_tex_pos.x * scale.z;else if (tex_multiplier.z == 1)final_tex_pos.y = final_tex_pos.y * scale.z;while (final_tex_pos.x > tex_rect[2])final_tex_pos.x -= tex_rect[2];while (final_tex_pos.y > tex_rect[3])final_tex_pos.y -= tex_rect[3];FragColor = texture(texture_0, tex_rect.xy + final_tex_pos);}";
 	};
-	static std::string get_default_hud_fragment_shader()
-	{
+	static std::string get_default_hud_fragment_shader() {
 	    // Experimental : "#version 330 core\nin vec2 tex_pos;out vec4 FragColor;uniform vec4 border_color;uniform vec4 border_width;uniform sampler2D texture_0;void main(){vec4 color = border_color;if(tex_pos[0] >= border_width[1] && tex_pos[0] <= 1.0 - border_width[3] && tex_pos[1] >= border_width[0] && tex_pos[1] <= 1.0 - border_width[2]){vec2 texture_pos = tex_pos;texture_pos[0]-=border_width[1];texture_pos[1]-=border_width[0];texture_pos[0]*=(1.0+(border_width[1]+border_width[3]));texture_pos[1]*=(1.0+(border_width[0]+border_width[2]));color = texture(texture_0, texture_pos);}FragColor = color;}"
 		std::string to_return = "#version 330 core\n";
 		to_return += "in vec2 tex_pos;";
@@ -78,8 +77,8 @@ public:
 		to_return += "uniform bool texture_binded;";
 		to_return += "void main(){";
 		to_return += "vec2 pixel_absolute_position = vec2((object_rect[0] - object_rect[2] / 2.0) + tex_pos[0] * object_rect[2], (object_rect[1] - object_rect[3] / 2.0) + tex_pos[1] * object_rect[3]);";
-		to_return += "if(parent_rect[0] - parent_rect[2] / 2.0 > pixel_absolute_position[0] || parent_rect[0] + parent_rect[2] / 2.0 < pixel_absolute_position[0]) {discard;}";
-		to_return += "if(parent_rect[1] - parent_rect[3] / 2.0 > pixel_absolute_position[1] || parent_rect[1] + parent_rect[3] / 2.0 < pixel_absolute_position[1]) {discard;}";
+		to_return += "if(parent_rect[0] - parent_rect[2] / 2.0 > pixel_absolute_position[0] || parent_rect[0] + parent_rect[2] / 2.0 <= pixel_absolute_position[0]) {discard;}";
+		to_return += "if(parent_rect[1] - parent_rect[3] / 2.0 > pixel_absolute_position[1] || parent_rect[1] + parent_rect[3] / 2.0 <= pixel_absolute_position[1]) {discard;}";
 		to_return += "vec4 color = background_color;";
 		to_return += "if(tex_pos[0]<border_width[1]||tex_pos[1]<border_width[2]||tex_pos[0]>1.0-(border_width[3])||tex_pos[1]>1.0-(border_width[0])){";
 		to_return += "color = border_color;}";
@@ -89,12 +88,10 @@ public:
 		to_return += "FragColor = color;}";
 		return to_return;
 	};
-	static std::string get_default_vertex_shader()
-	{
+	static std::string get_default_vertex_shader() {
 		return "#version 330 core\nlayout(location = 0) in vec3 aPos;layout(location = 1) in vec2 in_tex_pos;layout(location = 2) in vec4 in_tex_rect;layout(location = 3) in vec3 in_tex_multiplier;out vec3 tex_multiplier;out vec2 tex_pos;out vec4 tex_rect;uniform mat4 model;uniform mat4 projection;uniform mat4 view;void main(){tex_multiplier = in_tex_multiplier;tex_pos = in_tex_pos;tex_rect = in_tex_rect;gl_Position = projection * view * model * vec4(aPos.xyz, 1.0);}";
 	};
-	static std::string get_default_hud_vertex_shader()
-	{
+	static std::string get_default_hud_vertex_shader() {
 	    std::string to_return = "#version 330 core\n";
 	    to_return += "layout(location = 0) in vec3 position;";
 	    to_return += "layout(location = 1) in vec2 texture_position;";
