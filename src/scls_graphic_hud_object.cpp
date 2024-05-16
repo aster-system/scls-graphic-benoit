@@ -487,7 +487,11 @@ namespace scls {
 
     // Set the current path to a new path
     void HUD_File_Explorer::set_path(std::string path) {
+        // Format the path
         if(path[path.size() - 1] == '/' && path[path.size() - 2] != ':') path = path.substr(0, path.size() - 1);
+        #if defined(__linux__)
+        if(path[0] != '/') path = "/" + path;
+        #endif // defined
 
         if(std::filesystem::is_directory(path)) {
             // Handle a directory
@@ -515,7 +519,11 @@ namespace scls {
 
     // Set the file explorer to the user current document directory
     void HUD_File_Explorer::set_current_user_document_directory() {
-        set_path(current_user_home_directory() + "/documents");
+        std::string document_part = "/document";
+        #if defined(__linux__)
+        document_part = "/Documents";
+        #endif // defined
+        set_path(current_user_home_directory() + document_part);
     }
 
     // Update the browser of the file explorer
