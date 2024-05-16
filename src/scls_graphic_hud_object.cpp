@@ -436,6 +436,12 @@ namespace scls {
         load();
     }
 
+    // Returns if a file is chosen during this frame
+    bool HUD_File_Explorer::file_chosen() {
+        if(!a_choose_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) return false;
+        return true;
+    }
+
     // Load the explorer
     void HUD_File_Explorer::load() {
         // Browser of the file explorer
@@ -443,6 +449,14 @@ namespace scls {
         a_browser->set_background_color(scls::white);
         a_browser->set_pixel_border_width(1);
         a_browser->set_scale(glm::vec2(0.8, 0.8));
+        // Button to chose a file
+        a_choose_button = new_object<HUD_Text>("choose_button");
+        a_choose_button->set_pixel_border_width(1);
+        a_choose_button->set_font_size(50);
+        a_choose_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_choose_button->set_text(choose_button_text());
+        a_choose_button->set_object_scale_width(0.15);
+        a_choose_button->set_texture_object_scale(0.9);
         // Final path of the file explorer
         a_final_path = new_object<HUD_Text>("final_path");
         a_final_path->set_font_size(50);
@@ -455,6 +469,8 @@ namespace scls {
         a_top_bar->set_scale(glm::vec2(1.0, 0.075));
 
         // Place each object
+        a_choose_button->move_bottom_of_parent();
+        a_choose_button->move_left_of_parent();
         a_final_path->move_bottom_of_parent();
         a_final_path->move_right_of_parent();
         a_browser->move_right_of_parent();
@@ -493,7 +509,7 @@ namespace scls {
         if(path[0] != '/') path = "/" + path;
         #endif // defined
 
-        if(std::filesystem::is_directory(path)) {
+        if(std::filesystem::is_directory(path) && (a_current_path == "" || contains_selected_file(file_name(path)))) {
             // Handle a directory
             a_browser_buttons_to_modify.clear();
             a_current_path = path;
@@ -622,6 +638,7 @@ namespace scls {
                 path += a_top_bar_buttons[i]->plain_text();
             }
             if(a_top_bar_buttons[i]->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                a_current_path = "";
                 set_path(path);
                 break;
             }

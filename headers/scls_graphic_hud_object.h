@@ -493,6 +493,8 @@ namespace scls {
             std::vector<std::string> selected_files = cut_string(a_currently_selected_files, ";");
             return contains<std::string>(selected_files, file);
         };
+        // Returns if a file is chosen during this frame
+        bool file_chosen();
         // Load the explorer
         void load();
         // Place correctly all the buttons in the browser
@@ -513,8 +515,10 @@ namespace scls {
         void update_top_bar();
 
         // Getters and setters
+        inline std::string choose_button_text(){return a_choose_button_text;};
         inline std::string current_path() {return a_current_path;};
         inline std::string final_path_text() {return a_final_path_text;};
+        inline void set_choose_button_text(std::string new_choose_button_text) {a_choose_button_text = new_choose_button_text;};
         inline void set_final_path_text(std::string new_final_path_text) {a_final_path_text = new_final_path_text;};
     private:
         // Current path of the file explorer
@@ -534,6 +538,10 @@ namespace scls {
         std::vector<scls::HUD_Text*> a_browser_buttons = std::vector<scls::HUD_Text*>();
         // List of every buttons in the browser to modify
         std::vector<unsigned int> a_browser_buttons_to_modify = std::vector<unsigned int>();
+        // Button to chose a file
+        scls::HUD_Text* a_choose_button = 0;
+        // Text in the chose button
+        std::string a_choose_button_text = "Choose";
         // Final path selected
         scls::HUD_Text* a_final_path = 0;
         // Text in the final path
