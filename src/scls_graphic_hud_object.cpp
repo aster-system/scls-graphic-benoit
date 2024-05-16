@@ -519,7 +519,7 @@ namespace scls {
 
     // Set the file explorer to the user current document directory
     void HUD_File_Explorer::set_current_user_document_directory() {
-        std::string document_part = "/document";
+        std::string document_part = "/documents";
         #if defined(__linux__)
         document_part = "/Documents";
         #endif // defined
