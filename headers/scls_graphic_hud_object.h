@@ -114,12 +114,29 @@ namespace scls {
         };
 
         // Getters and setters (ONLY WITHOUT ATRIBUTES)
+        inline glm::vec4 absolute_border_width() {
+            glm::vec3 absolute_scale_for_calcul = absolute_scale();
+            return (border_width()) / glm::vec4(absolute_scale_for_calcul[1], absolute_scale_for_calcul[0], absolute_scale_for_calcul[1], absolute_scale_for_calcul[0]);
+        };
         inline glm::vec2 absolute_object_scale() {double absolute_width = static_cast<double>(window_struct()->window_ratio());if(parent_hud() != 0)absolute_width *= parent_hud()->absolute_scale_ratio();double new_width = absolute_scale()[1] * (texture_ratio() / absolute_width);return glm::vec2(new_width, absolute_scale()[1]);};
         inline double absolute_scale_ratio() {return absolute_scale()[0] / absolute_scale()[1];};
         inline HUD_Object* parent_hud() {if(parent() == 0 || parent()->type(1) != SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME)return 0;return reinterpret_cast<HUD_Object*>(parent());};
         inline double scale_ratio() {return scale()[0] / scale()[1];};
 
         // Getters and setters (ONLY WITH ATRIBUTES)
+        inline glm::vec2 absolute_position() {return glm::vec2(transform()->get_absolute_position()[0], transform()->get_absolute_position()[1]);};
+        inline glm::vec4 absolute_rect() {
+            return glm::vec4(absolute_position()[0], absolute_position()[1], absolute_scale()[0], absolute_scale()[1]);
+        };
+        inline glm::vec4 absolute_rect_for_render() {
+            return glm::vec4(absolute_position()[0], absolute_position()[1], absolute_scale()[0], absolute_scale()[1]);
+        };
+        inline glm::vec4 absolute_rect_parent_for_render() {
+            if(parent_hud() == 0)return glm::vec4(0,0,2,2);
+            glm::vec4 border = parent_hud()->absolute_border_width();
+            glm::vec4 to_return = parent_hud()->absolute_rect() + glm::vec4(border[1], border[0], -border[1] - border[3], -border[0] - border[2]);
+            return to_return;
+        };
         inline Color background_color() {return a_background_color;};
         inline glm::vec4 border_width() {return a_border_width;};
         inline bool is_clicked(unsigned int button) { return is_overflighted() && window_struct()->mouse_button_clicked(button); };
