@@ -116,7 +116,7 @@ namespace scls {
         // Getters and setters (ONLY WITHOUT ATRIBUTES)
         inline glm::vec4 absolute_border_width() {
             glm::vec3 absolute_scale_for_calcul = absolute_scale();
-            return (border_width()) / glm::vec4(absolute_scale_for_calcul[1], absolute_scale_for_calcul[0], absolute_scale_for_calcul[1], absolute_scale_for_calcul[0]);
+            return (border_width() * glm::vec4(0.5)) / glm::vec4(absolute_scale_for_calcul[1], absolute_scale_for_calcul[0], absolute_scale_for_calcul[1], absolute_scale_for_calcul[0]);
         };
         inline glm::vec2 absolute_object_scale() {double absolute_width = static_cast<double>(window_struct()->window_ratio());if(parent_hud() != 0)absolute_width *= parent_hud()->absolute_scale_ratio();double new_width = absolute_scale()[1] * (texture_ratio() / absolute_width);return glm::vec2(new_width, absolute_scale()[1]);};
         inline double absolute_scale_ratio() {return absolute_scale()[0] / absolute_scale()[1];};
