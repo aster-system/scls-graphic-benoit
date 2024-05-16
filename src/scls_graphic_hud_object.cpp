@@ -462,20 +462,34 @@ namespace scls {
         a_final_path->set_font_size(50);
         a_final_path->set_text(final_path_text());
         a_final_path->set_scale(glm::vec2(0.8, 0.1));
-        a_final_path->set_texture_object_scale(0.9);
         // Top bar of the file explorer
         a_top_bar = new_object<HUD_Object>("top_bar", SCLS_GRAPHIC_NO_TEXTURE);
         a_top_bar->set_background_color(scls::Color(209, 209, 209));
         a_top_bar->set_scale(glm::vec2(1.0, 0.075));
 
+        place_all();
+    }
+
+    // Place all the elements in the file explorer
+    void HUD_File_Explorer::place_all() {
         // Place each object
         a_choose_button->move_bottom_of_parent();
         a_choose_button->move_left_of_parent();
+        a_final_path->set_scale(glm::vec2(0.8, 0.1));
+        if(a_final_path->is_texture_ratio_bigger_than_square_ratio()) {
+            a_final_path->set_texture_object_scale_width(0.9);
+        }
+        else {
+            a_final_path->set_texture_object_scale(0.9);
+        }
         a_final_path->move_bottom_of_parent();
         a_final_path->move_right_of_parent();
         a_browser->move_right_of_parent();
         a_browser->move_top_of_object_in_parent(a_final_path);
         a_top_bar->move_top_of_parent();
+
+        place_browser_buttons();
+        place_top_bar_buttons();
     }
 
     // Place correctly all the buttons in the browser
@@ -491,7 +505,7 @@ namespace scls {
     }
 
     // Place correctly all the buttons in the top bar
-    void HUD_File_Explorer::place_tob_bar_buttons() {
+    void HUD_File_Explorer::place_top_bar_buttons() {
         HUD_Text* last_button = 0;
         for(int i = 0;i<static_cast<int>(a_top_bar_buttons.size());i++) {
             a_top_bar_buttons[i]->set_object_scale_pixel(25);
@@ -531,6 +545,7 @@ namespace scls {
             }
         }
         a_final_path->set_text(final_path_text() + " : " + replace(path, "/", "\\"));
+        place_all();
     }
 
     // Set the file explorer to the user current document directory
@@ -615,7 +630,7 @@ namespace scls {
         }
 
         threads.clear();
-        place_browser_buttons();
+        place_all();
     }
 
     // Update the explorer during an event
@@ -648,8 +663,7 @@ namespace scls {
     // Update the size of the file explorer
     void HUD_File_Explorer::update_hud_scale() {
         HUD_Object::update_hud_scale();
-        place_browser_buttons();
-        place_tob_bar_buttons();
+        place_all();
     }
 
     // Update the current path in the top bar
@@ -673,7 +687,7 @@ namespace scls {
             new_button->set_position(glm::vec2(0, 0));
             a_top_bar_buttons.push_back(new_button);
         }
-        place_tob_bar_buttons();
+        place_all();
     }
 
     // HUD_File_Explorer destructor

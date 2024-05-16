@@ -516,6 +516,8 @@ void Texture::load_texture() {
 
 // Texture destructor
 Texture::~Texture() {
+    glDeleteTextures(1, &texture_id);
+
 	delete get_image();
 	a_image = 0;
 }

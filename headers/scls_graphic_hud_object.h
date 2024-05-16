@@ -107,6 +107,12 @@ namespace scls {
         // Update the size of the HUD elements
         virtual void update_hud_scale();
 
+        // Returns if the ratio of the texture ratio is bigger than the square ratio
+        inline bool is_texture_ratio_bigger_than_square_ratio() {
+            if(texture() == 0) return false;
+            return texture_ratio() > one_square_absolute_scale();
+        };
+
         // Getters and setters (ONLY WITHOUT ATRIBUTES)
         inline glm::vec2 absolute_object_scale() {double absolute_width = static_cast<double>(window_struct()->window_ratio());if(parent_hud() != 0)absolute_width *= parent_hud()->absolute_scale_ratio();double new_width = absolute_scale()[1] * (texture_ratio() / absolute_width);return glm::vec2(new_width, absolute_scale()[1]);};
         inline double absolute_scale_ratio() {return absolute_scale()[0] / absolute_scale()[1];};
@@ -497,10 +503,12 @@ namespace scls {
         bool file_chosen();
         // Load the explorer
         void load();
+        // Place all the elements in the file explorer
+        void place_all();
         // Place correctly all the buttons in the browser
         void place_browser_buttons();
         // Place correctly all the buttons in the top bar
-        void place_tob_bar_buttons();
+        void place_top_bar_buttons();
         // Set the current path to a new path
         void set_path(std::string path);
         // Set the file explorer to the user current document directory
