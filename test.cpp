@@ -14,13 +14,17 @@
 // This file contains allows to test the library.
 //
 
-#include "mods/scls_documentalist_gui/scls_documentalist_gui.h"
+#include "mods/labyrinth_creator/labyrinth_creator.h"
+// #include "mods/scls_documentalist_gui/scls_documentalist_gui.h"
 
 int main(int argc, char* argv[]) {
     srand(time(0));
 
     // Create a simple Agatha GUI window
-    scls_documentalist_gui::use_scls_documentalist_gui(argv[0]);
+    // scls_documentalist_gui::use_scls_documentalist_gui(argv[0]);
+
+    // Create a labyrinth creator
+    labyrinth_creator::use_labyrinth_creator(argv[0]);
 
     return 0;
 }

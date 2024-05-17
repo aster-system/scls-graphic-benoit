@@ -66,25 +66,10 @@ public:
 		std::string to_return = "#version 330 core\n";
 		to_return += "in vec2 tex_pos;";
 		to_return += "out vec4 FragColor;";
-		to_return += "uniform vec4 background_color;";
-		to_return += "uniform vec4 border_color;";
-		to_return += "uniform vec4 border_width;";
-		to_return += "uniform vec4 object_rect;";
-		to_return += "uniform vec2 one_pixel;";
-		to_return += "uniform vec4 parent_rect;";
-		to_return += "uniform vec4 texture_rect;";
 		to_return += "uniform sampler2D texture_0;";
 		to_return += "uniform bool texture_binded;";
 		to_return += "void main(){";
-		to_return += "vec2 pixel_absolute_position = vec2((object_rect[0] - object_rect[2] / 2.0) + tex_pos[0] * object_rect[2], (object_rect[1] - object_rect[3] / 2.0) + tex_pos[1] * object_rect[3]);";
-		to_return += "if(parent_rect[0] - parent_rect[2] / 2.0 > pixel_absolute_position[0] || parent_rect[0] + parent_rect[2] / 2.0 <= pixel_absolute_position[0]) {discard;}";
-		to_return += "if(parent_rect[1] - parent_rect[3] / 2.0 > pixel_absolute_position[1] || parent_rect[1] + parent_rect[3] / 2.0 <= pixel_absolute_position[1]) {discard;}";
-		to_return += "vec4 color = background_color;";
-		to_return += "if(tex_pos[0]<border_width[1]||tex_pos[1]<border_width[2]||tex_pos[0]>1.0-(border_width[3])||tex_pos[1]>1.0-(border_width[0])){";
-		to_return += "color = border_color;}";
-		to_return += "else if(texture_binded && (tex_pos[0] >= texture_rect[0] && tex_pos[0] <= texture_rect[0] + texture_rect[2] && tex_pos[1] > texture_rect[1] && tex_pos[1] < texture_rect[1] + texture_rect[3])){";
-		to_return += "vec2 texture_pos = tex_pos;texture_pos[0]-=texture_rect[0];texture_pos[1]-=texture_rect[1];texture_pos[0]/=texture_rect[2];texture_pos[1]/=texture_rect[3];";
-		to_return += "color = texture(texture_0, texture_pos);}";
+		to_return += "vec4 color = texture(texture_0, tex_pos);";
 		to_return += "FragColor = color;}";
 		return to_return;
 	};
@@ -328,7 +313,7 @@ public:
 	inline std::string get_texture_path() { return texture_path; };
 	inline bool loaded() {return a_loaded;};
 	inline void set_image(scls::Image* new_image) {
-	    delete a_image;
+	    if(a_image != 0) delete a_image;
 	    a_image = new_image;
 	    a_image->flip_x();
 	    change_texture();

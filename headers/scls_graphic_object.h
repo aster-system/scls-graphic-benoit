@@ -152,6 +152,8 @@ namespace scls {
         Transform_Object* transform_parent() {if(transform() == 0)return 0;return transform()->get_parent();};
     protected:
         // Basic object descriptor
+        // Pointer to the Texture used to render the object
+        Texture *a_texture = 0;
         // Type of the object
         std::vector<std::string> a_type = std::vector<std::string>();
 
@@ -189,8 +191,6 @@ namespace scls {
         // Necessary things to do the render
         // Pointer to the VAO used to render the object
         VAO* a_vao = 0;
-        // Pointer to the Texture used to render the object
-        Texture *a_texture = 0;
     };
 
     // Creates an object into the page and returns it

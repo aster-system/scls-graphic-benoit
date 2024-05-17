@@ -105,11 +105,8 @@ namespace scls {
             vao()->get_shader_program()->set_uniformb_value("texture_binded", false);
         }
         else {
-            vao()->get_shader_program()->set_uniformb_value("texture_binded", true);
-        }
-
-        if(texture() != 0) {
             texture()->bind(); // Bind the texture
+            vao()->get_shader_program()->set_uniformb_value("texture_binded", true);
         }
 
         if (texture() != 0 && texture()->use_resize())

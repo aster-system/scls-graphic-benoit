@@ -1,6 +1,6 @@
 //******************
 //
-// scls_graphic_hud_object.cpp
+// scls_graphic_gui_object.cpp
 //
 //******************
 // Presentation :
@@ -14,126 +14,91 @@
 // This file contains the code in scls_graphic_gui_object.h
 //
 
-#include "../headers/scls_graphic_hud_object.h"
+#include "../headers/scls_graphic_gui_object.h"
 
 // Using of the "scls" namespace to simplify the programmation
 namespace scls {
     //*********
     //
-    // HUD Object main functions
+    // GUI Object main functions
     //
     //*********
 
-    // Most basic HUD_Object constructor
-    HUD_Object::HUD_Object(_Window_Advanced_Struct* window_struct, std::string name) :Object(window_struct, name) {
-        a_type.push_back(SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME);
+    // Most basic GUI_Object constructor
+    GUI_Object::GUI_Object(Window& window, std::string name) : a_name(name), a_window(window) {
+
     }
 
-    // Most parent HUD_Object constructor used for displaying
-    HUD_Object::HUD_Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), transform_parent, name, texture_name, vao_name) {
-        a_type.push_back(SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME);
+    // Apply the border of this object to an image
+    void GUI_Object::apply_border_to_image(Image* image_to_apply) {
+        image_to_apply->fill_rect(0, 0, image_to_apply->width(), border_width()[0], border_color());
+        image_to_apply->fill_rect(0, border_width()[0], border_width()[1], image_to_apply->height() - border_width()[0], border_color());
+        image_to_apply->fill_rect(border_width()[1], image_to_apply->height() - border_width()[2], image_to_apply->width() - border_width()[1], border_width()[2], border_color());
+        image_to_apply->fill_rect(image_to_apply->width() - border_width()[3], border_width()[0], border_width()[3], image_to_apply->height() - (border_width()[0] + border_width()[2]), border_color());
     }
 
-    // HUD_Object constructor used for displaying
-    HUD_Object::HUD_Object(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name) : Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), parent, name, texture_name, vao_name) {
-        a_type.push_back(SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME);
+    // Update the texture of the object
+    void GUI_Object::update_texture() {
+        if(!a_modified_during_this_frame) return;
+
+        unload_texture();
+        a_texture = _new_texture();
+        apply_border_to_image(a_texture);
+        _apply_before_hierarchy_to_image(a_texture);
+        _apply_hierarchy_to_image(a_texture);
     }
 
-    // Render the object on the window
-    void HUD_Object::render() {
-        // Create the upgraded matrix
-        glm::mat4 matrix = transform()->get_model_matrix();
-
-        vao()->get_shader_program()->set_uniform4f_value("background_color", glm::vec4(background_color().red() / 255.0, background_color().green() / 255.0, background_color().blue() / 255.0, background_color().alpha() / 255.0));
-        vao()->get_shader_program()->set_uniform4f_value("border_color", glm::vec4(0, 0, 0, 1));
-        vao()->get_shader_program()->set_uniform4f_value("border_width", border_width());
-        vao()->get_shader_program()->set_uniform4f_value("object_rect", absolute_rect_for_render());
-        vao()->get_shader_program()->set_uniform2f_value("one_pixel", one_pixel_scale()[0], one_pixel_scale()[1]);
-        vao()->get_shader_program()->set_uniform4f_value("parent_rect", absolute_rect_parent_for_render());
-        vao()->get_shader_program()->set_uniform4f_value("texture_rect", final_texture_rect());
-
-        // Call the hidden render part
-        _render(matrix);
-    }
-
-    // Returns the final rect of the texture
-    glm::vec4 HUD_Object::final_texture_rect() {
-        glm::vec2 texture_size = final_texture_size();
-
-        // Set the X position
-        double texture_x = 0;
-        if(texture_aligmnent_horizontal() == Alignment_Horizontal::H_Center) {
-            texture_x = 0.5 - texture_size[0] / 2.0;
-        }
-        else if(texture_aligmnent_horizontal() == Alignment_Horizontal::H_Right) {
-            texture_x = 1.0 - texture_size[0];
-        }
-
-        // Set the Y position
-        double final_texture_y = 0;
-        if(texture_aligmnent_vertical() == Alignment_Vertical::V_Center) {
-            final_texture_y = 0.5 - texture_size[1] / 2.0;
-        }
-        else if(texture_aligmnent_vertical() == Alignment_Vertical::V_Top) {
-            final_texture_y = 1.0 - texture_size[1];
-        }
-        else if(texture_aligmnent_vertical() == Alignment_Vertical::V_User_Defined) {
-            final_texture_y = texture_y();
-        }
-
-        return glm::vec4(texture_x, final_texture_y, texture_size[0], texture_size[1]);
-    };
-
-    // Update the size of the HUD elements
-    void HUD_Object::update_hud_scale() {
+    // Update the size of the GUI elements
+    void GUI_Object::update_gui_scale() {
         // Check border
         if(a_last_border_width_definition_type == _Border_Width_Definition::Pixel_Border_Width) {
-            set_pixel_border_width(a_last_border_width);
+            set_border_width(border_width());
         }
 
         // Check size
-        if(a_last_scale_definition_type == _Scale_Definition::Object_Scale) {
-            set_object_scale(a_last_scale);
-        }
-        else if(a_last_scale_definition_type == _Scale_Definition::Object_Scale_Width) {
-            set_object_scale_width(a_last_scale[0]);
-        }
-        else if(a_last_scale_definition_type == _Scale_Definition::Object_Scale_Pixel) {
-            set_object_scale_pixel(a_last_scale[1]);
-        }
-
-        // Check texture size
-        if(a_last_texture_scale_definition_type == _Scale_Definition::Object_Scale) {
-            set_texture_object_scale(a_last_texture_scale[1]);
-        }
-        else if(a_last_texture_scale_definition_type == _Scale_Definition::Object_Scale_Width) {
-            set_texture_object_scale_width(a_last_texture_scale[0]);
+        if(a_last_size_definition == _Size_Definition::Pixel_Size) {
+            set_size_in_pixel(size_in_pixel());
         }
     }
 
-    // HUD_Object destructor
-    HUD_Object::~HUD_Object() {
+    // GUI_Object destructor
+    GUI_Object::~GUI_Object() {
 
     }
 
     //*********
     //
-    // HUD Text main functions
+    // Texture handling
     //
     //*********
 
-    // Most parent HUD_Object constructor used for displaying
-    HUD_Text::HUD_Text(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : HUD_Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), transform_parent, name, texture_name, vao_name) {
-        a_only_texture_user = true;
+    // Apply the hierarchy to the given image
+    void GUI_Object::_apply_hierarchy_to_image(Image* image_to_apply) {
+        for(int i = 0;i<static_cast<int>(children().size());i++) {
+            Image* to_paste = children()[i]->texture();
+            glm::vec2 to_paste_position = children()[i]->position_in_pixel();
+            image_to_apply->paste(to_paste, to_paste_position[0], to_paste_position[1]);
+        }
+    };
+
+    // Returns a new image
+    Image* GUI_Object::_new_texture() {
+        return new Image(size_in_pixel()[0], size_in_pixel()[1], background_color());
     }
 
-    // HUD_Text constructor used for displaying
-    HUD_Text::HUD_Text(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name) : HUD_Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), parent, name, texture_name, vao_name) {
-        a_only_texture_user = true;
+    //*********
+    //
+    // GUI Text main functions
+    //
+    //*********
+
+    // Most basic GUI_Text constructor
+    GUI_Text::GUI_Text(Window& window, std::string name) : GUI_Object(window, name) {
+
     }
 
     // Move the cursor in the text
-    void HUD_Text::move_cursor(int movement) {
+    void GUI_Text::move_cursor(int movement) {
         int final_cursor_position = cursor_position() + movement;
         if(movement < 0) {
             if(final_cursor_position < 0) {
@@ -147,62 +112,66 @@ namespace scls {
         }
         else if(final_cursor_position == static_cast<int>(cursor_position())) return;
         set_cursor_position(final_cursor_position);
-        a_modified = true; update_text_texture();
+
+        set_modified_during_this_frame_true();
     }
 
     // Update the text texture
-    void HUD_Text::update_text_texture() {
-        if(!a_modified) return;
+    void GUI_Text::_apply_before_hierarchy_to_image(Image* image_to_apply) {
+        GUI_Object::_apply_before_hierarchy_to_image(image_to_apply);
 
         if(text() != "") {
-            // Create the texture
-            Text_Image* current_text_image = window_struct()->text_image_generator()->new_text_image(text());
+            // Create the text
+            glm::vec2 position_to_apply = position_in_pixel();
+            Text_Image* current_text_image = window_struct().text_image_generator()->new_text_image(text());
             current_text_image->global_style().background_color = background_color();
             current_text_image->global_style().color = font_color();
             current_text_image->global_style().font_size = font_size();
-            current_text_image->global_style().alignment_horizontal = text_alignment_horizontal();
             current_text_image->set_cursor_position(cursor_position());
             current_text_image->set_use_cursor(use_cursor());
-            Image* new_image_texture = current_text_image->image();
-            texture()->set_image(new_image_texture);
+
+            // Paste the text
+            Image* image_to_paste = current_text_image->image();
+            glm::vec2 text_position = glm::vec2(0, 0);
+            if(text_alignment_horizontal() == Alignment_Horizontal::H_Center) {
+                text_position[0] = static_cast<double>(image_to_apply->width()) / 2.0 - static_cast<double>(image_to_paste->width()) / 2.0;
+            }
+            image_to_apply->paste(image_to_paste, position_to_apply[0] + text_position[0], position_to_apply[1] + text_position[1]);
+            delete image_to_paste; image_to_paste = 0;
             delete current_text_image; current_text_image = 0;
         }
-        else {
-            texture()->set_image(new Image(1, 1, background_color(), 0));
-        }
-        a_modified = false;
-        set_texture_y_max();
-        update_hud_scale();
     }
 
-    // HUD_Text destructor
-    HUD_Text::~HUD_Text() {
+    // GUI_Text destructor
+    GUI_Text::~GUI_Text() {
 
     }
+
+    /*
 
     //*********
     //
-    // HUD_Text_Input main functions
+    // GUI_Text_Input main functions
     //
     //*********
 
-    // Most parent HUD_Text_Input constructor used for displaying
-    HUD_Text_Input::HUD_Text_Input(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : HUD_Text(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), transform_parent, name, texture_name, vao_name) {
+    // Most parent GUI_Text_Input constructor used for displaying
+    GUI_Text_Input::GUI_Text_Input(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : GUI_Text(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), transform_parent, name, texture_name, vao_name) {
         set_use_cursor(true);
     }
 
-    // HUD_Text_Input constructor used for displaying
-    HUD_Text_Input::HUD_Text_Input(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name) : HUD_Text(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), parent, name, texture_name, vao_name) {
+    // GUI_Text_Input constructor used for displaying
+    GUI_Text_Input::GUI_Text_Input(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name) : GUI_Text(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), parent, name, texture_name, vao_name) {
         set_use_cursor(true);
     }
 
-    // HUD_Text_Input destructor
-    HUD_Text_Input::~HUD_Text_Input() {
+    // GUI_Text_Input destructor
+    GUI_Text_Input::~GUI_Text_Input() {
 
     }
 
     // Format a char
-    std::string HUD_Text_Input::_format(std::string letter, bool apply_capitalisation) {
+    std::string GUI_Text_Input::_format(std::string letter, bool apply_capitalisation) {
         std::string result = "";
 
         for(int i = 0;i<letter.size();i++) {
@@ -214,7 +183,7 @@ namespace scls {
     }
 
     // Capitalize a std::string
-    std::string HUD_Text_Input::_format_one_letter(std::string letter, bool apply_capitalisation) {
+    std::string GUI_Text_Input::_format_one_letter(std::string letter, bool apply_capitalisation) {
         if(apply_capitalisation) {
             // Alphabet letter
             if(letter == "a") letter = "A";
@@ -318,7 +287,7 @@ namespace scls {
     }
 
     // Input the inputed text
-    void HUD_Text_Input::input_text() {
+    void GUI_Text_Input::input_text() {
         if(!is_focused()) return;
 
         std::string final_text = text();
@@ -410,54 +379,54 @@ namespace scls {
     }
 
     // Update the text
-    void HUD_Text_Input::update_event() {
-        HUD_Text::update_event();
+    void GUI_Text_Input::update_event() {
+        GUI_Text::update_event();
         input_text();
         update_cursor();
     }
 
     // Update the cursor behavior
-    void HUD_Text_Input::update_cursor() {
+    void GUI_Text_Input::update_cursor() {
         if(window_struct()->key_state_frame("left arrow") == Key_State::Pressed) move_cursor(-1);
         if(window_struct()->key_state_frame("right arrow") == Key_State::Pressed) move_cursor(1);
     }
 
     //*********
     //
-    // HUD_File_Explorer main function
+    // GUI_File_Explorer main function
     //
     //*********
 
-    // Most parent HUD_File_Explorer constructor used for displaying
-    HUD_File_Explorer::HUD_File_Explorer(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : HUD_Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), transform_parent, name, texture_name, vao_name) {
+    // Most parent GUI_File_Explorer constructor used for displaying
+    GUI_File_Explorer::GUI_File_Explorer(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : GUI_Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), transform_parent, name, texture_name, vao_name) {
         load();
     }
 
-    // HUD_File_Explorer constructor used for displaying
-    HUD_File_Explorer::HUD_File_Explorer(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name) : HUD_Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), parent, name, texture_name, vao_name) {
+    // GUI_File_Explorer constructor used for displaying
+    GUI_File_Explorer::GUI_File_Explorer(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name) : GUI_Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), parent, name, texture_name, vao_name) {
         load();
     }
 
     // Returns if a file is chosen during this frame
-    bool HUD_File_Explorer::file_chosen() {
+    bool GUI_File_Explorer::file_chosen() {
         if(!a_choose_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) return false;
         return true;
     }
 
     // Load the explorer
-    void HUD_File_Explorer::load() {
+    void GUI_File_Explorer::load() {
         // Browser of the file explorer
-        a_browser = new_object<HUD_Object>("browser", SCLS_GRAPHIC_NO_TEXTURE);
+        a_browser = new_object<GUI_Object>("browser", SCLS_GRAPHIC_NO_TEXTURE);
         a_browser->set_background_color(scls::white);
         a_browser->set_pixel_border_width(1);
         a_browser->set_scale(glm::vec2(0.8, 0.8));
         // Scroller of the browser of the file explorer
-        a_browser_scroller = a_browser->new_object<HUD_Object>("browser_scroller", SCLS_GRAPHIC_NO_TEXTURE);
+        a_browser_scroller = a_browser->new_object<GUI_Object>("browser_scroller", SCLS_GRAPHIC_NO_TEXTURE);
         a_browser_scroller->set_background_color(scls::white);
-        a_browser_scroller->set_position(glm::vec2(0, 0));
-        a_browser_scroller->set_scale(glm::vec2(0.99, 0.99));
+        a_browser_scroller->set_position(glm::vec2(0, 0.2));
+        a_browser_scroller->set_scale(glm::vec2(0.99, 0.9));
         // Button to chose a file
-        a_choose_button = new_object<HUD_Text>("choose_button");
+        a_choose_button = new_object<GUI_Text>("choose_button");
         a_choose_button->set_pixel_border_width(1);
         a_choose_button->set_font_size(50);
         a_choose_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
@@ -465,12 +434,12 @@ namespace scls {
         a_choose_button->set_object_scale_width(0.15);
         a_choose_button->set_texture_object_scale(0.9);
         // Final path of the file explorer
-        a_final_path = new_object<HUD_Text>("final_path");
+        a_final_path = new_object<GUI_Text>("final_path");
         a_final_path->set_font_size(50);
         a_final_path->set_text(final_path_text());
         a_final_path->set_scale(glm::vec2(0.8, 0.1));
         // Top bar of the file explorer
-        a_top_bar = new_object<HUD_Object>("top_bar", SCLS_GRAPHIC_NO_TEXTURE);
+        a_top_bar = new_object<GUI_Object>("top_bar", SCLS_GRAPHIC_NO_TEXTURE);
         a_top_bar->set_background_color(scls::Color(209, 209, 209));
         a_top_bar->set_scale(glm::vec2(1.0, 0.075));
 
@@ -478,7 +447,7 @@ namespace scls {
     }
 
     // Place all the elements in the file explorer
-    void HUD_File_Explorer::place_all() {
+    void GUI_File_Explorer::place_all() {
         // Place each object
         a_choose_button->move_bottom_of_parent();
         a_choose_button->move_left_of_parent();
@@ -500,8 +469,8 @@ namespace scls {
     }
 
     // Place correctly all the buttons in the browser
-    void HUD_File_Explorer::place_browser_buttons() {
-        HUD_Text* last_button = 0;
+    void GUI_File_Explorer::place_browser_buttons() {
+        GUI_Text* last_button = 0;
         for(int i = 0;i<static_cast<int>(a_browser_buttons.size());i++) {
             a_browser_buttons[i]->set_object_scale(0.1);
             a_browser_buttons[i]->move_left_of_parent(0.01);
@@ -512,8 +481,8 @@ namespace scls {
     }
 
     // Place correctly all the buttons in the top bar
-    void HUD_File_Explorer::place_top_bar_buttons() {
-        HUD_Text* last_button = 0;
+    void GUI_File_Explorer::place_top_bar_buttons() {
+        GUI_Text* last_button = 0;
         for(int i = 0;i<static_cast<int>(a_top_bar_buttons.size());i++) {
             a_top_bar_buttons[i]->set_object_scale_pixel(25);
             if(last_button == 0) a_top_bar_buttons[i]->move_left_of_parent();
@@ -523,7 +492,7 @@ namespace scls {
     }
 
     // Set the current path to a new path
-    void HUD_File_Explorer::set_path(std::string path) {
+    void GUI_File_Explorer::set_path(std::string path) {
         // Format the path
         if(path[path.size() - 1] == '/' && path[path.size() - 2] != ':') path = path.substr(0, path.size() - 1);
         #if defined(__linux__)
@@ -556,7 +525,7 @@ namespace scls {
     }
 
     // Set the file explorer to the user current document directory
-    void HUD_File_Explorer::set_current_user_document_directory() {
+    void GUI_File_Explorer::set_current_user_document_directory() {
         std::string document_part = "/documents";
         #if defined(__linux__)
         document_part = "/Documents";
@@ -565,7 +534,7 @@ namespace scls {
     }
 
     // Update the browser of the file explorer
-    void HUD_File_Explorer::update_browser() {
+    void GUI_File_Explorer::update_browser() {
         std::vector<std::string> paths = directory_content(a_current_path);
         std::vector<std::thread*> threads = std::vector<std::thread*>();
         if(a_browser_buttons_to_modify.size() == 0) {
@@ -576,7 +545,7 @@ namespace scls {
 
                 // Create the button
                 std::string button_text = file_name(paths[i], true);
-                HUD_Text* new_button = a_browser_scroller->new_object<HUD_Text>("browser_button_" + std::to_string(i));
+                GUI_Text* new_button = a_browser_scroller->new_object<GUI_Text>("browser_button_" + std::to_string(i));
                 new_button->set_background_color(scls::white);
                 new_button->set_font_color(scls::black);
                 new_button->set_font_size(50);
@@ -586,7 +555,7 @@ namespace scls {
                 // Create the thread
                 std::string& button_text_reference = button_text;
                 bool move_cursor = false;
-                std::thread* current_thread = new std::thread(&HUD_Text::set_text, new_button, button_text_reference, &move_cursor);
+                std::thread* current_thread = new std::thread(&GUI_Text::set_text, new_button, button_text_reference, &move_cursor);
                 threads.push_back(current_thread);
             }
 
@@ -600,12 +569,12 @@ namespace scls {
         }
         else {
             // Modify some buttons
-            std::vector<HUD_Text*> buttons_to_modify = std::vector<HUD_Text*>();
+            std::vector<GUI_Text*> buttons_to_modify = std::vector<GUI_Text*>();
             for(unsigned int i = 0;i<static_cast<unsigned int>(paths.size());i++) {
                 if(!std::filesystem::exists(paths[i]) || !contains<unsigned int>(a_browser_buttons_to_modify, i)) continue;
 
                 // Get the button
-                HUD_Text* new_button = a_browser_buttons[i];
+                GUI_Text* new_button = a_browser_buttons[i];
                 std::string button_text = new_button->text();
                 buttons_to_modify.push_back(new_button);
 
@@ -622,7 +591,7 @@ namespace scls {
                 // Create the thread
                 std::string& button_text_reference = button_text;
                 bool move_cursor = false;
-                std::thread* current_thread = new std::thread(&HUD_Text::set_text, new_button, button_text_reference, &move_cursor);
+                std::thread* current_thread = new std::thread(&GUI_Text::set_text, new_button, button_text_reference, &move_cursor);
                 threads.push_back(current_thread);
             }
             a_browser_buttons_to_modify.clear();
@@ -641,8 +610,8 @@ namespace scls {
     }
 
     // Update the explorer during an event
-    void HUD_File_Explorer::update_event() {
-        HUD_Object::update_event();
+    void GUI_File_Explorer::update_event() {
+        GUI_Object::update_event();
 
         // Check if a browser button is clicked
         for(int i = 0;i<static_cast<int>(a_browser_buttons.size());i++) {
@@ -668,13 +637,13 @@ namespace scls {
     }
 
     // Update the size of the file explorer
-    void HUD_File_Explorer::update_hud_scale() {
-        HUD_Object::update_hud_scale();
+    void GUI_File_Explorer::update_GUI_scale() {
+        GUI_Object::update_GUI_scale();
         place_all();
     }
 
     // Update the current path in the top bar
-    void HUD_File_Explorer::update_top_bar() {
+    void GUI_File_Explorer::update_top_bar() {
         a_top_bar->delete_children(); a_top_bar_buttons.clear();
 
         // Create the buttons
@@ -685,7 +654,7 @@ namespace scls {
             std::string button_text = path_pieces[path_pieces.size() - (1 + i)];
             if(button_text == "") continue;
             if(button_text != first_text) button_text += "/";
-            HUD_Text* new_button = a_top_bar->new_object<HUD_Text>("top_bar_button_" + std::to_string(i));
+            GUI_Text* new_button = a_top_bar->new_object<GUI_Text>("top_bar_button_" + std::to_string(i));
             new_button->set_resize_texture_with_scale(false);
             new_button->set_font_size(20);
             new_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
@@ -697,52 +666,52 @@ namespace scls {
         place_all();
     }
 
-    // HUD_File_Explorer destructor
-    HUD_File_Explorer::~HUD_File_Explorer() {
+    // GUI_File_Explorer destructor
+    GUI_File_Explorer::~GUI_File_Explorer() {
 
     }
 
+    //*/
+
     //*********
     //
-    // HUD page
+    // GUI page
     //
     //*********
 
-    // HUD_Page most basic constructor
-    HUD_Page::HUD_Page(_Window_Advanced_Struct* window_struct, std::string name) : HUD_Object(window_struct, name) {
+    // GUI_Page most basic constructor
+    GUI_Page::GUI_Page(_Window_Advanced_Struct* window_struct, std::string name) : Object(window_struct, name) {
         set_vao("hud_default");
-        set_vao("hud_default");
+
+        a_parent_object = new GUI_Object((*reinterpret_cast<Window*>(window_struct)), "main");
+        a_texture = window_struct->new_texture("_" + name + "_texture");
     }
 
     // Render the page
-    void HUD_Page::render(){
-        HUD_Object::render();
-
-        for(int i = 0;i<static_cast<int>(children().size());i++) {
-            Object* ob = children()[i];
-            if(ob->visible()) {
-                ob->render();
-            }
+    void GUI_Page::render(){
+        if(parent_object()->modified_during_this_frame()) {
+            texture()->set_image(parent_object()->texture());
         }
+        Object::render();
+
+        // Soft reset the page
+        parent_object()->soft_reset();
+        soft_reset();
     };
 
     // Update the event of the page
-    void HUD_Page::update_event() {
-        // Soft reset the page
-        soft_reset();
+    void GUI_Page::update_event() {
+        Object::update_event();
 
         // Check the overflighted cursor
-        HUD_Object* current_overflighted_object = 0;
-        std::vector<Object*>* to_analyse = (&children());
-        for(int i = 0;i<static_cast<int>(to_analyse->size());i++) {
-            Object* analyzed_object = (*to_analyse)[to_analyse->size() - (i + 1)];
-            if(analyzed_object->type(1) == SCLS_GRAPHIC_HUD_OBJECT_TYPE_NAME) {
-                HUD_Object* current_object = reinterpret_cast<HUD_Object*>(analyzed_object);
-                if(current_object->visible() && current_object->is_in_pixel(window_struct()->mouse_x(), window_struct()->window_height() - window_struct()->mouse_y())) {
-                    current_overflighted_object = current_object;
-                    i = -1;
-                    to_analyse = (&current_overflighted_object->children());
-                }
+        GUI_Object* current_overflighted_object = 0;
+        GUI_Object* to_analyse = parent_object();
+        for(int i = 0;i<static_cast<int>(to_analyse->children().size());i++) {
+            GUI_Object* current_object = to_analyse->children()[i];
+            if(current_object->visible() && current_object->is_in_rect_in_pixel(window_struct()->mouse_x(), window_struct()->window_height() - window_struct()->mouse_y())) {
+                current_overflighted_object = current_object;
+                i = -1;
+                to_analyse = current_overflighted_object;
             }
         }
 
@@ -772,12 +741,12 @@ namespace scls {
         if(a_focused_object != 0) {
             a_focused_object->set_is_focused(true);
         }
-
-        HUD_Object::update_event();
     }
 
-    // HUD_Page destructor
-    HUD_Page::~HUD_Page(){
-
+    // GUI_Page destructor
+    GUI_Page::~GUI_Page(){
+        if(a_parent_object != 0) {
+            delete a_parent_object; a_parent_object = 0;
+        }
     }
 }
