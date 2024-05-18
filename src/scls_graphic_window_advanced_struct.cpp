@@ -43,7 +43,8 @@ namespace scls {
 
         // Create VAOs
         VBO hud_vbo = VBO(hud_attributes, VBO::get_base_hud_vbo(hud_attributes), false);
-        vaos()["hud_default"] = new VAO(a_shaders_programs["hud_default"], hud_attributes, &hud_vbo); vaos()["hud_default"]->load_vao();
+        vaos()["hud_default"] = new VAO(a_shaders_programs["hud_default"], hud_attributes, &hud_vbo);
+        vaos()["hud_default"]->load_vao();
     }
 
     // Returns a texture in the struct

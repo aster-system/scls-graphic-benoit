@@ -31,6 +31,8 @@ public:
 	void set_uniform3f_value(std::string name, float v1, float v2, float v3); // Change the value of a uniform vec3 float value
 	void set_uniform4f_value(std::string name, float v1, float v2, float v3, float v4); // Change the value of a uniform vec4 float value
 	void set_uniform4f_value(std::string name, glm::vec4 v); // Change the value of a uniform vec4 float value
+	// Change the value of a uniform color value
+	inline void set_uniform4f_value(std::string name, scls::Color color){set_uniform4f_value(name, static_cast<double>(color.red()) / 255.0, static_cast<double>(color.green()) / 255.0, static_cast<double>(color.blue()) / 255.0, static_cast<double>(color.alpha()) / 255.0);};
 	void set_uniform4fv_value(std::string name, glm::mat4 fv); // Change the value of a uniform mat4 float value
 	void use(); // Start using the shader
 	~Shader_Program(); // Shader_Program destructor
@@ -62,25 +64,42 @@ public:
 		return "#version 330 core\nin vec3 tex_multiplier;in vec2 tex_pos;in vec4 tex_rect;out vec4 FragColor;uniform vec3 scale;uniform sampler2D texture_0;void main(){vec2 final_tex_pos = (tex_pos - tex_rect.xy);if (tex_multiplier.x == 0)final_tex_pos.x = final_tex_pos.x * scale.x;else if (tex_multiplier.x == 1)final_tex_pos.y = final_tex_pos.y * scale.x;if (tex_multiplier.y == 0)final_tex_pos.x = final_tex_pos.x * scale.y;else if (tex_multiplier.y == 1)final_tex_pos.y = final_tex_pos.y * scale.y;if (tex_multiplier.z == 0)final_tex_pos.x = final_tex_pos.x * scale.z;else if (tex_multiplier.z == 1)final_tex_pos.y = final_tex_pos.y * scale.z;while (final_tex_pos.x > tex_rect[2])final_tex_pos.x -= tex_rect[2];while (final_tex_pos.y > tex_rect[3])final_tex_pos.y -= tex_rect[3];FragColor = texture(texture_0, tex_rect.xy + final_tex_pos);}";
 	};
 	static std::string get_default_hud_fragment_shader() {
-	    // Experimental : "#version 330 core\nin vec2 tex_pos;out vec4 FragColor;uniform vec4 border_color;uniform vec4 border_width;uniform sampler2D texture_0;void main(){vec4 color = border_color;if(tex_pos[0] >= border_width[1] && tex_pos[0] <= 1.0 - border_width[3] && tex_pos[1] >= border_width[0] && tex_pos[1] <= 1.0 - border_width[2]){vec2 texture_pos = tex_pos;texture_pos[0]-=border_width[1];texture_pos[1]-=border_width[0];texture_pos[0]*=(1.0+(border_width[1]+border_width[3]));texture_pos[1]*=(1.0+(border_width[0]+border_width[2]));color = texture(texture_0, texture_pos);}FragColor = color;}"
-		std::string to_return = "#version 330 core\n";
+	    std::string to_return = "#version 330 core\n";
 		to_return += "in vec2 tex_pos;";
 		to_return += "out vec4 FragColor;";
+		to_return += "uniform vec4 background_color;";
 		to_return += "uniform sampler2D texture_0;";
 		to_return += "uniform bool texture_binded;";
 		to_return += "void main(){";
-		to_return += "vec4 color = texture(texture_0, tex_pos);";
+		// to_return += "vec4 color = texture(texture_0, tex_pos);";
+		to_return += "vec4 color = background_color;";
 		to_return += "FragColor = color;}";
 		return to_return;
 	};
 	static std::string get_default_vertex_shader() {
-		return "#version 330 core\nlayout(location = 0) in vec3 aPos;layout(location = 1) in vec2 in_tex_pos;layout(location = 2) in vec4 in_tex_rect;layout(location = 3) in vec3 in_tex_multiplier;out vec3 tex_multiplier;out vec2 tex_pos;out vec4 tex_rect;uniform mat4 model;uniform mat4 projection;uniform mat4 view;void main(){tex_multiplier = in_tex_multiplier;tex_pos = in_tex_pos;tex_rect = in_tex_rect;gl_Position = projection * view * model * vec4(aPos.xyz, 1.0);}";
+		std::string to_return = "#version 330 core\n";
+		to_return += "layout(location = 0) in vec3 aPos;";
+		to_return += "layout(location = 1) in vec2 in_tex_pos;";
+		to_return += "layout(location = 2) in vec4 in_tex_rect;";
+		to_return += "layout(location = 3) in vec3 in_tex_multiplier;";
+		to_return += "out vec3 tex_multiplier;";
+		to_return += "out vec2 tex_pos;out vec4 tex_rect;";
+		to_return += "uniform mat4 model;";
+		to_return += "uniform mat4 projection;";
+		to_return += "uniform mat4 view;";
+		to_return += "void main(){";
+		to_return += "tex_multiplier = in_tex_multiplier;";
+		to_return += "tex_pos = in_tex_pos;";
+		to_return += "tex_rect = in_tex_rect;";
+		to_return += "gl_Position = projection * view * model * vec4(aPos.xyz, 1.0);}";
+		return to_return;
 	};
 	static std::string get_default_hud_vertex_shader() {
 	    std::string to_return = "#version 330 core\n";
 	    to_return += "layout(location = 0) in vec3 position;";
 	    to_return += "layout(location = 1) in vec2 texture_position;";
-	    to_return += "out vec2 tex_pos;uniform mat4 model;";
+	    to_return += "out vec2 tex_pos;";
+	    to_return += "uniform mat4 model;";
 	    to_return += "void main(){";
 	    to_return += "tex_pos = texture_position;";
 	    to_return += "gl_Position = model * vec4(position.xyz, 1.0);}";
@@ -312,8 +331,8 @@ public:
 	inline glm::vec2 get_texture_size() { return glm::vec2(width, height); };
 	inline std::string get_texture_path() { return texture_path; };
 	inline bool loaded() {return a_loaded;};
-	inline void set_image(scls::Image* new_image) {
-	    if(a_image != 0) delete a_image;
+	inline void set_image(scls::Image* new_image, bool delete_image = true) {
+	    if(delete_image && a_image != 0) delete a_image;
 	    a_image = new_image;
 	    a_image->flip_x();
 	    change_texture();

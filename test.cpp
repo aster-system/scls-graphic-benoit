@@ -14,7 +14,7 @@
 // This file contains allows to test the library.
 //
 
-#include "mods/labyrinth_creator/labyrinth_creator.h"
+#include "mods/p_fighter_cockpit/p_fighter_cockpit.h"
 // #include "mods/scls_documentalist_gui/scls_documentalist_gui.h"
 
 int main(int argc, char* argv[]) {
@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
     // scls_documentalist_gui::use_scls_documentalist_gui(argv[0]);
 
     // Create a labyrinth creator
-    labyrinth_creator::use_labyrinth_creator(argv[0]);
+    p_fighter_cockpit::use_p_fighter_cockpit(argv[0]);
 
     return 0;
 }

@@ -68,7 +68,8 @@ namespace scls {
 
     // Type of size definition
     enum _Size_Definition {
-        Pixel_Size
+        Pixel_Size,
+        Object_Size
     };
 
     class GUI_Object {
@@ -82,30 +83,25 @@ namespace scls {
         //*********
 
         // Most basic GUI_Object constructor
-        GUI_Object(Window& window, std::string name);
+        GUI_Object(Window& window, std::string name, GUI_Object* parent);
         // GUI_Object destructor
         virtual ~GUI_Object();
 
         // Function called after that the window is resized
         virtual void after_window_resizing(glm::vec2 last_scale){ update_gui_scale(); for(int i = 0;i<static_cast<int>(a_children.size());i++) a_children[i]->after_window_resizing(last_scale); };
-        // Update before the render
-        virtual void last_update(){update_texture();};
         // Add a child object to the object
         template<typename O>
         O* new_object(std::string name, unsigned int x, unsigned int y);
-        // Set the modified during this frame to true, and its parent too
-        inline void set_modified_during_this_frame_true() { a_modified_during_this_frame = true; if(parent() != 0) parent()->set_modified_during_this_frame_true(); };
+        // Render the object
+        virtual void render(glm::vec3 scale_multiplier = glm::vec3(1, 1, 1));
         // Reset the object without changing it
         virtual void soft_reset() {set_is_overflighted(false);set_is_focused(false);a_modified_during_this_frame = false;for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->soft_reset();};
         // Update the object
-        virtual void update(){
-            for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->update();
-            last_update();
-        };
+        virtual void update(){ for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->update(); };
+        // Update the object for the events
+        virtual void update_event() {for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->update_event();};
         // Update the size of the GUI elements
         virtual void update_gui_scale();
-        // Update the texture of the object
-        virtual void update_texture();
 
         // Getters and setters (ONLY WITH ATRIBUTES)
         inline Color background_color() {return a_background_color;};
@@ -118,7 +114,7 @@ namespace scls {
         inline bool is_overflighted() const {return a_is_overflighted;};
         inline bool modified_during_this_frame() const {return a_modified_during_this_frame;};
         inline unsigned long overflighted_cursor() {return a_overflighted_cursor;};
-        inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;set_modified_during_this_frame_true();};
+        inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
         inline void set_border_color(Color new_color) {a_border_color = new_color;};
         inline void set_border_width(double new_border_width) {set_border_width(glm::vec4(new_border_width));};
         inline void set_border_width(glm::vec4 new_border_width) {a_border_width = new_border_width;a_last_border_width_definition_type = _Border_Width_Definition::Pixel_Border_Width;};
@@ -127,7 +123,7 @@ namespace scls {
         inline void set_overflighted_cursor(unsigned long new_overflighted_cursor) {a_overflighted_cursor = new_overflighted_cursor;};
         inline void set_visible(bool new_visible) {a_visible = new_visible;};
         inline bool visible() {return a_visible;};
-        inline Window& window_struct() {return a_window;};
+        inline Window& window_struct() const {return a_window;};
 
         //*********
         //
@@ -135,6 +131,8 @@ namespace scls {
         //
         //*********
 
+        // Returns the absolute scale of the object
+        glm::vec2 absolute_scale() const;
         // Returns the absolute position of the object in pixel
         inline glm::vec2 absolute_position_in_pixel() {if(parent() == 0)return glm::vec2(0, 0);return position_in_pixel() + parent()->absolute_position_in_pixel();};
         // Returns the rect of the object in pixels
@@ -143,13 +141,64 @@ namespace scls {
         inline bool is_in_rect_in_pixel(unsigned short x_position, unsigned short y_position) {
             return x_position >= position_in_pixel()[0] && y_position >= position_in_pixel()[1];
         };
+        // Returns the scale of the object according to its parent
+        glm::vec2 scale() const;
+
+        // Returns the height in pixel of the object
+        double height_in_pixel() const;
+        // Returns the scale of a pixel in the absolute window
+        inline glm::vec2 one_pixel_in_absolute_scale() const {
+            return glm::vec2(1.0 / static_cast<double>(window_struct().window_width()), 1.0 / static_cast<double>(window_struct().window_height()));
+        };
+        // Returns the position in pixel of the object
+        glm::vec2 position_in_pixel() const;
+        // Set the height in object size
+        inline void set_height_in_object_size(double new_height) {
+            if(a_height == new_height && a_last_height_definition == _Size_Definition::Object_Size) return;
+            a_height = new_height;
+            a_last_height_definition = _Size_Definition::Object_Size;
+        };
+        // Set the position in object position
+        inline void set_position_in_object_size(glm::vec2 new_position) {
+            a_position = new_position;
+            a_last_position_definition = _Size_Definition::Object_Size;
+        };
+        // Set the size in object size
+        inline void set_size_in_object_size(glm::vec2 new_size) {
+            set_height_in_object_size(new_size[1]);
+            set_width_in_object_size(new_size[0]);
+        };
+        // Set the width in object size
+        inline void set_width_in_object_size(double new_width) {
+            if(a_width == new_width && a_last_width_definition == _Size_Definition::Object_Size) return;
+            a_width = new_width;
+            a_last_width_definition = _Size_Definition::Object_Size;
+        };
+        // Returns the size in pixel of the object
+        inline glm::vec2 size_in_pixel() const {return glm::vec2(width_in_pixel(), height_in_pixel());};
+        // Returns the width in pixel of the object
+        double width_in_pixel() const;
 
         // Getters and setters
-        inline GUI_Object* parent() {return a_parent;};
-        inline glm::vec2 position_in_pixel() {return a_position;};
-        inline void set_position_in_pixel(glm::vec2 new_position) {a_position = new_position;};
-        inline void set_size_in_pixel(glm::vec2 new_size) { a_size = new_size; set_modified_during_this_frame_true(); };
-        inline glm::vec2 size_in_pixel() const {return a_size;};
+        inline GUI_Object* parent() const {return a_parent;};
+        inline void set_position_in_pixel(glm::vec2 new_position) {
+            a_position = new_position;
+            a_last_position_definition = _Size_Definition::Pixel_Size;
+        };
+        inline void set_height_in_pixel(double new_height) {
+            if(a_height == new_height && a_last_height_definition == _Size_Definition::Pixel_Size) return;
+            a_height = new_height;
+            a_last_height_definition = _Size_Definition::Pixel_Size;
+        };
+        inline void set_size_in_pixel(glm::vec2 new_size) {
+            set_height_in_pixel(new_size[1]);
+            set_width_in_pixel(new_size[0]);
+        };
+        inline void set_width_in_pixel(double new_width) {
+            if(a_width == new_width && a_last_width_definition == _Size_Definition::Pixel_Size) return;
+            a_width = new_width;
+            a_last_width_definition = _Size_Definition::Pixel_Size;
+        };
 
         //*********
         //
@@ -157,19 +206,12 @@ namespace scls {
         //
         //*********
 
-        // Apply the thing to do before hierarchy to the given image
-        virtual void _apply_before_hierarchy_to_image(Image* image_to_apply){};
-        // Apply the border of this object to an image
-        virtual void apply_border_to_image(Image* image_to_apply);
-        // Apply the hierarchy to the given image
-        virtual void _apply_hierarchy_to_image(Image* image_to_apply);
-        // Returns a new image
-        virtual Image* _new_texture();
         // Unload the texture
         inline void unload_texture() {if(a_texture != 0){delete a_texture; a_texture = 0;}};
 
         // Getters and setters
-        inline Image* texture() {return a_texture;};
+        inline Texture* texture() {return a_texture;};
+        inline VAO* vao() {return a_vao;};
 
     private:
         //*********
@@ -207,8 +249,10 @@ namespace scls {
         //
         //*********
 
-        // Image of this object
-        Image* a_texture = 0;
+        // Texture of this object
+        Texture* a_texture = 0;
+        // VAO of this object (GUI)
+        VAO* a_vao = 0;
 
         //*********
         //
@@ -216,16 +260,22 @@ namespace scls {
         //
         //*********
 
+        // Height of the object
+        double a_height = 1.0;
         // Last type of definition of the border width
         _Border_Width_Definition a_last_border_width_definition_type = _Border_Width_Definition::Pixel_Border_Width;
-        // Last type of definition of the size
-        _Size_Definition a_last_size_definition = _Size_Definition::Pixel_Size;
+        // Last type of definition of the height
+        _Size_Definition a_last_height_definition = _Size_Definition::Pixel_Size;
+        // Last type of definition of the position
+        _Size_Definition a_last_position_definition = _Size_Definition::Pixel_Size;
+        // Last type of definition of the width
+        _Size_Definition a_last_width_definition = _Size_Definition::Pixel_Size;
         // Parent of this object
         GUI_Object* a_parent = 0;
         // Position of the object in pixels
         glm::vec2 a_position = glm::vec2(0, 0);
-        // Scale of the object in pixels
-        glm::vec2 a_size = glm::vec2(1, 1);
+        // Height of the object
+        double a_width = 1.0;
     };
 
     class GUI_Text : public GUI_Object {
@@ -239,7 +289,7 @@ namespace scls {
         //*********
 
         // Most basic GUI_Object constructor
-        GUI_Text(Window& window, std::string name);
+        GUI_Text(Window& window, std::string name, GUI_Object* parent);
         // GUI_Object destructor
         virtual ~GUI_Text();
 
@@ -253,8 +303,8 @@ namespace scls {
 
         // Soft reset the text
         virtual void soft_reset() {GUI_Object::soft_reset();a_text_modified_during_this_frame = false;};
-        // Apply the text to the given image
-        virtual void _apply_before_hierarchy_to_image(Image* image_to_apply);
+        // Update the texture of the text
+        void update_text_texture();
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline unsigned int cursor_position() {return a_cursor_position;};
@@ -265,7 +315,7 @@ namespace scls {
         inline void set_font_color(Color new_font_color) {a_font_color = new_font_color;};
         inline void set_font_family(std::string new_font_family) {a_font_family = new_font_family;};
         inline void set_font_size(unsigned short new_font_size) {a_font_size = new_font_size;};
-        void set_text(std::string new_text, bool move_cursor = true) {if(new_text == a_text)return;a_text = new_text;if(move_cursor)set_cursor_position(window_struct().text_image_generator()->plain_text_size(a_text));a_text_modified_during_this_frame = true;};
+        void set_text(std::string new_text, bool move_cursor = true) {if(new_text == a_text)return;a_text = new_text;if(move_cursor)set_cursor_position(window_struct().text_image_generator()->plain_text_size(a_text));a_text_modified_during_this_frame = true;update_text_texture();};
         inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {a_text_alignment_horizontal = new_text_alignment_horizontal;};
         inline void set_text_offset(double new_text_offset) {set_text_offset(glm::vec4(new_text_offset));};
         inline void set_text_offset(glm::vec4 new_text_offset) {a_text_offset = new_text_offset;};
@@ -311,7 +361,6 @@ namespace scls {
         bool a_use_cursor = false;
     };
 
-    /*
     class GUI_Text_Input : public GUI_Text {
         // Class representing an GUI object displaying and getting a text into the window
     public:
@@ -322,10 +371,8 @@ namespace scls {
         //
         //*********
 
-        // Most parent GUI_Text_Input constructor used for displaying
-        GUI_Text_Input(_Window_Advanced_Struct* window_struct, Transform_Object* transform_object, std::string name, std::string texture_name, std::string vao_name = "GUI_default");
-        // GUI_Text_Input constructor used for displaying
-        GUI_Text_Input(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name = "GUI_default");
+        // Most basic GUI_Text_Input constructor
+        GUI_Text_Input(Window& window, std::string name, GUI_Object* parent);
         // GUI_Text_Input destructor
         virtual ~GUI_Text_Input();
 
@@ -350,6 +397,7 @@ namespace scls {
         std::string a_last_descriptive_character = "";
     };
 
+    /*
     class GUI_File_Explorer : public GUI_Object {
         // Class representing an GUI object to explore files
     public :
@@ -451,6 +499,11 @@ namespace scls {
         // GUI_Page destructor
         virtual ~GUI_Page();
 
+        // Function called after that the window is resized
+        virtual void after_window_resizing(glm::vec2 last_scale){
+            Object::after_window_resizing(last_scale);
+            parent_object()->set_size_in_pixel(glm::vec2(window_struct()->window_width(), window_struct()->window_height()));
+        };
         // Render the page
         virtual void render();
         // Update the event of the page
@@ -478,7 +531,7 @@ namespace scls {
     // Add a child object to the object
     template<typename O>
     O* GUI_Object::new_object(std::string name, unsigned int x, unsigned int y) {
-        O* new_object = new O(window_struct(), name);
+        O* new_object = new O(window_struct(), name, this);
         new_object->set_position_in_pixel(glm::vec2(x, y));
 
         children().push_back(new_object);

@@ -25,27 +25,35 @@ namespace scls {
     //*********
 
     // Most basic GUI_Object constructor
-    GUI_Object::GUI_Object(Window& window, std::string name) : a_name(name), a_window(window) {
-
+    GUI_Object::GUI_Object(Window& window, std::string name, GUI_Object* parent) : a_name(name), a_parent(parent), a_window(window) {
+        a_texture = window.new_texture(name, 1, 1, Color(255, 255, 255));
+        a_vao = window.vao("hud_default");
     }
 
-    // Apply the border of this object to an image
-    void GUI_Object::apply_border_to_image(Image* image_to_apply) {
-        image_to_apply->fill_rect(0, 0, image_to_apply->width(), border_width()[0], border_color());
-        image_to_apply->fill_rect(0, border_width()[0], border_width()[1], image_to_apply->height() - border_width()[0], border_color());
-        image_to_apply->fill_rect(border_width()[1], image_to_apply->height() - border_width()[2], image_to_apply->width() - border_width()[1], border_width()[2], border_color());
-        image_to_apply->fill_rect(image_to_apply->width() - border_width()[3], border_width()[0], border_width()[3], image_to_apply->height() - (border_width()[0] + border_width()[2]), border_color());
-    }
+    // Render the object
+    void GUI_Object::render(glm::vec3 scale_multiplier) {
+        // Handle the matrix
+        glm::vec2 absolute_scale_to_apply = absolute_scale();
+        glm::mat4 matrix = glm::mat4(1.0);
+        matrix = glm::scale(matrix, glm::vec3(absolute_scale_to_apply[0], absolute_scale_to_apply[1], 1) * scale_multiplier);
 
-    // Update the texture of the object
-    void GUI_Object::update_texture() {
-        if(!a_modified_during_this_frame) return;
+        // Handle the background color
+        vao()->get_shader_program()->set_uniform4f_value("background_color", background_color());
 
-        unload_texture();
-        a_texture = _new_texture();
-        apply_border_to_image(a_texture);
-        _apply_before_hierarchy_to_image(a_texture);
-        _apply_hierarchy_to_image(a_texture);
+        // Handle the texture and the VAO
+        if(texture() == 0) {
+            vao()->get_shader_program()->set_uniformb_value("texture_binded", false);
+        }
+        else {
+            texture()->bind(); // Bind the texture
+            vao()->get_shader_program()->set_uniformb_value("texture_binded", true);
+        }
+        vao()->get_shader_program()->set_uniform4fv_value("model", matrix);
+        vao()->render();
+
+        for(int i = 0;i<static_cast<int>(children().size());i++) {
+            children()[i]->render();
+        }
     }
 
     // Update the size of the GUI elements
@@ -53,11 +61,6 @@ namespace scls {
         // Check border
         if(a_last_border_width_definition_type == _Border_Width_Definition::Pixel_Border_Width) {
             set_border_width(border_width());
-        }
-
-        // Check size
-        if(a_last_size_definition == _Size_Definition::Pixel_Size) {
-            set_size_in_pixel(size_in_pixel());
         }
     }
 
@@ -72,18 +75,62 @@ namespace scls {
     //
     //*********
 
-    // Apply the hierarchy to the given image
-    void GUI_Object::_apply_hierarchy_to_image(Image* image_to_apply) {
-        for(int i = 0;i<static_cast<int>(children().size());i++) {
-            Image* to_paste = children()[i]->texture();
-            glm::vec2 to_paste_position = children()[i]->position_in_pixel();
-            image_to_apply->paste(to_paste, to_paste_position[0], to_paste_position[1]);
-        }
-    };
+    // Returns the absolute scale of the object
+    glm::vec2 GUI_Object::absolute_scale() const {
+        double height = a_height;
+        double width = a_width;
 
-    // Returns a new image
-    Image* GUI_Object::_new_texture() {
-        return new Image(size_in_pixel()[0], size_in_pixel()[1], background_color());
+        // Handle height
+        if(a_last_height_definition == _Size_Definition::Pixel_Size) {
+            height *= one_pixel_in_absolute_scale()[1];
+        }
+
+        // Handle width
+        if(a_last_width_definition == _Size_Definition::Pixel_Size) {
+            width *= one_pixel_in_absolute_scale()[0];
+        }
+        return glm::vec2(width, height);
+    }
+
+    // Returns the height in pixel of the object
+    double GUI_Object::height_in_pixel() const {
+        if(a_last_height_definition == _Size_Definition::Object_Size) {
+            if(parent() != 0) {
+                // Apply the object size
+                return parent()->height_in_pixel() * a_height;
+            }
+        }
+        return a_height;
+    }
+
+    // Returns the position in pixel of the object
+    glm::vec2 GUI_Object::position_in_pixel() const {
+        if(a_last_position_definition == _Size_Definition::Object_Size) {
+            if(parent() != 0) {
+                // Apply the object position
+                glm::vec2 object_size = size_in_pixel();
+                glm::vec2 parent_size = parent()->size_in_pixel();
+                glm::vec2 to_return = glm::vec2(- object_size[0] / 2.0, - object_size[1] / 2.0) + parent_size * a_position;
+                return to_return;
+            }
+        }
+        return a_position;
+    }
+
+    // Returns the scale of the object according to its parent
+    glm::vec2 GUI_Object::scale() const {
+
+    }
+
+    // Returns the width in pixel of the object
+    double GUI_Object::width_in_pixel() const {
+        if(a_last_width_definition == _Size_Definition::Object_Size) {
+            if(parent() != 0) {
+                // Apply the object size
+                return parent()->width_in_pixel() * a_width;
+            }
+        }
+        return a_width;
     }
 
     //*********
@@ -93,7 +140,7 @@ namespace scls {
     //*********
 
     // Most basic GUI_Text constructor
-    GUI_Text::GUI_Text(Window& window, std::string name) : GUI_Object(window, name) {
+    GUI_Text::GUI_Text(Window& window, std::string name, GUI_Object* parent) : GUI_Object(window, name, parent) {
 
     }
 
@@ -112,14 +159,10 @@ namespace scls {
         }
         else if(final_cursor_position == static_cast<int>(cursor_position())) return;
         set_cursor_position(final_cursor_position);
-
-        set_modified_during_this_frame_true();
     }
 
-    // Update the text texture
-    void GUI_Text::_apply_before_hierarchy_to_image(Image* image_to_apply) {
-        GUI_Object::_apply_before_hierarchy_to_image(image_to_apply);
-
+    // Update the texture of the text
+    void GUI_Text::update_text_texture() {
         if(text() != "") {
             // Create the text
             glm::vec2 position_to_apply = position_in_pixel();
@@ -130,24 +173,20 @@ namespace scls {
             current_text_image->set_cursor_position(cursor_position());
             current_text_image->set_use_cursor(use_cursor());
 
-            // Paste the text
+            // Apply the text
             Image* image_to_paste = current_text_image->image();
-            glm::vec2 text_position = glm::vec2(0, 0);
-            if(text_alignment_horizontal() == Alignment_Horizontal::H_Center) {
-                text_position[0] = static_cast<double>(image_to_apply->width()) / 2.0 - static_cast<double>(image_to_paste->width()) / 2.0;
-            }
-            image_to_apply->paste(image_to_paste, position_to_apply[0] + text_position[0], position_to_apply[1] + text_position[1]);
-            delete image_to_paste; image_to_paste = 0;
+            texture()->set_image(image_to_paste);
             delete current_text_image; current_text_image = 0;
         }
-    }
+        else {
+            texture()->set_image(0);
+        }
+    };
 
     // GUI_Text destructor
     GUI_Text::~GUI_Text() {
 
     }
-
-    /*
 
     //*********
     //
@@ -155,14 +194,9 @@ namespace scls {
     //
     //*********
 
-    // Most parent GUI_Text_Input constructor used for displaying
-    GUI_Text_Input::GUI_Text_Input(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : GUI_Text(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), transform_parent, name, texture_name, vao_name) {
-        set_use_cursor(true);
-    }
+    // Most basic GUI_Text constructor
+    GUI_Text_Input::GUI_Text_Input(Window& window, std::string name, GUI_Object* parent) : GUI_Text(window, name, parent) {
 
-    // GUI_Text_Input constructor used for displaying
-    GUI_Text_Input::GUI_Text_Input(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name) : GUI_Text(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), parent, name, texture_name, vao_name) {
-        set_use_cursor(true);
     }
 
     // GUI_Text_Input destructor
@@ -288,94 +322,96 @@ namespace scls {
 
     // Input the inputed text
     void GUI_Text_Input::input_text() {
-        if(!is_focused()) return;
+        if(!is_focused() && false) return;
 
         std::string final_text = text();
         std::string to_add = "";
 
         // Handle letters
-        bool should_capitalise = (window_struct()->key_state("left shift") == Key_State::Pressed || window_struct()->key_state("right shift") == Key_State::Pressed);
-        if(window_struct()->key_state_frame("a") == Key_State::Pressed) { to_add += "a";  }
-        if(window_struct()->key_state_frame("b") == Key_State::Pressed) { to_add += "b";  }
-        if(window_struct()->key_state_frame("c") == Key_State::Pressed) { to_add += "c";  }
-        if(window_struct()->key_state_frame("d") == Key_State::Pressed) { to_add += "d";  }
-        if(window_struct()->key_state_frame("e") == Key_State::Pressed) { to_add += "e";  }
-        if(window_struct()->key_state_frame("f") == Key_State::Pressed) { to_add += "f";  }
-        if(window_struct()->key_state_frame("g") == Key_State::Pressed) { to_add += "g";  }
-        if(window_struct()->key_state_frame("h") == Key_State::Pressed) { to_add += "h";  }
-        if(window_struct()->key_state_frame("i") == Key_State::Pressed) { to_add += "i";  }
-        if(window_struct()->key_state_frame("j") == Key_State::Pressed) { to_add += "j";  }
-        if(window_struct()->key_state_frame("k") == Key_State::Pressed) { to_add += "k";  }
-        if(window_struct()->key_state_frame("l") == Key_State::Pressed) { to_add += "l";  }
-        if(window_struct()->key_state_frame("m") == Key_State::Pressed) { to_add += "m";  }
-        if(window_struct()->key_state_frame("n") == Key_State::Pressed) { to_add += "n";  }
-        if(window_struct()->key_state_frame("o") == Key_State::Pressed) { to_add += "o";  }
-        if(window_struct()->key_state_frame("p") == Key_State::Pressed) { to_add += "p";  }
-        if(window_struct()->key_state_frame("q") == Key_State::Pressed) { to_add += "q";  }
-        if(window_struct()->key_state_frame("r") == Key_State::Pressed) { to_add += "r";  }
-        if(window_struct()->key_state_frame("s") == Key_State::Pressed) { to_add += "s";  }
-        if(window_struct()->key_state_frame("t") == Key_State::Pressed) { to_add += "t";  }
-        if(window_struct()->key_state_frame("u") == Key_State::Pressed) { to_add += "u";  }
-        if(window_struct()->key_state_frame("v") == Key_State::Pressed) { to_add += "v";  }
-        if(window_struct()->key_state_frame("w") == Key_State::Pressed) { to_add += "w";  }
-        if(window_struct()->key_state_frame("x") == Key_State::Pressed) { to_add += "x";  }
-        if(window_struct()->key_state_frame("y") == Key_State::Pressed) { to_add += "y";  }
-        if(window_struct()->key_state_frame("z") == Key_State::Pressed) { to_add += "z";  }
+        bool should_capitalise = (window_struct().key_state("left shift") == Key_State::Pressed || window_struct().key_state("right shift") == Key_State::Pressed);
+        if(window_struct().key_state_frame("a") == Key_State::Pressed) { to_add += "a";  }
+        if(window_struct().key_state_frame("b") == Key_State::Pressed) { to_add += "b";  }
+        if(window_struct().key_state_frame("c") == Key_State::Pressed) { to_add += "c";  }
+        if(window_struct().key_state_frame("d") == Key_State::Pressed) { to_add += "d";  }
+        if(window_struct().key_state_frame("e") == Key_State::Pressed) { to_add += "e";  }
+        if(window_struct().key_state_frame("f") == Key_State::Pressed) { to_add += "f";  }
+        if(window_struct().key_state_frame("g") == Key_State::Pressed) { to_add += "g";  }
+        if(window_struct().key_state_frame("h") == Key_State::Pressed) { to_add += "h";  }
+        if(window_struct().key_state_frame("i") == Key_State::Pressed) { to_add += "i";  }
+        if(window_struct().key_state_frame("j") == Key_State::Pressed) { to_add += "j";  }
+        if(window_struct().key_state_frame("k") == Key_State::Pressed) { to_add += "k";  }
+        if(window_struct().key_state_frame("l") == Key_State::Pressed) { to_add += "l";  }
+        if(window_struct().key_state_frame("m") == Key_State::Pressed) { to_add += "m";  }
+        if(window_struct().key_state_frame("n") == Key_State::Pressed) { to_add += "n";  }
+        if(window_struct().key_state_frame("o") == Key_State::Pressed) { to_add += "o";  }
+        if(window_struct().key_state_frame("p") == Key_State::Pressed) { to_add += "p";  }
+        if(window_struct().key_state_frame("q") == Key_State::Pressed) { to_add += "q";  }
+        if(window_struct().key_state_frame("r") == Key_State::Pressed) { to_add += "r";  }
+        if(window_struct().key_state_frame("s") == Key_State::Pressed) { to_add += "s";  }
+        if(window_struct().key_state_frame("t") == Key_State::Pressed) { to_add += "t";  }
+        if(window_struct().key_state_frame("u") == Key_State::Pressed) { to_add += "u";  }
+        if(window_struct().key_state_frame("v") == Key_State::Pressed) { to_add += "v";  }
+        if(window_struct().key_state_frame("w") == Key_State::Pressed) { to_add += "w";  }
+        if(window_struct().key_state_frame("x") == Key_State::Pressed) { to_add += "x";  }
+        if(window_struct().key_state_frame("y") == Key_State::Pressed) { to_add += "y";  }
+        if(window_struct().key_state_frame("z") == Key_State::Pressed) { to_add += "z";  }
         // Extended alphabet letter
-        if(window_struct()->key_state_frame("ù") == Key_State::Pressed) { to_add += "ù";  }
+        if(window_struct().key_state_frame("ù") == Key_State::Pressed) { to_add += "ù";  }
 
         // Handle numbers
-        if(window_struct()->key_state_frame("0") == Key_State::Pressed) { to_add += "0";  }
-        if(window_struct()->key_state_frame("1") == Key_State::Pressed) { to_add += "1";  }
-        if(window_struct()->key_state_frame("2") == Key_State::Pressed) { to_add += "2";  }
-        if(window_struct()->key_state_frame("3") == Key_State::Pressed) { to_add += "3";  }
-        if(window_struct()->key_state_frame("4") == Key_State::Pressed) { to_add += "4";  }
-        if(window_struct()->key_state_frame("5") == Key_State::Pressed) { to_add += "5";  }
-        if(window_struct()->key_state_frame("6") == Key_State::Pressed) { to_add += "6";  }
-        if(window_struct()->key_state_frame("7") == Key_State::Pressed) { to_add += "7";  }
-        if(window_struct()->key_state_frame("8") == Key_State::Pressed) { to_add += "8";  }
-        if(window_struct()->key_state_frame("9") == Key_State::Pressed) { to_add += "9";  }
-        if(window_struct()->key_state_frame("=") == Key_State::Pressed) { to_add += "=";  }
+        if(window_struct().key_state_frame("0") == Key_State::Pressed) { to_add += "0";  }
+        if(window_struct().key_state_frame("1") == Key_State::Pressed) { to_add += "1";  }
+        if(window_struct().key_state_frame("2") == Key_State::Pressed) { to_add += "2";  }
+        if(window_struct().key_state_frame("3") == Key_State::Pressed) { to_add += "3";  }
+        if(window_struct().key_state_frame("4") == Key_State::Pressed) { to_add += "4";  }
+        if(window_struct().key_state_frame("5") == Key_State::Pressed) { to_add += "5";  }
+        if(window_struct().key_state_frame("6") == Key_State::Pressed) { to_add += "6";  }
+        if(window_struct().key_state_frame("7") == Key_State::Pressed) { to_add += "7";  }
+        if(window_struct().key_state_frame("8") == Key_State::Pressed) { to_add += "8";  }
+        if(window_struct().key_state_frame("9") == Key_State::Pressed) { to_add += "9";  }
+        if(window_struct().key_state_frame("=") == Key_State::Pressed) { to_add += "=";  }
 
         // Handle numbers / special characters
-        if(window_struct()->key_state_frame("&") == Key_State::Pressed) { to_add += "&";  }
-        if(window_struct()->key_state_frame("é") == Key_State::Pressed) { to_add += "é";  }
-        if(window_struct()->key_state_frame("\"") == Key_State::Pressed) { to_add += "\"";  }
-        if(window_struct()->key_state_frame("'") == Key_State::Pressed) { to_add += "'";  }
-        if(window_struct()->key_state_frame("(") == Key_State::Pressed) { to_add += "(";  }
-        if(window_struct()->key_state_frame("-") == Key_State::Pressed) { to_add += "-";  }
-        if(window_struct()->key_state_frame("è") == Key_State::Pressed) { to_add += "è";  }
-        if(window_struct()->key_state_frame("_") == Key_State::Pressed) { to_add += "_";  }
-        if(window_struct()->key_state_frame("ç") == Key_State::Pressed) { to_add += "ç";  }
-        if(window_struct()->key_state_frame("à") == Key_State::Pressed) { to_add += "à";  }
-        if(window_struct()->key_state_frame("^") == Key_State::Pressed) { to_add += "^";  }
+        if(window_struct().key_state_frame("&") == Key_State::Pressed) { to_add += "&";  }
+        if(window_struct().key_state_frame("é") == Key_State::Pressed) { to_add += "é";  }
+        if(window_struct().key_state_frame("\"") == Key_State::Pressed) { to_add += "\"";  }
+        if(window_struct().key_state_frame("'") == Key_State::Pressed) { to_add += "'";  }
+        if(window_struct().key_state_frame("(") == Key_State::Pressed) { to_add += "(";  }
+        if(window_struct().key_state_frame("-") == Key_State::Pressed) { to_add += "-";  }
+        if(window_struct().key_state_frame("è") == Key_State::Pressed) { to_add += "è";  }
+        if(window_struct().key_state_frame("_") == Key_State::Pressed) { to_add += "_";  }
+        if(window_struct().key_state_frame("ç") == Key_State::Pressed) { to_add += "ç";  }
+        if(window_struct().key_state_frame("à") == Key_State::Pressed) { to_add += "à";  }
+        if(window_struct().key_state_frame("^") == Key_State::Pressed) { to_add += "^";  }
 
         // Handle ponctuation
-        if(window_struct()->key_state_frame(":") == Key_State::Pressed) { to_add += ":";  }
-        if(window_struct()->key_state_frame(";") == Key_State::Pressed) { to_add += ";";  }
-        if(window_struct()->key_state_frame(",") == Key_State::Pressed) { to_add += ",";  }
-        if(window_struct()->key_state_frame("!") == Key_State::Pressed) { to_add += "!";  }
+        if(window_struct().key_state_frame(":") == Key_State::Pressed) { to_add += ":";  }
+        if(window_struct().key_state_frame(";") == Key_State::Pressed) { to_add += ";";  }
+        if(window_struct().key_state_frame(",") == Key_State::Pressed) { to_add += ",";  }
+        if(window_struct().key_state_frame("!") == Key_State::Pressed) { to_add += "!";  }
 
         // Handle special characters
-        if(window_struct()->key_state_frame("backspace") == Key_State::Pressed && final_text.size() > 0) {
+        if(window_struct().key_state_frame("backspace") == Key_State::Pressed && final_text.size() > 0) {
             unsigned int size_to_delete = 1;
             if(final_text[final_text.size() - size_to_delete] == '>') {
                 while(final_text[final_text.size() - size_to_delete] != '<' && size_to_delete < final_text.size() - 1) size_to_delete++;
             }
-            set_cursor_position(cursor_position() - window_struct()->text_image_generator()->plain_text_size(final_text.substr(final_text.size() - size_to_delete, size_to_delete)));
+            set_cursor_position(cursor_position() - window_struct().text_image_generator()->plain_text_size(final_text.substr(final_text.size() - size_to_delete, size_to_delete)));
             final_text = final_text.substr(0, final_text.size() - size_to_delete);
         }
-        if(window_struct()->key_state_frame("space") == Key_State::Pressed) { to_add += " ";  }
-        if(window_struct()->key_state_frame(")") == Key_State::Pressed) { to_add += ")";  }
-        if(window_struct()->key_state_frame("$") == Key_State::Pressed) { to_add += "$";  }
+        if(window_struct().key_state_frame("space") == Key_State::Pressed) { to_add += " ";  }
+        if(window_struct().key_state_frame(")") == Key_State::Pressed) { to_add += ")";  }
+        if(window_struct().key_state_frame("$") == Key_State::Pressed) { to_add += "$";  }
         to_add = _format(to_add, should_capitalise);
 
-        if(window_struct()->key_state_frame("enter") == Key_State::Pressed) { to_add += "</br>";  }
+        if(window_struct().key_state_frame("enter") == Key_State::Pressed) { to_add += "</br>";  }
 
         to_add = to_utf_8(to_add);
-        set_cursor_position(cursor_position() + window_struct()->text_image_generator()->plain_text_size(to_add));
         final_text += to_add;
-        if(final_text != text()) set_text(final_text, false);
+        if(final_text != text()) {
+            set_cursor_position(cursor_position() + window_struct().text_image_generator()->plain_text_size(to_add));
+            set_text(final_text, false);
+        }
     }
 
     // Update the text
@@ -387,10 +423,11 @@ namespace scls {
 
     // Update the cursor behavior
     void GUI_Text_Input::update_cursor() {
-        if(window_struct()->key_state_frame("left arrow") == Key_State::Pressed) move_cursor(-1);
-        if(window_struct()->key_state_frame("right arrow") == Key_State::Pressed) move_cursor(1);
+        if(window_struct().key_state_frame("left arrow") == Key_State::Pressed) move_cursor(-1);
+        if(window_struct().key_state_frame("right arrow") == Key_State::Pressed) move_cursor(1);
     }
 
+    /*
     //*********
     //
     // GUI_File_Explorer main function
@@ -683,16 +720,13 @@ namespace scls {
     GUI_Page::GUI_Page(_Window_Advanced_Struct* window_struct, std::string name) : Object(window_struct, name) {
         set_vao("hud_default");
 
-        a_parent_object = new GUI_Object((*reinterpret_cast<Window*>(window_struct)), "main");
-        a_texture = window_struct->new_texture("_" + name + "_texture");
+        a_parent_object = new GUI_Object((*reinterpret_cast<Window*>(window_struct)), "main", 0);
     }
 
     // Render the page
     void GUI_Page::render(){
-        if(parent_object()->modified_during_this_frame()) {
-            texture()->set_image(parent_object()->texture());
-        }
-        Object::render();
+        // Render the object
+        parent_object()->render(absolute_scale());
 
         // Soft reset the page
         parent_object()->soft_reset();
@@ -741,6 +775,8 @@ namespace scls {
         if(a_focused_object != 0) {
             a_focused_object->set_is_focused(true);
         }
+
+        parent_object()->update_event();
     }
 
     // GUI_Page destructor
