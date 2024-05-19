@@ -92,7 +92,7 @@ namespace scls {
         // Render the object
         virtual void render(glm::vec3 scale_multiplier = glm::vec3(1, 1, 1));
         // Reset the object without changing it
-        virtual void soft_reset() {set_is_overflighted(false);set_is_focused(false);a_modified_during_this_frame = false;for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->soft_reset();};
+        virtual void soft_reset() {set_is_overflighted(false);set_is_focused(false);for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->soft_reset();};
         // Update the object
         virtual void update(){ for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->update(); };
         // Update the object for the events
@@ -107,7 +107,6 @@ namespace scls {
         inline bool is_focused() const {return a_is_focused;};
         inline bool is_main_object() const {return a_is_main_object;};
         inline bool is_overflighted() const {return a_is_overflighted;};
-        inline bool modified_during_this_frame() const {return a_modified_during_this_frame;};
         inline std::string name() {return a_name;};
         inline unsigned long overflighted_cursor() {return a_overflighted_cursor;};
         inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
@@ -126,8 +125,6 @@ namespace scls {
         //*********
 
         // Scale handling
-        // Returns the absolute position of the object
-        inline glm::vec2 absolute_position_in_scale() const {return glm::vec2(x_in_scale(), y_in_scale());};
         // Returns the absolute scale of the object
         inline glm::vec2 absolute_scale() const { return glm::vec2(width_in_absolute_scale(), height_in_absolute_scale()); }
         // Returns the ratio w / h of the absolute scale of the object
@@ -138,6 +135,8 @@ namespace scls {
         glm::vec4 border_width_in_scale() const;
         // Returns the height in absolute scale of the object
         double height_in_absolute_scale() const;
+        // Returns the absolute position of the object
+        inline glm::vec2 position_in_absolute_scale() const {return glm::vec2(x_in_absolute_scale(), y_in_absolute_scale());};
         // Set the border width of all the side in absolute scale
         inline void set_border_width_in_absolute_scale(double new_border_width) {set_border_width_in_absolute_scale(glm::vec4(new_border_width));};
         // Set the border with in absolute scale
@@ -157,9 +156,9 @@ namespace scls {
         // Returns the width in absolute scale of the object
         double width_in_absolute_scale() const;
         // Returns the x position in absolute scale of the object
-        double x_in_scale() const;
+        double x_in_absolute_scale() const;
         // Returns the y position in absolute scale of the object
-        double y_in_scale() const;
+        double y_in_absolute_scale() const;
 
         // Returns the absolute position of the object in pixel
         inline glm::vec2 absolute_position_in_pixel() {if(parent() == 0)return glm::vec2(0, 0);return position_in_pixel() + parent()->absolute_position_in_pixel();};
@@ -168,13 +167,13 @@ namespace scls {
         // Returns the height in pixel of the object
         double height_in_pixel() const;
         // Returns if a pixel is in the object
-        inline bool is_in_rect_in_pixel(unsigned short x_position, unsigned short y_position) { return x_position >= position_in_pixel()[0] && y_position >= position_in_pixel()[1]; };
+        inline bool is_in_rect_in_pixel(unsigned short x_position, unsigned short y_position) const { return x_position >= x_in_pixel() && y_position >= y_in_pixel() && x_position < x_in_pixel() + width_in_pixel(); };
         // Returns the scale of a pixel in the absolute window
         inline glm::vec2 one_pixel_in_absolute_scale() const { return glm::vec2(1.0 / static_cast<double>(window_struct().window_width()), 1.0 / static_cast<double>(window_struct().window_height())); };
         // Returns the scale of a pixel in the object
         inline glm::vec2 one_pixel_in_scale() const { return one_pixel_in_absolute_scale() / absolute_scale(); };
         // Returns the absolute position of the object in pixel
-        inline glm::vec2 position_in_pixel() const {return glm::vec2(width_in_pixel(), height_in_pixel());};
+        inline glm::vec2 position_in_pixel() const {return glm::vec2(x_in_pixel(), y_in_pixel());};
         // Set the border width of all the side in pixel
         inline void set_border_width_in_pixel(double new_border_width) {set_border_width_in_pixel(glm::vec4(new_border_width));};
         // Set the border with in absolute scale
@@ -208,7 +207,11 @@ namespace scls {
 
         // Getters and setters
         inline Image* image() {return texture()->get_image();};
+        inline void set_texture_alignment_horizontal(Alignment_Horizontal new_texture_alignment_horizontal) {a_texture_alignment_horizontal = new_texture_alignment_horizontal;};
+        inline void set_texture_alignment_vertical(Alignment_Vertical new_texture_alignment_vertical) {a_texture_alignment_vertical = new_texture_alignment_vertical;};;
         inline Texture* texture() {return a_texture;};
+        inline Alignment_Horizontal texture_alignment_horizontal() const {return a_texture_alignment_horizontal;};
+        inline Alignment_Vertical texture_alignment_vertical() const {return a_texture_alignment_vertical;};
         inline bool texture_fill_object() {return a_texture_fill_object;};
         inline VAO* vao() {return a_vao;};
 
@@ -229,8 +232,6 @@ namespace scls {
         bool a_is_overflighted = false;
         // If the object is the main object of the page or not
         bool a_is_main_object = false;
-        // If the object is modified during this frame
-        bool a_modified_during_this_frame = false;
         // Name of this object
         std::string a_name = "";
         // Id of the overflighted cursor
@@ -259,6 +260,10 @@ namespace scls {
 
         // Texture of this object
         Texture* a_texture = 0;
+        // Horizontal alignment of the texture, if the texture does not fill the object
+        Alignment_Horizontal a_texture_alignment_horizontal = Alignment_Horizontal::H_Center;
+        // Vertical alignment of the texture, if the texture does not fill the object
+        Alignment_Vertical a_texture_alignment_vertical = Alignment_Vertical::V_Center;
         // If the texture fill the object or not
         bool a_texture_fill_object = false;
         // VAO of this object (GUI)

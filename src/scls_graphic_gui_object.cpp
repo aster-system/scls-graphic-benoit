@@ -33,7 +33,7 @@ namespace scls {
     // Render the object
     void GUI_Object::render(glm::vec3 scale_multiplier) {
         // Handle the matrix
-        glm::vec2 absolute_position_to_apply = absolute_position_in_scale();
+        glm::vec2 absolute_position_to_apply = position_in_absolute_scale();
         glm::vec2 absolute_scale_to_apply = absolute_scale();
         glm::mat4 matrix = glm::mat4(1.0);
         matrix = glm::translate(matrix, glm::vec3(absolute_position_to_apply[0], absolute_position_to_apply[1], 0));
@@ -47,7 +47,17 @@ namespace scls {
         vao()->get_shader_program()->set_uniform4f_value("border_width", border_width_in_scale());
 
         // Handle the rect of the texture
-        vao()->get_shader_program()->set_uniform4f_value("texture_rect", glm::vec4(0, 0, static_cast<double>(image()->width()) / static_cast<double>(width_in_pixel()), static_cast<double>(image()->height()) / static_cast<double>(height_in_pixel())));
+        double height_texture = static_cast<double>(image()->height()) / static_cast<double>(height_in_pixel());
+        double width_texture = static_cast<double>(image()->width()) / static_cast<double>(width_in_pixel());
+        // Handle the x position
+        double x_texture = 0;
+        if(texture_alignment_horizontal() == Alignment_Horizontal::H_Center) x_texture = 0.5 - width_texture / 2.0;
+        else if(texture_alignment_horizontal() == Alignment_Horizontal::H_Right) x_texture = 1.0 - width_texture;
+        // Handle the y position
+        double y_texture = 0;
+        if(texture_alignment_vertical() == Alignment_Vertical::V_Center) y_texture = 0.5 - height_texture / 2.0;
+        else if(texture_alignment_vertical() == Alignment_Vertical::V_Top) y_texture = 1.0 - height_texture;
+        vao()->get_shader_program()->set_uniform4f_value("texture_rect", glm::vec4(x_texture, y_texture, width_texture, height_texture));
 
         // Handle the texture and the VAO
         if(texture() == 0) {
@@ -63,6 +73,8 @@ namespace scls {
         for(int i = 0;i<static_cast<int>(children().size());i++) {
             children()[i]->render(scale_multiplier);
         }
+
+        soft_reset();
     }
 
     // GUI_Object destructor
@@ -72,7 +84,7 @@ namespace scls {
 
     //*********
     //
-    // Texture handling
+    // Transform handling
     //
     //*********
 
@@ -176,7 +188,7 @@ namespace scls {
         double to_return = 0.0;
 
         if(a_last_x_definition == _Size_Definition::Scale_Size) {
-            to_return = absolute_position_in_scale()[0] * one_pixel_in_absolute_scale()[0] - (width_in_pixel() / 2.0);
+            to_return = ((x_in_absolute_scale() + 1.0) / 2.0) * window_struct().window_width() - (width_in_pixel() / 2.0);
         }
         else {
             to_return = a_x;
@@ -186,7 +198,7 @@ namespace scls {
     }
 
     // Returns the x position in absolute scale of the object
-    double GUI_Object::x_in_scale() const {
+    double GUI_Object::x_in_absolute_scale() const {
         double to_return = 0.0;
 
         if(a_last_x_definition == _Size_Definition::Pixel_Size) {
@@ -194,6 +206,7 @@ namespace scls {
         }
         else {
             to_return = a_x;
+            if(parent() != 0) to_return += parent()->x_in_absolute_scale();
 
             // Handle the pixel perfect system
             double divisor = one_pixel_in_scale()[0];
@@ -214,7 +227,7 @@ namespace scls {
         double to_return = 0.0;
 
         if(a_last_y_definition == _Size_Definition::Scale_Size) {
-            to_return = a_y * one_pixel_in_absolute_scale()[1];
+            to_return = ((y_in_absolute_scale() + 1.0) / 2.0) * window_struct().window_height() - (height_in_pixel() / 2.0);
         }
         else {
             to_return = a_y;
@@ -224,7 +237,7 @@ namespace scls {
     }
 
     // Returns the y position in absolute scale of the object
-    double GUI_Object::y_in_scale() const {
+    double GUI_Object::y_in_absolute_scale() const {
         double to_return = 0.0;
 
         if(a_last_y_definition == _Size_Definition::Pixel_Size) {
@@ -232,6 +245,7 @@ namespace scls {
         }
         else {
             to_return = a_y;
+            if(parent() != 0) to_return += parent()->y_in_absolute_scale();
 
             // Handle the pixel perfect system
             double divisor = one_pixel_in_scale()[1];
@@ -436,7 +450,7 @@ namespace scls {
 
     // Input the inputed text
     void GUI_Text_Input::input_text() {
-        if(!is_focused() && false) return;
+        if(!is_focused()) return;
 
         std::string final_text = text();
         std::string to_add = "";
@@ -852,14 +866,12 @@ namespace scls {
         Object::update_event();
 
         // Check the overflighted cursor
-        GUI_Object* current_overflighted_object = 0;
-        GUI_Object* to_analyse = parent_object();
-        for(int i = 0;i<static_cast<int>(to_analyse->children().size());i++) {
-            GUI_Object* current_object = to_analyse->children()[i];
+        GUI_Object* current_overflighted_object = parent_object();
+        for(int i = 0;i<static_cast<int>(current_overflighted_object->children().size());i++) {
+            GUI_Object* current_object = current_overflighted_object->children()[i];
             if(current_object->visible() && current_object->is_in_rect_in_pixel(window_struct()->mouse_x(), window_struct()->window_height() - window_struct()->mouse_y())) {
                 current_overflighted_object = current_object;
                 i = -1;
-                to_analyse = current_overflighted_object;
             }
         }
 

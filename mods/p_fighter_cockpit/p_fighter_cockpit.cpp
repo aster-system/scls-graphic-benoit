@@ -40,16 +40,17 @@ namespace p_fighter_cockpit {
         title->set_size_in_scale(glm::vec2(0.8, 0.2));
         title->set_text("P-Fighter");
         title->set_text_alignment_horizontal(scls::Alignment_Horizontal::H_Center);
-        title->set_position_in_scale(glm::vec2(0.0, 0.8));
+        title->set_position_in_scale(glm::vec2(0.0, 0.7));
 
-        /*// Test
+        // Test
         scls::GUI_Text_Input* test = parent_object()->new_object<scls::GUI_Text_Input>("test", 0, 0);
         test->set_font_color(scls::white);
         test->set_font_size(20);
-        test->set_position_in_object_size(glm::vec2(0.5, 0.5));
-        test->set_size_in_object_size(glm::vec2(0.9, 0.4));
+        test->set_position_in_scale(glm::vec2(0.0, 0.4));
+        test->set_size_in_scale(glm::vec2(0.8, 0.3));
         test->set_text("P-Fighter");
-        test->set_text_alignment_horizontal(scls::Alignment_Horizontal::H_Center); //*/
+        test->set_text_alignment_horizontal(scls::Alignment_Horizontal::H_Center);
+        test->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
     }
 
     // P_Fighter_Cockpit destructor
