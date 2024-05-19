@@ -28,18 +28,21 @@ namespace p_fighter_cockpit {
     P_Fighter_Cockpit::P_Fighter_Cockpit(scls::_Window_Advanced_Struct* window, std::string name) : scls::GUI_Page(window, name) {
         set_scale(glm::vec3(2, 2, 1));
         parent_object()->set_background_color(scls::Color(0, 15, 0));
-        parent_object()->set_size_in_pixel(glm::vec2(900, 450));
+        parent_object()->set_position_in_pixel(glm::vec2(0, 0));
+        parent_object()->set_size_in_scale(glm::vec2(1, 1));
 
-        /*// Create the title of the page
-        scls::GUI_Text* title = parent_object()->new_object<scls::GUI_Text>("main_title", 0, 0);
+        // Create the title of the page
+        scls::GUI_Text* title = parent_object()->new_object<scls::GUI_Text>("main_title", 0, 720);
+        title->set_border_color(scls::red);
+        title->set_border_width_in_pixel(1);
         title->set_font_color(scls::white);
         title->set_font_size(150);
-        title->set_position_in_object_size(glm::vec2(0.5, 0.1));
-        title->set_size_in_object_size(glm::vec2(1.0, 0.2));
+        title->set_size_in_scale(glm::vec2(0.8, 0.2));
         title->set_text("P-Fighter");
         title->set_text_alignment_horizontal(scls::Alignment_Horizontal::H_Center);
+        title->set_position_in_scale(glm::vec2(0.0, 0.8));
 
-        // Test
+        /*// Test
         scls::GUI_Text_Input* test = parent_object()->new_object<scls::GUI_Text_Input>("test", 0, 0);
         test->set_font_color(scls::white);
         test->set_font_size(20);

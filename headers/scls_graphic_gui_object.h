@@ -61,15 +61,10 @@
 // Using of the "scls" namespace to simplify the programmation
 namespace scls {
 
-    // Type of border width definition
-    enum _Border_Width_Definition {
-        Pixel_Border_Width
-    };
-
     // Type of size definition
     enum _Size_Definition {
         Pixel_Size,
-        Object_Size
+        Scale_Size
     };
 
     class GUI_Object {
@@ -84,11 +79,13 @@ namespace scls {
 
         // Most basic GUI_Object constructor
         GUI_Object(Window& window, std::string name, GUI_Object* parent);
+        // GUI_Object constructor made to the parent object of the page
+        GUI_Object(Window& window, std::string name) : GUI_Object(window, name, 0) {a_is_main_object = true;};
         // GUI_Object destructor
         virtual ~GUI_Object();
 
         // Function called after that the window is resized
-        virtual void after_window_resizing(glm::vec2 last_scale){ update_gui_scale(); for(int i = 0;i<static_cast<int>(a_children.size());i++) a_children[i]->after_window_resizing(last_scale); };
+        virtual void after_window_resizing(glm::vec2 last_scale){ for(int i = 0;i<static_cast<int>(a_children.size());i++) a_children[i]->after_window_resizing(last_scale); };
         // Add a child object to the object
         template<typename O>
         O* new_object(std::string name, unsigned int x, unsigned int y);
@@ -100,24 +97,21 @@ namespace scls {
         virtual void update(){ for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->update(); };
         // Update the object for the events
         virtual void update_event() {for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->update_event();};
-        // Update the size of the GUI elements
-        virtual void update_gui_scale();
 
         // Getters and setters (ONLY WITH ATRIBUTES)
         inline Color background_color() {return a_background_color;};
         inline Color border_color() {return a_border_color;};
-        inline glm::vec4 border_width() {return a_border_width;};
         inline std::vector<GUI_Object*>& children() {return a_children;};
         inline bool is_clicked(unsigned int button) { return is_overflighted() && window_struct().mouse_button_clicked(button); };
         inline bool is_clicked_during_this_frame(unsigned int button) { return is_overflighted() && window_struct().mouse_button_clicked_during_this_frame(button); };
-        inline bool is_focused() {return a_is_focused;};
+        inline bool is_focused() const {return a_is_focused;};
+        inline bool is_main_object() const {return a_is_main_object;};
         inline bool is_overflighted() const {return a_is_overflighted;};
         inline bool modified_during_this_frame() const {return a_modified_during_this_frame;};
+        inline std::string name() {return a_name;};
         inline unsigned long overflighted_cursor() {return a_overflighted_cursor;};
         inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
         inline void set_border_color(Color new_color) {a_border_color = new_color;};
-        inline void set_border_width(double new_border_width) {set_border_width(glm::vec4(new_border_width));};
-        inline void set_border_width(glm::vec4 new_border_width) {a_border_width = new_border_width;a_last_border_width_definition_type = _Border_Width_Definition::Pixel_Border_Width;};
         inline void set_is_focused(bool new_is_focused) {a_is_focused = new_is_focused;};
         inline void set_is_overflighted(bool new_is_overflighted) {a_is_overflighted = new_is_overflighted;};
         inline void set_overflighted_cursor(unsigned long new_overflighted_cursor) {a_overflighted_cursor = new_overflighted_cursor;};
@@ -131,74 +125,77 @@ namespace scls {
         //
         //*********
 
+        // Scale handling
+        // Returns the absolute position of the object
+        inline glm::vec2 absolute_position_in_scale() const {return glm::vec2(x_in_scale(), y_in_scale());};
         // Returns the absolute scale of the object
-        glm::vec2 absolute_scale() const;
+        inline glm::vec2 absolute_scale() const { return glm::vec2(width_in_absolute_scale(), height_in_absolute_scale()); }
+        // Returns the ratio w / h of the absolute scale of the object
+        inline double absolute_scale_ratio() const { return width_in_absolute_scale() / height_in_absolute_scale(); };
+        // Returns the absolute scale of the border width
+        glm::vec4 border_width_in_absolute_scale() const;
+        // Returns the scale of the border width
+        glm::vec4 border_width_in_scale() const;
+        // Returns the height in absolute scale of the object
+        double height_in_absolute_scale() const;
+        // Set the border width of all the side in absolute scale
+        inline void set_border_width_in_absolute_scale(double new_border_width) {set_border_width_in_absolute_scale(glm::vec4(new_border_width));};
+        // Set the border with in absolute scale
+        inline void set_border_width_in_absolute_scale(glm::vec4 new_border_width) {a_border_width = new_border_width;a_last_border_width_definition_type = _Size_Definition::Scale_Size;};
+        // Set the height in scale
+        inline void set_height_in_scale(double new_height) { a_height = new_height; a_last_height_definition = _Size_Definition::Scale_Size; };
+        // Set the position in scale
+        inline void set_position_in_scale(glm::vec2 new_position) { set_x_in_scale(new_position[0]); set_y_in_scale(new_position[1]); };
+        // Set the size in scale
+        inline void set_size_in_scale(glm::vec2 new_size) { set_height_in_scale(new_size[1]); set_width_in_scale(new_size[0]); };
+        // Set the width in scale
+        inline void set_width_in_scale(double new_width) { a_width = new_width; a_last_width_definition = _Size_Definition::Scale_Size; };
+        // Set the x position in scale
+        inline void set_x_in_scale(double new_x) { a_x = new_x; a_last_x_definition = _Size_Definition::Scale_Size; };
+        // Set the y position in scale
+        inline void set_y_in_scale(double new_y) { a_y = new_y; a_last_y_definition = _Size_Definition::Scale_Size; };
+        // Returns the width in absolute scale of the object
+        double width_in_absolute_scale() const;
+        // Returns the x position in absolute scale of the object
+        double x_in_scale() const;
+        // Returns the y position in absolute scale of the object
+        double y_in_scale() const;
+
         // Returns the absolute position of the object in pixel
         inline glm::vec2 absolute_position_in_pixel() {if(parent() == 0)return glm::vec2(0, 0);return position_in_pixel() + parent()->absolute_position_in_pixel();};
         // Returns the rect of the object in pixels
         inline glm::vec4 absolute_rect_in_pixel() { return glm::vec4(absolute_position_in_pixel()[0], absolute_position_in_pixel()[1], size_in_pixel()[0], size_in_pixel()[1]); };
-        // Returns if a pixel is in the object
-        inline bool is_in_rect_in_pixel(unsigned short x_position, unsigned short y_position) {
-            return x_position >= position_in_pixel()[0] && y_position >= position_in_pixel()[1];
-        };
-        // Returns the scale of the object according to its parent
-        glm::vec2 scale() const;
-
         // Returns the height in pixel of the object
         double height_in_pixel() const;
+        // Returns if a pixel is in the object
+        inline bool is_in_rect_in_pixel(unsigned short x_position, unsigned short y_position) { return x_position >= position_in_pixel()[0] && y_position >= position_in_pixel()[1]; };
         // Returns the scale of a pixel in the absolute window
-        inline glm::vec2 one_pixel_in_absolute_scale() const {
-            return glm::vec2(1.0 / static_cast<double>(window_struct().window_width()), 1.0 / static_cast<double>(window_struct().window_height()));
-        };
-        // Returns the position in pixel of the object
-        glm::vec2 position_in_pixel() const;
-        // Set the height in object size
-        inline void set_height_in_object_size(double new_height) {
-            if(a_height == new_height && a_last_height_definition == _Size_Definition::Object_Size) return;
-            a_height = new_height;
-            a_last_height_definition = _Size_Definition::Object_Size;
-        };
-        // Set the position in object position
-        inline void set_position_in_object_size(glm::vec2 new_position) {
-            a_position = new_position;
-            a_last_position_definition = _Size_Definition::Object_Size;
-        };
-        // Set the size in object size
-        inline void set_size_in_object_size(glm::vec2 new_size) {
-            set_height_in_object_size(new_size[1]);
-            set_width_in_object_size(new_size[0]);
-        };
-        // Set the width in object size
-        inline void set_width_in_object_size(double new_width) {
-            if(a_width == new_width && a_last_width_definition == _Size_Definition::Object_Size) return;
-            a_width = new_width;
-            a_last_width_definition = _Size_Definition::Object_Size;
-        };
+        inline glm::vec2 one_pixel_in_absolute_scale() const { return glm::vec2(1.0 / static_cast<double>(window_struct().window_width()), 1.0 / static_cast<double>(window_struct().window_height())); };
+        // Returns the scale of a pixel in the object
+        inline glm::vec2 one_pixel_in_scale() const { return one_pixel_in_absolute_scale() / absolute_scale(); };
+        // Returns the absolute position of the object in pixel
+        inline glm::vec2 position_in_pixel() const {return glm::vec2(width_in_pixel(), height_in_pixel());};
+        // Set the border width of all the side in pixel
+        inline void set_border_width_in_pixel(double new_border_width) {set_border_width_in_pixel(glm::vec4(new_border_width));};
+        // Set the border with in absolute scale
+        inline void set_border_width_in_pixel(glm::vec4 new_border_width) {a_border_width = new_border_width;a_last_border_width_definition_type = _Size_Definition::Pixel_Size;};
         // Returns the size in pixel of the object
         inline glm::vec2 size_in_pixel() const {return glm::vec2(width_in_pixel(), height_in_pixel());};
         // Returns the width in pixel of the object
         double width_in_pixel() const;
+        // Returns the x position in pixel of the object
+        double x_in_pixel() const;
+        // Returns the y position in pixel of the object
+        double y_in_pixel() const;
 
         // Getters and setters
         inline GUI_Object* parent() const {return a_parent;};
-        inline void set_position_in_pixel(glm::vec2 new_position) {
-            a_position = new_position;
-            a_last_position_definition = _Size_Definition::Pixel_Size;
-        };
-        inline void set_height_in_pixel(double new_height) {
-            if(a_height == new_height && a_last_height_definition == _Size_Definition::Pixel_Size) return;
-            a_height = new_height;
-            a_last_height_definition = _Size_Definition::Pixel_Size;
-        };
-        inline void set_size_in_pixel(glm::vec2 new_size) {
-            set_height_in_pixel(new_size[1]);
-            set_width_in_pixel(new_size[0]);
-        };
-        inline void set_width_in_pixel(double new_width) {
-            if(a_width == new_width && a_last_width_definition == _Size_Definition::Pixel_Size) return;
-            a_width = new_width;
-            a_last_width_definition = _Size_Definition::Pixel_Size;
-        };
+        inline void set_position_in_pixel(glm::vec2 new_position) { set_x_in_pixel(new_position[0]); set_y_in_pixel(new_position[1]); };
+        inline void set_height_in_pixel(double new_height) { a_height = new_height; a_last_height_definition = _Size_Definition::Pixel_Size; };
+        inline void set_size_in_pixel(glm::vec2 new_size) { set_height_in_pixel(new_size[1]); set_width_in_pixel(new_size[0]); };
+        inline void set_width_in_pixel(double new_width) { a_width = new_width; a_last_width_definition = _Size_Definition::Pixel_Size; };
+        inline void set_x_in_pixel(double new_x) { a_x = new_x; a_last_x_definition = _Size_Definition::Pixel_Size; };
+        inline void set_y_in_pixel(double new_y) { a_y = new_y; a_last_y_definition = _Size_Definition::Pixel_Size; };
 
         //*********
         //
@@ -210,7 +207,9 @@ namespace scls {
         inline void unload_texture() {if(a_texture != 0){delete a_texture; a_texture = 0;}};
 
         // Getters and setters
+        inline Image* image() {return texture()->get_image();};
         inline Texture* texture() {return a_texture;};
+        inline bool texture_fill_object() {return a_texture_fill_object;};
         inline VAO* vao() {return a_vao;};
 
     private:
@@ -222,16 +221,14 @@ namespace scls {
 
         // Background color of the object
         Color a_background_color = Color(0, 0, 0, 0);
-        // Color of the border
-        Color a_border_color = Color(0, 0, 0, 255);
-        // Width of the border
-        glm::vec4 a_border_width = glm::vec4(0, 0, 0, 0);
         // Children of this object
         std::vector<GUI_Object*> a_children = std::vector<GUI_Object*>();
         // If the object is focused or not
         bool a_is_focused = false;
         // If the object is overfighted or not
         bool a_is_overflighted = false;
+        // If the object is the main object of the page or not
+        bool a_is_main_object = false;
         // If the object is modified during this frame
         bool a_modified_during_this_frame = false;
         // Name of this object
@@ -245,12 +242,25 @@ namespace scls {
 
         //*********
         //
+        // Border handling
+        //
+        //*********
+
+        // Color of the border
+        Color a_border_color = Color(0, 0, 0, 255);
+        // Width of the border
+        glm::vec4 a_border_width = glm::vec4(0, 0, 0, 0);
+
+        //*********
+        //
         // Texture handling
         //
         //*********
 
         // Texture of this object
         Texture* a_texture = 0;
+        // If the texture fill the object or not
+        bool a_texture_fill_object = false;
         // VAO of this object (GUI)
         VAO* a_vao = 0;
 
@@ -263,19 +273,25 @@ namespace scls {
         // Height of the object
         double a_height = 1.0;
         // Last type of definition of the border width
-        _Border_Width_Definition a_last_border_width_definition_type = _Border_Width_Definition::Pixel_Border_Width;
+        _Size_Definition a_last_border_width_definition_type = _Size_Definition::Pixel_Size;
         // Last type of definition of the height
         _Size_Definition a_last_height_definition = _Size_Definition::Pixel_Size;
-        // Last type of definition of the position
-        _Size_Definition a_last_position_definition = _Size_Definition::Pixel_Size;
         // Last type of definition of the width
         _Size_Definition a_last_width_definition = _Size_Definition::Pixel_Size;
+        // Last type of definition of the x
+        _Size_Definition a_last_x_definition = _Size_Definition::Pixel_Size;
+        // Last type of definition of the y
+        _Size_Definition a_last_y_definition = _Size_Definition::Pixel_Size;
         // Parent of this object
         GUI_Object* a_parent = 0;
         // Position of the object in pixels
         glm::vec2 a_position = glm::vec2(0, 0);
         // Height of the object
         double a_width = 1.0;
+        // X position of th eobject
+        double a_x = 0.0;
+        // Y position of th eobject
+        double a_y = 0.0;
     };
 
     class GUI_Text : public GUI_Object {
@@ -502,7 +518,7 @@ namespace scls {
         // Function called after that the window is resized
         virtual void after_window_resizing(glm::vec2 last_scale){
             Object::after_window_resizing(last_scale);
-            parent_object()->set_size_in_pixel(glm::vec2(window_struct()->window_width(), window_struct()->window_height()));
+            // parent_object()->set_size_in_pixel(glm::vec2(window_struct()->window_width(), window_struct()->window_height()));
         };
         // Render the page
         virtual void render();

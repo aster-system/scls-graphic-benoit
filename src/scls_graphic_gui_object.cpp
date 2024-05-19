@@ -26,19 +26,28 @@ namespace scls {
 
     // Most basic GUI_Object constructor
     GUI_Object::GUI_Object(Window& window, std::string name, GUI_Object* parent) : a_name(name), a_parent(parent), a_window(window) {
-        a_texture = window.new_texture(name, 1, 1, Color(255, 255, 255));
+        a_texture = window.new_texture(name, 1, 1, Color(255, 255, 255, 0));
         a_vao = window.vao("hud_default");
     }
 
     // Render the object
     void GUI_Object::render(glm::vec3 scale_multiplier) {
         // Handle the matrix
+        glm::vec2 absolute_position_to_apply = absolute_position_in_scale();
         glm::vec2 absolute_scale_to_apply = absolute_scale();
         glm::mat4 matrix = glm::mat4(1.0);
+        matrix = glm::translate(matrix, glm::vec3(absolute_position_to_apply[0], absolute_position_to_apply[1], 0));
         matrix = glm::scale(matrix, glm::vec3(absolute_scale_to_apply[0], absolute_scale_to_apply[1], 1) * scale_multiplier);
 
         // Handle the background color
         vao()->get_shader_program()->set_uniform4f_value("background_color", background_color());
+
+        // Handle the border
+        vao()->get_shader_program()->set_uniform4f_value("border_color", border_color());
+        vao()->get_shader_program()->set_uniform4f_value("border_width", border_width_in_scale());
+
+        // Handle the rect of the texture
+        vao()->get_shader_program()->set_uniform4f_value("texture_rect", glm::vec4(0, 0, static_cast<double>(image()->width()) / static_cast<double>(width_in_pixel()), static_cast<double>(image()->height()) / static_cast<double>(height_in_pixel())));
 
         // Handle the texture and the VAO
         if(texture() == 0) {
@@ -52,15 +61,7 @@ namespace scls {
         vao()->render();
 
         for(int i = 0;i<static_cast<int>(children().size());i++) {
-            children()[i]->render();
-        }
-    }
-
-    // Update the size of the GUI elements
-    void GUI_Object::update_gui_scale() {
-        // Check border
-        if(a_last_border_width_definition_type == _Border_Width_Definition::Pixel_Border_Width) {
-            set_border_width(border_width());
+            children()[i]->render(scale_multiplier);
         }
     }
 
@@ -75,62 +76,175 @@ namespace scls {
     //
     //*********
 
-    // Returns the absolute scale of the object
-    glm::vec2 GUI_Object::absolute_scale() const {
-        double height = a_height;
-        double width = a_width;
-
-        // Handle height
-        if(a_last_height_definition == _Size_Definition::Pixel_Size) {
-            height *= one_pixel_in_absolute_scale()[1];
+    // Returns the absolute scale of the border width
+    glm::vec4 GUI_Object::border_width_in_absolute_scale() const {
+        if(a_last_border_width_definition_type == _Size_Definition::Pixel_Size) {
+            glm::vec2 one_pixel = one_pixel_in_absolute_scale();
+            double multiplier = absolute_scale_ratio();
+            return a_border_width * glm::vec4(one_pixel[1] * multiplier, one_pixel[0], one_pixel[1] * multiplier, one_pixel[0]);
         }
+        return a_border_width;
+    };
 
-        // Handle width
-        if(a_last_width_definition == _Size_Definition::Pixel_Size) {
-            width *= one_pixel_in_absolute_scale()[0];
+    // Returns the scale of the border width
+    glm::vec4 GUI_Object::border_width_in_scale() const {
+        if(a_last_border_width_definition_type == _Size_Definition::Pixel_Size) {
+            glm::vec2 one_pixel = one_pixel_in_scale();
+            return a_border_width * glm::vec4(one_pixel[1], one_pixel[0], one_pixel[1], one_pixel[0]);
         }
-        return glm::vec2(width, height);
+        return a_border_width;
     }
 
     // Returns the height in pixel of the object
     double GUI_Object::height_in_pixel() const {
-        if(a_last_height_definition == _Size_Definition::Object_Size) {
+        if(a_last_height_definition == _Size_Definition::Scale_Size) {
             if(parent() != 0) {
                 // Apply the object size
                 return parent()->height_in_pixel() * a_height;
+            }
+            else if(is_main_object()) {
+                return window_struct().window_height();
             }
         }
         return a_height;
     }
 
-    // Returns the position in pixel of the object
-    glm::vec2 GUI_Object::position_in_pixel() const {
-        if(a_last_position_definition == _Size_Definition::Object_Size) {
-            if(parent() != 0) {
-                // Apply the object position
-                glm::vec2 object_size = size_in_pixel();
-                glm::vec2 parent_size = parent()->size_in_pixel();
-                glm::vec2 to_return = glm::vec2(- object_size[0] / 2.0, - object_size[1] / 2.0) + parent_size * a_position;
-                return to_return;
-            }
+    // Returns the height in absolute scale of the object
+    double GUI_Object::height_in_absolute_scale() const {
+        double to_return = a_height;
+
+        if(a_last_height_definition == _Size_Definition::Pixel_Size) {
+            to_return *= one_pixel_in_absolute_scale()[1];
         }
-        return a_position;
-    }
+        else if(parent() != 0) {
+            to_return *= parent()->height_in_absolute_scale();
 
-    // Returns the scale of the object according to its parent
-    glm::vec2 GUI_Object::scale() const {
+            // Handle the pixel perfect system
+            double divisor = one_pixel_in_absolute_scale()[1];
+            unsigned int total = 0;
+            while(to_return > divisor) {
+                to_return -= divisor;
+                total++;
+            }
+            if(to_return > divisor / 2.0) total++;
+            to_return = total * divisor;
+        }
 
+        return to_return;
     }
 
     // Returns the width in pixel of the object
     double GUI_Object::width_in_pixel() const {
-        if(a_last_width_definition == _Size_Definition::Object_Size) {
+        if(a_last_width_definition == _Size_Definition::Scale_Size) {
             if(parent() != 0) {
                 // Apply the object size
                 return parent()->width_in_pixel() * a_width;
             }
+            else if(is_main_object()) {
+                return window_struct().window_width();
+            }
         }
         return a_width;
+    }
+
+    // Returns the width in absolute scale of the object
+    double GUI_Object::width_in_absolute_scale() const {
+        double to_return = a_width;
+
+        if(a_last_width_definition == _Size_Definition::Pixel_Size) {
+            to_return *= one_pixel_in_absolute_scale()[0];
+        }
+        else if(parent() != 0) {
+            to_return *= parent()->width_in_absolute_scale();
+
+            // Handle the pixel perfect system
+            double divisor = one_pixel_in_absolute_scale()[0];
+            unsigned int total = 0;
+            while(to_return > divisor) {
+                to_return -= divisor;
+                total++;
+            }
+            if(to_return > divisor / 2.0) total++;
+            to_return = total * divisor;
+        }
+
+        return to_return;
+    }
+
+    // Returns the x position in pixel of the object
+    double GUI_Object::x_in_pixel() const {
+        double to_return = 0.0;
+
+        if(a_last_x_definition == _Size_Definition::Scale_Size) {
+            to_return = absolute_position_in_scale()[0] * one_pixel_in_absolute_scale()[0] - (width_in_pixel() / 2.0);
+        }
+        else {
+            to_return = a_x;
+        }
+
+        return to_return;
+    }
+
+    // Returns the x position in absolute scale of the object
+    double GUI_Object::x_in_scale() const {
+        double to_return = 0.0;
+
+        if(a_last_x_definition == _Size_Definition::Pixel_Size) {
+            to_return = a_x * (one_pixel_in_absolute_scale()[0] * 2.0) + (-1.0 + width_in_absolute_scale());
+        }
+        else {
+            to_return = a_x;
+
+            // Handle the pixel perfect system
+            double divisor = one_pixel_in_scale()[0];
+            unsigned int total = 0;
+            while(to_return > divisor) {
+                to_return -= divisor;
+                total++;
+            }
+            if(to_return > divisor / 2.0) total++;
+            to_return = total * divisor;
+        }
+
+        return to_return;
+    }
+
+    // Returns the y position in pixel of the object
+    double GUI_Object::y_in_pixel() const {
+        double to_return = 0.0;
+
+        if(a_last_y_definition == _Size_Definition::Scale_Size) {
+            to_return = a_y * one_pixel_in_absolute_scale()[1];
+        }
+        else {
+            to_return = a_y;
+        }
+
+        return to_return;
+    }
+
+    // Returns the y position in absolute scale of the object
+    double GUI_Object::y_in_scale() const {
+        double to_return = 0.0;
+
+        if(a_last_y_definition == _Size_Definition::Pixel_Size) {
+            to_return = a_y * (one_pixel_in_absolute_scale()[1] * 2.0) + (-1.0 + height_in_absolute_scale());
+        }
+        else {
+            to_return = a_y;
+
+            // Handle the pixel perfect system
+            double divisor = one_pixel_in_scale()[1];
+            unsigned int total = 0;
+            while(to_return > divisor) {
+                to_return -= divisor;
+                total++;
+            }
+            if(to_return > divisor / 2.0) total++;
+            to_return = total * divisor;
+        }
+
+        return to_return;
     }
 
     //*********
@@ -720,7 +834,7 @@ namespace scls {
     GUI_Page::GUI_Page(_Window_Advanced_Struct* window_struct, std::string name) : Object(window_struct, name) {
         set_vao("hud_default");
 
-        a_parent_object = new GUI_Object((*reinterpret_cast<Window*>(window_struct)), "main", 0);
+        a_parent_object = new GUI_Object((*reinterpret_cast<Window*>(window_struct)), "main");
     }
 
     // Render the page
