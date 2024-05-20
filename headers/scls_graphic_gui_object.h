@@ -63,6 +63,7 @@ namespace scls {
 
     // Type of size definition
     enum _Size_Definition {
+        Absolute_Scale_Size,
         Pixel_Size,
         Scale_Size
     };
@@ -86,7 +87,12 @@ namespace scls {
 
         // Function called after that the window is resized
         virtual void after_window_resizing(glm::vec2 last_scale){ for(int i = 0;i<static_cast<int>(a_children.size());i++) a_children[i]->after_window_resizing(last_scale); };
+        // Delete a child of the object
+        void delete_child(GUI_Object* object);
         // Add a child object to the object
+        template<typename O>
+        O* new_object(std::string name);
+        // Add a child object to the object with its position
         template<typename O>
         O* new_object(std::string name, unsigned int x, unsigned int y);
         // Render the object
@@ -107,7 +113,7 @@ namespace scls {
         inline bool is_focused() const {return a_is_focused;};
         inline bool is_main_object() const {return a_is_main_object;};
         inline bool is_overflighted() const {return a_is_overflighted;};
-        inline std::string name() {return a_name;};
+        inline std::string name() const {return a_name;};
         inline unsigned long overflighted_cursor() {return a_overflighted_cursor;};
         inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
         inline void set_border_color(Color new_color) {a_border_color = new_color;};
@@ -124,15 +130,13 @@ namespace scls {
         //
         //*********
 
-        // Scale handling
+        // Absolute scale handling
         // Returns the absolute scale of the object
         inline glm::vec2 absolute_scale() const { return glm::vec2(width_in_absolute_scale(), height_in_absolute_scale()); }
         // Returns the ratio w / h of the absolute scale of the object
         inline double absolute_scale_ratio() const { return width_in_absolute_scale() / height_in_absolute_scale(); };
         // Returns the absolute scale of the border width
         glm::vec4 border_width_in_absolute_scale() const;
-        // Returns the scale of the border width
-        glm::vec4 border_width_in_scale() const;
         // Returns the height in absolute scale of the object
         double height_in_absolute_scale() const;
         // Returns the absolute position of the object
@@ -140,7 +144,19 @@ namespace scls {
         // Set the border width of all the side in absolute scale
         inline void set_border_width_in_absolute_scale(double new_border_width) {set_border_width_in_absolute_scale(glm::vec4(new_border_width));};
         // Set the border with in absolute scale
-        inline void set_border_width_in_absolute_scale(glm::vec4 new_border_width) {a_border_width = new_border_width;a_last_border_width_definition_type = _Size_Definition::Scale_Size;};
+        inline void set_border_width_in_absolute_scale(glm::vec4 new_border_width) {a_border_width = new_border_width;a_last_border_width_definition_type = _Size_Definition::Absolute_Scale_Size;};
+        // Returns the width in absolute scale of the object
+        double width_in_absolute_scale() const;
+        // Returns the x position in absolute scale of the object
+        double x_in_absolute_scale() const;
+        // Returns the y position in absolute scale of the object
+        double y_in_absolute_scale() const;
+
+        // Scale handling
+        // Returns the scale of the border width
+        glm::vec4 border_width_in_scale() const;
+        // Returns the height in scale of the object
+        double height_in_scale() const;
         // Set the height in scale
         inline void set_height_in_scale(double new_height) { a_height = new_height; a_last_height_definition = _Size_Definition::Scale_Size; };
         // Set the position in scale
@@ -153,13 +169,14 @@ namespace scls {
         inline void set_x_in_scale(double new_x) { a_x = new_x; a_last_x_definition = _Size_Definition::Scale_Size; };
         // Set the y position in scale
         inline void set_y_in_scale(double new_y) { a_y = new_y; a_last_y_definition = _Size_Definition::Scale_Size; };
-        // Returns the width in absolute scale of the object
-        double width_in_absolute_scale() const;
-        // Returns the x position in absolute scale of the object
-        double x_in_absolute_scale() const;
-        // Returns the y position in absolute scale of the object
-        double y_in_absolute_scale() const;
+        // Returns the width in scale of the object
+        double width_in_scale() const;
+        // Returns the x position in scale of the object
+        double x_in_scale() const;
+        // Returns the y position in scale of the object
+        double y_in_scale() const;
 
+        // Pixel handling
         // Returns the absolute position of the object in pixel
         inline glm::vec2 absolute_position_in_pixel() {if(parent() == 0)return glm::vec2(0, 0);return position_in_pixel() + parent()->absolute_position_in_pixel();};
         // Returns the rect of the object in pixels
@@ -186,6 +203,16 @@ namespace scls {
         double x_in_pixel() const;
         // Returns the y position in pixel of the object
         double y_in_pixel() const;
+
+        // Movement handling
+        // Move at the bottom of an object in its parent
+        inline void move_bottom_of_object_in_parent(GUI_Object* object, double offset = 0.0) { set_y_in_scale(object->y_in_absolute_scale() - (object->height_in_absolute_scale() + height_in_absolute_scale() + offset)); };
+        // Move at the left the object in its parent
+        inline void move_left_of_parent(double offset = 0.0) { set_x_in_scale(-1.0 + (width_in_scale() + offset)); };
+        // Move at the right the object in its parent
+        inline void move_right_of_parent(double offset = 0.0) { set_x_in_scale(1.0 - (width_in_scale() + offset)); };
+        // Move at the top the object in its parent
+        inline void move_top_of_parent(double offset = 0.0) { set_y_in_scale(1.0 - (height_in_scale() + offset)); };
 
         // Getters and setters
         inline GUI_Object* parent() const {return a_parent;};
@@ -548,6 +575,12 @@ namespace scls {
         // Parent object of the page
         GUI_Object* a_parent_object = 0;
     };
+
+    // Add a child object to the object
+    template<typename O>
+    O* GUI_Object::new_object(std::string name) {
+        return new_object<O>(name, 0, 0);
+    }
 
     // Add a child object to the object
     template<typename O>

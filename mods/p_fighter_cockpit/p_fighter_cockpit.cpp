@@ -16,7 +16,7 @@
 
 #include "p_fighter_cockpit.h"
 
-// The namespace "scls_documentalist_gui" is used to simplify the all.
+// The namespace "p_fighter_cockpit" is used to simplify the all.
 namespace p_fighter_cockpit {
     //*********
     //
