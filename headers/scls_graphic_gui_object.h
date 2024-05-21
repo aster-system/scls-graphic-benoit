@@ -63,6 +63,7 @@ namespace scls {
 
     // Possibles alignment of a texture
     enum Alignment_Texture {
+        T_Fit,
         T_Fit_Horizontally,
         T_Fit_Vertically,
         T_User_Defined
@@ -96,6 +97,10 @@ namespace scls {
         virtual void after_window_resizing(glm::vec2 last_scale){ for(int i = 0;i<static_cast<int>(a_children.size());i++) a_children[i]->after_window_resizing(last_scale); };
         // Delete a child of the object
         void delete_child(GUI_Object* object);
+        // Delete the children of an object
+        void delete_children();
+        // Hide all the children in the object
+        inline void hide_children() {for(int i = 0;i<static_cast<int>(a_children.size());i++) a_children[i]->set_visible(false);};
         // Add a child object to the object
         template<typename O>
         O* new_object(std::string name);
@@ -193,7 +198,7 @@ namespace scls {
         // Returns the height in pixel of the object
         double height_in_pixel() const;
         // Returns if a pixel is in the object
-        inline bool is_in_rect_in_pixel(unsigned short x_position, unsigned short y_position) const { return x_position >= x_in_pixel() && y_position >= y_in_pixel() && x_position < x_in_pixel() + width_in_pixel(); };
+        inline bool is_in_rect_in_pixel(unsigned short x_position, unsigned short y_position) const { return x_position >= x_in_pixel() && y_position >= y_in_pixel() && x_position < x_in_pixel() + width_in_pixel() && y_position < y_in_pixel() + height_in_pixel(); };
         // Returns the scale of a pixel in the absolute window
         inline glm::vec2 one_pixel_in_absolute_scale() const { return glm::vec2(1.0 / static_cast<double>(window_struct().window_width()), 1.0 / static_cast<double>(window_struct().window_height())); };
         // Returns the scale of a pixel in the object
@@ -215,13 +220,17 @@ namespace scls {
 
         // Movement handling
         // Move at the bottom of an object in its parent
-        inline void move_bottom_of_object_in_parent(GUI_Object* object, double offset = 0.0) { set_y_in_scale(object->y_in_absolute_scale() - (object->height_in_absolute_scale() + height_in_absolute_scale() + offset)); };
+        inline void move_bottom_of_object_in_parent(GUI_Object* object, double offset = 0.0) { set_y_in_scale(object->y_in_scale() - (object->height_in_scale() + height_in_scale() + offset)); };
         // Move at the bottom of its parent
         inline void move_bottom_of_parent(double offset = 0.0) { set_y_in_scale(-1.0 + (height_in_scale() + offset)); };
         // Move at the left the object in its parent
         inline void move_left_of_parent(double offset = 0.0) { set_x_in_scale(-1.0 + (width_in_scale() + offset)); };
+        // Move at the right of an object in its parent
+        inline void move_right_of_object_in_parent(GUI_Object* object, double offset = 0.0) { set_x_in_scale(object->x_in_scale() + (object->width_in_scale() + width_in_scale() + offset)); };
         // Move at the right the object in its parent
         inline void move_right_of_parent(double offset = 0.0) { set_x_in_scale(1.0 - (width_in_scale() + offset)); };
+        // Move at the top of an object in its parent
+        inline void move_top_of_object_in_parent(GUI_Object* object, double offset = 0.0) { set_y_in_scale(object->y_in_scale() + (object->height_in_scale() + height_in_scale() + offset)); };
         // Move at the top the object in its parent
         inline void move_top_of_parent(double offset = 0.0) { set_y_in_scale(1.0 - (height_in_scale() + offset)); };
 
@@ -240,20 +249,32 @@ namespace scls {
         //
         //*********
 
+        // Returns the rect of the fitted texture
+        glm::vec4 fitted_texture_rect() const;
+        // Returns the rect of the horizontally fitted texture
+        glm::vec4 fitted_horizontally_texture_rect() const;
+        // Returns the rect of the vertically fitted texture
+        glm::vec4 fitted_vertically_texture_rect() const;
+        // Returns the height of the texture in scale of the object
+        inline double texture_height_in_scale() const { return static_cast<double>(image()->height()) / static_cast<double>(height_in_pixel()); };
+        // Returns the width of the texture in scale of the object
+        inline double texture_width_in_scale() const {return static_cast<double>(image()->width()) / static_cast<double>(width_in_pixel()); };
+        // Returns the rect of user defined texture
+        glm::vec4 user_defined_texture_rect() const;
         // Unload the texture
         inline void unload_texture() {if(a_texture != 0){delete a_texture; a_texture = 0;}};
 
         // Getters and setters
-        inline Image* image() {return texture()->get_image();};
+        inline Image* image() const {return texture()->get_image();};
         inline void set_texture_alignment(Alignment_Texture new_texture_alignment) {a_texture_alignment = new_texture_alignment;};
         inline void set_texture_alignment_horizontal(Alignment_Horizontal new_texture_alignment_horizontal) {a_texture_alignment_horizontal = new_texture_alignment_horizontal;};
         inline void set_texture_alignment_vertical(Alignment_Vertical new_texture_alignment_vertical) {a_texture_alignment_vertical = new_texture_alignment_vertical;};;
-        inline Texture* texture() {return a_texture;};
-        inline Alignment_Texture texture_alignment() {return a_texture_alignment;};
+        inline Texture* texture() const {return a_texture;};
+        inline Alignment_Texture texture_alignment() const {return a_texture_alignment;};
         inline Alignment_Horizontal texture_alignment_horizontal() const {return a_texture_alignment_horizontal;};
         inline Alignment_Vertical texture_alignment_vertical() const {return a_texture_alignment_vertical;};
-        inline bool texture_fill_object() {return a_texture_fill_object;};
-        inline VAO* vao() {return a_vao;};
+        inline bool texture_fill_object() const {return a_texture_fill_object;};
+        inline VAO* vao() const {return a_vao;};
 
     private:
         //*********
@@ -460,7 +481,6 @@ namespace scls {
         std::string a_last_descriptive_character = "";
     };
 
-    /*
     class GUI_File_Explorer : public GUI_Object {
         // Class representing an GUI object to explore files
     public :
@@ -471,9 +491,7 @@ namespace scls {
         //*********
 
         // GUI_File_Explorer most basic constructor
-        GUI_File_Explorer(_Window_Advanced_Struct* window_struct, Transform_Object* transform_object, std::string name, std::string texture_name, std::string vao_name = "GUI_default");
-        // GUI_File_Explorer most basic constructor used for displaying
-        GUI_File_Explorer(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name = "GUI_default");
+        GUI_File_Explorer(Window& window, std::string name, GUI_Object* parent);
         // GUI_File_Explorer destructor
         virtual ~GUI_File_Explorer();
 

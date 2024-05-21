@@ -54,6 +54,10 @@ namespace scls_documentalist_gui {
 
         // Load the entire gui
         void load();
+        // Load the create project body
+        void load_create_project_body();
+        // Load the file explorer
+        void load_file_explorer();
         // Load the help body
         void load_help_body();
         // Load the help navigation
@@ -72,8 +76,16 @@ namespace scls_documentalist_gui {
         void reload_text();
 
         // Display each pages
+        // Display the create project of the software
+        void display_create_project();
+        // Display the file explorer of the software
+        void display_file_explorer();
         // Display the help part of the software
         void display_help();
+
+        // Reset a page
+        // Reset the create project page
+        void reset_create_project_page();
 
         // Returns the parent object of the GUI
         inline scls::GUI_Object* parent_object() {return a_page->parent_object();};
@@ -87,6 +99,26 @@ namespace scls_documentalist_gui {
 
         // Main page of the GUI
         scls::GUI_Page* a_page = 0;
+
+        // Body of the create project page
+        // Parent page of the create project body
+        scls::GUI_Object* a_create_project_body = 0;
+        // Input of the name of the project
+        scls::GUI_Text_Input* a_create_project_name = 0;
+        // Title of the input of the name of the project
+        scls::GUI_Text* a_create_project_name_title = 0;
+        // Input of the path of the project
+        scls::GUI_Text* a_create_project_path = 0;
+        // Button to change the path of the project
+        scls::GUI_Text* a_create_project_path_change = 0;
+        // Title of the input of the path of the project
+        scls::GUI_Text* a_create_project_path_title = 0;
+        // Validation button of the create project body
+        scls::GUI_Text* a_create_project_validation = 0;
+
+        // Body of the file explorer
+        // Parent page of the file explorer
+        scls::GUI_File_Explorer* a_file_explorer = 0;
 
         // Body of the help
         // Parent page of the help body

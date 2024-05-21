@@ -58,33 +58,12 @@ namespace scls {
         vao()->get_shader_program()->set_uniform4f_value("border_width", border_width_in_scale());
 
         // Handle the rect of the texture
-        double height_texture = static_cast<double>(image()->height()) / static_cast<double>(height_in_pixel());
-        double width_texture = static_cast<double>(image()->width()) / static_cast<double>(width_in_pixel());
-        double x_texture = 0;
-        double y_texture = 0;
-        if(texture_alignment() == Alignment_Texture::T_User_Defined) {
-            // Handle the user defined alignment
-            if(texture_alignment_horizontal() == Alignment_Horizontal::H_Center) x_texture = 0.5 - width_texture / 2.0;
-            else if(texture_alignment_horizontal() == Alignment_Horizontal::H_Right) x_texture = 1.0 - width_texture;
-            double y_texture = 0;
-            if(texture_alignment_vertical() == Alignment_Vertical::V_Center) y_texture = 0.5 - height_texture / 2.0;
-            else if(texture_alignment_vertical() == Alignment_Vertical::V_Top) y_texture = 1.0 - height_texture;
-        }
-        else if(texture_alignment() == Alignment_Texture::T_Fit_Horizontally) {
-            // Fit horizontally the texture
-            height_texture = (width_in_absolute_scale() / height_in_absolute_scale_and_window()) / texture()->image_ratio();
-            width_texture = 1.0;
-            x_texture = 0.5 - width_texture / 2.0;
-            y_texture = 0.5 - height_texture / 2.0;
-        }
-        else if(texture_alignment() == Alignment_Texture::T_Fit_Vertically) {
-            // Fit vertically the texture
-            height_texture = 1.0;
-            width_texture = texture()->image_ratio() / (width_in_absolute_scale() / height_in_absolute_scale_and_window());
-            x_texture = 0.5 - width_texture / 2.0;
-            y_texture = 0.5 - height_texture / 2.0;
-        }
-        vao()->get_shader_program()->set_uniform4f_value("texture_rect", glm::vec4(x_texture, y_texture, width_texture, height_texture));
+        glm::vec4 final_texture_rect = glm::vec4(1);
+        if(texture_alignment() == Alignment_Texture::T_User_Defined) final_texture_rect = user_defined_texture_rect();
+        else if(texture_alignment() == Alignment_Texture::T_Fit) final_texture_rect = fitted_texture_rect();
+        else if(texture_alignment() == Alignment_Texture::T_Fit_Horizontally) final_texture_rect = fitted_horizontally_texture_rect();
+        else if(texture_alignment() == Alignment_Texture::T_Fit_Vertically) final_texture_rect = fitted_vertically_texture_rect();
+        vao()->get_shader_program()->set_uniform4f_value("texture_rect", final_texture_rect);
 
         // Handle the texture and the VAO
         if(texture() == 0) {
@@ -98,7 +77,7 @@ namespace scls {
         vao()->render();
 
         for(int i = 0;i<static_cast<int>(children().size());i++) {
-            children()[i]->render(scale_multiplier);
+            if(children()[i]->visible())children()[i]->render(scale_multiplier);
         }
 
         soft_reset();
@@ -106,7 +85,9 @@ namespace scls {
 
     // GUI_Object destructor
     GUI_Object::~GUI_Object() {
+        delete_children();
 
+        window_struct().remove_texture(texture());
     }
 
     //*********
@@ -132,6 +113,40 @@ namespace scls {
             return a_border_width * glm::vec4(one_pixel[1], one_pixel[0], one_pixel[1], one_pixel[0]);
         }
         return a_border_width;
+    }
+
+    // Delete the children of an object
+    void GUI_Object::delete_children() {
+        for(int i = 0;i<static_cast<int>(children().size());i++) {
+            delete children()[i];
+        }
+        children().clear();
+    }
+
+    // Returns the rect of the fitted texture
+    glm::vec4 GUI_Object::fitted_texture_rect() const {
+        if(texture()->image_ratio() > (width_in_absolute_scale() / height_in_absolute_scale_and_window())) {
+            return fitted_horizontally_texture_rect();
+        }
+        return fitted_vertically_texture_rect();
+    }
+
+    // Returns the rect of the horizontally fitted texture
+    glm::vec4 GUI_Object::fitted_horizontally_texture_rect() const {
+        double height_texture = (width_in_absolute_scale() / height_in_absolute_scale_and_window()) / texture()->image_ratio();
+        double width_texture = 1.0;
+        double x_texture = 0.5 - width_texture / 2.0;
+        double y_texture = 0.5 - height_texture / 2.0;
+        return glm::vec4(x_texture, y_texture, width_texture, height_texture);
+    }
+
+    // Returns the rect of the vertically fitted texture
+    glm::vec4 GUI_Object::fitted_vertically_texture_rect() const {
+        double height_texture = 1.0;
+        double width_texture = texture()->image_ratio() / (width_in_absolute_scale() / height_in_absolute_scale_and_window());
+        double x_texture = 0.5 - width_texture / 2.0;
+        double y_texture = 0.5 - height_texture / 2.0;
+        return glm::vec4(x_texture, y_texture, width_texture, height_texture);
     }
 
     // Returns the height in pixel of the object
@@ -203,6 +218,19 @@ namespace scls {
         return to_return;
     }
 
+    // Returns the rect of user defined texture
+    glm::vec4 GUI_Object::user_defined_texture_rect() const {
+        double height_texture = texture_height_in_scale();
+        double width_texture = texture_width_in_scale();
+        double x_texture = 0;
+        double y_texture = 0;
+        if(texture_alignment_horizontal() == Alignment_Horizontal::H_Center) x_texture = 0.5 - width_texture / 2.0;
+        else if(texture_alignment_horizontal() == Alignment_Horizontal::H_Right) x_texture = 1.0 - width_texture;
+        if(texture_alignment_vertical() == Alignment_Vertical::V_Center) y_texture = 0.5 - height_texture / 2.0;
+        else if(texture_alignment_vertical() == Alignment_Vertical::V_Top) y_texture = 1.0 - height_texture;
+        return glm::vec4(x_texture, y_texture, width_texture, height_texture);
+    }
+
     // Returns the width in pixel of the object
     double GUI_Object::width_in_pixel() const {
         if(a_last_width_definition == _Size_Definition::Scale_Size) {
@@ -271,13 +299,10 @@ namespace scls {
 
     // Returns the x position in pixel of the object
     double GUI_Object::x_in_pixel() const {
-        double to_return = 0.0;
+        double to_return = a_x;
 
-        if(a_last_x_definition == _Size_Definition::Scale_Size) {
+        if(a_last_x_definition == _Size_Definition::Absolute_Scale_Size || a_last_x_definition == _Size_Definition::Scale_Size) {
             to_return = ((x_in_absolute_scale() + 1.0) / 2.0) * window_struct().window_width() - (width_in_pixel() / 2.0);
-        }
-        else {
-            to_return = a_x;
         }
 
         return to_return;
@@ -344,13 +369,10 @@ namespace scls {
 
     // Returns the y position in pixel of the object
     double GUI_Object::y_in_pixel() const {
-        double to_return = 0.0;
+        double to_return = a_y;
 
-        if(a_last_y_definition == _Size_Definition::Scale_Size) {
+        if(a_last_y_definition == _Size_Definition::Absolute_Scale_Size || a_last_y_definition == _Size_Definition::Scale_Size) {
             to_return = ((y_in_absolute_scale() + 1.0) / 2.0) * window_struct().window_height() - (height_in_pixel() / 2.0);
-        }
-        else {
-            to_return = a_y;
         }
 
         return to_return;
@@ -709,7 +731,6 @@ namespace scls {
         if(window_struct().key_state_frame("right arrow") == Key_State::Pressed) move_cursor(1);
     }
 
-    /*
     //*********
     //
     // GUI_File_Explorer main function
@@ -717,12 +738,7 @@ namespace scls {
     //*********
 
     // Most parent GUI_File_Explorer constructor used for displaying
-    GUI_File_Explorer::GUI_File_Explorer(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : GUI_Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), transform_parent, name, texture_name, vao_name) {
-        load();
-    }
-
-    // GUI_File_Explorer constructor used for displaying
-    GUI_File_Explorer::GUI_File_Explorer(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name) : GUI_Object(reinterpret_cast<_Window_Advanced_Struct*>(window_struct), parent, name, texture_name, vao_name) {
+    GUI_File_Explorer::GUI_File_Explorer(Window& window, std::string name, GUI_Object* parent) : GUI_Object(window, name) {
         load();
     }
 
@@ -735,32 +751,34 @@ namespace scls {
     // Load the explorer
     void GUI_File_Explorer::load() {
         // Browser of the file explorer
-        a_browser = new_object<GUI_Object>("browser", SCLS_GRAPHIC_NO_TEXTURE);
+        a_browser = new_object<GUI_Object>("browser");
         a_browser->set_background_color(scls::white);
-        a_browser->set_pixel_border_width(1);
-        a_browser->set_scale(glm::vec2(0.8, 0.8));
+        a_browser->set_border_width_in_pixel(1);
+        a_browser->set_size_in_scale(glm::vec2(0.8, 0.8));
         // Scroller of the browser of the file explorer
-        a_browser_scroller = a_browser->new_object<GUI_Object>("browser_scroller", SCLS_GRAPHIC_NO_TEXTURE);
+        a_browser_scroller = a_browser->new_object<GUI_Object>("browser_scroller");
         a_browser_scroller->set_background_color(scls::white);
-        a_browser_scroller->set_position(glm::vec2(0, 0.2));
-        a_browser_scroller->set_scale(glm::vec2(0.99, 0.9));
+        a_browser_scroller->set_position_in_scale(glm::vec2(0, 0));
+        a_browser_scroller->set_size_in_scale(glm::vec2(0.95, 0.95));
         // Button to chose a file
         a_choose_button = new_object<GUI_Text>("choose_button");
-        a_choose_button->set_pixel_border_width(1);
+        a_choose_button->set_border_width_in_pixel(1);
         a_choose_button->set_font_size(50);
         a_choose_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
         a_choose_button->set_text(choose_button_text());
-        a_choose_button->set_object_scale_width(0.15);
-        a_choose_button->set_texture_object_scale(0.9);
+        a_choose_button->set_texture_alignment(scls::Alignment_Texture::T_Fit);
+        a_choose_button->set_size_in_scale(glm::vec2(0.15, 0.1));
         // Final path of the file explorer
         a_final_path = new_object<GUI_Text>("final_path");
         a_final_path->set_font_size(50);
         a_final_path->set_text(final_path_text());
-        a_final_path->set_scale(glm::vec2(0.8, 0.1));
+        a_final_path->set_texture_alignment(scls::Alignment_Texture::T_Fit);
+        a_final_path->set_size_in_scale(glm::vec2(0.8, 0.1));
         // Top bar of the file explorer
-        a_top_bar = new_object<GUI_Object>("top_bar", SCLS_GRAPHIC_NO_TEXTURE);
+        a_top_bar = new_object<GUI_Object>("top_bar");
         a_top_bar->set_background_color(scls::Color(209, 209, 209));
-        a_top_bar->set_scale(glm::vec2(1.0, 0.075));
+        a_top_bar->set_size_in_scale(glm::vec2(1.0, 0.075));
+        a_top_bar->set_x_in_scale(0);
 
         place_all();
     }
@@ -770,13 +788,7 @@ namespace scls {
         // Place each object
         a_choose_button->move_bottom_of_parent();
         a_choose_button->move_left_of_parent();
-        a_final_path->set_scale(glm::vec2(0.8, 0.1));
-        if(a_final_path->is_texture_ratio_bigger_than_square_ratio()) {
-            a_final_path->set_texture_object_scale_width(0.9);
-        }
-        else {
-            a_final_path->set_texture_object_scale(0.9);
-        }
+        a_final_path->set_size_in_scale(glm::vec2(0.8, 0.1));
         a_final_path->move_bottom_of_parent();
         a_final_path->move_right_of_parent();
         a_browser->move_right_of_parent();
@@ -791,7 +803,6 @@ namespace scls {
     void GUI_File_Explorer::place_browser_buttons() {
         GUI_Text* last_button = 0;
         for(int i = 0;i<static_cast<int>(a_browser_buttons.size());i++) {
-            a_browser_buttons[i]->set_object_scale(0.1);
             a_browser_buttons[i]->move_left_of_parent(0.01);
             if(last_button == 0) a_browser_buttons[i]->move_top_of_parent();
             else a_browser_buttons[i]->move_bottom_of_object_in_parent(last_button);
@@ -803,7 +814,7 @@ namespace scls {
     void GUI_File_Explorer::place_top_bar_buttons() {
         GUI_Text* last_button = 0;
         for(int i = 0;i<static_cast<int>(a_top_bar_buttons.size());i++) {
-            a_top_bar_buttons[i]->set_object_scale_pixel(25);
+            a_top_bar_buttons[i]->set_position_in_scale(glm::vec2(0, 0));
             if(last_button == 0) a_top_bar_buttons[i]->move_left_of_parent();
             else a_top_bar_buttons[i]->move_right_of_object_in_parent(last_button);
             last_button = a_top_bar_buttons[i];
@@ -844,13 +855,7 @@ namespace scls {
     }
 
     // Set the file explorer to the user current document directory
-    void GUI_File_Explorer::set_current_user_document_directory() {
-        std::string document_part = "/documents";
-        #if defined(__linux__)
-        document_part = "/Documents";
-        #endif // defined
-        set_path(current_user_home_directory() + document_part);
-    }
+    void GUI_File_Explorer::set_current_user_document_directory() { set_path(current_user_document_directory()); }
 
     // Update the browser of the file explorer
     void GUI_File_Explorer::update_browser() {
@@ -869,6 +874,8 @@ namespace scls {
                 new_button->set_font_color(scls::black);
                 new_button->set_font_size(50);
                 new_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
+                new_button->set_size_in_scale(glm::vec2(1.0, 0.1));
+                new_button->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
                 a_browser_buttons.push_back(new_button);
 
                 // Create the thread
@@ -957,7 +964,6 @@ namespace scls {
 
     // Update the size of the file explorer
     void GUI_File_Explorer::update_GUI_scale() {
-        GUI_Object::update_GUI_scale();
         place_all();
     }
 
@@ -974,12 +980,12 @@ namespace scls {
             if(button_text == "") continue;
             if(button_text != first_text) button_text += "/";
             GUI_Text* new_button = a_top_bar->new_object<GUI_Text>("top_bar_button_" + std::to_string(i));
-            new_button->set_resize_texture_with_scale(false);
             new_button->set_font_size(20);
             new_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
             new_button->set_text(button_text);
-            new_button->set_object_scale_pixel(25);
-            new_button->set_position(glm::vec2(0, 0));
+            new_button->set_height_in_pixel(25);
+            new_button->set_width_in_scale(0.15);
+            new_button->set_position_in_scale(glm::vec2(0, 0));
             a_top_bar_buttons.push_back(new_button);
         }
         place_all();
