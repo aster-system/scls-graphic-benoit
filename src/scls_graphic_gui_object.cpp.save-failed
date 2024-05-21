@@ -72,10 +72,12 @@ namespace scls {
         }
         else if(texture_alignment() == Alignment_Texture::T_Fit_Horizontally) {
             // Fit horizontally the texture
-            height_texture = (width_in_absolute_scale() / height_in_absolute_scale_and_window()) / texture()->image_ratio();
+            height_texture = (1.0 / texture()->image_ratio()) / absolute_scale_ratio();
             width_texture = 1.0;
             x_texture = 0.5 - width_texture / 2.0;
             y_texture = 0.5 - height_texture / 2.0;
+
+            std::cout << "T " << texture()->image_ratio() << " " << absolute_scale_ratio() << std::endl;
         }
         else if(texture_alignment() == Alignment_Texture::T_Fit_Vertically) {
             // Fit vertically the texture
@@ -170,9 +172,6 @@ namespace scls {
 
         return to_return;
     }
-
-    // Returns the height in absolute scale and by counting the window of the object
-    double GUI_Object::height_in_absolute_scale_and_window() const { return height_in_absolute_scale() / window_struct().window_ratio(); }
 
     // Returns the height in scale of the object
     double GUI_Object::height_in_scale() const {

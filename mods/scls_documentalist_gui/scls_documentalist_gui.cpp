@@ -87,6 +87,7 @@ namespace scls_documentalist_gui {
         a_help_body_home->set_border_color(scls::red);
         a_help_body_home->set_font_size(20);
         a_help_body_home->set_text(a_hud_text_content["help_body_home"]);
+        a_help_body_home->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
         a_help_body_home->set_size_in_scale(glm::vec2(0.75, 1.0));
         a_help_body_home->set_position_in_scale(glm::vec2(0, -0.15));
     }

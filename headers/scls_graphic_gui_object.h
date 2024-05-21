@@ -61,6 +61,13 @@
 // Using of the "scls" namespace to simplify the programmation
 namespace scls {
 
+    // Possibles alignment of a texture
+    enum Alignment_Texture {
+        T_Fit_Horizontally,
+        T_Fit_Vertically,
+        T_User_Defined
+    };
+
     // Type of size definition
     enum _Size_Definition {
         Absolute_Scale_Size,
@@ -139,6 +146,8 @@ namespace scls {
         glm::vec4 border_width_in_absolute_scale() const;
         // Returns the height in absolute scale of the object
         double height_in_absolute_scale() const;
+        // Returns the height in absolute scale and by counting the window of the object
+        double height_in_absolute_scale_and_window() const;
         // Returns the absolute position of the object
         inline glm::vec2 position_in_absolute_scale() const {return glm::vec2(x_in_absolute_scale(), y_in_absolute_scale());};
         // Set the border width of all the side in absolute scale
@@ -234,9 +243,11 @@ namespace scls {
 
         // Getters and setters
         inline Image* image() {return texture()->get_image();};
+        inline void set_texture_alignment(Alignment_Texture new_texture_alignment) {a_texture_alignment = new_texture_alignment;};
         inline void set_texture_alignment_horizontal(Alignment_Horizontal new_texture_alignment_horizontal) {a_texture_alignment_horizontal = new_texture_alignment_horizontal;};
         inline void set_texture_alignment_vertical(Alignment_Vertical new_texture_alignment_vertical) {a_texture_alignment_vertical = new_texture_alignment_vertical;};;
         inline Texture* texture() {return a_texture;};
+        inline Alignment_Texture texture_alignment() {return a_texture_alignment;};
         inline Alignment_Horizontal texture_alignment_horizontal() const {return a_texture_alignment_horizontal;};
         inline Alignment_Vertical texture_alignment_vertical() const {return a_texture_alignment_vertical;};
         inline bool texture_fill_object() {return a_texture_fill_object;};
@@ -287,6 +298,8 @@ namespace scls {
 
         // Texture of this object
         Texture* a_texture = 0;
+        // Type of alignment of the texture
+        Alignment_Texture a_texture_alignment = Alignment_Texture::T_User_Defined;
         // Horizontal alignment of the texture, if the texture does not fill the object
         Alignment_Horizontal a_texture_alignment_horizontal = Alignment_Horizontal::H_Center;
         // Vertical alignment of the texture, if the texture does not fill the object
