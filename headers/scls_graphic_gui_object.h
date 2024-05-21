@@ -216,6 +216,8 @@ namespace scls {
         // Movement handling
         // Move at the bottom of an object in its parent
         inline void move_bottom_of_object_in_parent(GUI_Object* object, double offset = 0.0) { set_y_in_scale(object->y_in_absolute_scale() - (object->height_in_absolute_scale() + height_in_absolute_scale() + offset)); };
+        // Move at the bottom of its parent
+        inline void move_bottom_of_parent(double offset = 0.0) { set_y_in_scale(-1.0 + (height_in_scale() + offset)); };
         // Move at the left the object in its parent
         inline void move_left_of_parent(double offset = 0.0) { set_x_in_scale(-1.0 + (width_in_scale() + offset)); };
         // Move at the right the object in its parent

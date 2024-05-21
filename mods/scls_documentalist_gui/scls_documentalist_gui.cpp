@@ -58,10 +58,10 @@ namespace scls_documentalist_gui {
         load_main_header();
 
         // Load navigations
-        // load_help_navigation();
+        load_help_navigation();
 
         // Load footers
-        // load_welcome_footer();
+        load_welcome_footer();
 
         // Load bodies
         load_help_body();
@@ -74,39 +74,41 @@ namespace scls_documentalist_gui {
         // Body of the welcome page
         a_help_body = parent_object()->new_object<scls::GUI_Object>("help_body");
         a_help_body->set_background_color(scls::white);
-        a_help_body->set_size_in_scale(glm::vec2(0.8, 0.65));
+        a_help_body->set_size_in_scale(glm::vec2(0.7, 0.6));
         a_help_body->set_border_width_in_pixel(1);
         a_help_body->move_bottom_of_object_in_parent(a_main_header);
-        a_help_body->move_right_of_parent();
+        a_help_body->move_right_of_parent(0.025);
         // Create the logo of the help page
-        // scls::GUI_Object* help_body_logo = a_help_body->new_object<scls::GUI_Object>("help_body_logo");
-        // help_body_logo->set_size_in_scale(glm::vec2(1.0, 0.5));
-        // help_body_logo->set_position_in_scale(glm::vec2(0, 0.19));
+        scls::GUI_Object* help_body_logo = a_help_body->new_object<scls::GUI_Object>("help_body_logo");
+        help_body_logo->set_size_in_scale(glm::vec2(0.5, 0.65));
+        help_body_logo->set_texture_alignment(scls::Alignment_Texture::T_Fit_Vertically);
+        help_body_logo->texture()->set_image_by_path("assets/textures/scls_documentalist_logo.png");
+        help_body_logo->set_x_in_scale(0.0);
+        help_body_logo->move_top_of_parent(0.05);
         // Create the home text of the help page
         a_help_body_home = a_help_body->new_object<scls::GUI_Text>("help_body_welcome");
-        a_help_body_home->set_border_color(scls::red);
         a_help_body_home->set_font_size(20);
         a_help_body_home->set_text(a_hud_text_content["help_body_home"]);
         a_help_body_home->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
-        a_help_body_home->set_size_in_scale(glm::vec2(0.75, 1.0));
-        a_help_body_home->set_position_in_scale(glm::vec2(0, -0.15));
+        a_help_body_home->set_size_in_scale(glm::vec2(0.9, 0.3));
+        a_help_body_home->set_x_in_scale(0.0);
+        a_help_body_home->move_bottom_of_parent();
     }
 
     // Load the help navigation
     void SCLS_Documentalist_GUI::load_help_navigation() {
         // Navigation for the help
         a_help_navigation = parent_object()->new_object<scls::GUI_Object>("help_navigation");
-        a_help_navigation->set_background_color(scls::red);
         a_help_navigation->set_size_in_scale(glm::vec2(0.25, 0.6));
         a_help_navigation->set_border_width_in_pixel(1);
         a_help_navigation->move_bottom_of_object_in_parent(a_main_header);
         a_help_navigation->move_left_of_parent();
         // Create the home button of the navigation
         a_help_navigation_home_button = a_help_navigation->new_object<scls::GUI_Text>("help_navigation_home_button");
-        a_help_navigation_home_button->set_font_size(100);
+        a_help_navigation_home_button->set_font_size(50);
         a_help_navigation_home_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
         a_help_navigation_home_button->set_text(a_hud_text_content["home"]);
-        a_help_navigation_home_button->set_size_in_scale(glm::vec2(0.3, 1.0));
+        a_help_navigation_home_button->set_size_in_scale(glm::vec2(1.0, 0.1));
         a_help_navigation_home_button->move_top_of_parent();
     }
 
@@ -171,21 +173,23 @@ namespace scls_documentalist_gui {
     // Load the welcome page footer
     void SCLS_Documentalist_GUI::load_welcome_footer() {
         // Footer of the welcome page
-        double scale_multiplier = 0.98;
         a_welcome_footer = parent_object()->new_object<scls::GUI_Object>("welcome_footer");
         a_welcome_footer->set_background_color(scls::white);
-        a_welcome_footer->set_position_in_scale(glm::vec3(0, -2.0/3.0, 1));
-        a_welcome_footer->set_size_in_scale(glm::vec3(2.0 * scale_multiplier, (2.0/3.0) * scale_multiplier, 1));
+        a_welcome_footer->set_x_in_scale(0.0);
+        a_welcome_footer->set_size_in_scale(glm::vec2(1.0, 0.35));
         a_welcome_footer->set_border_width_in_pixel(1);
+        a_welcome_footer->move_bottom_of_parent();
+        a_welcome_footer->set_size_in_scale(glm::vec2(0.975, 0.335));
         // Create the button of creation of project in the welcome footer
         a_welcome_footer_create_project = a_welcome_footer->new_object<scls::GUI_Text>("welcome_footer_create_project");
-        a_welcome_footer_create_project->set_font_size(100);
+        a_welcome_footer_create_project->set_font_size(75);
         a_welcome_footer_create_project->set_text_offset(0.05);
         a_welcome_footer_create_project->set_overflighted_cursor(GLFW_HAND_CURSOR);
         a_welcome_footer_create_project->set_text(a_hud_text_content["create_a_project"]);
         a_welcome_footer_create_project->set_border_width_in_pixel(1);
-        a_welcome_footer_create_project->set_size_in_scale(glm::vec2(1.0, 0.2));
-        a_welcome_footer_create_project->set_position_in_scale(glm::vec2(-0.3, 0));
+        a_welcome_footer_create_project->set_position_in_scale(glm::vec2(0, 0));
+        a_welcome_footer_create_project->set_size_in_scale(glm::vec2(0.25, 0.24));
+        a_welcome_footer_create_project->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
     }
 
     // Reload each HUD text

@@ -335,6 +335,11 @@ public:
 	void load_texture();
 	~Texture(); // Texture destructor
 
+	// Set the image from a path
+	inline void set_image_by_path(std::string path, bool delete_image = true) {
+	    set_image(new scls::Image(path), delete_image);
+	};
+
 	// Getters and setters (ONLY WITHOUT ATTRIBUTES)
 	inline double image_ratio() {return static_cast<double>(get_image()->width()) / static_cast<double>(get_image()->height());};
 

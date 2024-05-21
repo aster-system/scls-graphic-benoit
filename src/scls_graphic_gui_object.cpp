@@ -79,7 +79,10 @@ namespace scls {
         }
         else if(texture_alignment() == Alignment_Texture::T_Fit_Vertically) {
             // Fit vertically the texture
-
+            height_texture = 1.0;
+            width_texture = texture()->image_ratio() / (width_in_absolute_scale() / height_in_absolute_scale_and_window());
+            x_texture = 0.5 - width_texture / 2.0;
+            y_texture = 0.5 - height_texture / 2.0;
         }
         vao()->get_shader_program()->set_uniform4f_value("texture_rect", glm::vec4(x_texture, y_texture, width_texture, height_texture));
 
@@ -288,8 +291,9 @@ namespace scls {
             to_return = a_x * (one_pixel_in_absolute_scale()[0] * 2.0) + (-1.0 + width_in_absolute_scale());
         }
         else {
+            double to_add = 0;
             to_return = a_x;
-            if(a_last_height_definition == _Size_Definition::Scale_Size && parent() != 0) to_return += parent()->x_in_absolute_scale();
+            if(a_last_height_definition == _Size_Definition::Scale_Size && parent() != 0) to_add += parent()->x_in_absolute_scale();
 
             // Handle the pixel perfect system
             double divisor = one_pixel_in_scale()[0];
@@ -302,6 +306,10 @@ namespace scls {
             if(to_return > divisor / 2.0) total++;
             to_return = total * divisor;
             to_return--;
+
+            if(a_last_height_definition == _Size_Definition::Scale_Size && parent() != 0) to_return *= parent()->width_in_absolute_scale();
+
+            to_return += to_add;
         }
 
         return to_return;
@@ -320,6 +328,7 @@ namespace scls {
 
             // Handle the pixel perfect system
             double divisor = one_pixel_in_absolute_scale()[0];
+            to_return++;
             unsigned int total = 0;
             while(to_return > divisor) {
                 to_return -= divisor;
@@ -327,6 +336,7 @@ namespace scls {
             }
             if(to_return > divisor / 2.0) total++;
             to_return = total * divisor;
+            to_return--;
         }
 
         return to_return;
@@ -354,11 +364,13 @@ namespace scls {
             to_return = a_y * (one_pixel_in_absolute_scale()[1] * 2.0) + (-1.0 + height_in_absolute_scale());
         }
         else {
+            double to_add = 0;
             to_return = a_y;
-            if(a_last_height_definition == _Size_Definition::Scale_Size && parent() != 0) to_return += parent()->y_in_absolute_scale();
+            if(a_last_height_definition == _Size_Definition::Scale_Size && parent() != 0) to_add += parent()->y_in_absolute_scale();
 
             // Handle the pixel perfect system
             double divisor = one_pixel_in_absolute_scale()[1];
+            to_return++;
             unsigned int total = 0;
             while(to_return > divisor) {
                 to_return -= divisor;
@@ -366,6 +378,11 @@ namespace scls {
             }
             if(to_return > divisor / 2.0) total++;
             to_return = total * divisor;
+            to_return--;
+
+            if(a_last_height_definition == _Size_Definition::Scale_Size && parent() != 0) to_return *= parent()->height_in_absolute_scale();
+
+            to_return += to_add;
         }
 
         return to_return;
@@ -385,12 +402,14 @@ namespace scls {
             // Handle the pixel perfect system
             double divisor = one_pixel_in_absolute_scale()[1];
             unsigned int total = 0;
+            to_return++;
             while(to_return > divisor) {
                 to_return -= divisor;
                 total++;
             }
             if(to_return > divisor / 2.0) total++;
             to_return = total * divisor;
+            to_return--;
         }
 
         return to_return;
