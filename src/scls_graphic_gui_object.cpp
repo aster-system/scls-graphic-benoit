@@ -151,16 +151,8 @@ namespace scls {
 
     // Returns the height in pixel of the object
     double GUI_Object::height_in_pixel() const {
-        if(a_last_height_definition == _Size_Definition::Scale_Size) {
-            if(parent() != 0) {
-                // Apply the object size
-                return parent()->height_in_pixel() * a_height;
-            }
-            else if(is_main_object()) {
-                return window_struct().window_height();
-            }
-        }
-        return a_height;
+        if(a_last_height_definition == _Size_Definition::Pixel_Size) return a_height;
+        return height_in_absolute_scale() / one_pixel_in_absolute_scale()[1];
     }
 
     // Returns the height in absolute scale of the object
@@ -233,16 +225,8 @@ namespace scls {
 
     // Returns the width in pixel of the object
     double GUI_Object::width_in_pixel() const {
-        if(a_last_width_definition == _Size_Definition::Scale_Size) {
-            if(parent() != 0) {
-                // Apply the object size
-                return parent()->width_in_pixel() * a_width;
-            }
-            else if(is_main_object()) {
-                return window_struct().window_width();
-            }
-        }
-        return a_width;
+        if(a_last_width_definition == _Size_Definition::Pixel_Size) return a_width;
+        return width_in_absolute_scale() / one_pixel_in_absolute_scale()[0];
     }
 
     // Returns the width in absolute scale of the object
@@ -299,11 +283,7 @@ namespace scls {
 
     // Returns the x position in pixel of the object
     double GUI_Object::x_in_pixel() const {
-        double to_return = a_x;
-
-        if(a_last_x_definition == _Size_Definition::Absolute_Scale_Size || a_last_x_definition == _Size_Definition::Scale_Size) {
-            to_return = ((x_in_absolute_scale() + 1.0) / 2.0) * window_struct().window_width() - (width_in_pixel() / 2.0);
-        }
+        double to_return = ((x_in_absolute_scale() + 1.0) / 2.0) * window_struct().window_width() - (width_in_pixel() / 2.0);
 
         return to_return;
     }
@@ -312,13 +292,14 @@ namespace scls {
     double GUI_Object::x_in_absolute_scale() const {
         double to_return = 0.0;
 
+        double to_add = 0;
+        if(a_last_width_definition != _Size_Definition::Absolute_Scale_Size && parent() != 0) to_add += parent()->x_in_absolute_scale();
+
         if(a_last_x_definition == _Size_Definition::Pixel_Size) {
-            to_return = a_x * (one_pixel_in_absolute_scale()[0] * 2.0) + (-1.0 + width_in_absolute_scale());
+            to_return = a_x * (one_pixel_in_absolute_scale()[0] * 2.0) + (-1.0 + width_in_scale());
         }
         else {
-            double to_add = 0;
             to_return = a_x;
-            if(a_last_height_definition == _Size_Definition::Scale_Size && parent() != 0) to_add += parent()->x_in_absolute_scale();
 
             // Handle the pixel perfect system
             double divisor = one_pixel_in_scale()[0];
@@ -332,10 +313,10 @@ namespace scls {
             to_return = total * divisor;
             to_return--;
 
-            if(a_last_height_definition == _Size_Definition::Scale_Size && parent() != 0) to_return *= parent()->width_in_absolute_scale();
-
-            to_return += to_add;
+            if(a_last_width_definition == _Size_Definition::Scale_Size && parent() != 0) to_return *= parent()->width_in_absolute_scale();
         }
+
+        to_return += to_add;
 
         return to_return;
     }
@@ -369,11 +350,7 @@ namespace scls {
 
     // Returns the y position in pixel of the object
     double GUI_Object::y_in_pixel() const {
-        double to_return = a_y;
-
-        if(a_last_y_definition == _Size_Definition::Absolute_Scale_Size || a_last_y_definition == _Size_Definition::Scale_Size) {
-            to_return = ((y_in_absolute_scale() + 1.0) / 2.0) * window_struct().window_height() - (height_in_pixel() / 2.0);
-        }
+        double to_return = ((y_in_absolute_scale() + 1.0) / 2.0) * window_struct().window_height() - (height_in_pixel() / 2.0);
 
         return to_return;
     }
@@ -382,13 +359,14 @@ namespace scls {
     double GUI_Object::y_in_absolute_scale() const {
         double to_return = 0.0;
 
+        double to_add = 0;
+        if(a_last_height_definition != _Size_Definition::Absolute_Scale_Size && parent() != 0) to_add += parent()->y_in_absolute_scale();
+
         if(a_last_y_definition == _Size_Definition::Pixel_Size) {
-            to_return = a_y * (one_pixel_in_absolute_scale()[1] * 2.0) + (-1.0 + height_in_absolute_scale());
+            to_return = a_y * (one_pixel_in_absolute_scale()[1] * 2.0) + (-1.0 + height_in_scale());
         }
         else {
-            double to_add = 0;
             to_return = a_y;
-            if(a_last_height_definition == _Size_Definition::Scale_Size && parent() != 0) to_add += parent()->y_in_absolute_scale();
 
             // Handle the pixel perfect system
             double divisor = one_pixel_in_absolute_scale()[1];
@@ -403,9 +381,9 @@ namespace scls {
             to_return--;
 
             if(a_last_height_definition == _Size_Definition::Scale_Size && parent() != 0) to_return *= parent()->height_in_absolute_scale();
-
-            to_return += to_add;
         }
+
+        to_return += to_add;
 
         return to_return;
     }
@@ -793,6 +771,7 @@ namespace scls {
         a_final_path->move_right_of_parent();
         a_browser->move_right_of_parent();
         a_browser->move_top_of_object_in_parent(a_final_path);
+        a_top_bar->set_x_in_scale(0);
         a_top_bar->move_top_of_parent();
 
         place_browser_buttons();
@@ -979,7 +958,7 @@ namespace scls {
             std::string button_text = path_pieces[path_pieces.size() - (1 + i)];
             if(button_text == "") continue;
             if(button_text != first_text) button_text += "/";
-            GUI_Text* new_button = a_top_bar->new_object<GUI_Text>("top_bar_button_" + std::to_string(i));
+            GUI_Text* new_button = a_top_bar->new_object<GUI_Text>("top_bar_button_" + std::to_string(i), 0, 0);
             new_button->set_font_size(20);
             new_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
             new_button->set_text(button_text);
@@ -995,8 +974,6 @@ namespace scls {
     GUI_File_Explorer::~GUI_File_Explorer() {
 
     }
-
-    //*/
 
     //*********
     //
