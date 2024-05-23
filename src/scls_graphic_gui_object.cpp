@@ -337,7 +337,7 @@ namespace scls {
         double width_to_apply = width_in_adapted_scale();
 
         // Handle the pixel perfect system
-        double divisor = one_pixel_in_scale()[0];
+        double divisor = one_pixel_in_absolute_scale()[0];
         unsigned int total = 0;
         to_return++;
         to_return -= width_to_apply;
@@ -427,7 +427,7 @@ namespace scls {
         double height_to_apply = height_in_adapted_scale();
 
         // Handle the pixel perfect system
-        double divisor = one_pixel_in_scale()[1];
+        double divisor = one_pixel_in_absolute_scale()[1];
         unsigned int total = 0;
         to_return++;
         to_return -= height_to_apply;
