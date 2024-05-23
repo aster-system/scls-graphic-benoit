@@ -44,8 +44,8 @@ namespace scls {
     // Render the object
     void GUI_Object::render(glm::vec3 scale_multiplier) {
         // Handle the matrix
-        glm::vec2 absolute_position_to_apply = position_in_absolute_scale();
-        glm::vec2 absolute_scale_to_apply = absolute_scale();
+        glm::vec2 absolute_position_to_apply = absolute_position_in_adapted_scale();
+        glm::vec2 absolute_scale_to_apply = absolute_scale_in_adapted_scale();
         glm::mat4 matrix = glm::mat4(1.0);
         matrix = glm::translate(matrix, glm::vec3(absolute_position_to_apply[0], absolute_position_to_apply[1], 0));
         matrix = glm::scale(matrix, glm::vec3(absolute_scale_to_apply[0], absolute_scale_to_apply[1], 1) * scale_multiplier);
@@ -149,6 +149,22 @@ namespace scls {
         return glm::vec4(x_texture, y_texture, width_texture, height_texture);
     }
 
+    // Returns the height adapted for rendering
+    double GUI_Object::height_in_adapted_scale() const {
+        double to_return = height_in_absolute_scale();
+
+        double divisor = one_pixel_in_absolute_scale()[1];
+        unsigned int total = 0;
+        while(to_return > divisor) {
+            to_return -= divisor;
+            total++;
+        }
+        if(to_return < divisor / 2.0) total++;
+        to_return = total * divisor;
+
+        return to_return;
+    }
+
     // Returns the height in pixel of the object
     double GUI_Object::height_in_pixel() const {
         if(a_last_height_definition == _Size_Definition::Pixel_Size) return a_height;
@@ -240,17 +256,23 @@ namespace scls {
             if(a_last_width_definition == _Size_Definition::Scale_Size && parent() != 0) {
                 to_return *= parent()->width_in_absolute_scale();
             }
-
-            // Handle the pixel perfect system
-            double divisor = one_pixel_in_absolute_scale()[0];
-            unsigned int total = 0;
-            while(to_return > divisor) {
-                to_return -= divisor;
-                total++;
-            }
-            if(to_return > divisor / 2.0) total++;
-            to_return = total * divisor;
         }
+
+        return to_return;
+    }
+
+    // Returns the width adapted for rendering
+    double GUI_Object::width_in_adapted_scale() const {
+        double to_return = width_in_absolute_scale();
+
+        double divisor = one_pixel_in_absolute_scale()[0];
+        unsigned int total = 0;
+        while(to_return > divisor) {
+            to_return -= divisor;
+            total++;
+        }
+        if(to_return < divisor / 2.0) total++;
+        to_return = total * divisor;
 
         return to_return;
     }
@@ -301,22 +323,33 @@ namespace scls {
         else {
             to_return = a_x;
 
-            // Handle the pixel perfect system
-            double divisor = one_pixel_in_scale()[0];
-            unsigned int total = 0;
-            to_return++;
-            while(to_return > divisor) {
-                to_return -= divisor;
-                total++;
-            }
-            if(to_return > divisor / 2.0) total++;
-            to_return = total * divisor;
-            to_return--;
-
             if(a_last_width_definition == _Size_Definition::Scale_Size && parent() != 0) to_return *= parent()->width_in_absolute_scale();
         }
 
         to_return += to_add;
+
+        return to_return;
+    }
+
+    // Returns the x adapted for rendering
+    double GUI_Object::x_in_adapted_scale() const {
+        double to_return = x_in_absolute_scale();
+        double width_to_apply = width_in_adapted_scale();
+
+        // Handle the pixel perfect system
+        double divisor = one_pixel_in_scale()[0];
+        unsigned int total = 0;
+        to_return++;
+        to_return -= width_to_apply;
+        while(to_return > divisor) {
+            to_return -= divisor;
+            total++;
+        }
+        if(to_return < divisor / 2.0) total++;
+        to_return = total * divisor;
+        to_return += divisor / 5.0;
+        to_return += width_to_apply;
+        to_return--;
 
         return to_return;
     }
@@ -384,6 +417,29 @@ namespace scls {
         }
 
         to_return += to_add;
+
+        return to_return;
+    }
+
+    // Returns the y adapted for rendering
+    double GUI_Object::y_in_adapted_scale() const {
+        double to_return = y_in_absolute_scale();
+        double height_to_apply = height_in_adapted_scale();
+
+        // Handle the pixel perfect system
+        double divisor = one_pixel_in_scale()[1];
+        unsigned int total = 0;
+        to_return++;
+        to_return -= height_to_apply;
+        while(to_return > divisor) {
+            to_return -= divisor;
+            total++;
+        }
+        if(to_return < divisor / 2.0) total++;
+        to_return = total * divisor;
+        to_return += divisor / 5.0;
+        to_return += height_to_apply;
+        to_return--;
 
         return to_return;
     }

@@ -166,6 +166,20 @@ namespace scls {
         // Returns the y position in absolute scale of the object
         double y_in_absolute_scale() const;
 
+        // Adapted scale for rendering
+        // Absolute position in adapted scale for rendering
+        inline glm::vec2 absolute_position_in_adapted_scale() const {return glm::vec2(x_in_adapted_scale(), y_in_adapted_scale());};
+        // Absolute scale in adapted scale for rendering
+        inline glm::vec2 absolute_scale_in_adapted_scale() const {return glm::vec2(width_in_adapted_scale(), height_in_adapted_scale());};
+        // Returns the height adapted for rendering
+        double height_in_adapted_scale() const;
+        // Returns the width adapted for rendering
+        double width_in_adapted_scale() const;
+        // Returns the x adapted for rendering
+        double x_in_adapted_scale() const;
+        // Returns the y adapted for rendering
+        double y_in_adapted_scale() const;
+
         // Scale handling
         // Returns the scale of the border width
         glm::vec4 border_width_in_scale() const;
