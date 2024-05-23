@@ -74,6 +74,8 @@ namespace scls {
             vao()->get_shader_program()->set_uniformb_value("texture_binded", true);
         }
         vao()->get_shader_program()->set_uniform4fv_value("model", matrix);
+        vao()->get_shader_program()->set_uniform4f_value("object_extremum", glm::vec4(-1.0, -((y_in_scale() - height_in_scale() / 2.0) + 1.0), 2.0, 2.0));
+        vao()->get_shader_program()->set_uniform4f_value("object_rect", glm::vec4(0, 0, 1.0, height_in_scale()));
         vao()->render();
 
         for(int i = 0;i<static_cast<int>(children().size());i++) {
@@ -144,8 +146,10 @@ namespace scls {
     glm::vec4 GUI_Object::fitted_vertically_texture_rect() const {
         double height_texture = 1.0;
         double width_texture = texture()->image_ratio() / (width_in_absolute_scale() / height_in_absolute_scale_and_window());
-        double x_texture = 0.5 - width_texture / 2.0;
+        double x_texture = 0;
         double y_texture = 0.5 - height_texture / 2.0;
+        if(texture_alignment_horizontal() == Alignment_Horizontal::H_Center) x_texture = 0.5 - width_texture / 2.0;
+        else if(texture_alignment_horizontal() == Alignment_Horizontal::H_Right) x_texture = 1.0 - width_texture;
         return glm::vec4(x_texture, y_texture, width_texture, height_texture);
     }
 
@@ -182,16 +186,6 @@ namespace scls {
             if(a_last_height_definition == _Size_Definition::Scale_Size && parent() != 0) {
                 to_return *= parent()->height_in_absolute_scale();
             }
-
-            // Handle the pixel perfect system
-            double divisor = one_pixel_in_absolute_scale()[1];
-            unsigned int total = 0;
-            while(to_return > divisor) {
-                to_return -= divisor;
-                total++;
-            }
-            if(to_return > divisor / 2.0) total++;
-            to_return = total * divisor;
         }
 
         return to_return;
@@ -211,16 +205,6 @@ namespace scls {
             if(a_last_height_definition == _Size_Definition::Absolute_Scale_Size && parent() != 0) {
                 to_return /= parent()->height_in_absolute_scale();
             }
-
-            // Handle the pixel perfect system
-            double divisor = one_pixel_in_absolute_scale()[1];
-            unsigned int total = 0;
-            while(to_return > divisor) {
-                to_return -= divisor;
-                total++;
-            }
-            if(to_return > divisor / 2.0) total++;
-            to_return = total * divisor;
         }
 
         return to_return;
@@ -288,16 +272,6 @@ namespace scls {
             if(a_last_width_definition == _Size_Definition::Absolute_Scale_Size && parent() != 0) {
                 to_return /= parent()->width_in_absolute_scale();
             }
-
-            // Handle the pixel perfect system
-            double divisor = one_pixel_in_absolute_scale()[0];
-            unsigned int total = 0;
-            while(to_return > divisor) {
-                to_return -= divisor;
-                total++;
-            }
-            if(to_return > divisor / 2.0) total++;
-            to_return = total * divisor;
         }
 
         return to_return;
@@ -364,18 +338,6 @@ namespace scls {
         else {
             to_return = a_x;
             if(a_last_height_definition == _Size_Definition::Absolute_Scale_Size && parent() != 0) to_return -= parent()->x_in_absolute_scale();
-
-            // Handle the pixel perfect system
-            double divisor = one_pixel_in_absolute_scale()[0];
-            to_return++;
-            unsigned int total = 0;
-            while(to_return > divisor) {
-                to_return -= divisor;
-                total++;
-            }
-            if(to_return > divisor / 2.0) total++;
-            to_return = total * divisor;
-            to_return--;
         }
 
         return to_return;
@@ -400,18 +362,6 @@ namespace scls {
         }
         else {
             to_return = a_y;
-
-            // Handle the pixel perfect system
-            double divisor = one_pixel_in_absolute_scale()[1];
-            to_return++;
-            unsigned int total = 0;
-            while(to_return > divisor) {
-                to_return -= divisor;
-                total++;
-            }
-            if(to_return > divisor / 2.0) total++;
-            to_return = total * divisor;
-            to_return--;
 
             if(a_last_height_definition == _Size_Definition::Scale_Size && parent() != 0) to_return *= parent()->height_in_absolute_scale();
         }
@@ -454,18 +404,6 @@ namespace scls {
         else {
             to_return = a_y;
             if(a_last_height_definition == _Size_Definition::Absolute_Scale_Size && parent() != 0) to_return -= parent()->y_in_absolute_scale();
-
-            // Handle the pixel perfect system
-            double divisor = one_pixel_in_absolute_scale()[1];
-            unsigned int total = 0;
-            to_return++;
-            while(to_return > divisor) {
-                to_return -= divisor;
-                total++;
-            }
-            if(to_return > divisor / 2.0) total++;
-            to_return = total * divisor;
-            to_return--;
         }
 
         return to_return;
@@ -839,7 +777,7 @@ namespace scls {
         GUI_Text* last_button = 0;
         for(int i = 0;i<static_cast<int>(a_browser_buttons.size());i++) {
             a_browser_buttons[i]->move_left_of_parent(0.01);
-            if(last_button == 0) a_browser_buttons[i]->move_top_of_parent();
+            if(last_button == 0) a_browser_buttons[i]->set_y_in_scale(1.4); // a_browser_buttons[i]->move_top_of_parent();
             else a_browser_buttons[i]->move_bottom_of_object_in_parent(last_button);
             last_button = a_browser_buttons[i];
         }
@@ -910,6 +848,7 @@ namespace scls {
                 new_button->set_font_size(50);
                 new_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
                 new_button->set_size_in_scale(glm::vec2(1.0, 0.1));
+                new_button->set_texture_alignment(scls::Alignment_Texture::T_Fit_Vertically);
                 new_button->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
                 a_browser_buttons.push_back(new_button);
 

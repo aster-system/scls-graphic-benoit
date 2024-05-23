@@ -65,20 +65,23 @@ public:
 	};
 	static std::string get_default_hud_fragment_shader() {
 	    std::string to_return = "#version 330 core\n";
-		to_return += "in vec2 tex_pos;";
+		to_return += "in vec2 tex_pos;"; // Uniform / in/out variables
 		to_return += "out vec4 FragColor;";
 		to_return += "uniform vec4 background_color;";
 		to_return += "uniform vec4 border_color;";
 		to_return += "uniform vec4 border_width;";
+		to_return += "uniform vec4 object_extremum;";
+		to_return += "uniform vec4 object_rect;";
 		to_return += "uniform sampler2D texture_0;";
 		to_return += "uniform bool texture_binded;";
 		to_return += "uniform vec4 texture_rect;";
-		to_return += "vec4 blend_colors(vec4 color_1, vec4 color_2){";
+		to_return += "vec4 blend_colors(vec4 color_1, vec4 color_2){"; // Blend function
 		to_return += "vec4 final_color = vec4(vec3(color_2.xyz), 1.0) * vec4(1.0 - color_1.w);";
 		to_return += "final_color += vec4(vec3(color_1.xyz), 1.0) * vec4(color_1.w);";
 		to_return += "final_color.w = max(color_1.w, color_2.w);";
 		to_return += "return final_color;}";
-		to_return += "void main(){";
+		to_return += "void main(){"; // Main function
+		to_return += "if(tex_pos.y * object_rect.w < object_extremum.y)discard;"; // Check if the object should be displayed
 		to_return += "vec4 color = background_color;";
 		to_return += "if(tex_pos[0] < border_width.y || tex_pos[1] < border_width.z || tex_pos[0] > 1.0 - border_width.w || tex_pos[1] > 1.0 - border_width.x){";
 		to_return += "color = blend_colors(border_color, color);}";
