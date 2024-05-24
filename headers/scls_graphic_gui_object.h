@@ -110,7 +110,7 @@ namespace scls {
         // Render the object
         virtual void render(glm::vec3 scale_multiplier = glm::vec3(1, 1, 1));
         // Reset the object without changing it
-        virtual void soft_reset() {set_is_overflighted(false);set_is_focused(false);for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->soft_reset();};
+        virtual void soft_reset() {set_focusing_state(-1);set_is_overflighted(false);for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->soft_reset();};
         // Update the object
         virtual void update(){ for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->update(); };
         // Update the object for the events
@@ -120,16 +120,18 @@ namespace scls {
         inline Color background_color() {return a_background_color;};
         inline Color border_color() {return a_border_color;};
         inline std::vector<GUI_Object*>& children() {return a_children;};
+        inline short focused_state() const {return a_focusing_state;};
+        inline bool has_child_focused() const {return a_focusing_state > 0;};
         inline bool is_clicked(unsigned int button) { return is_overflighted() && window_struct().mouse_button_clicked(button); };
         inline bool is_clicked_during_this_frame(unsigned int button) { return is_overflighted() && window_struct().mouse_button_clicked_during_this_frame(button); };
-        inline bool is_focused() const {return a_is_focused;};
+        inline bool is_focused() const {return a_focusing_state == 0;};
         inline bool is_main_object() const {return a_is_main_object;};
         inline bool is_overflighted() const {return a_is_overflighted;};
         inline std::string name() const {return a_name;};
         inline unsigned long overflighted_cursor() {return a_overflighted_cursor;};
         inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
         inline void set_border_color(Color new_color) {a_border_color = new_color;};
-        inline void set_is_focused(bool new_is_focused) {a_is_focused = new_is_focused;};
+        inline void set_focusing_state(bool new_focusing_state) {a_focusing_state = new_focusing_state;};
         inline void set_is_overflighted(bool new_is_overflighted) {a_is_overflighted = new_is_overflighted;};
         inline void set_overflighted_cursor(unsigned long new_overflighted_cursor) {a_overflighted_cursor = new_overflighted_cursor;};
         inline void set_visible(bool new_visible) {a_visible = new_visible;};
@@ -301,8 +303,8 @@ namespace scls {
         Color a_background_color = Color(0, 0, 0, 0);
         // Children of this object
         std::vector<GUI_Object*> a_children = std::vector<GUI_Object*>();
-        // If the object is focused or not
-        bool a_is_focused = false;
+        // The stat of focusing of the object (0 == focused, > 0 == child focused)
+        short a_focusing_state = -1;
         // If the object is overfighted or not
         bool a_is_overflighted = false;
         // If the object is the main object of the page or not

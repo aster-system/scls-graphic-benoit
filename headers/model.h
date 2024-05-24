@@ -43,24 +43,21 @@ public:
 	inline bool loaded() {return a_loaded;};
 
 	// Return the default shaders
-	static std::string get_built_in_fragment_shader(Built_In_Shader shader_type)
-	{
+	static std::string get_built_in_fragment_shader(Built_In_Shader shader_type) {
 		if (shader_type == Default)
 		{
 			return get_default_fragment_shader();
 		}
 		return get_default_hud_fragment_shader();
 	};
-	static std::string get_built_in_vertex_shader(Built_In_Shader shader_type)
-	{
+	static std::string get_built_in_vertex_shader(Built_In_Shader shader_type) {
 		if (shader_type == Default)
 		{
 			return get_default_vertex_shader();
 		}
 		return get_default_hud_vertex_shader();
 	};
-	static std::string get_default_fragment_shader()
-	{
+	static std::string get_default_fragment_shader() {
 		return "#version 330 core\nin vec3 tex_multiplier;in vec2 tex_pos;in vec4 tex_rect;out vec4 FragColor;uniform vec3 scale;uniform sampler2D texture_0;void main(){vec2 final_tex_pos = (tex_pos - tex_rect.xy);if (tex_multiplier.x == 0)final_tex_pos.x = final_tex_pos.x * scale.x;else if (tex_multiplier.x == 1)final_tex_pos.y = final_tex_pos.y * scale.x;if (tex_multiplier.y == 0)final_tex_pos.x = final_tex_pos.x * scale.y;else if (tex_multiplier.y == 1)final_tex_pos.y = final_tex_pos.y * scale.y;if (tex_multiplier.z == 0)final_tex_pos.x = final_tex_pos.x * scale.z;else if (tex_multiplier.z == 1)final_tex_pos.y = final_tex_pos.y * scale.z;while (final_tex_pos.x > tex_rect[2])final_tex_pos.x -= tex_rect[2];while (final_tex_pos.y > tex_rect[3])final_tex_pos.y -= tex_rect[3];FragColor = texture(texture_0, tex_rect.xy + final_tex_pos);}";
 	};
 	static std::string get_default_hud_fragment_shader() {

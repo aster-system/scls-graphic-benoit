@@ -1030,8 +1030,12 @@ namespace scls {
                 a_focused_object = 0;
             }
         }
-        if(a_focused_object != 0) {
-            a_focused_object->set_is_focused(true);
+        GUI_Object* current_parent = a_focused_object;
+        short state = 0;
+        while(current_parent != 0) {
+            current_parent->set_focusing_state(state);
+            current_parent = current_parent->parent();
+            state++;
         }
 
         parent_object()->update_event();
