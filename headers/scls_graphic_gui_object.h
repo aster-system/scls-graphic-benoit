@@ -561,6 +561,8 @@ namespace scls {
         scls::GUI_Object* a_browser = 0;
         // Scroller in the browser of the explorer
         scls::GUI_Object* a_browser_scroller = 0;
+        // Y position of the buttons in the browser
+        double a_browser_y = 0;
         // List of every buttons in the browser
         std::vector<scls::GUI_Text*> a_browser_buttons = std::vector<scls::GUI_Text*>();
         // List of every buttons in the browser to modify

@@ -351,6 +351,7 @@ namespace scls {
         virtual void set_maximum_window_width(unsigned short new_max_window_width) { a_max_window_width = new_max_window_width; };
         virtual void set_minimum_window_height(unsigned short new_min_window_height) { a_min_window_height = new_min_window_height; };
         virtual void set_minimum_window_width(unsigned short new_min_window_width) { a_min_window_width = new_min_window_width; };
+        inline double wheel_movement_y_during_this_frame() const {return a_wheel_movement_y;};
         inline int window_height() const { return a_window_height; };
         inline int window_width() const { return a_window_width; };
 
@@ -425,6 +426,7 @@ namespace scls {
         inline void set_last_mouse_y(double new_last_mouse_y) { a_last_mouse_y = new_last_mouse_y; };
         inline void set_mouse_move_x(double new_mouse_move_x) { a_mouse_move_x = new_mouse_move_x; };
         inline void set_mouse_move_y(double new_mouse_move_y) { a_mouse_move_y = new_mouse_move_y; };
+        inline void set_wheel_movement_y(double new_wheel_movement_y) {a_wheel_movement_y = new_wheel_movement_y;};
         inline void set_window_height(int new_height) { a_window_height = new_height; };
         inline void set_window_width(int new_width) { a_window_width = new_width; };
 
@@ -509,6 +511,8 @@ namespace scls {
         double& a_mouse_x;
         // Reference to the mouse Y pos
         double& a_mouse_y;
+        // Movement on the y axis of the wheel during this frame
+        double a_wheel_movement_y = 0;
         // Reference to the height of the graphic window
         int& a_window_height;
         // Reference to the width of the graphic window

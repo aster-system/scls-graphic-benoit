@@ -22,6 +22,8 @@ namespace scls {
     bool cursor_on_window = false; // If the cursor is on the window or not
     double global_mouse_x = 100000; // Global variable representing the X pos of the mouse
     double global_mouse_y = 100000; // Global variable representing the Y pos of the mouse
+    // Movement in the y offset of the wheel of the mouse
+    double wheel_y = 0;
 
     // Callback function for cursor enter in the window
     void _cursor_enter_callback(GLFWwindow* window, int entered) {
@@ -39,6 +41,11 @@ namespace scls {
     void _mouse_callback(GLFWwindow* window, double xpos, double ypos) {
         global_mouse_x = xpos;
         global_mouse_y = ypos;
+    }
+
+    // Callback function for mouse wheel scrolling
+    void _mouse_wheel_scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+        wheel_y += yoffset;
     }
 
     //*********
@@ -110,6 +117,7 @@ namespace scls {
         glfwSetCursorPosCallback(a_window, _mouse_callback);
         glfwSetCursorEnterCallback(a_window, _cursor_enter_callback);
         glfwSetFramebufferSizeCallback(a_window, _framebuffer_size_callback);
+        glfwSetScrollCallback(a_window, _mouse_wheel_scroll_callback);
 
         load_VAOs();
     }
@@ -368,6 +376,8 @@ namespace scls {
                 it->second = Button_State::Released;
             }
         }
+        set_wheel_movement_y(wheel_y);
+        wheel_y = 0;
 
         // Update the keys
         pressed_keys().clear();

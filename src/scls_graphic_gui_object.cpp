@@ -74,7 +74,7 @@ namespace scls {
             vao()->get_shader_program()->set_uniformb_value("texture_binded", true);
         }
         vao()->get_shader_program()->set_uniform4fv_value("model", matrix);
-        vao()->get_shader_program()->set_uniform4f_value("object_extremum", glm::vec4(-1.0, -((y_in_scale() - height_in_scale() / 2.0) + 1.0), 2.0, 2.0));
+        vao()->get_shader_program()->set_uniform4f_value("object_extremum", glm::vec4(-1.0, -((y_in_scale() - height_in_scale() / 2.0) + 1.0), 2.0, 1.0 - (((y_in_scale() + height_in_scale() / 2.0) + 1.0) - 2.0) / height_in_scale()));
         vao()->get_shader_program()->set_uniform4f_value("object_rect", glm::vec4(0, 0, 1.0, height_in_scale()));
         vao()->render();
 
@@ -777,7 +777,7 @@ namespace scls {
         GUI_Text* last_button = 0;
         for(int i = 0;i<static_cast<int>(a_browser_buttons.size());i++) {
             a_browser_buttons[i]->move_left_of_parent(0.01);
-            if(last_button == 0) a_browser_buttons[i]->set_y_in_scale(1.4); // a_browser_buttons[i]->move_top_of_parent();
+            if(last_button == 0) a_browser_buttons[i]->move_top_of_parent(a_browser_y);
             else a_browser_buttons[i]->move_bottom_of_object_in_parent(last_button);
             last_button = a_browser_buttons[i];
         }
@@ -866,6 +866,7 @@ namespace scls {
                 delete current_thread; current_thread = 0;
                 a_browser_buttons[i]->texture()->change_texture();
             }
+            a_browser_y = 0;
         }
         else {
             // Modify some buttons
@@ -932,6 +933,18 @@ namespace scls {
                 a_current_path = "";
                 set_path(path);
                 break;
+            }
+        }
+
+        // Handle wheel scrolling
+        if(has_child_focused()) {
+            double sensibility = 0.1;
+
+            double final_movement = sensibility * window_struct().wheel_movement_y_during_this_frame();
+            if(a_browser_y + final_movement > 0) final_movement = -a_browser_y;
+            if(final_movement != 0) {
+                a_browser_y += final_movement;
+                place_browser_buttons();
             }
         }
     }

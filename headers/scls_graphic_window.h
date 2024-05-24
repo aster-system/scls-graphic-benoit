@@ -27,7 +27,7 @@ namespace scls {
 
     //*********
     //
-    // Window input handling hiddens functions
+    // Hiddens callback functions
     //
     //*********
 
@@ -39,6 +39,9 @@ namespace scls {
 
     // Callback function for mouse moving
     void _mouse_callback(GLFWwindow* window, double xpos, double ypos);
+
+    // Callback function for mouse wheel scrolling
+    void _mouse_wheel_scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
     //*********
     //
