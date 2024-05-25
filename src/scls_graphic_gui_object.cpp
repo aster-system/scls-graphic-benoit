@@ -74,8 +74,8 @@ namespace scls {
             vao()->get_shader_program()->set_uniformb_value("texture_binded", true);
         }
         vao()->get_shader_program()->set_uniform4fv_value("model", matrix);
-        vao()->get_shader_program()->set_uniform4f_value("object_extremum", glm::vec4(-1.0, -((y_in_scale() - height_in_scale() / 2.0) + 1.0), 2.0, 1.0 - (((y_in_scale() + height_in_scale() / 2.0) + 1.0) - 2.0) / height_in_scale()));
-        vao()->get_shader_program()->set_uniform4f_value("object_rect", glm::vec4(0, 0, 1.0, height_in_scale()));
+        vao()->get_shader_program()->set_uniform4f_value("object_extremum", object_extremum());
+        vao()->get_shader_program()->set_uniform4f_value("object_rect", glm::vec4(0, 0, 1.0, 1.0));
         vao()->render();
 
         for(int i = 0;i<static_cast<int>(children().size());i++) {
@@ -154,7 +154,7 @@ namespace scls {
     }
 
     // Returns the height adapted for rendering
-    double GUI_Object::height_in_adapted_scale() const {
+    double GUI_Object::height_in_adapted_absolute_scale() const {
         double to_return = height_in_absolute_scale();
 
         double divisor = one_pixel_in_absolute_scale()[1];
@@ -210,6 +210,26 @@ namespace scls {
         return to_return;
     }
 
+    // Returns the extremum of the object
+    glm::vec4 GUI_Object::object_extremum() const {
+        double absolute_y_bottom_to_apply = y_bottom_in_adapted_absolute_scale();
+        double absolute_y_top_to_apply = y_top_in_adapted_absolute_scale();
+        double absolute_height_to_apply = height_in_adapted_absolute_scale();
+        double absolute_y_bottom_parent_to_apply = -1.0;
+        double absolute_y_top_parent_to_apply = 1.0;
+        if(parent() != 0) {
+            absolute_y_bottom_parent_to_apply = parent()->y_bottom_in_adapted_absolute_scale();
+            absolute_y_top_parent_to_apply = parent()->y_top_in_adapted_absolute_scale();
+        }
+        double y_maximum = ((absolute_y_top_to_apply + 1.0) / 2.0 - (absolute_y_top_parent_to_apply + 1.0) / 2.0);
+        double y_minimum = ((absolute_y_bottom_parent_to_apply + 1.0) / 2.0 - (absolute_y_bottom_to_apply + 1.0) / 2.0);
+
+        // Apply the local transformations
+        y_maximum /= absolute_height_to_apply; y_maximum = 1.0 - y_maximum;
+        y_minimum /= absolute_height_to_apply;
+        return glm::vec4(-1.0, y_minimum, 2.0, y_maximum);
+    }
+
     // Returns the rect of user defined texture
     glm::vec4 GUI_Object::user_defined_texture_rect() const {
         double height_texture = texture_height_in_scale();
@@ -246,7 +266,7 @@ namespace scls {
     }
 
     // Returns the width adapted for rendering
-    double GUI_Object::width_in_adapted_scale() const {
+    double GUI_Object::width_in_adapted_absolute_scale() const {
         double to_return = width_in_absolute_scale();
 
         double divisor = one_pixel_in_absolute_scale()[0];
@@ -306,9 +326,9 @@ namespace scls {
     }
 
     // Returns the x adapted for rendering
-    double GUI_Object::x_in_adapted_scale() const {
+    double GUI_Object::x_in_adapted_absolute_scale() const {
         double to_return = x_in_absolute_scale();
-        double width_to_apply = width_in_adapted_scale();
+        double width_to_apply = width_in_adapted_absolute_scale();
 
         // Handle the pixel perfect system
         double divisor = one_pixel_in_absolute_scale()[0];
@@ -343,6 +363,28 @@ namespace scls {
         return to_return;
     }
 
+    // Returns the y of the bottom of the object in adapted for rendering
+    double GUI_Object::y_bottom_in_adapted_absolute_scale() const {
+        double to_return = y_in_absolute_scale();
+        double height_to_apply = height_in_adapted_absolute_scale();
+
+        // Handle the pixel perfect system
+        double divisor = one_pixel_in_absolute_scale()[1];
+        unsigned int total = 0;
+        to_return++;
+        to_return -= height_to_apply;
+        while(to_return > divisor) {
+            to_return -= divisor;
+            total++;
+        }
+        if(to_return < divisor / 2.0) total++;
+        to_return = total * divisor;
+        to_return += divisor / 5.0;
+        to_return--;
+
+        return to_return;
+    }
+
     // Returns the y position in pixel of the object
     double GUI_Object::y_in_pixel() const {
         double to_return = ((y_in_absolute_scale() + 1.0) / 2.0) * window_struct().window_height() - (height_in_pixel() / 2.0);
@@ -372,9 +414,9 @@ namespace scls {
     }
 
     // Returns the y adapted for rendering
-    double GUI_Object::y_in_adapted_scale() const {
+    double GUI_Object::y_in_adapted_absolute_scale() const {
         double to_return = y_in_absolute_scale();
-        double height_to_apply = height_in_adapted_scale();
+        double height_to_apply = height_in_adapted_absolute_scale();
 
         // Handle the pixel perfect system
         double divisor = one_pixel_in_absolute_scale()[1];
@@ -405,6 +447,28 @@ namespace scls {
             to_return = a_y;
             if(a_last_height_definition == _Size_Definition::Absolute_Scale_Size && parent() != 0) to_return -= parent()->y_in_absolute_scale();
         }
+
+        return to_return;
+    }
+
+    // Returns the y of the top of the object in adapted for rendering
+    double GUI_Object::y_top_in_adapted_absolute_scale() const {
+        double to_return = y_in_absolute_scale();
+        double height_to_apply = height_in_adapted_absolute_scale();
+
+        // Handle the pixel perfect system
+        double divisor = one_pixel_in_absolute_scale()[1];
+        unsigned int total = 0;
+        to_return++;
+        to_return += height_to_apply;
+        while(to_return > divisor) {
+            to_return -= divisor;
+            total++;
+        }
+        if(to_return < divisor / 2.0) total++;
+        to_return = total * divisor;
+        to_return += divisor / 5.0;
+        to_return--;
 
         return to_return;
     }
@@ -937,7 +1001,7 @@ namespace scls {
         }
 
         // Handle wheel scrolling
-        if(has_child_focused()) {
+        if(has_child_overflighted() ||is_overflighted()) {
             double sensibility = 0.1;
 
             double final_movement = sensibility * window_struct().wheel_movement_y_during_this_frame();
@@ -1030,8 +1094,12 @@ namespace scls {
             }
         }
         a_overflighted_object = current_overflighted_object;
-        if(a_overflighted_object != 0) {
-            a_overflighted_object->set_is_overflighted(true);
+        GUI_Object* current_parent = a_overflighted_object;
+        short state = 0;
+        while(current_parent != 0) {
+            current_parent->set_overflighting_state(state);
+            current_parent = current_parent->parent();
+            state++;
         }
 
         // Check the focused object
@@ -1043,8 +1111,8 @@ namespace scls {
                 a_focused_object = 0;
             }
         }
-        GUI_Object* current_parent = a_focused_object;
-        short state = 0;
+        current_parent = a_focused_object;
+        state = 0;
         while(current_parent != 0) {
             current_parent->set_focusing_state(state);
             current_parent = current_parent->parent();

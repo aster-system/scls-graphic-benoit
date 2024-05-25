@@ -110,7 +110,7 @@ namespace scls {
         // Render the object
         virtual void render(glm::vec3 scale_multiplier = glm::vec3(1, 1, 1));
         // Reset the object without changing it
-        virtual void soft_reset() {set_focusing_state(-1);set_is_overflighted(false);for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->soft_reset();};
+        virtual void soft_reset() {set_focusing_state(-1);set_overflighting_state(-1);for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->soft_reset();};
         // Update the object
         virtual void update(){ for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->update(); };
         // Update the object for the events
@@ -122,18 +122,20 @@ namespace scls {
         inline std::vector<GUI_Object*>& children() {return a_children;};
         inline short focused_state() const {return a_focusing_state;};
         inline bool has_child_focused() const {return a_focusing_state > 0;};
+        inline bool has_child_overflighted() const {return a_overflighting_state > 0;};
         inline bool is_clicked(unsigned int button) { return is_overflighted() && window_struct().mouse_button_clicked(button); };
         inline bool is_clicked_during_this_frame(unsigned int button) { return is_overflighted() && window_struct().mouse_button_clicked_during_this_frame(button); };
         inline bool is_focused() const {return a_focusing_state == 0;};
         inline bool is_main_object() const {return a_is_main_object;};
-        inline bool is_overflighted() const {return a_is_overflighted;};
+        inline bool is_overflighted() const {return a_overflighting_state == 0;};
         inline std::string name() const {return a_name;};
-        inline unsigned long overflighted_cursor() {return a_overflighted_cursor;};
+        inline unsigned long overflighted_cursor() const {return a_overflighted_cursor;};
+        inline short overflighting_state() const {return a_overflighting_state;};
         inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
         inline void set_border_color(Color new_color) {a_border_color = new_color;};
         inline void set_focusing_state(bool new_focusing_state) {a_focusing_state = new_focusing_state;};
-        inline void set_is_overflighted(bool new_is_overflighted) {a_is_overflighted = new_is_overflighted;};
         inline void set_overflighted_cursor(unsigned long new_overflighted_cursor) {a_overflighted_cursor = new_overflighted_cursor;};
+        inline void set_overflighting_state(short new_overflighting_state) {a_overflighting_state = new_overflighting_state;};
         inline void set_visible(bool new_visible) {a_visible = new_visible;};
         inline bool visible() {return a_visible;};
         inline Window& window_struct() const {return a_window;};
@@ -168,19 +170,23 @@ namespace scls {
         // Returns the y position in absolute scale of the object
         double y_in_absolute_scale() const;
 
-        // Adapted scale for rendering
+        // Adapted absolute scale for rendering
         // Absolute position in adapted scale for rendering
-        inline glm::vec2 absolute_position_in_adapted_scale() const {return glm::vec2(x_in_adapted_scale(), y_in_adapted_scale());};
+        inline glm::vec2 absolute_position_in_adapted_scale() const {return glm::vec2(x_in_adapted_absolute_scale(), y_in_adapted_absolute_scale());};
         // Absolute scale in adapted scale for rendering
-        inline glm::vec2 absolute_scale_in_adapted_scale() const {return glm::vec2(width_in_adapted_scale(), height_in_adapted_scale());};
+        inline glm::vec2 absolute_scale_in_adapted_scale() const {return glm::vec2(width_in_adapted_absolute_scale(), height_in_adapted_absolute_scale());};
         // Returns the height adapted for rendering
-        double height_in_adapted_scale() const;
+        double height_in_adapted_absolute_scale() const;
         // Returns the width adapted for rendering
-        double width_in_adapted_scale() const;
+        double width_in_adapted_absolute_scale() const;
         // Returns the x adapted for rendering
-        double x_in_adapted_scale() const;
+        double x_in_adapted_absolute_scale() const;
         // Returns the y adapted for rendering
-        double y_in_adapted_scale() const;
+        double y_in_adapted_absolute_scale() const;
+        // Returns the y of the bottom of the object in adapted for rendering
+        double y_bottom_in_adapted_absolute_scale() const;
+        // Returns the y of the top of the object in adapted for rendering
+        double y_top_in_adapted_absolute_scale() const;
 
         // Scale handling
         // Returns the scale of the border width
@@ -271,6 +277,8 @@ namespace scls {
         glm::vec4 fitted_horizontally_texture_rect() const;
         // Returns the rect of the vertically fitted texture
         glm::vec4 fitted_vertically_texture_rect() const;
+        // Returns the extremum of the object
+        glm::vec4 object_extremum() const;
         // Returns the height of the texture in scale of the object
         inline double texture_height_in_scale() const { return static_cast<double>(image()->height()) / static_cast<double>(height_in_pixel()); };
         // Returns the width of the texture in scale of the object
@@ -303,16 +311,16 @@ namespace scls {
         Color a_background_color = Color(0, 0, 0, 0);
         // Children of this object
         std::vector<GUI_Object*> a_children = std::vector<GUI_Object*>();
-        // The stat of focusing of the object (0 == focused, > 0 == child focused)
+        // The state of focusing of the object (0 == focused, > 0 == child focused)
         short a_focusing_state = -1;
-        // If the object is overfighted or not
-        bool a_is_overflighted = false;
         // If the object is the main object of the page or not
         bool a_is_main_object = false;
         // Name of this object
         std::string a_name = "";
         // Id of the overflighted cursor
         unsigned long a_overflighted_cursor = GLFW_ARROW_CURSOR;
+        // The state of overflighting of the object (0 == overflighted, > 0 == child overflighted)
+        short a_overflighting_state = -1;
         // If the object is visible
         bool a_visible = true;
         // Pointer to the main window

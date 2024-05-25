@@ -78,7 +78,7 @@ public:
 		to_return += "final_color.w = max(color_1.w, color_2.w);";
 		to_return += "return final_color;}";
 		to_return += "void main(){"; // Main function
-		to_return += "if(tex_pos.y * object_rect.w > object_extremum.w || tex_pos.y * object_rect.w < object_extremum.y)discard;"; // Check if the object should be displayed
+		to_return += "if(tex_pos.y > object_extremum.w || tex_pos.y < object_extremum.y)discard;"; // Check if the object should be displayed
 		to_return += "vec4 color = background_color;";
 		to_return += "if(tex_pos[0] < border_width.y || tex_pos[1] < border_width.z || tex_pos[0] > 1.0 - border_width.w || tex_pos[1] > 1.0 - border_width.x){";
 		to_return += "color = blend_colors(border_color, color);}";
