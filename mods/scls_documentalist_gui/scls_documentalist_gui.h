@@ -48,6 +48,17 @@ namespace scls_documentalist_gui {
 
         //*********
         //
+        // Project handling function
+        //
+        //*********
+
+        // Create a project with the GUI datas
+        void create_project();
+        // Create a project
+        void create_project(std::string name, std::string path);
+
+        //*********
+        //
         // Annoying GUI stuff
         //
         //*********
@@ -90,6 +101,8 @@ namespace scls_documentalist_gui {
         // Returns the parent object of the GUI
         inline scls::GUI_Object* parent_object() {return a_page->parent_object();};
     private:
+
+        unsigned char a_current_file_to_be_chosen = 0;
 
         //*********
         //

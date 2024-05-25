@@ -519,6 +519,8 @@ namespace scls {
         // GUI_File_Explorer destructor
         virtual ~GUI_File_Explorer();
 
+        // Returns if the choose button is clicked during this frame
+        bool choose_clicked() const {return a_choose_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT);};
         // Returns if the explorer contains a selected file
         inline bool contains_selected_file(std::string file) {
             std::vector<std::string> selected_files = cut_string(a_currently_selected_files, ";");
@@ -550,6 +552,7 @@ namespace scls {
         // Getters and setters
         inline std::string choose_button_text(){return a_choose_button_text;};
         inline std::string current_path() {return a_current_path;};
+        inline std::string currently_selected_path() {return current_path() + "/" + a_currently_selected_files;};
         inline std::string final_path_text() {return a_final_path_text;};
         inline void set_choose_button_text(std::string new_choose_button_text) {a_choose_button_text = new_choose_button_text;};
         inline void set_final_path_text(std::string new_final_path_text) {a_final_path_text = new_final_path_text;};

@@ -780,7 +780,7 @@ namespace scls {
 
     // Returns if a file is chosen during this frame
     bool GUI_File_Explorer::file_chosen() {
-        if(!a_choose_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) return false;
+        if(!choose_clicked()) return false;
         return true;
     }
 
@@ -822,7 +822,7 @@ namespace scls {
     // Place all the elements in the file explorer
     void GUI_File_Explorer::place_all() {
         // Place each object
-        a_choose_button->move_bottom_of_parent();
+        a_choose_button->move_bottom_of_parent(0.02);
         a_choose_button->move_left_of_parent();
         a_final_path->set_size_in_scale(glm::vec2(0.8, 0.1));
         a_final_path->move_bottom_of_parent();
@@ -866,6 +866,7 @@ namespace scls {
         if(path[0] != '/') path = "/" + path;
         #endif // defined
 
+        path = replace(path, "\\", "/");
         if(std::filesystem::is_directory(path) && (a_current_path == "" || contains_selected_file(file_name(path)))) {
             // Handle a directory
             a_browser_buttons_to_modify.clear();
@@ -887,7 +888,7 @@ namespace scls {
                 update_browser();
             }
         }
-        a_final_path->set_text(final_path_text() + " : " + replace(path, "/", "\\"));
+        a_final_path->set_text(final_path_text() + " : " + replace(path, "\\", "/"));
         place_all();
     }
 

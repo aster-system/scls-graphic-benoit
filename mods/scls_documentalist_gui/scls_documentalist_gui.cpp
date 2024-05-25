@@ -306,6 +306,30 @@ namespace scls_documentalist_gui {
 
     //*********
     //
+    // Project handling function
+    //
+    //*********
+
+    // Create a project with the GUI datas
+    void SCLS_Documentalist_GUI::create_project() {
+        std::string name = a_create_project_name->plain_text();
+        std::string path = a_create_project_path->plain_text();
+
+        if(name != "") {
+            create_project(name, path);
+        }
+    }
+
+    // Create a project
+    void SCLS_Documentalist_GUI::create_project(std::string name, std::string path) {
+        path += "/" + name + "/";
+        std::filesystem::create_directory(path);
+
+        std::cout << "J " << path << std::endl;
+    }
+
+    //*********
+    //
     // Processing functions
     //
     //*********
@@ -322,8 +346,20 @@ namespace scls_documentalist_gui {
                 display_create_project();
             }
             else if(a_create_project_path_change->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                a_current_file_to_be_chosen = 0;
                 a_file_explorer->set_current_user_document_directory();
                 display_file_explorer();
+            }
+
+            if(a_file_explorer->file_chosen()) {
+                if(a_current_file_to_be_chosen == 0) {
+                    a_create_project_path->set_text(a_file_explorer->currently_selected_path());
+                    display_create_project();
+                }
+            }
+
+            if(a_create_project_validation->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                create_project();
             }
 
             render();
