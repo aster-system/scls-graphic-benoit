@@ -212,7 +212,7 @@ namespace scls {
 
     // Returns the extremum of the object
     glm::vec4 GUI_Object::object_extremum() const {
-        double absolute_y_bottom_to_apply = y_bottom_in_adapted_absolute_scale();
+        double absolute_y_bottom_to_apply = (y_bottom_in_adapted_absolute_scale() + 1.0) / 2.0;
         double absolute_y_top_to_apply = y_top_in_adapted_absolute_scale();
         double absolute_height_to_apply = height_in_adapted_absolute_scale();
         double absolute_y_bottom_parent_to_apply = -1.0;
@@ -222,7 +222,7 @@ namespace scls {
             absolute_y_top_parent_to_apply = parent()->y_top_in_adapted_absolute_scale();
         }
         double y_maximum = ((absolute_y_top_to_apply + 1.0) / 2.0 - (absolute_y_top_parent_to_apply + 1.0) / 2.0);
-        double y_minimum = ((absolute_y_bottom_parent_to_apply + 1.0) / 2.0 - (absolute_y_bottom_to_apply + 1.0) / 2.0);
+        double y_minimum = ((absolute_y_bottom_parent_to_apply + 1.0) / 2.0 - absolute_y_bottom_to_apply);
 
         // Apply the local transformations
         y_maximum /= absolute_height_to_apply; y_maximum = 1.0 - y_maximum;
@@ -366,7 +366,7 @@ namespace scls {
     // Returns the y of the bottom of the object in adapted for rendering
     double GUI_Object::y_bottom_in_adapted_absolute_scale() const {
         double to_return = y_in_absolute_scale();
-        double height_to_apply = height_in_adapted_absolute_scale();
+        double height_to_apply = height_in_absolute_scale();
 
         // Handle the pixel perfect system
         double divisor = one_pixel_in_absolute_scale()[1];
@@ -454,7 +454,7 @@ namespace scls {
     // Returns the y of the top of the object in adapted for rendering
     double GUI_Object::y_top_in_adapted_absolute_scale() const {
         double to_return = y_in_absolute_scale();
-        double height_to_apply = height_in_adapted_absolute_scale();
+        double height_to_apply = height_in_absolute_scale();
 
         // Handle the pixel perfect system
         double divisor = one_pixel_in_absolute_scale()[1];
@@ -822,7 +822,7 @@ namespace scls {
     // Place all the elements in the file explorer
     void GUI_File_Explorer::place_all() {
         // Place each object
-        a_choose_button->move_bottom_of_parent(0.02);
+        a_choose_button->move_bottom_of_parent();
         a_choose_button->move_left_of_parent();
         a_final_path->set_size_in_scale(glm::vec2(0.8, 0.1));
         a_final_path->move_bottom_of_parent();
