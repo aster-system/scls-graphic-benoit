@@ -46,9 +46,10 @@ namespace scls {
         // Handle the matrix
         glm::vec2 absolute_position_to_apply = absolute_position_in_adapted_scale();
         glm::vec2 absolute_scale_to_apply = absolute_scale_in_adapted_scale();
+        absolute_scale_to_apply *= glm::vec2(scale_multiplier[0], scale_multiplier[1]);
         glm::mat4 matrix = glm::mat4(1.0);
         matrix = glm::translate(matrix, glm::vec3(absolute_position_to_apply[0], absolute_position_to_apply[1], 0));
-        matrix = glm::scale(matrix, glm::vec3(absolute_scale_to_apply[0], absolute_scale_to_apply[1], 1) * scale_multiplier);
+        matrix = glm::scale(matrix, glm::vec3(absolute_scale_to_apply[0], absolute_scale_to_apply[1], 1));
 
         // Handle the background color
         vao()->get_shader_program()->set_uniform4f_value("background_color", background_color());
@@ -415,11 +416,12 @@ namespace scls {
 
     // Returns the y adapted for rendering
     double GUI_Object::y_in_adapted_absolute_scale() const {
+        double divisor = one_pixel_in_absolute_scale()[1];
         double to_return = y_in_absolute_scale();
         double height_to_apply = height_in_adapted_absolute_scale();
+        int height_to_apply_in_pixel = height_to_apply / divisor;
 
         // Handle the pixel perfect system
-        double divisor = one_pixel_in_absolute_scale()[1];
         unsigned int total = 0;
         to_return++;
         to_return -= height_to_apply;
@@ -432,6 +434,9 @@ namespace scls {
         to_return += divisor / 5.0;
         to_return += height_to_apply;
         to_return--;
+
+        // Handle the odd height
+        if(height_to_apply_in_pixel % 2 == 1) to_return -= divisor / 2.0;
 
         return to_return;
     }

@@ -52,10 +52,19 @@ namespace scls_documentalist_gui {
         //
         //*********
 
+        // Returns if the program contains a loaded project by its name
+        bool contains_loaded_project_by_name(std::string project_name);
         // Create a project with the GUI datas
         void create_project();
         // Create a project
         void create_project(std::string name, std::string path);
+        // Returns a loaded project by its name, or 0 if it does not exists
+        scls::Project* loaded_project_by_name(std::string project_name);
+        // Unload every projects
+        void unload_projects();
+
+        // Getters and setters
+        inline scls::Project* currently_displayed_project() const { return a_currently_displayed_project; };
 
         //*********
         //
@@ -65,16 +74,27 @@ namespace scls_documentalist_gui {
 
         // Load the entire gui
         void load();
+        // Load the main header
+        void load_main_header();
+        // Load bodies
         // Load the create project body
         void load_create_project_body();
         // Load the file explorer
         void load_file_explorer();
         // Load the help body
         void load_help_body();
+        // Load the project main body
+        void load_project_main_body();
+        // Load navigations
         // Load the help navigation
         void load_help_navigation();
-        // Load the main header
-        void load_main_header();
+        // Load the project navigation
+        void load_project_navigation();
+        // Load the buttons in the project navigation
+        void load_project_navigation_buttons();
+        // Load the footers
+        // Load the project footer
+        void load_project_footer();
         // Load the welcome page footer
         void load_welcome_footer();
 
@@ -93,22 +113,34 @@ namespace scls_documentalist_gui {
         void display_file_explorer();
         // Display the help part of the software
         void display_help();
+        // Display the main page of a project
+        void display_project_main(scls::Project* project_to_display);
 
         // Reset a page
         // Reset the create project page
         void reset_create_project_page();
+        // Unload the buttons in the project navigation
+        void unload_project_navigation_buttons();
 
         // Returns the parent object of the GUI
         inline scls::GUI_Object* parent_object() {return a_page->parent_object();};
     private:
 
-        unsigned char a_current_file_to_be_chosen = 0;
+        // Currently displayed project
+        scls::Project* a_currently_displayed_project = 0;
+        // Every loaded projects
+        std::vector<scls::Project*> a_loaded_projects = std::vector<scls::Project*>();
+        // Buttons in the project navigation
+        std::vector<scls::GUI_Object*> a_project_navigation_buttons = std::vector<scls::GUI_Object*>();
 
         //*********
         //
         // Annoying GUI stuff
         //
         //*********
+
+        // Current state to know how to use the chosen file with the file explorer
+        unsigned char a_current_file_to_be_chosen = 0;
 
         // Main page of the GUI
         scls::GUI_Page* a_page = 0;
@@ -153,6 +185,22 @@ namespace scls_documentalist_gui {
         scls::GUI_Object* a_main_header = 0;
         // File button of the header
         scls::GUI_Text* a_main_header_file_button = 0;
+
+        // Footer of the project
+        // Parent page of the project footer
+        scls::GUI_Object* a_project_footer = 0;
+        // Button to create a pattern file in the project footer
+        scls::GUI_Text* a_project_footer_create_file_pattern = 0;
+
+        // Navigation of the project
+        // Parent page of the project navigation
+        scls::GUI_Object* a_project_navigation = 0;
+
+        // Body of the project main
+        // Parent page of the project main body
+        scls::GUI_Object* a_project_main_body = 0;
+        // Home text of the project main body
+        scls::GUI_Text* a_project_main_body_title = 0;
 
         // Footer of the welcome
         // Parent page of the welcome footer
