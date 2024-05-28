@@ -119,12 +119,7 @@ namespace scls {
     }
 
     // Delete the children of an object
-    void GUI_Object::delete_children() {
-        for(int i = 0;i<static_cast<int>(children().size());i++) {
-            delete children()[i];
-        }
-        children().clear();
-    }
+    void GUI_Object::delete_children() { for(int i = 0;i<static_cast<int>(children().size());i++) { delete children()[i]; } children().clear(); }
 
     // Returns the rect of the fitted texture
     glm::vec4 GUI_Object::fitted_texture_rect() const {
@@ -436,7 +431,7 @@ namespace scls {
         to_return--;
 
         // Handle the odd height
-        if(height_to_apply_in_pixel % 2 == 1) to_return -= divisor / 2.0;
+        if(height_to_apply_in_pixel % 2 == 1) to_return += divisor / 2.0;
 
         return to_return;
     }

@@ -64,6 +64,8 @@ namespace scls_documentalist_gui {
         void create_project(std::string name, std::string path);
         // Returns a loaded project by its name, or 0 if it does not exists
         scls::Project* loaded_project_by_name(std::string project_name);
+        // Save all the project
+        void save_all();
         // Unload every projects
         void unload_projects();
 
@@ -87,6 +89,8 @@ namespace scls_documentalist_gui {
         void load_create_project_body();
         // Load the file explorer
         void load_file_explorer();
+        // Load the file pattern
+        void load_file_pattern_body();
         // Load the help body
         void load_help_body();
         // Load the project main body
@@ -119,6 +123,8 @@ namespace scls_documentalist_gui {
         void display_create_project();
         // Display the file explorer of the software
         void display_file_explorer();
+        // Display a file pattern of a project
+        void display_file_pattern(scls::Text_Pattern* pattern_to_display);
         // Display the help part of the software
         void display_help();
         // Display the main page of a project
@@ -134,6 +140,8 @@ namespace scls_documentalist_gui {
         inline scls::GUI_Object* parent_object() {return a_page->parent_object();};
     private:
 
+        // Current path of the program
+        std::string a_current_path = "";
         // Currently displayed project
         scls::Project* a_currently_displayed_project = 0;
         // Every loaded projects
@@ -183,6 +191,12 @@ namespace scls_documentalist_gui {
         // Parent page of the file explorer
         scls::GUI_File_Explorer* a_file_explorer = 0;
 
+        // Body of the file pattern page
+        // Parent page of the file pattern body
+        scls::GUI_Object* a_file_pattern_body = 0;
+        // Text in the file pattern
+        scls::GUI_Text_Input* a_file_pattern_text = 0;
+
         // Body of the help
         // Parent page of the help body
         scls::GUI_Object* a_help_body = 0;
@@ -209,6 +223,8 @@ namespace scls_documentalist_gui {
         scls::GUI_Object* a_project_footer = 0;
         // Button to create a pattern file in the project footer
         scls::GUI_Text* a_project_footer_create_file_pattern = 0;
+        // Button to save all in the project footer
+        scls::GUI_Text* a_project_footer_save_all = 0;
 
         // Navigation of the project
         // Parent page of the project navigation
