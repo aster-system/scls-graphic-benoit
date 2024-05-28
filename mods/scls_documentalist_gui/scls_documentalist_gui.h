@@ -54,6 +54,10 @@ namespace scls_documentalist_gui {
 
         // Returns if the program contains a loaded project by its name
         bool contains_loaded_project_by_name(std::string project_name);
+        // Create a file pattern with the GUI datas
+        void create_file_pattern();
+        // Create a file pattern
+        void create_file_pattern(std::string name);
         // Create a project with the GUI datas
         void create_project();
         // Create a project
@@ -77,6 +81,8 @@ namespace scls_documentalist_gui {
         // Load the main header
         void load_main_header();
         // Load bodies
+        // Load the create file pattern body
+        void load_create_file_pattern_body();
         // Load the create project body
         void load_create_project_body();
         // Load the file explorer
@@ -107,6 +113,8 @@ namespace scls_documentalist_gui {
         void reload_text();
 
         // Display each pages
+        // Display the create file pattern page of the software
+        void display_create_file_pattern();
         // Display the create project of the software
         void display_create_project();
         // Display the file explorer of the software
@@ -144,6 +152,16 @@ namespace scls_documentalist_gui {
 
         // Main page of the GUI
         scls::GUI_Page* a_page = 0;
+
+        // Body of the create file pattern page
+        // Parent page of the create file pattern body
+        scls::GUI_Object* a_create_file_pattern_body = 0;
+        // Input of the name of the file pattern
+        scls::GUI_Text_Input* a_create_file_pattern_name = 0;
+        // Title of the input of the name of the file pattern
+        scls::GUI_Text* a_create_file_pattern_name_title = 0;
+        // Validate the creation of the file pattern
+        scls::GUI_Text* a_create_file_pattern_validation = 0;
 
         // Body of the create project page
         // Parent page of the create project body

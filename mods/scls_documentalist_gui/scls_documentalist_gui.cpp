@@ -38,6 +38,16 @@ namespace scls_documentalist_gui {
     //
     //*********
 
+    // Display the create file pattern page of the software
+    void SCLS_Documentalist_GUI::display_create_file_pattern() {
+        parent_object()->hide_children();
+
+        a_create_file_pattern_body->set_visible(true);
+        a_main_header->set_visible(true);
+        a_project_footer->set_visible(true);
+        a_project_navigation->set_visible(true);
+    }
+
     // Display the create project of the software
     void SCLS_Documentalist_GUI::display_create_project() {
         parent_object()->hide_children();
@@ -106,6 +116,7 @@ namespace scls_documentalist_gui {
         load_welcome_footer();
 
         // Load bodies
+        load_create_file_pattern_body();
         load_create_project_body();
         load_file_explorer();
         load_help_body();
@@ -115,9 +126,45 @@ namespace scls_documentalist_gui {
         set_window_title("SCLS Documentalist \"Agatha\"");
     }
 
+    // Load the create file pattern body
+    void SCLS_Documentalist_GUI::load_create_file_pattern_body() {
+        // Body of the create file pattern page
+        a_create_file_pattern_body = parent_object()->new_object<scls::GUI_Object>("create_file_pattern_body");
+        a_create_file_pattern_body->set_background_color(scls::white);
+        a_create_file_pattern_body->set_size_in_scale(glm::vec2(0.7, 0.6));
+        a_create_file_pattern_body->set_border_width_in_pixel(1);
+        a_create_file_pattern_body->move_bottom_of_object_in_parent(a_main_header);
+        a_create_file_pattern_body->move_right_of_parent(0.025);
+        // Input of the name of the file pattern
+        a_create_file_pattern_name = a_create_file_pattern_body->new_object<scls::GUI_Text_Input>("create_file_pattern_name");
+        a_create_file_pattern_name->set_border_width_in_pixel(1);
+        a_create_file_pattern_name->set_font_size(20);
+        a_create_file_pattern_name->set_position_in_scale(glm::vec2(0.4, 0.8));
+        a_create_file_pattern_name->set_size_in_scale(glm::vec2(0.35, 0.1));
+        a_create_file_pattern_name->set_text("");
+        a_create_file_pattern_name->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
+        a_create_file_pattern_name->set_texture_alignment_vertical(scls::Alignment_Vertical::V_Center);
+        // Title of the input of the name of the file pattern
+        a_create_file_pattern_name_title = a_create_file_pattern_body->new_object<scls::GUI_Text>("create_file_pattern_name_title");
+        a_create_file_pattern_name_title->set_font_size(100);
+        a_create_file_pattern_name_title->set_position_in_scale(glm::vec2(-0.4, 0.8));
+        a_create_file_pattern_name_title->set_size_in_scale(glm::vec2(0.35, 0.15));
+        a_create_file_pattern_name_title->set_text(a_hud_text_content["file_pattern_name"] + " :");
+        a_create_file_pattern_name_title->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
+        // Validate the creation of the file pattern
+        a_create_file_pattern_validation = a_create_file_pattern_body->new_object<scls::GUI_Text>("create_file_pattern_validation");
+        a_create_file_pattern_validation->set_border_width_in_pixel(1);
+        a_create_file_pattern_validation->set_font_size(100);
+        a_create_file_pattern_validation->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_create_file_pattern_validation->set_position_in_scale(glm::vec2(-0.4, -0.8));
+        a_create_file_pattern_validation->set_size_in_scale(glm::vec2(0.25, 0.1));
+        a_create_file_pattern_validation->set_text(a_hud_text_content["file_pattern_create"]);
+        a_create_file_pattern_validation->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
+    }
+
     // Load the create project body
     void SCLS_Documentalist_GUI::load_create_project_body() {
-        // Body of the welcome page
+        // Body of the create project page
         a_create_project_body = parent_object()->new_object<scls::GUI_Object>("create_project_body");
         a_create_project_body->set_background_color(scls::white);
         a_create_project_body->set_size_in_scale(glm::vec2(0.7, 0.6));
@@ -250,8 +297,9 @@ namespace scls_documentalist_gui {
     // Load french
     void SCLS_Documentalist_GUI::load_language_fr() {
         a_hud_text_content["change_path"] = scls::to_utf_8("Changer le chemin d'accès");
-        a_hud_text_content["file_pattern_create"] = scls::to_utf_8("Créer un fichier modèle");
         a_hud_text_content["create_a_project"] = scls::to_utf_8("Créer un projet");
+        a_hud_text_content["file_pattern_create"] = scls::to_utf_8("Créer un fichier modèle");
+        a_hud_text_content["file_pattern_name"] = scls::to_utf_8("Nom du fichier modèle");
         a_hud_text_content["final_path"] = "Fichier final";
         std::string help_body_home = "<h1>Bienvenue sur la GUI de SCLS Documentalist \"Agatha\"</h1>";
         help_body_home += "Ce logiciel, fait par Aster Système, vous permet d'utiliser SCLS Documentalist \"Agatha\" simplement, sans avoir à</br>";
@@ -260,7 +308,6 @@ namespace scls_documentalist_gui {
         help_body_home += "Vous êtes actuellement sur la page d'aide. Naviguez avec le sélécteur à gauche.";
         a_hud_text_content["help_body_home"] = scls::to_utf_8(help_body_home);
         a_hud_text_content["home"] = "Accueil";
-        a_hud_text_content["name_file_pattern"] = scls::to_utf_8("Nom du fichier modèle");
         a_hud_text_content["name_project"] = "Nom du projet";
         a_hud_text_content["path_project"] = scls::to_utf_8("Chemin d'accès du projet");
         a_hud_text_content["project"] = "Projet";
@@ -403,6 +450,20 @@ namespace scls_documentalist_gui {
     // Returns if the program contains a loaded project by its name
     bool SCLS_Documentalist_GUI::contains_loaded_project_by_name(std::string project_name) {return loaded_project_by_name(project_name) != 0;}
 
+    // Create a file pattern with the GUI datas
+    void SCLS_Documentalist_GUI::create_file_pattern() {
+        std::string name = a_create_file_pattern_name->plain_text();
+
+        if(name != "") {
+            create_file_pattern(name);
+        }
+    }
+
+    // Create a file pattern
+    void SCLS_Documentalist_GUI::create_file_pattern(std::string name) {
+        std::cout << "K " << name << std::endl;
+    }
+
     // Create a project with the GUI datas
     void SCLS_Documentalist_GUI::create_project() {
         std::string name = a_create_project_name->plain_text();
@@ -465,6 +526,13 @@ namespace scls_documentalist_gui {
 
             if(a_create_project_validation->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
                 create_project();
+            }
+
+            if(a_project_footer_create_file_pattern->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                display_create_file_pattern();
+            }
+            if(a_create_file_pattern_validation->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                create_file_pattern();
             }
 
             render();
