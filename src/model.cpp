@@ -492,6 +492,8 @@ void Texture::bind() {
 
 // Change the texture of the texture according to image
 void Texture::change_texture() {
+    if(get_image() == 0) return;
+
     height = get_image()->height();
 	width = get_image()->width();
 

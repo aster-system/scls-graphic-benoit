@@ -350,9 +350,16 @@ public:
 	inline std::string get_texture_path() { return texture_path; };
 	inline bool loaded() {return a_loaded;};
 	inline void set_image(scls::Image* new_image, bool delete_image = true) {
+	    if(new_image == 0 && a_image != 0) {
+            glDeleteTextures(1, &texture_id);
+        }
+        else if(a_image == 0 && new_image != 0) {
+            glGenTextures(1, &texture_id);
+        }
 	    if(delete_image && a_image != 0) delete a_image;
+
 	    a_image = new_image;
-	    a_image->flip_x();
+	    if(a_image != 0)a_image->flip_x();
 	    change_texture();
     };
 	inline bool use_resize() { return resize; };
