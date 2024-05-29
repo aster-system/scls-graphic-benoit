@@ -40,7 +40,7 @@ namespace scls_documentalist_gui {
 
     // Display the create file pattern page of the software
     void SCLS_Documentalist_GUI::display_create_file_pattern() {
-        parent_object()->hide_children();
+        unset_all();
 
         a_create_file_pattern_body->set_visible(true);
         a_main_header->set_visible(true);
@@ -50,7 +50,7 @@ namespace scls_documentalist_gui {
 
     // Display the create project of the software
     void SCLS_Documentalist_GUI::display_create_project() {
-        parent_object()->hide_children();
+        unset_all();
 
         a_create_project_body->set_visible(true);
         a_help_navigation->set_visible(true);
@@ -60,7 +60,7 @@ namespace scls_documentalist_gui {
 
     // Display the file explorer of the software
     void SCLS_Documentalist_GUI::display_file_explorer() {
-        parent_object()->hide_children();
+        unset_all();
 
         a_file_explorer->set_visible(true);
         a_help_navigation->set_visible(true);
@@ -70,17 +70,26 @@ namespace scls_documentalist_gui {
 
     // Display a file pattern of a project
     void SCLS_Documentalist_GUI::display_file_pattern(scls::Text_Pattern* pattern_to_display) {
-        parent_object()->hide_children();
+        unset_all();
 
         a_file_pattern_body->set_visible(true);
         a_main_header->set_visible(true);
         a_project_footer->set_visible(true);
         a_project_navigation->set_visible(true);
+
+        if(contains_opened_file_pattern(pattern_to_display)) {
+            a_file_pattern_text->set_text(a_opened_files_pattern[pattern_to_display]);
+        }
+        else {
+            a_opened_files_pattern[pattern_to_display] = pattern_to_display->base_text().to_std_string();
+            a_file_pattern_text->set_text(pattern_to_display->base_text().to_std_string());
+        }
+        a_currently_displayed_file_pattern = pattern_to_display;
     }
 
     // Display the help page
     void SCLS_Documentalist_GUI::display_help() {
-        parent_object()->hide_children();
+        unset_all();
 
         a_help_body->set_visible(true);
         a_help_navigation->set_visible(true);
@@ -91,7 +100,7 @@ namespace scls_documentalist_gui {
     // Display the main page of a project
     void SCLS_Documentalist_GUI::display_project_main(scls::Project* project_to_display) {
         a_currently_displayed_project = project_to_display;
-        parent_object()->hide_children();
+        unset_all();
 
         a_main_header->set_visible(true);
         a_project_footer->set_visible(true);
@@ -527,11 +536,29 @@ namespace scls_documentalist_gui {
 
     // Save all the project
     void SCLS_Documentalist_GUI::save_all() {
+        if(a_currently_displayed_file_pattern != 0) {
+            a_opened_files_pattern[a_currently_displayed_file_pattern] = a_file_pattern_text->text();
+        }
+
+        for(std::map<scls::Text_Pattern*, std::string>::iterator it = a_opened_files_pattern.begin();it!=a_opened_files_pattern.end();it++) {
+            it->first->set_base_text(scls::String(it->second));
+        } a_opened_files_pattern.clear();
+
         currently_displayed_project()->save_sda_0_1(a_current_path);
     }
 
     // Unload the buttons in the project navigation
     void SCLS_Documentalist_GUI::unload_project_navigation_buttons() { a_project_navigation->delete_children(); a_project_navigation_buttons.clear(); }
+
+    // Unset all the project
+    void SCLS_Documentalist_GUI::unset_all() {
+        if(a_currently_displayed_file_pattern != 0) {
+            a_opened_files_pattern[a_currently_displayed_file_pattern] = a_file_pattern_text->text();
+        }
+
+        a_currently_displayed_file_pattern = 0;
+        parent_object()->hide_children();
+    }
 
     //*********
     //
@@ -541,6 +568,9 @@ namespace scls_documentalist_gui {
 
     // Returns if the program contains a loaded project by its name
     bool SCLS_Documentalist_GUI::contains_loaded_project_by_name(std::string project_name) {return loaded_project_by_name(project_name) != 0;}
+
+    // Returns if the program contains an opened file pattern
+    bool SCLS_Documentalist_GUI::contains_opened_file_pattern(scls::Text_Pattern* pattern_to_test) { for(std::map<scls::Text_Pattern*, std::string>::iterator it = a_opened_files_pattern.begin();it!=a_opened_files_pattern.end();it++) { if(it->first == pattern_to_test) return true; } return false; }
 
     // Create a file pattern with the GUI datas
     void SCLS_Documentalist_GUI::create_file_pattern() {
@@ -630,6 +660,20 @@ namespace scls_documentalist_gui {
             }
             else if(a_project_footer_save_all->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
                 save_all();
+            }
+
+            // Handle project navigation buttons
+            if(a_project_navigation_buttons.size() > 0) {
+                if(a_project_navigation_buttons[0]->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                    display_project_main(a_currently_displayed_project);
+                }
+                else {
+                    for(int i = 0;i<static_cast<int>(a_project_navigation_buttons.size());i++) {
+                        if(a_project_navigation_buttons[i]->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                            display_file_pattern(a_currently_displayed_project->patterns()[i - 1]);
+                        }
+                    }
+                }
             }
 
             render();

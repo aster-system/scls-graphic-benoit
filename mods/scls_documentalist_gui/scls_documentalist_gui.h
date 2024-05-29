@@ -54,6 +54,8 @@ namespace scls_documentalist_gui {
 
         // Returns if the program contains a loaded project by its name
         bool contains_loaded_project_by_name(std::string project_name);
+        // Returns if the program contains an opened file pattern
+        bool contains_opened_file_pattern(scls::Text_Pattern* pattern_to_test);
         // Create a file pattern with the GUI datas
         void create_file_pattern();
         // Create a file pattern
@@ -139,6 +141,8 @@ namespace scls_documentalist_gui {
         void reset_create_project_page();
         // Unload the buttons in the project navigation
         void unload_project_navigation_buttons();
+        // Unset all the project
+        void unset_all();
 
         // Returns the parent object of the GUI
         inline scls::GUI_Object* parent_object() {return a_page->parent_object();};
@@ -146,10 +150,14 @@ namespace scls_documentalist_gui {
 
         // Current path of the program
         std::string a_current_path = "";
+        // Currently displayed file_pattern
+        scls::Text_Pattern* a_currently_displayed_file_pattern = 0;
         // Currently displayed project
         scls::Project* a_currently_displayed_project = 0;
         // Every loaded projects
         std::vector<scls::Project*> a_loaded_projects = std::vector<scls::Project*>();
+        // Every opened patterns files
+        std::map<scls::Text_Pattern*, std::string> a_opened_files_pattern = std::map<scls::Text_Pattern*, std::string>();
         // Buttons in the project navigation
         std::vector<scls::GUI_Object*> a_project_navigation_buttons = std::vector<scls::GUI_Object*>();
 
