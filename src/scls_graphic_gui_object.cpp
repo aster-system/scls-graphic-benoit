@@ -32,7 +32,7 @@ namespace scls {
 
     // Function called after that the window is resized
     void GUI_Object::after_resizing(){
-        calculate_adapted_scale();
+        calculate_adapted_scale(true);
 
         // Apply to children
         for(int i = 0;i<static_cast<int>(a_children.size());i++) a_children[i]->after_resizing();
@@ -127,8 +127,8 @@ namespace scls {
     }
 
     // Calculate the adapted scale
-    void GUI_Object::calculate_adapted_scale() {
-        if(a_adapted_scale_updated) return;
+    void GUI_Object::calculate_adapted_scale(bool force) {
+        if(a_adapted_scale_updated && !force) return;
 
         double divisor_x = one_pixel_in_absolute_scale()[0];
         double divisor_y = one_pixel_in_absolute_scale()[1];
@@ -725,6 +725,11 @@ namespace scls {
         load();
     }
 
+    // Function called after that the window is resized
+    void GUI_File_Explorer::after_resizing() {
+         place_all();
+    }
+
     // Returns if a file is chosen during this frame
     bool GUI_File_Explorer::file_chosen() {
         if(!choose_clicked()) return false;
@@ -768,6 +773,8 @@ namespace scls {
 
     // Place all the elements in the file explorer
     void GUI_File_Explorer::place_all() {
+        GUI_Object::after_resizing();
+
         // Place each object
         a_choose_button->move_bottom_of_parent();
         a_choose_button->move_left_of_parent();

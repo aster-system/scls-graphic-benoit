@@ -78,6 +78,8 @@ namespace scls_documentalist_gui {
         //
         //*********
 
+        // Function called after that the window has been resized
+        virtual void after_window_resizing(glm::vec2 last_size){scls::Window::after_window_resizing(last_size);place_all();};
         // Load the entire gui
         void load();
         // Load the main header
@@ -131,6 +133,8 @@ namespace scls_documentalist_gui {
         void display_project_main(scls::Project* project_to_display);
 
         // Reset a page
+        // Place all the objects in the program
+        void place_all();
         // Reset the create project page
         void reset_create_project_page();
         // Unload the buttons in the project navigation

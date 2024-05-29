@@ -485,6 +485,32 @@ namespace scls_documentalist_gui {
         a_welcome_footer_create_project->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
     }
 
+    // Place all the objects in the program
+    void SCLS_Documentalist_GUI::place_all() {
+        // Project main body
+        if(a_project_main_body != 0) {
+            a_project_main_body->move_bottom_of_object_in_parent(a_main_header);
+            a_project_main_body->move_right_of_parent(0.025);
+        }
+        if(a_project_main_body_title != 0) {
+            a_project_main_body_title->set_x_in_scale(0.0);
+            a_project_main_body_title->move_top_of_parent();
+        }
+        // Project main footer
+        if(a_project_footer != 0) {
+            a_project_footer->move_bottom_of_parent();
+            a_project_footer->set_size_in_scale(glm::vec2(0.975, 0.335));
+        }
+        if(a_project_footer_create_file_pattern != 0) {
+            a_project_footer_create_file_pattern->move_left_of_parent();
+            a_project_footer_create_file_pattern->move_top_of_parent();
+        }
+        if(a_project_footer_save_all) {
+            a_project_footer_save_all->move_left_of_parent();
+            a_project_footer_save_all->move_bottom_of_parent();
+        }
+    }
+
     // Reload each HUD text
     void SCLS_Documentalist_GUI::reload_text() {
         a_create_project_name_title->set_text(a_hud_text_content["name_project"] + " :");

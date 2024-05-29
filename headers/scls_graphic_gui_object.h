@@ -176,7 +176,7 @@ namespace scls {
 
         // Adapted absolute (or not) scale for rendering
         // Calculate the adapted scale
-        void calculate_adapted_scale();
+        void calculate_adapted_scale(bool force = false);
         // Returns the y of the bottom of the object in adapted for rendering
         inline double y_bottom_in_adapted_absolute_scale() { return y_in_adapted_absolute_scale() - height_in_adapted_absolute_scale(); };
         // Returns the y of the top of the object in adapted for rendering
@@ -561,6 +561,8 @@ namespace scls {
         // GUI_File_Explorer destructor
         virtual ~GUI_File_Explorer();
 
+        // Function called after that the window is resized
+        virtual void after_resizing();
         // Returns if the choose button is clicked during this frame
         bool choose_clicked() const {return a_choose_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT);};
         // Returns if the explorer contains a selected file
