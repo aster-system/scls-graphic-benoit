@@ -576,9 +576,6 @@ namespace scls_documentalist_gui {
             update_event();
             update();
 
-            a_project_footer_create_file_pattern->move_left_of_parent();
-            a_project_footer_create_file_pattern->move_top_of_parent();
-
             if(a_welcome_footer_create_project->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
                 display_create_project();
             }

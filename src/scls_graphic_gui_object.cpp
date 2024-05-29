@@ -30,6 +30,14 @@ namespace scls {
         a_vao = window.vao("hud_default");
     }
 
+    // Function called after that the window is resized
+    void GUI_Object::after_resizing(){
+        calculate_adapted_scale();
+
+        // Apply to children
+        for(int i = 0;i<static_cast<int>(a_children.size());i++) a_children[i]->after_resizing();
+    }
+
     // Delete a child of the object
     void GUI_Object::delete_child(GUI_Object* object) {
         for(int i = 0;i<static_cast<int>(children().size());i++) {
@@ -118,6 +126,69 @@ namespace scls {
         return a_border_width;
     }
 
+    // Calculate the adapted scale
+    void GUI_Object::calculate_adapted_scale() {
+        if(a_adapted_scale_updated) return;
+
+        double divisor_x = one_pixel_in_absolute_scale()[0];
+        double divisor_y = one_pixel_in_absolute_scale()[1];
+
+        // Handle the pixel perfect system for the height absolute scale
+        a_height_in_adapted_absolute_scale = height_in_absolute_scale();
+        unsigned int total = 0;
+        while(a_height_in_adapted_absolute_scale > divisor_y) {
+            a_height_in_adapted_absolute_scale -= divisor_y;
+            total++;
+        }
+        if(a_height_in_adapted_absolute_scale < divisor_y / 2.0) total++;
+        a_height_in_adapted_absolute_scale = total * divisor_y;
+
+        // Handle the pixel perfect system for the width absolute scale
+        a_width_in_adapted_absolute_scale = width_in_absolute_scale();
+        total = 0;
+        while(a_width_in_adapted_absolute_scale > divisor_x) {
+            a_width_in_adapted_absolute_scale -= divisor_x;
+            total++;
+        }
+        if(a_width_in_adapted_absolute_scale < divisor_x / 2.0) total++;
+        a_width_in_adapted_absolute_scale = total * divisor_x;
+
+        // Handle the pixel perfect system for the x absolute scale
+        a_x_in_adapted_absolute_scale = x_in_absolute_scale();
+        total = 0;
+        a_x_in_adapted_absolute_scale++;
+        a_x_in_adapted_absolute_scale -= a_width_in_adapted_absolute_scale;
+        while(a_x_in_adapted_absolute_scale > divisor_x) {
+            a_x_in_adapted_absolute_scale -= divisor_x;
+            total++;
+        }
+        if(a_x_in_adapted_absolute_scale < divisor_x / 2.0) total++;
+        a_x_in_adapted_absolute_scale = total * divisor_x;
+        a_x_in_adapted_absolute_scale += divisor_x / 5.0;
+        a_x_in_adapted_absolute_scale += a_width_in_adapted_absolute_scale;
+        a_x_in_adapted_absolute_scale--;
+
+        // Handle the pixel perfect system for the y absolute scale
+        a_y_in_adapted_absolute_scale = y_in_absolute_scale();
+        int height_to_apply_in_pixel = a_height_in_adapted_absolute_scale / divisor_y;
+        total = 0;
+        a_y_in_adapted_absolute_scale++;
+        a_y_in_adapted_absolute_scale -= a_height_in_adapted_absolute_scale;
+        while(a_y_in_adapted_absolute_scale > divisor_y) {
+            a_y_in_adapted_absolute_scale -= divisor_y;
+            total++;
+        }
+        if(a_y_in_adapted_absolute_scale < divisor_y / 2.0) total++;
+        a_y_in_adapted_absolute_scale = total * divisor_y;
+        a_y_in_adapted_absolute_scale += divisor_y / 5.0;
+        a_y_in_adapted_absolute_scale += a_height_in_adapted_absolute_scale;
+        a_y_in_adapted_absolute_scale--;
+        // Handle the odd height
+        if(height_to_apply_in_pixel % 2 == 1) a_y_in_adapted_absolute_scale += divisor_y / 2.0;
+
+        a_adapted_scale_updated = true;
+    }
+
     // Delete the children of an object
     void GUI_Object::delete_children() { for(int i = 0;i<static_cast<int>(children().size());i++) { delete children()[i]; } children().clear(); }
 
@@ -147,22 +218,6 @@ namespace scls {
         if(texture_alignment_horizontal() == Alignment_Horizontal::H_Center) x_texture = 0.5 - width_texture / 2.0;
         else if(texture_alignment_horizontal() == Alignment_Horizontal::H_Right) x_texture = 1.0 - width_texture;
         return glm::vec4(x_texture, y_texture, width_texture, height_texture);
-    }
-
-    // Returns the height adapted for rendering
-    double GUI_Object::height_in_adapted_absolute_scale() const {
-        double to_return = height_in_absolute_scale();
-
-        double divisor = one_pixel_in_absolute_scale()[1];
-        unsigned int total = 0;
-        while(to_return > divisor) {
-            to_return -= divisor;
-            total++;
-        }
-        if(to_return < divisor / 2.0) total++;
-        to_return = total * divisor;
-
-        return to_return;
     }
 
     // Returns the height in pixel of the object
@@ -207,7 +262,7 @@ namespace scls {
     }
 
     // Returns the extremum of the object
-    glm::vec4 GUI_Object::object_extremum() const {
+    glm::vec4 GUI_Object::object_extremum() {
         double absolute_y_bottom_to_apply = (y_bottom_in_adapted_absolute_scale() + 1.0) / 2.0;
         double absolute_y_top_to_apply = y_top_in_adapted_absolute_scale();
         double absolute_height_to_apply = height_in_adapted_absolute_scale();
@@ -261,22 +316,6 @@ namespace scls {
         return to_return;
     }
 
-    // Returns the width adapted for rendering
-    double GUI_Object::width_in_adapted_absolute_scale() const {
-        double to_return = width_in_absolute_scale();
-
-        double divisor = one_pixel_in_absolute_scale()[0];
-        unsigned int total = 0;
-        while(to_return > divisor) {
-            to_return -= divisor;
-            total++;
-        }
-        if(to_return < divisor / 2.0) total++;
-        to_return = total * divisor;
-
-        return to_return;
-    }
-
     // Returns the width in scale of the object
     double GUI_Object::width_in_scale() const {
         double to_return = a_width;
@@ -321,29 +360,6 @@ namespace scls {
         return to_return;
     }
 
-    // Returns the x adapted for rendering
-    double GUI_Object::x_in_adapted_absolute_scale() const {
-        double to_return = x_in_absolute_scale();
-        double width_to_apply = width_in_adapted_absolute_scale();
-
-        // Handle the pixel perfect system
-        double divisor = one_pixel_in_absolute_scale()[0];
-        unsigned int total = 0;
-        to_return++;
-        to_return -= width_to_apply;
-        while(to_return > divisor) {
-            to_return -= divisor;
-            total++;
-        }
-        if(to_return < divisor / 2.0) total++;
-        to_return = total * divisor;
-        to_return += divisor / 5.0;
-        to_return += width_to_apply;
-        to_return--;
-
-        return to_return;
-    }
-
     // Returns the x position in scale of the object
     double GUI_Object::x_in_scale() const {
         double to_return = 0.0;
@@ -359,28 +375,6 @@ namespace scls {
         return to_return;
     }
 
-    // Returns the y of the bottom of the object in adapted for rendering
-    double GUI_Object::y_bottom_in_adapted_absolute_scale() const {
-        double to_return = y_in_absolute_scale();
-        double height_to_apply = height_in_absolute_scale();
-
-        // Handle the pixel perfect system
-        double divisor = one_pixel_in_absolute_scale()[1];
-        unsigned int total = 0;
-        to_return++;
-        to_return -= height_to_apply;
-        while(to_return > divisor) {
-            to_return -= divisor;
-            total++;
-        }
-        if(to_return < divisor / 2.0) total++;
-        to_return = total * divisor;
-        to_return += divisor / 5.0;
-        to_return--;
-
-        return to_return;
-    }
-
     // Returns the y position in pixel of the object
     double GUI_Object::y_in_pixel() const {
         double to_return = ((y_in_absolute_scale() + 1.0) / 2.0) * window_struct().window_height() - (height_in_pixel() / 2.0);
@@ -390,10 +384,12 @@ namespace scls {
 
     // Returns the y position in absolute scale of the object
     double GUI_Object::y_in_absolute_scale() const {
+        if(a_last_y_definition == _Size_Definition::Absolute_Scale_Size) return a_y;
+
         double to_return = 0.0;
 
         double to_add = 0;
-        if(a_last_height_definition != _Size_Definition::Absolute_Scale_Size && parent() != 0) to_add += parent()->y_in_absolute_scale();
+        if(a_last_y_definition != _Size_Definition::Absolute_Scale_Size && parent() != 0) to_add += parent()->y_in_absolute_scale();
 
         if(a_last_y_definition == _Size_Definition::Pixel_Size) {
             to_return = a_y * (one_pixel_in_absolute_scale()[1] * 2.0) + (-1.0 + height_in_scale());
@@ -409,33 +405,6 @@ namespace scls {
         return to_return;
     }
 
-    // Returns the y adapted for rendering
-    double GUI_Object::y_in_adapted_absolute_scale() const {
-        double divisor = one_pixel_in_absolute_scale()[1];
-        double to_return = y_in_absolute_scale();
-        double height_to_apply = height_in_adapted_absolute_scale();
-        int height_to_apply_in_pixel = height_to_apply / divisor;
-
-        // Handle the pixel perfect system
-        unsigned int total = 0;
-        to_return++;
-        to_return -= height_to_apply;
-        while(to_return > divisor) {
-            to_return -= divisor;
-            total++;
-        }
-        if(to_return < divisor / 2.0) total++;
-        to_return = total * divisor;
-        to_return += divisor / 5.0;
-        to_return += height_to_apply;
-        to_return--;
-
-        // Handle the odd height
-        if(height_to_apply_in_pixel % 2 == 1) to_return += divisor / 2.0;
-
-        return to_return;
-    }
-
     // Returns the y position in scale of the object
     double GUI_Object::y_in_scale() const {
         double to_return = 0.0;
@@ -447,28 +416,6 @@ namespace scls {
             to_return = a_y;
             if(a_last_height_definition == _Size_Definition::Absolute_Scale_Size && parent() != 0) to_return -= parent()->y_in_absolute_scale();
         }
-
-        return to_return;
-    }
-
-    // Returns the y of the top of the object in adapted for rendering
-    double GUI_Object::y_top_in_adapted_absolute_scale() const {
-        double to_return = y_in_absolute_scale();
-        double height_to_apply = height_in_absolute_scale();
-
-        // Handle the pixel perfect system
-        double divisor = one_pixel_in_absolute_scale()[1];
-        unsigned int total = 0;
-        to_return++;
-        to_return += height_to_apply;
-        while(to_return > divisor) {
-            to_return -= divisor;
-            total++;
-        }
-        if(to_return < divisor / 2.0) total++;
-        to_return = total * divisor;
-        to_return += divisor / 5.0;
-        to_return--;
 
         return to_return;
     }

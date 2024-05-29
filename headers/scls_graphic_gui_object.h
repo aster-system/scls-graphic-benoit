@@ -93,8 +93,6 @@ namespace scls {
         // GUI_Object destructor
         virtual ~GUI_Object();
 
-        // Function called after that the window is resized
-        virtual void after_window_resizing(glm::vec2 last_scale){ for(int i = 0;i<static_cast<int>(a_children.size());i++) a_children[i]->after_window_resizing(last_scale); };
         // Delete a child of the object
         void delete_child(GUI_Object* object);
         // Delete the children of an object
@@ -109,6 +107,10 @@ namespace scls {
         O* new_object(std::string name, unsigned int x, unsigned int y);
         // Render the object
         virtual void render(glm::vec3 scale_multiplier = glm::vec3(1, 1, 1));
+
+        // Hierarchy functions
+        // Function called after that the window is resized
+        virtual void after_resizing();
         // Reset the object without changing it
         virtual void soft_reset() {set_focusing_state(-1);set_overflighting_state(-1);for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->soft_reset();};
         // Update the object
@@ -163,6 +165,8 @@ namespace scls {
         inline void set_border_width_in_absolute_scale(double new_border_width) {set_border_width_in_absolute_scale(glm::vec4(new_border_width));};
         // Set the border with in absolute scale
         inline void set_border_width_in_absolute_scale(glm::vec4 new_border_width) {a_border_width = new_border_width;a_last_border_width_definition_type = _Size_Definition::Absolute_Scale_Size;};
+        // Set the y position in absolute scale
+        inline void set_y_in_absolute_scale(double new_y) { if(a_y == new_y && a_last_y_definition == _Size_Definition::Absolute_Scale_Size) return; a_y = new_y; a_last_y_definition = _Size_Definition::Absolute_Scale_Size; a_adapted_scale_updated = false; };
         // Returns the width in absolute scale of the object
         double width_in_absolute_scale() const;
         // Returns the x position in absolute scale of the object
@@ -170,23 +174,25 @@ namespace scls {
         // Returns the y position in absolute scale of the object
         double y_in_absolute_scale() const;
 
-        // Adapted absolute scale for rendering
-        // Absolute position in adapted scale for rendering
-        inline glm::vec2 absolute_position_in_adapted_scale() const {return glm::vec2(x_in_adapted_absolute_scale(), y_in_adapted_absolute_scale());};
-        // Absolute scale in adapted scale for rendering
-        inline glm::vec2 absolute_scale_in_adapted_scale() const {return glm::vec2(width_in_adapted_absolute_scale(), height_in_adapted_absolute_scale());};
-        // Returns the height adapted for rendering
-        double height_in_adapted_absolute_scale() const;
-        // Returns the width adapted for rendering
-        double width_in_adapted_absolute_scale() const;
-        // Returns the x adapted for rendering
-        double x_in_adapted_absolute_scale() const;
-        // Returns the y adapted for rendering
-        double y_in_adapted_absolute_scale() const;
+        // Adapted absolute (or not) scale for rendering
+        // Calculate the adapted scale
+        void calculate_adapted_scale();
         // Returns the y of the bottom of the object in adapted for rendering
-        double y_bottom_in_adapted_absolute_scale() const;
+        inline double y_bottom_in_adapted_absolute_scale() { return y_in_adapted_absolute_scale() - height_in_adapted_absolute_scale(); };
         // Returns the y of the top of the object in adapted for rendering
-        double y_top_in_adapted_absolute_scale() const;
+        inline double y_top_in_adapted_absolute_scale() { return y_in_adapted_absolute_scale() + height_in_adapted_absolute_scale(); };
+
+        // Getters and setters
+        inline glm::vec2 absolute_position_in_adapted_scale() {return glm::vec2(x_in_adapted_absolute_scale(), y_in_adapted_absolute_scale());};
+        inline glm::vec2 absolute_scale_in_adapted_scale() {return glm::vec2(width_in_adapted_absolute_scale(), height_in_adapted_absolute_scale());};
+        double height_in_adapted_scale() { if(!a_adapted_scale_updated) calculate_adapted_scale(); return a_height_in_adapted_scale; };
+        double height_in_adapted_absolute_scale() { if(!a_adapted_scale_updated) calculate_adapted_scale(); return a_height_in_adapted_absolute_scale; };
+        double width_in_adapted_absolute_scale() { if(!a_adapted_scale_updated) calculate_adapted_scale(); return a_width_in_adapted_absolute_scale; };
+        double width_in_adapted_scale() { if(!a_adapted_scale_updated) calculate_adapted_scale(); return a_width_in_adapted_scale; };
+        double x_in_adapted_absolute_scale() { if(!a_adapted_scale_updated) calculate_adapted_scale(); return a_x_in_adapted_absolute_scale; };
+        double x_in_adapted_scale() { if(!a_adapted_scale_updated) calculate_adapted_scale(); return a_x_in_adapted_scale; };
+        double y_in_adapted_absolute_scale() { if(!a_adapted_scale_updated) calculate_adapted_scale(); return a_y_in_adapted_absolute_scale; };
+        double y_in_adapted_scale() { if(!a_adapted_scale_updated) calculate_adapted_scale(); return a_y_in_adapted_scale; };
 
         // Scale handling
         // Returns the scale of the border width
@@ -194,17 +200,17 @@ namespace scls {
         // Returns the height in scale of the object
         double height_in_scale() const;
         // Set the height in scale
-        inline void set_height_in_scale(double new_height) { a_height = new_height; a_last_height_definition = _Size_Definition::Scale_Size; };
+        inline void set_height_in_scale(double new_height) { a_height = new_height; a_last_height_definition = _Size_Definition::Scale_Size; a_adapted_scale_updated = false; };
         // Set the position in scale
         inline void set_position_in_scale(glm::vec2 new_position) { set_x_in_scale(new_position[0]); set_y_in_scale(new_position[1]); };
         // Set the size in scale
         inline void set_size_in_scale(glm::vec2 new_size) { set_height_in_scale(new_size[1]); set_width_in_scale(new_size[0]); };
         // Set the width in scale
-        inline void set_width_in_scale(double new_width) { a_width = new_width; a_last_width_definition = _Size_Definition::Scale_Size; };
+        inline void set_width_in_scale(double new_width) { a_width = new_width; a_last_width_definition = _Size_Definition::Scale_Size; a_adapted_scale_updated = false; };
         // Set the x position in scale
-        inline void set_x_in_scale(double new_x) { a_x = new_x; a_last_x_definition = _Size_Definition::Scale_Size; };
+        inline void set_x_in_scale(double new_x) { if(a_x == new_x && a_last_x_definition == _Size_Definition::Scale_Size) return; a_x = new_x; a_last_x_definition = _Size_Definition::Scale_Size; a_adapted_scale_updated = false; };
         // Set the y position in scale
-        inline void set_y_in_scale(double new_y) { a_y = new_y; a_last_y_definition = _Size_Definition::Scale_Size; };
+        inline void set_y_in_scale(double new_y) { if(a_y == new_y && a_last_y_definition == _Size_Definition::Scale_Size) return; a_y = new_y; a_last_y_definition = _Size_Definition::Scale_Size; a_adapted_scale_updated = false; };
         // Returns the width in scale of the object
         double width_in_scale() const;
         // Returns the x position in scale of the object
@@ -226,7 +232,7 @@ namespace scls {
         // Returns the scale of a pixel in the object
         inline glm::vec2 one_pixel_in_scale() const { return one_pixel_in_absolute_scale() / absolute_scale(); };
         // Returns the absolute position of the object in pixel
-        inline glm::vec2 position_in_pixel() const {return glm::vec2(x_in_pixel(), y_in_pixel());};
+        inline glm::vec2 position_in_pixel() const { return glm::vec2(x_in_pixel(), y_in_pixel());};
         // Set the border width of all the side in pixel
         inline void set_border_width_in_pixel(double new_border_width) {set_border_width_in_pixel(glm::vec4(new_border_width));};
         // Set the border with in absolute scale
@@ -242,9 +248,18 @@ namespace scls {
 
         // Movement handling
         // Move at the bottom of an object in its parent
-        inline void move_bottom_of_object_in_parent(GUI_Object* object, double offset = 0.0) { set_y_in_scale(object->y_in_scale() - (object->height_in_scale() + height_in_scale() + offset)); };
+        inline void move_bottom_of_object_in_parent(GUI_Object* object, double offset = 0.0) {
+            double final_y = object->y_bottom_in_adapted_absolute_scale();
+            final_y -= height_in_adapted_absolute_scale() + offset;
+            set_y_in_absolute_scale(final_y);
+        };
         // Move at the bottom of its parent
-        inline void move_bottom_of_parent(double offset = 0.0) { set_y_in_scale(-1.0 + (height_in_scale() + offset)); };
+        inline void move_bottom_of_parent(double offset = 0.0) {
+            double final_y = -1.0;
+            if(parent() != 0) final_y = parent()->y_bottom_in_adapted_absolute_scale();
+            final_y += height_in_adapted_absolute_scale() + offset;
+            set_y_in_absolute_scale(final_y);
+        };
         // Move at the left the object in its parent
         inline void move_left_of_parent(double offset = 0.0) { set_x_in_scale(-1.0 + (width_in_scale() + offset)); };
         // Move at the right of an object in its parent
@@ -252,18 +267,27 @@ namespace scls {
         // Move at the right the object in its parent
         inline void move_right_of_parent(double offset = 0.0) { set_x_in_scale(1.0 - (width_in_scale() + offset)); };
         // Move at the top of an object in its parent
-        inline void move_top_of_object_in_parent(GUI_Object* object, double offset = 0.0) { set_y_in_scale(object->y_in_scale() + (object->height_in_scale() + height_in_scale() + offset)); };
+        inline void move_top_of_object_in_parent(GUI_Object* object, double offset = 0.0) {
+            double final_y = object->y_top_in_adapted_absolute_scale();
+            final_y += height_in_adapted_absolute_scale() + offset;
+            set_y_in_absolute_scale(final_y);
+        };
         // Move at the top the object in its parent
-        inline void move_top_of_parent(double offset = 0.0) { set_y_in_scale(1.0 - (height_in_scale() + offset)); };
+        inline void move_top_of_parent(double offset = 0.0) {
+            double final_y = 1.0;
+            if(parent() != 0) final_y = parent()->y_top_in_adapted_absolute_scale();
+            final_y -= height_in_adapted_absolute_scale() + offset;
+            set_y_in_absolute_scale(final_y);
+        };
 
         // Getters and setters
         inline GUI_Object* parent() const {return a_parent;};
         inline void set_position_in_pixel(glm::vec2 new_position) { set_x_in_pixel(new_position[0]); set_y_in_pixel(new_position[1]); };
-        inline void set_height_in_pixel(double new_height) { a_height = new_height; a_last_height_definition = _Size_Definition::Pixel_Size; };
+        inline void set_height_in_pixel(double new_height) { a_height = new_height; a_last_height_definition = _Size_Definition::Pixel_Size; a_adapted_scale_updated = false; };
         inline void set_size_in_pixel(glm::vec2 new_size) { set_height_in_pixel(new_size[1]); set_width_in_pixel(new_size[0]); };
-        inline void set_width_in_pixel(double new_width) { a_width = new_width; a_last_width_definition = _Size_Definition::Pixel_Size; };
-        inline void set_x_in_pixel(double new_x) { a_x = new_x; a_last_x_definition = _Size_Definition::Pixel_Size; };
-        inline void set_y_in_pixel(double new_y) { a_y = new_y; a_last_y_definition = _Size_Definition::Pixel_Size; };
+        inline void set_width_in_pixel(double new_width) { a_width = new_width; a_last_width_definition = _Size_Definition::Pixel_Size; a_adapted_scale_updated = false; };
+        inline void set_x_in_pixel(double new_x) { if(a_x == new_x && a_last_x_definition == _Size_Definition::Pixel_Size) return; a_x = new_x; a_last_x_definition = _Size_Definition::Pixel_Size; a_adapted_scale_updated = false; };
+        inline void set_y_in_pixel(double new_y) { if(a_y == new_y && a_last_y_definition == _Size_Definition::Pixel_Size) return; a_y = new_y; a_last_y_definition = _Size_Definition::Pixel_Size; a_adapted_scale_updated = false; };
 
         //*********
         //
@@ -278,7 +302,7 @@ namespace scls {
         // Returns the rect of the vertically fitted texture
         glm::vec4 fitted_vertically_texture_rect() const;
         // Returns the extremum of the object
-        glm::vec4 object_extremum() const;
+        glm::vec4 object_extremum();
         // Returns the height of the texture in scale of the object
         inline double texture_height_in_scale() const { return static_cast<double>(image()->height()) / static_cast<double>(height_in_pixel()); };
         // Returns the width of the texture in scale of the object
@@ -362,8 +386,14 @@ namespace scls {
         //
         //*********
 
+        // If the adapted scale is updated or not
+        bool a_adapted_scale_updated = false;
         // Height of the object
         double a_height = 1.0;
+        // Height of the object in absolute adapted scale
+        double a_height_in_adapted_absolute_scale = 1.0;
+        // Height of the object in adapted scale
+        double a_height_in_adapted_scale = 1.0;
         // Last type of definition of the border width
         _Size_Definition a_last_border_width_definition_type = _Size_Definition::Pixel_Size;
         // Last type of definition of the height
@@ -378,12 +408,24 @@ namespace scls {
         GUI_Object* a_parent = 0;
         // Position of the object in pixels
         glm::vec2 a_position = glm::vec2(0, 0);
-        // Height of the object
+        // Width of the object
         double a_width = 1.0;
-        // X position of th eobject
+        // Width of the object in absolute adapted scale
+        double a_width_in_adapted_absolute_scale = 1.0;
+        // Width of the object in adapted scale
+        double a_width_in_adapted_scale = 1.0;
+        // X position of the object
         double a_x = 0.0;
-        // Y position of th eobject
+        // X position of the object in absolute adapted scale
+        double a_x_in_adapted_absolute_scale = 0.0;
+        // X position of the object in adapted scale
+        double a_x_in_adapted_scale = 0.0;
+        // Y position of the object
         double a_y = 0.0;
+        // Y position of the object in absolute adapted scale
+        double a_y_in_adapted_absolute_scale = 0.0;
+        // Y position of the object in adapted scale
+        double a_y_in_adapted_scale = 0.0;
     };
 
     class GUI_Text : public GUI_Object {
@@ -612,7 +654,7 @@ namespace scls {
         // Function called after that the window is resized
         virtual void after_window_resizing(glm::vec2 last_scale){
             Object::after_window_resizing(last_scale);
-            // parent_object()->set_size_in_pixel(glm::vec2(window_struct()->window_width(), window_struct()->window_height()));
+            parent_object()->after_resizing();
         };
         // Render the page
         virtual void render();
