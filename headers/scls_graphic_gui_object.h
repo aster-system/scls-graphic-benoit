@@ -88,13 +88,9 @@ namespace scls {
 
         // Most basic GUI_Object constructor
         GUI_Object(Window& window, std::string name, GUI_Object* parent);
-        // GUI_Object constructor made to the parent object of the page
-        GUI_Object(Window& window, std::string name) : GUI_Object(window, name, 0) {a_is_main_object = true;};
         // GUI_Object destructor
         virtual ~GUI_Object();
 
-        // If the (main) object contains a deleted child
-        bool contains_deleted_child(GUI_Object* child) { for(int i = 0;i<static_cast<int>(a_deleted_children.size());i++){if(a_deleted_children[i]==child)return true;} return false;};
         // Delete a child of the object
         void delete_child(GUI_Object* object);
         // Delete the children of an object
@@ -114,13 +110,13 @@ namespace scls {
         // Function called after that the window is resized
         virtual void after_resizing();
         // Function called when a child is deleted
-        virtual void child_deleted(GUI_Object* child) { if(parent() != 0) parent()->child_deleted(child); if(is_main_object()) a_deleted_children.push_back(child);};
+        virtual void child_deleted(GUI_Object* child) { if(parent() != 0) parent()->child_deleted(child); };
         // Reset the object without changing it
         virtual void soft_reset() {set_focusing_state(-1);set_overflighting_state(-1);for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->soft_reset();};
         // Update the object
         virtual void update(){ for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->update(); };
         // Update the object for the events
-        virtual void update_event() {a_deleted_children.clear();for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->update_event();};
+        virtual void update_event() {for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->update_event();};
 
         // Getters and setters (ONLY WITH ATRIBUTES)
         inline Color background_color() {return a_background_color;};
@@ -132,7 +128,6 @@ namespace scls {
         inline bool is_clicked(unsigned int button) { return is_overflighted() && window_struct().mouse_button_clicked(button); };
         inline bool is_clicked_during_this_frame(unsigned int button) { return is_overflighted() && window_struct().mouse_button_clicked_during_this_frame(button); };
         inline bool is_focused() const {return a_focusing_state == 0;};
-        inline bool is_main_object() const {return a_is_main_object;};
         inline bool is_overflighted() const {return a_overflighting_state == 0;};
         inline std::string name() const {return a_name;};
         inline unsigned long overflighted_cursor() const {return a_overflighted_cursor;};
@@ -339,12 +334,8 @@ namespace scls {
         Color a_background_color = Color(0, 0, 0, 0);
         // Children of this object
         std::vector<GUI_Object*> a_children = std::vector<GUI_Object*>();
-        // List of deleted cchildren, if the object is the main object
-        std::vector<GUI_Object*> a_deleted_children = std::vector<GUI_Object*>();
         // The state of focusing of the object (0 == focused, > 0 == child focused)
         short a_focusing_state = -1;
-        // If the object is the main object of the page or not
-        bool a_is_main_object = false;
         // Name of this object
         std::string a_name = "";
         // Id of the overflighted cursor
@@ -432,6 +423,36 @@ namespace scls {
         double a_y_in_adapted_absolute_scale = 0.0;
         // Y position of the object in adapted scale
         double a_y_in_adapted_scale = 0.0;
+    };
+
+    class GUI_Main_Object : public GUI_Object {
+        // Class representing the main GUI object displayed into the window
+    public:
+
+        //*********
+        //
+        // GUI Main Object main functions
+        //
+        //*********
+
+        // Most basic GUI_Main_Object constructor
+        GUI_Main_Object(Window& window, std::string name) : GUI_Object(window, name, 0) {};
+        // GUI_Main_Object destructor
+        virtual ~GUI_Main_Object() {};
+
+        // Function called when a child is deleted
+        virtual void child_deleted(GUI_Object* child) { if(a_focused_object == child) a_focused_object = 0; GUI_Object::child_deleted(child); };
+        // Update the object for the events
+        virtual void update_event();
+
+    private:
+        // Handle the focused object
+        // Pointer to the focused object
+        GUI_Object* a_focused_object = 0;
+
+        // Handle the overflighted object
+        // Pointer to the overflighted object
+        GUI_Object* a_overflighted_object = 0;
     };
 
     class GUI_Text : public GUI_Object {
@@ -674,7 +695,7 @@ namespace scls {
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline GUI_Object* focused_object() {return a_focused_object;};
         inline GUI_Object* overflighted_object() {return a_overflighted_object;};
-        inline GUI_Object* parent_object() {return a_parent_object;};
+        inline GUI_Main_Object* parent_object() {return a_parent_object;};
     private:
         // Handle the focused object
         // Pointer to the focused object
@@ -685,7 +706,7 @@ namespace scls {
         GUI_Object* a_overflighted_object = 0;
 
         // Parent object of the page
-        GUI_Object* a_parent_object = 0;
+        GUI_Main_Object* a_parent_object = 0;
     };
 
     // Add a child object to the object

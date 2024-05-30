@@ -426,6 +426,62 @@ namespace scls {
 
     //*********
     //
+    // GUI Main Object main functions
+    //
+    //*********
+
+    // Update the object for the events
+    void GUI_Main_Object::update_event() {
+        // Check the overflighted cursor
+        GUI_Object* current_overflighted_object = this;
+        for(int i = 0;i<static_cast<int>(current_overflighted_object->children().size());i++) {
+            GUI_Object* current_object = current_overflighted_object->children()[i];
+            if(current_object->visible() && current_object->is_in_rect_in_pixel(window_struct().mouse_x(), window_struct().window_height() - window_struct().mouse_y())) {
+                current_overflighted_object = current_object;
+                i = -1;
+            }
+        }
+
+        // Update the cursor texture
+        if(a_overflighted_object != current_overflighted_object) {
+            if(current_overflighted_object == 0) {
+                window_struct().set_cursor(glfwCreateStandardCursor(GLFW_ARROW_CURSOR));
+            }
+            else {
+                window_struct().set_cursor(glfwCreateStandardCursor(current_overflighted_object->overflighted_cursor()));
+            }
+        }
+        a_overflighted_object = current_overflighted_object;
+        GUI_Object* current_parent = a_overflighted_object;
+        short state = 0;
+        while(current_parent != 0) {
+            current_parent->set_overflighting_state(state);
+            current_parent = current_parent->parent();
+            state++;
+        }
+
+        // Check the focused object
+        if(window_struct().mouse_button_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+            if(a_overflighted_object != 0) {
+                a_focused_object = a_overflighted_object;
+            }
+            else {
+                a_focused_object = 0;
+            }
+        }
+        current_parent = a_focused_object;
+        state = 0;
+        while(current_parent != 0) {
+            current_parent->set_focusing_state(state);
+            current_parent = current_parent->parent();
+            state++;
+        }
+
+        GUI_Object::update_event();
+    }
+
+    //*********
+    //
     // GUI Text main functions
     //
     //*********
@@ -725,7 +781,7 @@ namespace scls {
     //*********
 
     // Most parent GUI_File_Explorer constructor used for displaying
-    GUI_File_Explorer::GUI_File_Explorer(Window& window, std::string name, GUI_Object* parent) : GUI_Object(window, name) {
+    GUI_File_Explorer::GUI_File_Explorer(Window& window, std::string name, GUI_Object* parent) : GUI_Object(window, name, parent) {
         load();
     }
 
@@ -863,10 +919,10 @@ namespace scls {
             // Create the buttons from scratch
             a_browser_scroller->delete_children(); a_browser_buttons.clear();
             for(unsigned int i = 0;i<static_cast<unsigned int>(paths.size());i++) {
-                if(!std::filesystem::exists(paths[i]) || (a_browser_buttons_to_modify.size() > 0 && contains<unsigned int>(a_browser_buttons_to_modify, i))) continue;
+                if(!std::filesystem::exists(paths[i])) continue;
 
                 // Create the button
-                std::string button_text = file_name(paths[i], true);
+                paths[i] = file_name(paths[i], true);
                 GUI_Text* new_button = a_browser_scroller->new_object<GUI_Text>("browser_button_" + std::to_string(i));
                 new_button->set_background_color(scls::white);
                 new_button->set_font_color(scls::black);
@@ -884,10 +940,10 @@ namespace scls {
                         std::thread* current_thread = threads[j];
                         current_thread->join();
                         delete current_thread; current_thread = 0;
-                        a_browser_buttons[(i - threads.size()) + j]->texture()->change_texture();
+                        a_browser_buttons[((a_browser_buttons.size() - 1) - threads.size()) + j]->texture()->change_texture();
                     } threads.clear();
                 }
-                std::string& button_text_reference = button_text;
+                std::string& button_text_reference = paths[i];
                 bool move_cursor = false;
                 std::thread* current_thread = new std::thread(&GUI_Text::set_text, new_button, button_text_reference, &move_cursor);
                 threads.push_back(current_thread);
@@ -1028,7 +1084,7 @@ namespace scls {
     GUI_Page::GUI_Page(_Window_Advanced_Struct* window_struct, std::string name) : Object(window_struct, name) {
         set_vao("hud_default");
 
-        a_parent_object = new GUI_Object((*reinterpret_cast<Window*>(window_struct)), "main");
+        a_parent_object = new GUI_Main_Object((*reinterpret_cast<Window*>(window_struct)), "main");
     }
 
     // Render the page
@@ -1044,55 +1100,7 @@ namespace scls {
 
     // Update the event of the page
     void GUI_Page::update_event() {
-
         Object::update_event();
-
-        // Check the overflighted cursor
-        GUI_Object* current_overflighted_object = parent_object();
-        for(int i = 0;i<static_cast<int>(current_overflighted_object->children().size());i++) {
-            GUI_Object* current_object = current_overflighted_object->children()[i];
-            if(current_object->visible() && current_object->is_in_rect_in_pixel(window_struct()->mouse_x(), window_struct()->window_height() - window_struct()->mouse_y())) {
-                current_overflighted_object = current_object;
-                i = -1;
-            }
-        }
-
-        // Update the cursor texture
-        if(a_overflighted_object != current_overflighted_object) {
-            if(current_overflighted_object == 0) {
-                window_struct()->set_cursor(glfwCreateStandardCursor(GLFW_ARROW_CURSOR));
-            }
-            else {
-                window_struct()->set_cursor(glfwCreateStandardCursor(current_overflighted_object->overflighted_cursor()));
-            }
-        }
-        a_overflighted_object = current_overflighted_object;
-        GUI_Object* current_parent = a_overflighted_object;
-        short state = 0;
-        while(current_parent != 0) {
-            current_parent->set_overflighting_state(state);
-            current_parent = current_parent->parent();
-            state++;
-        }
-
-        // Check the focused object
-        if(window_struct()->mouse_button_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
-            if(a_overflighted_object != 0) {
-                a_focused_object = a_overflighted_object;
-            }
-            else {
-                a_focused_object = 0;
-            }
-        }
-        if(parent_object()->contains_deleted_child(a_focused_object)) a_focused_object = 0;
-        current_parent = a_focused_object;
-        state = 0;
-        while(current_parent != 0) {
-            current_parent->set_focusing_state(state);
-            current_parent = current_parent->parent();
-            state++;
-        }
-
         parent_object()->update_event();
     }
 
