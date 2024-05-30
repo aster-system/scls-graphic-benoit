@@ -100,6 +100,8 @@ namespace scls {
     GUI_Object::~GUI_Object() {
         delete_children();
 
+        if(parent() != 0) parent()->child_deleted(this);
+
         window_struct().remove_texture(texture());
     }
 
@@ -853,7 +855,7 @@ namespace scls {
 
     // Update the browser of the file explorer
     void GUI_File_Explorer::update_browser() {
-        unsigned char current_thread = 0;
+        unsigned char current_thread_number = 0;
         unsigned char max_thread_number = 5;
         std::vector<std::string> paths = directory_content(a_current_path);
         std::vector<std::thread*> threads = std::vector<std::thread*>();
@@ -876,8 +878,8 @@ namespace scls {
                 a_browser_buttons.push_back(new_button);
 
                 // Create the thread
-                if(current_thread >= max_thread_number) {
-                    current_thread = 0;
+                if(current_thread_number >= max_thread_number) {
+                    current_thread_number = 0;
                     for(int j = 0;j<static_cast<int>(threads.size());j++) {
                         std::thread* current_thread = threads[j];
                         current_thread->join();
@@ -889,6 +891,7 @@ namespace scls {
                 bool move_cursor = false;
                 std::thread* current_thread = new std::thread(&GUI_Text::set_text, new_button, button_text_reference, &move_cursor);
                 threads.push_back(current_thread);
+                current_thread_number++;
             }
 
             for(int j = 0;j<static_cast<int>(threads.size());j++) {
@@ -1030,6 +1033,7 @@ namespace scls {
 
     // Render the page
     void GUI_Page::render(){
+
         // Render the object
         parent_object()->render(absolute_scale());
 
@@ -1040,6 +1044,7 @@ namespace scls {
 
     // Update the event of the page
     void GUI_Page::update_event() {
+
         Object::update_event();
 
         // Check the overflighted cursor
@@ -1079,6 +1084,7 @@ namespace scls {
                 a_focused_object = 0;
             }
         }
+        if(parent_object()->contains_deleted_child(a_focused_object)) a_focused_object = 0;
         current_parent = a_focused_object;
         state = 0;
         while(current_parent != 0) {

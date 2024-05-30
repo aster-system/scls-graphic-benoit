@@ -93,6 +93,8 @@ namespace scls {
         // GUI_Object destructor
         virtual ~GUI_Object();
 
+        // If the (main) object contains a deleted child
+        bool contains_deleted_child(GUI_Object* child) { for(int i = 0;i<static_cast<int>(a_deleted_children.size());i++){if(a_deleted_children[i]==child)return true;} return false;};
         // Delete a child of the object
         void delete_child(GUI_Object* object);
         // Delete the children of an object
@@ -111,12 +113,14 @@ namespace scls {
         // Hierarchy functions
         // Function called after that the window is resized
         virtual void after_resizing();
+        // Function called when a child is deleted
+        virtual void child_deleted(GUI_Object* child) { if(parent() != 0) parent()->child_deleted(child); if(is_main_object()) a_deleted_children.push_back(child);};
         // Reset the object without changing it
         virtual void soft_reset() {set_focusing_state(-1);set_overflighting_state(-1);for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->soft_reset();};
         // Update the object
         virtual void update(){ for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->update(); };
         // Update the object for the events
-        virtual void update_event() {for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->update_event();};
+        virtual void update_event() {a_deleted_children.clear();for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->update_event();};
 
         // Getters and setters (ONLY WITH ATRIBUTES)
         inline Color background_color() {return a_background_color;};
@@ -335,6 +339,8 @@ namespace scls {
         Color a_background_color = Color(0, 0, 0, 0);
         // Children of this object
         std::vector<GUI_Object*> a_children = std::vector<GUI_Object*>();
+        // List of deleted cchildren, if the object is the main object
+        std::vector<GUI_Object*> a_deleted_children = std::vector<GUI_Object*>();
         // The state of focusing of the object (0 == focused, > 0 == child focused)
         short a_focusing_state = -1;
         // If the object is the main object of the page or not

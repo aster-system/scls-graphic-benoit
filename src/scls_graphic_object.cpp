@@ -66,6 +66,10 @@ namespace scls {
             window_struct()->remove_texture(texture());
         }
 
+        if(parent() != 0) {
+            parent()->child_deleted(this);
+        }
+
         delete_children();
         delete a_transform; a_transform = 0;
     }

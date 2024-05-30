@@ -126,6 +126,8 @@ namespace scls {
 
         // Function called after loading
         virtual void after_loading() {};
+        // Function called when a child is deleted
+        virtual void child_deleted(Object* child) { parent()->child_deleted(child); };
         // Clone the object
         virtual void* clone(Object* parent, std::string a_name, std::string texture_name, std::string vao_name = "hud_default");
         // Function called after every updates
