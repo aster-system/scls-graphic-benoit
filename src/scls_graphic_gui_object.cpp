@@ -912,8 +912,9 @@ namespace scls {
     // Update the browser of the file explorer
     void GUI_File_Explorer::update_browser() {
         unsigned char current_thread_number = 0;
-        unsigned char max_thread_number = 5;
+        unsigned char max_thread_number = 10;
         std::vector<std::string> paths = directory_content(a_current_path);
+        long long t = time_ns();
         std::vector<std::thread*> threads = std::vector<std::thread*>();
         if(a_browser_buttons_to_modify.size() == 0) {
             // Create the buttons from scratch
@@ -934,20 +935,25 @@ namespace scls {
                 a_browser_buttons.push_back(new_button);
 
                 // Create the thread
-                if(current_thread_number >= max_thread_number) {
-                    current_thread_number = 0;
-                    for(int j = 0;j<static_cast<int>(threads.size());j++) {
-                        std::thread* current_thread = threads[j];
-                        current_thread->join();
-                        delete current_thread; current_thread = 0;
-                        a_browser_buttons[((a_browser_buttons.size() - 1) - threads.size()) + j]->texture()->change_texture();
-                    } threads.clear();
+                if(max_thread_number > 0) {
+                    if(current_thread_number >= max_thread_number) {
+                        current_thread_number = 0;
+                        for(int j = 0;j<static_cast<int>(threads.size());j++) {
+                            std::thread* current_thread = threads[j];
+                            current_thread->join();
+                            delete current_thread; current_thread = 0;
+                            a_browser_buttons[((a_browser_buttons.size() - 1) - threads.size()) + j]->texture()->change_texture();
+                        } threads.clear();
+                    }
+                    std::string& button_text_reference = paths[i];
+                    bool move_cursor = false;
+                    std::thread* current_thread = new std::thread(&GUI_Text::set_text, new_button, button_text_reference, &move_cursor);
+                    threads.push_back(current_thread);
+                    current_thread_number++;
                 }
-                std::string& button_text_reference = paths[i];
-                bool move_cursor = false;
-                std::thread* current_thread = new std::thread(&GUI_Text::set_text, new_button, button_text_reference, &move_cursor);
-                threads.push_back(current_thread);
-                current_thread_number++;
+                else {
+                    new_button->set_text(paths[i], false);
+                }
             }
 
             for(int j = 0;j<static_cast<int>(threads.size());j++) {
@@ -996,8 +1002,10 @@ namespace scls {
                 buttons_to_modify[i]->texture()->change_texture();
             }
         }
-
         threads.clear();
+
+        // std::cout << "P " << static_cast<double>(time_ns() - t) / 1000000000 << std::endl;
+
         place_all();
     }
 
