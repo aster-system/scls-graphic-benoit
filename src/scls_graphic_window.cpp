@@ -229,6 +229,7 @@ namespace scls {
         a_keys[")"] = GLFW_KEY_MINUS;
         a_keys["^"] = GLFW_KEY_LEFT_BRACKET;
         a_keys["$"] = GLFW_KEY_RIGHT_BRACKET;
+        a_keys["*"] = GLFW_KEY_BACKSLASH;
 
         // Poncutation
         a_keys["\""] = GLFW_KEY_3;
@@ -240,6 +241,7 @@ namespace scls {
         a_keys[";"] = GLFW_KEY_COMMA;
         a_keys[","] = GLFW_KEY_M;
         a_keys["!"] = GLFW_KEY_SLASH;
+        a_keys["<"] = GLFW_KEY_WORLD_2;
 
         // Other
         a_keys["backspace"] = GLFW_KEY_BACKSPACE;

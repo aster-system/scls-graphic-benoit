@@ -470,6 +470,8 @@ namespace scls {
         // GUI_Object destructor
         virtual ~GUI_Text();
 
+        // Returns the position of the cursor in unformatted text
+        inline unsigned int cursor_position_in_unformatted_text() const { return window_struct().text_image_generator()->plain_text_position_to_unformatted_text_position(text(), cursor_position_in_formatted_text()); };
         // Return the plain text in the object
         inline std::string plain_text(){return window_struct().text_image_generator()->plain_text(text());};
         // Return the size of the plain text in the object
@@ -484,20 +486,20 @@ namespace scls {
         void update_text_texture();
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
-        inline unsigned int cursor_position() {return a_cursor_position;};
+        inline unsigned int cursor_position_in_formatted_text() const {return a_cursor_position_in_formatted_text;};
         inline Color font_color() {return a_font_color;};
         inline std::string font_family() {return a_font_family;};
         inline unsigned short font_size() {return a_font_size;};
-        inline void set_cursor_position(unsigned int new_cursor_position) {a_cursor_position = new_cursor_position;};
+        inline void set_cursor_position_in_formatted_text(unsigned int new_cursor_position_in_formatted_text) {a_cursor_position_in_formatted_text = new_cursor_position_in_formatted_text;};
         inline void set_font_color(Color new_font_color) {a_font_color = new_font_color;};
         inline void set_font_family(std::string new_font_family) {a_font_family = new_font_family;};
         inline void set_font_size(unsigned short new_font_size) {a_font_size = new_font_size;};
-        void set_text(std::string new_text, bool move_cursor = true) {if(new_text == a_text)return;a_text = new_text;if(move_cursor)set_cursor_position(window_struct().text_image_generator()->plain_text_size(a_text));a_text_modified_during_this_frame = true;update_text_texture();};
+        void set_text(std::string new_text, bool move_cursor = true) {if(new_text == a_text)return;a_text = new_text;if(move_cursor)set_cursor_position_in_formatted_text(window_struct().text_image_generator()->plain_text_size(a_text));a_text_modified_during_this_frame = true;update_text_texture();};
         inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {a_text_alignment_horizontal = new_text_alignment_horizontal;};
         inline void set_text_offset(double new_text_offset) {set_text_offset(glm::vec4(new_text_offset));};
         inline void set_text_offset(glm::vec4 new_text_offset) {a_text_offset = new_text_offset;};
         inline void set_use_cursor(bool new_use_cursor) {a_use_cursor = new_use_cursor;};
-        inline std::string text() {return a_text;};
+        inline std::string text() const {return a_text;};
         inline Alignment_Horizontal text_alignment_horizontal() {return a_text_alignment_horizontal;};
         inline bool text_modified_during_this_frame() {return a_text_modified_during_this_frame;};
         inline glm::vec4 text_offset() {return a_text_offset;};
@@ -533,7 +535,7 @@ namespace scls {
         //*********
 
         // Position of the cursor in the text
-        unsigned int a_cursor_position = 0;
+        unsigned int a_cursor_position_in_formatted_text = 0;
         // If the text use a cursor or not
         bool a_use_cursor = false;
     };

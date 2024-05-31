@@ -493,7 +493,7 @@ namespace scls {
 
     // Move the cursor in the text
     void GUI_Text::move_cursor(int movement) {
-        int final_cursor_position = cursor_position() + movement;
+        int final_cursor_position = cursor_position_in_formatted_text() + movement;
         if(movement < 0) {
             if(final_cursor_position < 0) {
                 final_cursor_position = 0;
@@ -504,20 +504,20 @@ namespace scls {
                 final_cursor_position = plain_text_size();
             }
         }
-        else if(final_cursor_position == static_cast<int>(cursor_position())) return;
-        set_cursor_position(final_cursor_position);
+        else if(final_cursor_position == static_cast<int>(cursor_position_in_formatted_text())) return;
+        set_cursor_position_in_formatted_text(final_cursor_position);
     }
 
     // Update the texture of the text
     void GUI_Text::update_text_texture() {
-        if(text() != "") {
+        if(text() != "" || use_cursor()) {
             // Create the text
             glm::vec2 position_to_apply = position_in_pixel();
             Text_Image* current_text_image = window_struct().text_image_generator()->new_text_image(text());
             current_text_image->global_style().background_color = background_color();
             current_text_image->global_style().color = font_color();
             current_text_image->global_style().font_size = font_size();
-            current_text_image->set_cursor_position(cursor_position());
+            current_text_image->set_cursor_position(cursor_position_in_formatted_text());
             current_text_image->set_use_cursor(use_cursor());
 
             // Apply the text
@@ -543,7 +543,7 @@ namespace scls {
 
     // Most basic GUI_Text constructor
     GUI_Text_Input::GUI_Text_Input(Window& window, std::string name, GUI_Object* parent) : GUI_Text(window, name, parent) {
-
+        set_use_cursor(true);
     }
 
     // GUI_Text_Input destructor
@@ -619,6 +619,11 @@ namespace scls {
             if(letter == ")") letter = "°";
             if(letter == "=") letter = "+";
             if(letter == "$") letter = "£";
+            if(letter == "*") letter = "µ";
+            if(letter == "<") letter = "&gt;";
+        }
+        else {
+            if(letter == "<") letter = "&lt;";
         }
 
         // Set the last descriptive character
@@ -730,21 +735,22 @@ namespace scls {
         if(window_struct().key_state_frame("ç") == Key_State::Pressed) { to_add += "ç";  }
         if(window_struct().key_state_frame("à") == Key_State::Pressed) { to_add += "à";  }
         if(window_struct().key_state_frame("^") == Key_State::Pressed) { to_add += "^";  }
+        if(window_struct().key_state_frame("*") == Key_State::Pressed) { to_add += "*";  }
 
         // Handle ponctuation
         if(window_struct().key_state_frame(":") == Key_State::Pressed) { to_add += ":";  }
         if(window_struct().key_state_frame(";") == Key_State::Pressed) { to_add += ";";  }
         if(window_struct().key_state_frame(",") == Key_State::Pressed) { to_add += ",";  }
         if(window_struct().key_state_frame("!") == Key_State::Pressed) { to_add += "!";  }
+        if(window_struct().key_state_frame("<") == Key_State::Pressed) { to_add += "<";  }
 
         // Handle special characters
-        if(window_struct().key_state_frame("backspace") == Key_State::Pressed && final_text.size() > 0) {
-            unsigned int size_to_delete = 1;
-            if(final_text[final_text.size() - size_to_delete] == '>') {
-                while(final_text[final_text.size() - size_to_delete] != '<' && size_to_delete < final_text.size() - 1) size_to_delete++;
-            }
-            set_cursor_position(cursor_position() - window_struct().text_image_generator()->plain_text_size(final_text.substr(final_text.size() - size_to_delete, size_to_delete)));
-            final_text = final_text.substr(0, final_text.size() - size_to_delete);
+        if(window_struct().key_state_frame("backspace") == Key_State::Pressed && final_text.size() > 0 && cursor_position_in_unformatted_text() > 0) {
+            unsigned int cursor_position = cursor_position_in_unformatted_text() - 1;
+            unsigned int position_to_delete = window_struct().text_image_generator()->first_plain_text_character_before_position_in_informatted_text(text(), cursor_position);
+            unsigned int size_to_delete = (cursor_position - position_to_delete) + 1;
+            set_cursor_position_in_formatted_text(cursor_position_in_formatted_text() - 1);
+            final_text = final_text.substr(0, position_to_delete) + final_text.substr(position_to_delete + size_to_delete, final_text.size() - (position_to_delete + size_to_delete));
         }
         if(window_struct().key_state_frame("space") == Key_State::Pressed) { to_add += " ";  }
         if(window_struct().key_state_frame(")") == Key_State::Pressed) { to_add += ")";  }
@@ -754,9 +760,10 @@ namespace scls {
         if(window_struct().key_state_frame("enter") == Key_State::Pressed) { to_add += "</br>";  }
 
         to_add = to_utf_8(to_add);
-        final_text += to_add;
+        unsigned int cursor_position = cursor_position_in_unformatted_text();
+        final_text = final_text.substr(0, cursor_position) + to_add + final_text.substr(cursor_position, final_text.size() - cursor_position);
         if(final_text != text()) {
-            set_cursor_position(cursor_position() + window_struct().text_image_generator()->plain_text_size(to_add));
+            set_cursor_position_in_formatted_text(cursor_position_in_formatted_text() + window_struct().text_image_generator()->plain_text_size(to_add));
             set_text(final_text, false);
         }
     }
@@ -770,8 +777,8 @@ namespace scls {
 
     // Update the cursor behavior
     void GUI_Text_Input::update_cursor() {
-        if(window_struct().key_state_frame("left arrow") == Key_State::Pressed) move_cursor(-1);
-        if(window_struct().key_state_frame("right arrow") == Key_State::Pressed) move_cursor(1);
+        if(window_struct().key_state_frame("left arrow") == Key_State::Pressed) {move_cursor(-1); update_text_texture();}
+        if(window_struct().key_state_frame("right arrow") == Key_State::Pressed) {move_cursor(1); update_text_texture();}
     }
 
     //*********
@@ -914,7 +921,6 @@ namespace scls {
         unsigned char current_thread_number = 0;
         unsigned char max_thread_number = 10;
         std::vector<std::string> paths = directory_content(a_current_path);
-        long long t = time_ns();
         std::vector<std::thread*> threads = std::vector<std::thread*>();
         if(a_browser_buttons_to_modify.size() == 0) {
             // Create the buttons from scratch
@@ -1003,8 +1009,6 @@ namespace scls {
             }
         }
         threads.clear();
-
-        // std::cout << "P " << static_cast<double>(time_ns() - t) / 1000000000 << std::endl;
 
         place_all();
     }

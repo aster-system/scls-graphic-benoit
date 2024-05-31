@@ -66,6 +66,8 @@ namespace scls_documentalist_gui {
         void create_project(std::string name, std::string path);
         // Returns a loaded project by its name, or 0 if it does not exists
         scls::Project* loaded_project_by_name(std::string project_name);
+        // Open an existing project from a path
+        void open_project(std::string path);
         // Save all the project
         void save_all();
         // Unload every projects
@@ -253,6 +255,8 @@ namespace scls_documentalist_gui {
         scls::GUI_Object* a_welcome_footer = 0;
         // Button of creation of project in the welcome footer
         scls::GUI_Text* a_welcome_footer_create_project = 0;
+        // Button to open a project in the welcome footer
+        scls::GUI_Text* a_welcome_footer_open_project = 0;
     };
 
     // Use scls_documentalist_gui easily with a function

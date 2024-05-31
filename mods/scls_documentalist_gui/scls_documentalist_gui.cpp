@@ -200,6 +200,7 @@ namespace scls_documentalist_gui {
         a_create_project_name->set_text("");
         a_create_project_name->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
         a_create_project_name->set_texture_alignment_vertical(scls::Alignment_Vertical::V_Center);
+        a_create_project_name->update_text_texture();
         // Title of the input of the name of the project
         a_create_project_name_title = a_create_project_body->new_object<scls::GUI_Text>("create_project_name_title");
         a_create_project_name_title->set_font_size(100);
@@ -348,6 +349,7 @@ namespace scls_documentalist_gui {
         a_hud_text_content["help_body_home"] = scls::to_utf_8(help_body_home);
         a_hud_text_content["home"] = "Accueil";
         a_hud_text_content["name_project"] = "Nom du projet";
+        a_hud_text_content["open_project"] = scls::to_utf_8("Ouvrir un projet");
         a_hud_text_content["path_project"] = scls::to_utf_8("Chemin d'accès du projet");
         a_hud_text_content["project"] = "Projet";
         a_hud_text_content["project_home"] = "Accueil du projet";
@@ -489,9 +491,22 @@ namespace scls_documentalist_gui {
         a_welcome_footer_create_project->set_overflighted_cursor(GLFW_HAND_CURSOR);
         a_welcome_footer_create_project->set_text(a_hud_text_content["create_a_project"]);
         a_welcome_footer_create_project->set_border_width_in_pixel(1);
-        a_welcome_footer_create_project->set_position_in_scale(glm::vec2(0, 0));
         a_welcome_footer_create_project->set_size_in_scale(glm::vec2(0.25, 0.24));
         a_welcome_footer_create_project->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
+        a_welcome_footer_create_project->move_left_of_parent();
+        a_welcome_footer_create_project->move_top_of_parent();
+        // Create the button to open a project in the welcome footer
+        a_welcome_footer_open_project = a_welcome_footer->new_object<scls::GUI_Text>("welcome_footer_open_project");
+        a_welcome_footer_open_project->set_font_size(75);
+        a_welcome_footer_open_project->set_text_offset(0.05);
+        a_welcome_footer_open_project->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_welcome_footer_open_project->set_text(a_hud_text_content["open_project"]);
+        a_welcome_footer_open_project->set_border_width_in_pixel(1);
+        a_welcome_footer_open_project->set_position_in_scale(glm::vec2(0.5, 0));
+        a_welcome_footer_open_project->set_size_in_scale(glm::vec2(0.25, 0.24));
+        a_welcome_footer_open_project->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
+        a_welcome_footer_open_project->move_left_of_parent();
+        a_welcome_footer_open_project->move_bottom_of_object_in_parent(a_welcome_footer_create_project);
     }
 
     // Place all the objects in the program
@@ -517,6 +532,15 @@ namespace scls_documentalist_gui {
         if(a_project_footer_save_all) {
             a_project_footer_save_all->move_left_of_parent();
             a_project_footer_save_all->move_bottom_of_parent();
+        }
+        // Welcome footer
+        if(a_welcome_footer_create_project != 0) {
+            a_welcome_footer_create_project->move_left_of_parent();
+            a_welcome_footer_create_project->move_top_of_parent();
+        }
+        if(a_welcome_footer_open_project != 0 && a_welcome_footer_create_project != 0) {
+            a_welcome_footer_open_project->move_left_of_parent();
+            a_welcome_footer_open_project->move_bottom_of_object_in_parent(a_welcome_footer_create_project);
         }
     }
 
@@ -557,6 +581,7 @@ namespace scls_documentalist_gui {
         }
 
         a_currently_displayed_file_pattern = 0;
+        a_current_file_to_be_chosen = 0;
         parent_object()->hide_children();
     }
 
@@ -615,6 +640,18 @@ namespace scls_documentalist_gui {
     // Returns a loaded project by its name, or 0 if it does not exists
     scls::Project* SCLS_Documentalist_GUI::loaded_project_by_name(std::string project_name) { for(int i = 0;i<static_cast<int>(a_loaded_projects.size());i++) { if(a_loaded_projects[i]->name() == project_name) return a_loaded_projects[i]; } return 0; }
 
+    // Open an existing project from a path
+    void SCLS_Documentalist_GUI::open_project(std::string path) {
+        if(!std::filesystem::exists(path)) return;
+
+        scls::Project* new_project = scls::Project::load_sda_0_1(path);
+        path = scls::path_parent(path) + "/";
+        a_current_path = path;
+
+        a_loaded_projects.push_back(new_project);
+        display_project_main(new_project);
+    }
+
     // Unload every projects
     void SCLS_Documentalist_GUI::unload_projects() { for(int i = 0;i<static_cast<int>(a_loaded_projects.size());i++) { delete a_loaded_projects[i]; } a_loaded_projects.clear(); }
 
@@ -632,20 +669,32 @@ namespace scls_documentalist_gui {
             update_event();
             update();
 
+            // Handle project creation
             if(a_welcome_footer_create_project->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
                 display_create_project();
             }
             else if(a_create_project_path_change->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
-                a_current_file_to_be_chosen = 0;
                 a_file_explorer->set_current_user_document_directory();
                 display_file_explorer();
+                a_current_file_to_be_chosen = 0;
             }
 
+            // Handle file explorer
             if(a_file_explorer->file_chosen()) {
                 if(a_current_file_to_be_chosen == 0) {
                     a_create_project_path->set_text(a_file_explorer->currently_selected_path());
                     display_create_project();
                 }
+                else if(a_current_file_to_be_chosen == 1) {
+                    open_project(a_file_explorer->currently_selected_path());
+                }
+            }
+
+            // Handle project opening
+            if(a_welcome_footer_open_project->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                a_file_explorer->set_current_user_document_directory();
+                display_file_explorer();
+                a_current_file_to_be_chosen = 1;
             }
 
             if(a_create_project_validation->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
