@@ -613,6 +613,8 @@ namespace scls {
         void set_path(std::string path);
         // Set the file explorer to the user current document directory
         void set_current_user_document_directory();
+        // Soft reset the object
+        virtual void soft_reset() {a_file_chose = false;GUI_Object::soft_reset();};
         // Update the browser of the file explorer
         void update_browser();
         // Update the explorer during an event
@@ -655,6 +657,8 @@ namespace scls {
         scls::GUI_Text* a_choose_button = 0;
         // Text in the chose button
         std::string a_choose_button_text = "Choose";
+        // If tbe file has been chose or not
+        bool a_file_chose = false;
         // Final path selected
         scls::GUI_Text* a_final_path = 0;
         // Text in the final path

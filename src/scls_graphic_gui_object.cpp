@@ -681,84 +681,84 @@ namespace scls {
 
         // Handle letters
         bool should_capitalise = (window_struct().key_state("left shift") == Key_State::Pressed || window_struct().key_state("right shift") == Key_State::Pressed);
-        if(window_struct().key_state_frame("a") == Key_State::Pressed) { to_add += "a";  }
-        if(window_struct().key_state_frame("b") == Key_State::Pressed) { to_add += "b";  }
-        if(window_struct().key_state_frame("c") == Key_State::Pressed) { to_add += "c";  }
-        if(window_struct().key_state_frame("d") == Key_State::Pressed) { to_add += "d";  }
-        if(window_struct().key_state_frame("e") == Key_State::Pressed) { to_add += "e";  }
-        if(window_struct().key_state_frame("f") == Key_State::Pressed) { to_add += "f";  }
-        if(window_struct().key_state_frame("g") == Key_State::Pressed) { to_add += "g";  }
-        if(window_struct().key_state_frame("h") == Key_State::Pressed) { to_add += "h";  }
-        if(window_struct().key_state_frame("i") == Key_State::Pressed) { to_add += "i";  }
-        if(window_struct().key_state_frame("j") == Key_State::Pressed) { to_add += "j";  }
-        if(window_struct().key_state_frame("k") == Key_State::Pressed) { to_add += "k";  }
-        if(window_struct().key_state_frame("l") == Key_State::Pressed) { to_add += "l";  }
-        if(window_struct().key_state_frame("m") == Key_State::Pressed) { to_add += "m";  }
-        if(window_struct().key_state_frame("n") == Key_State::Pressed) { to_add += "n";  }
-        if(window_struct().key_state_frame("o") == Key_State::Pressed) { to_add += "o";  }
-        if(window_struct().key_state_frame("p") == Key_State::Pressed) { to_add += "p";  }
-        if(window_struct().key_state_frame("q") == Key_State::Pressed) { to_add += "q";  }
-        if(window_struct().key_state_frame("r") == Key_State::Pressed) { to_add += "r";  }
-        if(window_struct().key_state_frame("s") == Key_State::Pressed) { to_add += "s";  }
-        if(window_struct().key_state_frame("t") == Key_State::Pressed) { to_add += "t";  }
-        if(window_struct().key_state_frame("u") == Key_State::Pressed) { to_add += "u";  }
-        if(window_struct().key_state_frame("v") == Key_State::Pressed) { to_add += "v";  }
-        if(window_struct().key_state_frame("w") == Key_State::Pressed) { to_add += "w";  }
-        if(window_struct().key_state_frame("x") == Key_State::Pressed) { to_add += "x";  }
-        if(window_struct().key_state_frame("y") == Key_State::Pressed) { to_add += "y";  }
-        if(window_struct().key_state_frame("z") == Key_State::Pressed) { to_add += "z";  }
+        if(window_struct().key_pressed_or_repeated_pressed("a")) { to_add += "a";  }
+        if(window_struct().key_pressed_or_repeated_pressed("b")) { to_add += "b";  }
+        if(window_struct().key_pressed_or_repeated_pressed("c")) { to_add += "c";  }
+        if(window_struct().key_pressed_or_repeated_pressed("d")) { to_add += "d";  }
+        if(window_struct().key_pressed_or_repeated_pressed("e")) { to_add += "e";  }
+        if(window_struct().key_pressed_or_repeated_pressed("f")) { to_add += "f";  }
+        if(window_struct().key_pressed_or_repeated_pressed("g")) { to_add += "g";  }
+        if(window_struct().key_pressed_or_repeated_pressed("h")) { to_add += "h";  }
+        if(window_struct().key_pressed_or_repeated_pressed("i")) { to_add += "i";  }
+        if(window_struct().key_pressed_or_repeated_pressed("j")) { to_add += "j";  }
+        if(window_struct().key_pressed_or_repeated_pressed("k")) { to_add += "k";  }
+        if(window_struct().key_pressed_or_repeated_pressed("l")) { to_add += "l";  }
+        if(window_struct().key_pressed_or_repeated_pressed("m")) { to_add += "m";  }
+        if(window_struct().key_pressed_or_repeated_pressed("n")) { to_add += "n";  }
+        if(window_struct().key_pressed_or_repeated_pressed("o")) { to_add += "o";  }
+        if(window_struct().key_pressed_or_repeated_pressed("p")) { to_add += "p";  }
+        if(window_struct().key_pressed_or_repeated_pressed("q")) { to_add += "q";  }
+        if(window_struct().key_pressed_or_repeated_pressed("r")) { to_add += "r";  }
+        if(window_struct().key_pressed_or_repeated_pressed("s")) { to_add += "s";  }
+        if(window_struct().key_pressed_or_repeated_pressed("t")) { to_add += "t";  }
+        if(window_struct().key_pressed_or_repeated_pressed("u")) { to_add += "u";  }
+        if(window_struct().key_pressed_or_repeated_pressed("v")) { to_add += "v";  }
+        if(window_struct().key_pressed_or_repeated_pressed("w")) { to_add += "w";  }
+        if(window_struct().key_pressed_or_repeated_pressed("x")) { to_add += "x";  }
+        if(window_struct().key_pressed_or_repeated_pressed("y")) { to_add += "y";  }
+        if(window_struct().key_pressed_or_repeated_pressed("z")) { to_add += "z";  }
         // Extended alphabet letter
-        if(window_struct().key_state_frame("ù") == Key_State::Pressed) { to_add += "ù";  }
+        if(window_struct().key_pressed_or_repeated_pressed("ù")) { to_add += "ù";  }
 
         // Handle numbers
-        if(window_struct().key_state_frame("0") == Key_State::Pressed) { to_add += "0";  }
-        if(window_struct().key_state_frame("1") == Key_State::Pressed) { to_add += "1";  }
-        if(window_struct().key_state_frame("2") == Key_State::Pressed) { to_add += "2";  }
-        if(window_struct().key_state_frame("3") == Key_State::Pressed) { to_add += "3";  }
-        if(window_struct().key_state_frame("4") == Key_State::Pressed) { to_add += "4";  }
-        if(window_struct().key_state_frame("5") == Key_State::Pressed) { to_add += "5";  }
-        if(window_struct().key_state_frame("6") == Key_State::Pressed) { to_add += "6";  }
-        if(window_struct().key_state_frame("7") == Key_State::Pressed) { to_add += "7";  }
-        if(window_struct().key_state_frame("8") == Key_State::Pressed) { to_add += "8";  }
-        if(window_struct().key_state_frame("9") == Key_State::Pressed) { to_add += "9";  }
-        if(window_struct().key_state_frame("=") == Key_State::Pressed) { to_add += "=";  }
+        if(window_struct().key_pressed_or_repeated_pressed("0")) { to_add += "0";  }
+        if(window_struct().key_pressed_or_repeated_pressed("1")) { to_add += "1";  }
+        if(window_struct().key_pressed_or_repeated_pressed("2")) { to_add += "2";  }
+        if(window_struct().key_pressed_or_repeated_pressed("3")) { to_add += "3";  }
+        if(window_struct().key_pressed_or_repeated_pressed("4")) { to_add += "4";  }
+        if(window_struct().key_pressed_or_repeated_pressed("5")) { to_add += "5";  }
+        if(window_struct().key_pressed_or_repeated_pressed("6")) { to_add += "6";  }
+        if(window_struct().key_pressed_or_repeated_pressed("7")) { to_add += "7";  }
+        if(window_struct().key_pressed_or_repeated_pressed("8")) { to_add += "8";  }
+        if(window_struct().key_pressed_or_repeated_pressed("9")) { to_add += "9";  }
+        if(window_struct().key_pressed_or_repeated_pressed("=")) { to_add += "=";  }
 
         // Handle numbers / special characters
-        if(window_struct().key_state_frame("&") == Key_State::Pressed) { to_add += "&";  }
-        if(window_struct().key_state_frame("é") == Key_State::Pressed) { to_add += "é";  }
-        if(window_struct().key_state_frame("\"") == Key_State::Pressed) { to_add += "\"";  }
-        if(window_struct().key_state_frame("'") == Key_State::Pressed) { to_add += "'";  }
-        if(window_struct().key_state_frame("(") == Key_State::Pressed) { to_add += "(";  }
-        if(window_struct().key_state_frame("-") == Key_State::Pressed) { to_add += "-";  }
-        if(window_struct().key_state_frame("è") == Key_State::Pressed) { to_add += "è";  }
-        if(window_struct().key_state_frame("_") == Key_State::Pressed) { to_add += "_";  }
-        if(window_struct().key_state_frame("ç") == Key_State::Pressed) { to_add += "ç";  }
-        if(window_struct().key_state_frame("à") == Key_State::Pressed) { to_add += "à";  }
-        if(window_struct().key_state_frame("^") == Key_State::Pressed) { to_add += "^";  }
-        if(window_struct().key_state_frame("*") == Key_State::Pressed) { to_add += "*";  }
+        if(window_struct().key_pressed_or_repeated_pressed("&")) { to_add += "&";  }
+        if(window_struct().key_pressed_or_repeated_pressed("é")) { to_add += "é";  }
+        if(window_struct().key_pressed_or_repeated_pressed("\"")) { to_add += "\"";  }
+        if(window_struct().key_pressed_or_repeated_pressed("'")) { to_add += "'";  }
+        if(window_struct().key_pressed_or_repeated_pressed("(")) { to_add += "(";  }
+        if(window_struct().key_pressed_or_repeated_pressed("-")) { to_add += "-";  }
+        if(window_struct().key_pressed_or_repeated_pressed("è")) { to_add += "è";  }
+        if(window_struct().key_pressed_or_repeated_pressed("_")) { to_add += "_";  }
+        if(window_struct().key_pressed_or_repeated_pressed("ç")) { to_add += "ç";  }
+        if(window_struct().key_pressed_or_repeated_pressed("à")) { to_add += "à";  }
+        if(window_struct().key_pressed_or_repeated_pressed("^")) { to_add += "^";  }
+        if(window_struct().key_pressed_or_repeated_pressed("*")) { to_add += "*";  }
 
         // Handle ponctuation
-        if(window_struct().key_state_frame(":") == Key_State::Pressed) { to_add += ":";  }
-        if(window_struct().key_state_frame(";") == Key_State::Pressed) { to_add += ";";  }
-        if(window_struct().key_state_frame(",") == Key_State::Pressed) { to_add += ",";  }
-        if(window_struct().key_state_frame("!") == Key_State::Pressed) { to_add += "!";  }
-        if(window_struct().key_state_frame("<") == Key_State::Pressed) { to_add += "<";  }
+        if(window_struct().key_pressed_or_repeated_pressed(":")) { to_add += ":";  }
+        if(window_struct().key_pressed_or_repeated_pressed(";")) { to_add += ";";  }
+        if(window_struct().key_pressed_or_repeated_pressed(",")) { to_add += ",";  }
+        if(window_struct().key_pressed_or_repeated_pressed("!")) { to_add += "!";  }
+        if(window_struct().key_pressed_or_repeated_pressed("<")) { to_add += "<";  }
 
         // Handle special characters
-        if(window_struct().key_state_frame("backspace") == Key_State::Pressed && final_text.size() > 0 && cursor_position_in_unformatted_text() > 0) {
+        if(window_struct().key_pressed_or_repeated_pressed("backspace") == Key_State::Pressed && final_text.size() > 0 && cursor_position_in_unformatted_text() > 0) {
             unsigned int cursor_position = cursor_position_in_unformatted_text() - 1;
             unsigned int position_to_delete = window_struct().text_image_generator()->first_plain_text_character_before_position_in_informatted_text(text(), cursor_position);
             unsigned int size_to_delete = (cursor_position - position_to_delete) + 1;
             set_cursor_position_in_formatted_text(cursor_position_in_formatted_text() - 1);
             final_text = final_text.substr(0, position_to_delete) + final_text.substr(position_to_delete + size_to_delete, final_text.size() - (position_to_delete + size_to_delete));
         }
-        if(window_struct().key_state_frame("space") == Key_State::Pressed) { to_add += " ";  }
-        if(window_struct().key_state_frame("tab") == Key_State::Pressed) { to_add += "    ";  }
-        if(window_struct().key_state_frame(")") == Key_State::Pressed) { to_add += ")";  }
-        if(window_struct().key_state_frame("$") == Key_State::Pressed) { to_add += "$";  }
+        if(window_struct().key_pressed_or_repeated_pressed("space")) { to_add += " ";  }
+        if(window_struct().key_pressed_or_repeated_pressed("tab")) { to_add += "    ";  }
+        if(window_struct().key_pressed_or_repeated_pressed(")")) { to_add += ")";  }
+        if(window_struct().key_pressed_or_repeated_pressed("$")) { to_add += "$";  }
         to_add = _format(to_add, should_capitalise);
 
-        if(window_struct().key_state_frame("enter") == Key_State::Pressed) { to_add += "</br>";  }
+        if(window_struct().key_pressed_or_repeated_pressed("enter") == Key_State::Pressed) { to_add += "</br>";  }
 
         to_add = to_utf_8(to_add);
         unsigned int cursor_position = cursor_position_in_unformatted_text();
@@ -778,8 +778,8 @@ namespace scls {
 
     // Update the cursor behavior
     void GUI_Text_Input::update_cursor() {
-        if(window_struct().key_state_frame("left arrow") == Key_State::Pressed) {move_cursor(-1); update_text_texture();}
-        if(window_struct().key_state_frame("right arrow") == Key_State::Pressed) {move_cursor(1); update_text_texture();}
+        if(window_struct().key_pressed_or_repeated_pressed("left arrow")) {move_cursor(-1); update_text_texture();}
+        if(window_struct().key_pressed_or_repeated_pressed("right arrow")) {move_cursor(1); update_text_texture();}
     }
 
     //*********
@@ -800,7 +800,7 @@ namespace scls {
 
     // Returns if a file is chosen during this frame
     bool GUI_File_Explorer::file_chosen() {
-        if(!choose_clicked()) return false;
+        if(!choose_clicked() && !a_file_chose) return false;
         return true;
     }
 
@@ -889,13 +889,18 @@ namespace scls {
         #endif // defined
 
         path = replace(path, "\\", "/");
-        if(std::filesystem::is_directory(path) && (a_current_path == "" || contains_selected_file(file_name(path)))) {
-            // Handle a directory
-            a_browser_buttons_to_modify.clear();
-            a_current_path = path;
-            a_currently_selected_files = "";
-            update_browser();
-            update_top_bar();
+        if(a_current_path == "" || contains_selected_file(file_name(path, true))) {
+            if(std::filesystem::is_directory(path)) {
+                // Handle a directory
+                a_browser_buttons_to_modify.clear();
+                a_current_path = path;
+                a_currently_selected_files = "";
+                update_browser();
+                update_top_bar();
+            }
+            else {
+                a_file_chose = true;
+            }
         }
         else {
             // Handle a single file

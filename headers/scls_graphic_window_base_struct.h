@@ -254,10 +254,9 @@ namespace scls {
 
     // State of a button
     enum Button_State {Clicked, Released, Already_Clicked};
-    enum Key_State { Nothing, Pressed, Already_Pressed }; // Differents orientations for a map lev collection
+    enum Key_State { Nothing, Pressed, Pressed_Repeated, Already_Pressed }; // Differents orientations for a map lev collection
 
-    class _Window_Base_Struct
-    {
+    class _Window_Base_Struct {
         // Class representing the base struct in the game
     public:
 
@@ -321,8 +320,10 @@ namespace scls {
         inline double delta_time() { return a_delta_time; };
 
         // Keyboard
+        inline bool key_pressed_or_repeated_pressed(std::string name) const { return a_keys_state_frame.at(name) == Key_State::Pressed || a_keys_state_frame.at(name) == Key_State::Pressed_Repeated; };
         inline unsigned short key_state(std::string name) const { return a_keys_state.at(name); };
-        inline unsigned short key_state_frame(std::string name) const { return contains(a_pressed_keys_frame, std::string(name)); };
+        inline unsigned short key_state_frame(std::string name) const { return a_keys_state_frame.at(name); };
+        inline double key_state_time(std::string name) const { return a_keys_state_time.at(name); };
 
         // Mouse and cursor
         inline GLFWcursor* cursor() {return a_cursor;};
@@ -416,6 +417,7 @@ namespace scls {
         // Keyboard
         inline std::map<std::string, Key_State>& keys_state() { return a_keys_state; };
         inline std::map<std::string, Key_State>& keys_state_frame() { return a_keys_state_frame; };
+        inline std::map<std::string, double>& keys_state_time() {return a_keys_state_time;};
         inline std::vector<std::string>& pressed_keys() { return a_pressed_keys; };
         inline std::vector <std::string>& pressed_keys_frame() { return a_pressed_keys_frame; };
 
@@ -479,6 +481,8 @@ namespace scls {
         std::map<std::string, Key_State> a_keys_state = std::map<std::string, Key_State>();
         // State of the modification in the keys during this frame
         std::map<std::string, Key_State> a_keys_state_frame = std::map<std::string, Key_State>();
+        // Time since a keys is in its state
+        std::map<std::string, double> a_keys_state_time = std::map<std::string, double>();
         // All the pressed keys
         std::vector <std::string> a_pressed_keys = std::vector <std::string>();
         // All the pressed keys during this frame

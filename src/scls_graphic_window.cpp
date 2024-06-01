@@ -388,6 +388,11 @@ namespace scls {
         {
             it->second = Key_State::Nothing; // Reset keys
         }
+        for (std::map<std::string, double>::iterator it = keys_state_time().begin(); it != keys_state_time().end(); it++)
+        {
+            // Update the time
+            it->second += delta_time();
+        }
 
         for (std::map<std::string, unsigned int>::iterator it = a_keys.begin(); it != a_keys.end(); it++)
         {
@@ -404,19 +409,26 @@ namespace scls {
             Key_State state = it->second;
             if (state != Key_State::Nothing)
             {
-                if (keys_state_frame()[it->first] != state && keys_state_frame()[it->first] != Key_State::Already_Pressed)
+                if (keys_state_frame()[it->first] != state && keys_state_frame()[it->first] != Key_State::Already_Pressed && keys_state_frame()[it->first] != Key_State::Pressed_Repeated)
                 {
                     keys_state_frame()[it->first] = Key_State::Pressed;
+                    keys_state_time()[it->first] = 0;
                     pressed_keys_frame().push_back(it->first);
                 }
                 else
                 {
                     keys_state_frame()[it->first] = Key_State::Already_Pressed;
+
+                    if(keys_state_time()[it->first] > 0.5) {
+                        keys_state_time()[it->first] -= 0.02;
+                        keys_state_frame()[it->first] = Key_State::Pressed_Repeated;
+                    }
                 }
             }
             else
             {
                 keys_state_frame()[it->first] = Key_State::Nothing; // Reset keys
+                keys_state_time()[it->first] = 0;
             }
         }
 
