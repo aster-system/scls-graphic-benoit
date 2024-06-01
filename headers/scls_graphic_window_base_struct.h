@@ -232,7 +232,7 @@ namespace scls {
         ~Camera(); // Camera destructor
 
         // Getter
-        inline float get_far() { return far; };
+        inline float get_far() { return a_far; };
         inline float get_fov() { return fov; };
         inline glm::vec3 get_looked_position() { if (looks_forward()) return get_absolute_position() + get_forward(); return a_looked_position; };
         inline float get_sensitivity() { return sensitivity; };
@@ -241,7 +241,7 @@ namespace scls {
         inline void set_looked_position(glm::vec3 new_looked_position) { a_looked_position = new_looked_position; };
         inline void set_looks_forward(bool new_looks_forward) { a_looks_forward = new_looks_forward; };
     private:
-        float far = 1000.0f; // Far projection for the camera
+        float a_far = 1000.0f; // Far projection for the camera
         float fov = 45.0f; // Fov of the camera
         float sensitivity = 30; // Sensitivity of the camera
 

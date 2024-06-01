@@ -248,8 +248,10 @@ namespace scls {
         a_keys["down arrow"] = GLFW_KEY_DOWN;
         a_keys["enter"] = GLFW_KEY_ENTER;
         a_keys["left arrow"] = GLFW_KEY_LEFT;
+        a_keys["left control"] = GLFW_KEY_LEFT_CONTROL;
         a_keys["left shift"] = GLFW_KEY_LEFT_SHIFT;
         a_keys["right arrow"] = GLFW_KEY_RIGHT;
+        a_keys["right control"] = GLFW_KEY_RIGHT_CONTROL;
         a_keys["right shift"] = GLFW_KEY_RIGHT_SHIFT;
         a_keys["space"] = GLFW_KEY_SPACE;
         a_keys["tab"] = GLFW_KEY_TAB;

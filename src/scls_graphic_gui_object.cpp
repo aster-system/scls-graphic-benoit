@@ -690,6 +690,7 @@ namespace scls {
         std::string to_add = "";
 
         // Handle letters
+        bool should_control = (window_struct().key_state("left control") == Key_State::Pressed || window_struct().key_state("right control") == Key_State::Pressed);
         bool should_capitalise = (window_struct().key_state("left shift") == Key_State::Pressed || window_struct().key_state("right shift") == Key_State::Pressed);
         if(window_struct().key_pressed_or_repeated_pressed("a")) { to_add += "a";  }
         if(window_struct().key_pressed_or_repeated_pressed("b")) { to_add += "b";  }
@@ -712,7 +713,14 @@ namespace scls {
         if(window_struct().key_pressed_or_repeated_pressed("s")) { to_add += "s";  }
         if(window_struct().key_pressed_or_repeated_pressed("t")) { to_add += "t";  }
         if(window_struct().key_pressed_or_repeated_pressed("u")) { to_add += "u";  }
-        if(window_struct().key_pressed_or_repeated_pressed("v")) { to_add += "v";  }
+        if(window_struct().key_pressed_or_repeated_pressed("v")) {
+            if(should_control) {
+                to_add += clipboard_datas();
+            }
+            else {
+                to_add += "v";
+            }
+        }
         if(window_struct().key_pressed_or_repeated_pressed("w")) { to_add += "w";  }
         if(window_struct().key_pressed_or_repeated_pressed("x")) { to_add += "x";  }
         if(window_struct().key_pressed_or_repeated_pressed("y")) { to_add += "y";  }
@@ -767,6 +775,7 @@ namespace scls {
         if(window_struct().key_pressed_or_repeated_pressed(")")) { to_add += ")";  }
         if(window_struct().key_pressed_or_repeated_pressed("$")) { to_add += "$";  }
         to_add = _format(to_add, should_capitalise);
+        to_add = format_string_from_plain_text(to_add);
 
         if(window_struct().key_pressed_or_repeated_pressed("enter") == Key_State::Pressed) { to_add += "</br>";  }
 
