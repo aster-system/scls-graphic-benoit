@@ -117,6 +117,8 @@ namespace scls {
         virtual void update(){ for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->update(); };
         // Update the object for the events
         virtual void update_event() {for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->update_event();};
+        // Update the texture when needed
+        virtual void update_texture() {for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->update_texture();};
 
         // Getters and setters (ONLY WITH ATRIBUTES)
         inline Color background_color() {return a_background_color;};
@@ -152,6 +154,8 @@ namespace scls {
         inline glm::vec2 absolute_scale() const { return glm::vec2(width_in_absolute_scale(), height_in_absolute_scale()); }
         // Returns the ratio w / h of the absolute scale of the object
         inline double absolute_scale_ratio() const { return width_in_absolute_scale() / height_in_absolute_scale(); };
+        // Returns the ratio w / h of the absolute scale of the object with the window
+        inline double absolute_scale_ratio_and_window() const { return window_struct().window_ratio() * (width_in_absolute_scale() / height_in_absolute_scale()); };
         // Returns the absolute scale of the border width
         glm::vec4 border_width_in_absolute_scale() const;
         // Returns the height in absolute scale of the object
@@ -278,6 +282,10 @@ namespace scls {
             final_y -= height_in_adapted_absolute_scale() + offset;
             set_y_in_absolute_scale(final_y);
         };
+
+        // Texture size
+        // Collapse the size of the object with the size of the texture by its height
+        void collapse_size_on_texture_with_height(double height);
 
         // Getters and setters
         inline GUI_Object* parent() const {return a_parent;};
@@ -482,6 +490,8 @@ namespace scls {
 
         // Soft reset the text
         virtual void soft_reset() {GUI_Object::soft_reset();a_text_modified_during_this_frame = false;};
+        // Update the texture when needed
+        virtual void update_texture() {GUI_Object::update_texture();update_text_texture();};
         // Update the texture of the text
         void update_text_texture();
 

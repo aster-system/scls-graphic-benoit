@@ -193,6 +193,16 @@ namespace scls {
         a_adapted_scale_updated = true;
     }
 
+    // Collapse the size of the object with the size of the texture by its height
+    void GUI_Object::collapse_size_on_texture_with_height(double height) {
+        update_texture();
+
+        double divisor = 1.0;
+        if(parent() != 0) divisor = parent()->absolute_scale_ratio_and_window();
+        double width = texture()->image_ratio() / (divisor * 1.0);
+        set_size_in_scale(glm::vec2(width * height, height));
+    }
+
     // Delete the children of an object
     void GUI_Object::delete_children() { for(int i = 0;i<static_cast<int>(children().size());i++) { delete children()[i]; } children().clear(); }
 
@@ -873,6 +883,7 @@ namespace scls {
     void GUI_File_Explorer::place_top_bar_buttons() {
         GUI_Text* last_button = 0;
         for(int i = 0;i<static_cast<int>(a_top_bar_buttons.size());i++) {
+            a_top_bar_buttons[i]->collapse_size_on_texture_with_height(1.0);
             a_top_bar_buttons[i]->set_position_in_scale(glm::vec2(0, 0));
             if(last_button == 0) a_top_bar_buttons[i]->move_left_of_parent();
             else a_top_bar_buttons[i]->move_right_of_object_in_parent(last_button);
@@ -1076,12 +1087,14 @@ namespace scls {
             if(button_text == "") continue;
             if(button_text != first_text) button_text += "/";
             GUI_Text* new_button = a_top_bar->new_object<GUI_Text>("top_bar_button_" + std::to_string(i), 0, 0);
-            new_button->set_font_size(20);
+            new_button->set_font_size(50);
             new_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
             new_button->set_text(button_text);
             new_button->set_height_in_pixel(25);
             new_button->set_width_in_scale(0.15);
             new_button->set_position_in_scale(glm::vec2(0, 0));
+            new_button->set_texture_alignment(scls::Alignment_Texture::T_Fit_Vertically);
+            new_button->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
             a_top_bar_buttons.push_back(new_button);
         }
         place_all();
