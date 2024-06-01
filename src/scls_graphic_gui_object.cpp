@@ -753,6 +753,7 @@ namespace scls {
             final_text = final_text.substr(0, position_to_delete) + final_text.substr(position_to_delete + size_to_delete, final_text.size() - (position_to_delete + size_to_delete));
         }
         if(window_struct().key_state_frame("space") == Key_State::Pressed) { to_add += " ";  }
+        if(window_struct().key_state_frame("tab") == Key_State::Pressed) { to_add += "    ";  }
         if(window_struct().key_state_frame(")") == Key_State::Pressed) { to_add += ")";  }
         if(window_struct().key_state_frame("$") == Key_State::Pressed) { to_add += "$";  }
         to_add = _format(to_add, should_capitalise);
