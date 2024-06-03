@@ -557,7 +557,7 @@ namespace scls {
 
     // Most basic GUI_Text constructor
     GUI_Text_Input::GUI_Text_Input(Window& window, std::string name, GUI_Object* parent) : GUI_Text(window, name, parent) {
-        // set_text_image_type(Text_Image::T_Keep_Block_And_Line_In_Memory);
+        set_text_image_type(Text_Image::T_Keep_Block_And_Line_In_Memory);
         set_use_cursor(true);
     }
 
