@@ -193,14 +193,13 @@ namespace scls {
 
     // Remove a texture in the window
     void _Window_Advanced_Struct::remove_texture(Texture* texture) {
-        unsigned int i = 0;
         for (std::map<std::string, Texture*>::iterator it = textures().begin(); it != textures().end(); it++) {
             if (it->second == texture) {
                 textures().erase(it);
+                delete texture->get_image();
                 delete texture;
                 return;
             }
-            i++;
         }
     }
 }
