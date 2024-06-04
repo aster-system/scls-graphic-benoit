@@ -522,8 +522,7 @@ namespace scls {
     void GUI_Text::update_text_texture() {
         if(text() != "" || use_cursor()) {
             if(a_text_image == 0) {
-                a_text_image = window_struct().text_image_generator()->new_text_image("", text_image_type());
-                a_text_image->set_line_pasting_max_thread_number(5);
+                a_text_image = window_struct().text_image_generator()->new_text_image_block("", text_image_type());
             }
 
             // Create the text
@@ -532,8 +531,8 @@ namespace scls {
             a_text_image->global_style().background_color = background_color();
             a_text_image->global_style().color = font_color();
             a_text_image->global_style().font_size = font_size();
-            a_text_image->set_cursor_position(cursor_position_in_formatted_text());
-            a_text_image->set_use_cursor(use_cursor());
+            // a_text_image->set_cursor_position(cursor_position_in_formatted_text());
+            // a_text_image->set_use_cursor(use_cursor());
 
             // Apply the text
             Image* image_to_paste = a_text_image->image();
@@ -560,7 +559,7 @@ namespace scls {
 
     // Most basic GUI_Text constructor
     GUI_Text_Input::GUI_Text_Input(Window& window, std::string name, GUI_Object* parent) : GUI_Text(window, name, parent) {
-        set_text_image_type(Text_Image::T_Keep_Block_And_Line_In_Memory);
+        set_text_image_type(Text_Image_Block::BT_Keep_Block_And_Line_In_Memory);
         set_use_cursor(true);
     }
 

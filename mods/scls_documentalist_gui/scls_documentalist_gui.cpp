@@ -77,7 +77,7 @@ namespace scls_documentalist_gui {
         a_project_footer->set_visible(true);
         a_project_navigation->set_visible(true);
 
-        if(a_file_pattern_text->attached_text_image() != 0) a_file_pattern_text->attached_text_image()->free_memory();
+        if(a_file_pattern_text->attached_text_image() != 0) a_file_pattern_text->attached_text_image()->clear_lines();
         if(contains_opened_file_pattern(pattern_to_display)) {
             a_file_pattern_text->set_text(a_opened_files_pattern[pattern_to_display]);
         }
