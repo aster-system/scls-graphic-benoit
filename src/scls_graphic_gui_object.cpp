@@ -521,7 +521,10 @@ namespace scls {
     // Update the texture of the text
     void GUI_Text::update_text_texture() {
         if(text() != "" || use_cursor()) {
-            if(a_text_image == 0) a_text_image = window_struct().text_image_generator()->new_text_image("", text_image_type());
+            if(a_text_image == 0) {
+                a_text_image = window_struct().text_image_generator()->new_text_image("", text_image_type());
+                a_text_image->set_line_pasting_max_thread_number(5);
+            }
 
             // Create the text
             glm::vec2 position_to_apply = position_in_pixel();

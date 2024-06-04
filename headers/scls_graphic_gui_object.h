@@ -496,6 +496,7 @@ namespace scls {
         void update_text_texture();
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
+        inline Text_Image* attached_text_image() {return a_text_image;};
         inline unsigned int cursor_position_in_formatted_text() const {return a_cursor_position_in_formatted_text;};
         inline Color font_color() {return a_font_color;};
         inline std::string font_family() {return a_font_family;};
