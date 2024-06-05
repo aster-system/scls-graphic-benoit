@@ -336,8 +336,8 @@ public:
 	~Texture(); // Texture destructor
 
 	// Set the image from a path
-	inline void set_image_by_path(std::string path, bool delete_image = true) {
-	    set_image(new scls::Image(path), delete_image);
+	inline void set_image_by_path(std::string path) {
+	    set_image(new scls::Image(path));
 	};
 
 	// Getters and setters (ONLY WITHOUT ATTRIBUTES)
@@ -345,21 +345,32 @@ public:
 
 	// Getters and setters (ONLY WITH ATTRIBUTES)
 	inline unsigned short copy_count() {return a_copy_count;};
-	inline scls::Image* get_image() { return a_image; };
+	inline scls::Image* get_image() { return a_image.get(); };
 	inline glm::vec2 get_texture_size() { return glm::vec2(width, height); };
 	inline std::string get_texture_path() { return texture_path; };
 	inline bool loaded() {return a_loaded;};
-	inline void set_image(scls::Image* new_image, bool delete_image = true) {
-	    if(new_image == 0 && a_image != 0) {
+	inline void set_image(scls::Image* new_image) {
+	    if(new_image == 0 && get_image() != 0) {
             glDeleteTextures(1, &texture_id);
         }
-        else if(a_image == 0 && new_image != 0) {
+        else if(get_image() == 0 && new_image != 0) {
             glGenTextures(1, &texture_id);
         }
-	    if(delete_image && a_image != 0) delete a_image;
+
+	    a_image.reset(new_image);
+	    if(get_image() != 0) get_image()->flip_x();
+	    change_texture();
+    };
+    inline void set_image(std::shared_ptr<scls::Image>& new_image) {
+	    if(new_image.get() == 0 && get_image() != 0) {
+            glDeleteTextures(1, &texture_id);
+        }
+        else if(get_image() == 0 && new_image.get() != 0) {
+            glGenTextures(1, &texture_id);
+        }
 
 	    a_image = new_image;
-	    if(a_image != 0)a_image->flip_x();
+	    if(get_image() != 0) get_image()->flip_x();
 	    change_texture();
     };
 	inline bool use_resize() { return resize; };
@@ -368,7 +379,7 @@ private:
     unsigned short a_copy_count = 0;
 	int height = 0; // Height of the texture
 	// SCLS image of this texture
-    scls::Image* a_image = 0;
+    std::shared_ptr<scls::Image> a_image;
 	bool a_loaded = false;
 	bool resize = true; // If the shader resize the texture or not
 	unsigned int texture_id = 0; // Handle to the texture

@@ -77,7 +77,6 @@ namespace scls_documentalist_gui {
         a_project_footer->set_visible(true);
         a_project_navigation->set_visible(true);
 
-        if(a_file_pattern_text->attached_text_image() != 0) a_file_pattern_text->attached_text_image()->clear_lines();
         if(contains_opened_file_pattern(pattern_to_display)) {
             a_file_pattern_text->set_text(a_opened_files_pattern[pattern_to_display]);
         }
@@ -85,6 +84,7 @@ namespace scls_documentalist_gui {
             a_opened_files_pattern[pattern_to_display] = pattern_to_display->base_text().to_std_string();
             a_file_pattern_text->set_text(pattern_to_display->base_text().to_std_string());
         }
+        if(a_file_pattern_text->attached_text_image() != 0) a_file_pattern_text->attached_text_image()->generate_lines();
         a_currently_displayed_file_pattern = pattern_to_display;
     }
 
@@ -201,7 +201,6 @@ namespace scls_documentalist_gui {
         a_create_project_name->set_text("");
         a_create_project_name->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
         a_create_project_name->set_texture_alignment_vertical(scls::Alignment_Vertical::V_Center);
-        a_create_project_name->update_text_texture();
         // Title of the input of the name of the project
         a_create_project_name_title = a_create_project_body->new_object<scls::GUI_Text>("create_project_name_title");
         a_create_project_name_title->set_font_size(100);

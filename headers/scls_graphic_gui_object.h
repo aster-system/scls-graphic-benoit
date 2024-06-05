@@ -463,7 +463,88 @@ namespace scls {
         GUI_Object* a_overflighted_object = 0;
     };
 
-    class GUI_Text : public GUI_Object {
+    class __GUI_Text_Metadatas : public GUI_Object {
+        // Class representing the metadatas of a graphic text
+    public:
+
+        //*********
+        //
+        // __GUI_Text_Metadatas main functions
+        //
+        //*********
+
+        // __GUI_Text_Metadatas constructor
+        __GUI_Text_Metadatas(Window& window, std::string name, GUI_Object* parent) : GUI_Object(window, name, parent) {};
+        // __GUI_Text_Metadatas destructor
+        virtual ~__GUI_Text_Metadatas() {};
+
+        // Return the plain text in the object
+        inline std::string plain_text(){return window_struct().text_image_generator()->plain_text(text());};
+        // Return the size of the plain text in the object
+        inline unsigned int plain_text_size() {return plain_text().size();};
+
+        // Getters and setters
+        inline Color font_color() const {return a_global_style.color;};
+        inline std::string font_family() const {return a_global_style.font.font_family;};
+        inline unsigned short font_size() const {return a_global_style.font_size;};
+        inline void set_font_color(Color new_font_color) {a_global_style.color = new_font_color;};
+        inline void set_font_family(std::string new_font_family) {a_global_style.font = get_system_font(new_font_family);};
+        inline void set_font_size(unsigned short new_font_size) {a_global_style.font_size = new_font_size;};
+        void set_text(std::string new_text, bool should_move_cursor = true) {if(new_text == a_text)return;a_text = new_text;if(should_move_cursor)set_cursor_position_in_formatted_text(plain_text_size());update_texture();};
+        inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {a_global_style.alignment_horizontal = new_text_alignment_horizontal;};
+        virtual void set_text_image_type(Text_Image_Block::Block_Type new_text_image_type) {a_text_image_type = new_text_image_type;};
+        inline void set_text_offset(double new_text_offset) {a_global_style.text_offset_x = new_text_offset;a_global_style.text_offset_y = new_text_offset;a_global_style.text_offset_width = new_text_offset;a_global_style.text_offset_height = new_text_offset;};
+        inline std::string text() const {return a_text;};
+        inline Text_Image_Block::Block_Type text_image_type() const {return a_text_image_type;};
+        inline glm::vec4 text_offset() const {return glm::vec4(a_global_style.text_offset_x, a_global_style.text_offset_y, a_global_style.text_offset_width, a_global_style.text_offset_height);};
+
+        //*********
+        //
+        // Cursor handling
+        //
+        //*********
+
+        // Returns the position of the cursor in unformatted text
+        inline unsigned int cursor_position_in_unformatted_text() const { return window_struct().text_image_generator()->plain_text_position_to_unformatted_text_position(text(), cursor_position_in_formatted_text()); };
+        // Moves the cursor in the text
+        void move_cursor(int movement);
+
+        // Getters and setters
+        inline unsigned int cursor_position_in_formatted_text() const {return a_cursor_position_in_formatted_text;};
+        inline void set_cursor_position_in_formatted_text(unsigned int new_cursor_position_in_formatted_text) {a_cursor_position_in_formatted_text = new_cursor_position_in_formatted_text;};
+        inline void set_use_cursor(bool new_use_cursor) {a_use_cursor = new_use_cursor;};
+        inline bool use_cursor() const {return a_use_cursor;};
+
+    private:
+
+        //*********
+        //
+        // Text mains attributes
+        //
+        //*********
+
+        // Global style of the text
+        Text_Style a_global_style;
+        // Text in the object
+        std::string a_text = "";
+        // Alignment of the text
+        Alignment_Horizontal a_text_alignment_horizontal = Alignment_Horizontal::H_Left;
+        // Type of the text image
+        Text_Image_Block::Block_Type a_text_image_type = Text_Image_Block::BT_Always_Free_Memory;
+
+        //*********
+        //
+        // Cursor handling
+        //
+        //*********
+
+        // Position of the cursor in the text
+        unsigned int a_cursor_position_in_formatted_text = 0;
+        // If the text use a cursor or not
+        bool a_use_cursor = false;
+    };
+
+    class GUI_Text : public __GUI_Text_Metadatas {
         // Class representing an GUI object displaying a text into the window
     public:
 
@@ -478,16 +559,6 @@ namespace scls {
         // GUI_Object destructor
         virtual ~GUI_Text();
 
-        // Returns the position of the cursor in unformatted text
-        inline unsigned int cursor_position_in_unformatted_text() const { return window_struct().text_image_generator()->plain_text_position_to_unformatted_text_position(text(), cursor_position_in_formatted_text()); };
-        // Return the plain text in the object
-        inline std::string plain_text(){return window_struct().text_image_generator()->plain_text(text());};
-        // Return the size of the plain text in the object
-        inline unsigned int plain_text_size() {return plain_text().size();};
-
-        // Move the cursor in the text
-        void move_cursor(int movement);
-
         // Soft reset the text
         virtual void soft_reset() {GUI_Object::soft_reset();a_text_modified_during_this_frame = false;};
         // Update the texture when needed
@@ -497,26 +568,8 @@ namespace scls {
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline Text_Image_Block* attached_text_image() {return a_text_image;};
-        inline unsigned int cursor_position_in_formatted_text() const {return a_cursor_position_in_formatted_text;};
-        inline Color font_color() {return a_font_color;};
-        inline std::string font_family() {return a_font_family;};
-        inline unsigned short font_size() {return a_font_size;};
-        inline void set_cursor_position_in_formatted_text(unsigned int new_cursor_position_in_formatted_text) {a_cursor_position_in_formatted_text = new_cursor_position_in_formatted_text;};
-        inline void set_font_color(Color new_font_color) {a_font_color = new_font_color;};
-        inline void set_font_family(std::string new_font_family) {a_font_family = new_font_family;};
-        inline void set_font_size(unsigned short new_font_size) {a_font_size = new_font_size;};
-        void set_text(std::string new_text, bool move_cursor = true) {if(new_text == a_text)return;a_text = new_text;if(move_cursor)set_cursor_position_in_formatted_text(window_struct().text_image_generator()->plain_text_size(a_text));a_text_modified_during_this_frame = true;update_text_texture();};
-        inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {a_text_alignment_horizontal = new_text_alignment_horizontal;};
-        inline void set_text_image_type(Text_Image_Block::Block_Type new_text_image_type) {a_text_image_type = new_text_image_type;if(a_text_image != 0){delete a_text_image;a_text_image=0;}};
-        inline void set_text_offset(double new_text_offset) {set_text_offset(glm::vec4(new_text_offset));};
-        inline void set_text_offset(glm::vec4 new_text_offset) {a_text_offset = new_text_offset;};
-        inline void set_use_cursor(bool new_use_cursor) {a_use_cursor = new_use_cursor;};
-        inline std::string text() const {return a_text;};
-        inline Alignment_Horizontal text_alignment_horizontal() {return a_text_alignment_horizontal;};
+        virtual void set_text_image_type(Text_Image_Block::Block_Type new_text_image_type) {__GUI_Text_Metadatas::set_text_image_type(new_text_image_type);if(a_text_image != 0){delete a_text_image;a_text_image=0;}};
         inline bool text_modified_during_this_frame() {return a_text_modified_during_this_frame;};
-        inline glm::vec4 text_offset() {return a_text_offset;};
-        inline Text_Image_Block::Block_Type text_image_type() const {return a_text_image_type;};
-        inline bool use_cursor() {return a_use_cursor;};
     private:
         //*********
         //
@@ -524,40 +577,15 @@ namespace scls {
         //
         //*********
 
-        // Color of the text
-        Color a_font_color = black;
-        // Family of the font of the text in the object
-        std::string a_font_family = "arial";
-        // Size of the font of the text in the object
-        unsigned short a_font_size = 50;
         // If the text has been modified or not
         bool a_modified = false;
-        // Text in the object
-        std::string a_text = "";
-        // Alignment of the text
-        Alignment_Horizontal a_text_alignment_horizontal = Alignment_Horizontal::H_Left;
         // Text image of the object
         Text_Image_Block* a_text_image = 0;
-        // Type of the text image
-        Text_Image_Block::Block_Type a_text_image_type = Text_Image_Block::BT_Always_Free_Memory;
         // If the text has been modified during this frame
         bool a_text_modified_during_this_frame = false;
-        // Offset of the text
-        glm::vec4 a_text_offset = glm::vec4(0, 0, 0, 0);
-
-        //*********
-        //
-        // Cursor handling
-        //
-        //*********
-
-        // Position of the cursor in the text
-        unsigned int a_cursor_position_in_formatted_text = 0;
-        // If the text use a cursor or not
-        bool a_use_cursor = false;
     };
 
-    class GUI_Text_Input : public GUI_Text {
+    class GUI_Text_Input : public __GUI_Text_Metadatas {
         // Class representing an GUI object displaying and getting a text into the window
     public:
 
@@ -572,16 +600,34 @@ namespace scls {
         // GUI_Text_Input destructor
         virtual ~GUI_Text_Input();
 
+        // Return the plain text in the object
+        inline std::string plain_text(){return window_struct().text_image_generator()->plain_text(text());};
+        // Return the size of the plain text in the object
+        inline unsigned int plain_text_size() {return plain_text().size();};
+
+        // Function called after that the window is resized
+        virtual void after_resizing();
+        // Update the texture when needed
+        virtual void update_texture() {GUI_Object::update_texture();update_text_texture();};
+        // Update the texture of the text
+        void update_text_texture();
+
         // Format a std::string
         std::string _format(std::string letter, bool apply_capitalisation = true);
         // Format an only letter
         std::string _format_one_letter(std::string letter, bool apply_capitalisation = true);
         // Input the inputed text
         void input_text();
+        // Place the lines in the text
+        void place_lines();
         // Update the text
         virtual void update_event();
         // Update the cursor behavior
         void update_cursor();
+
+        // Getters and setters
+        inline Text_Image_Block* attached_text_image() {return a_text_image;};
+        virtual void set_text_image_type(Text_Image_Block::Block_Type new_text_image_type) {__GUI_Text_Metadatas::set_text_image_type(new_text_image_type);if(a_text_image != 0){delete a_text_image;a_text_image=0;}};
     private:
         //*********
         //
@@ -591,6 +637,8 @@ namespace scls {
 
         // Last outputted descriptive character (^, ¨...)
         std::string a_last_descriptive_character = "";
+        // Text image of the object
+        Text_Image_Block* a_text_image = 0;
     };
 
     class GUI_File_Explorer : public GUI_Object {

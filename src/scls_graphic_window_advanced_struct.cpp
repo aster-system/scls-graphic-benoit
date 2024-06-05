@@ -196,7 +196,6 @@ namespace scls {
         for (std::map<std::string, Texture*>::iterator it = textures().begin(); it != textures().end(); it++) {
             if (it->second == texture) {
                 textures().erase(it);
-                delete texture->get_image();
                 delete texture;
                 return;
             }

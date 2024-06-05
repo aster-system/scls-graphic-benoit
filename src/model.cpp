@@ -459,8 +459,7 @@ Texture::Texture(std::string a_texture_path, bool a_resize): resize(a_resize), t
 // Texture constructor much modulable
 Texture::Texture(unsigned short width, unsigned short height, glm::vec4 color, bool a_resize) : Texture("", false) {
 	// Load the image
-	delete get_image();
-	a_image = new scls::Image(width, height, color[0], color[1], color[2], color[3]);
+	a_image.reset(new scls::Image(width, height, color[0], color[1], color[2], color[3]));
 
 	// Load the texture
     load_texture();
@@ -469,8 +468,7 @@ Texture::Texture(unsigned short width, unsigned short height, glm::vec4 color, b
 // Texture constructor much modulable
 Texture::Texture(unsigned short width, unsigned short height, scls::Color color, bool a_resize) : Texture("", false) {
 	// Load the image
-	delete get_image();
-	a_image = new scls::Image(width, height, color);
+	a_image.reset(new scls::Image(width, height, color));
 
 	// Load the texture
     load_texture();
@@ -518,7 +516,6 @@ void Texture::load_texture() {
 
 // Texture destructor
 Texture::~Texture() {
+    a_image.reset();
     glDeleteTextures(1, &texture_id);
-
-	// delete get_image(); a_image = 0;
 }

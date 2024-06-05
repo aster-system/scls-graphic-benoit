@@ -492,17 +492,12 @@ namespace scls {
 
     //*********
     //
-    // GUI Text main functions
+    // __GUI_Text_Metadatas main functions
     //
     //*********
 
-    // Most basic GUI_Text constructor
-    GUI_Text::GUI_Text(Window& window, std::string name, GUI_Object* parent) : GUI_Object(window, name, parent) {
-
-    }
-
     // Move the cursor in the text
-    void GUI_Text::move_cursor(int movement) {
+    void __GUI_Text_Metadatas::move_cursor(int movement) {
         int final_cursor_position = cursor_position_in_formatted_text() + movement;
         if(movement < 0) {
             if(final_cursor_position < 0) {
@@ -516,6 +511,17 @@ namespace scls {
         }
         else if(final_cursor_position == static_cast<int>(cursor_position_in_formatted_text())) return;
         set_cursor_position_in_formatted_text(final_cursor_position);
+    }
+
+    //*********
+    //
+    // GUI Text main functions
+    //
+    //*********
+
+    // Most basic GUI_Text constructor
+    GUI_Text::GUI_Text(Window& window, std::string name, GUI_Object* parent) : __GUI_Text_Metadatas(window, name, parent) {
+
     }
 
     // Update the texture of the text
@@ -558,9 +564,9 @@ namespace scls {
     //*********
 
     // Most basic GUI_Text constructor
-    GUI_Text_Input::GUI_Text_Input(Window& window, std::string name, GUI_Object* parent) : GUI_Text(window, name, parent) {
+    GUI_Text_Input::GUI_Text_Input(Window& window, std::string name, GUI_Object* parent) : __GUI_Text_Metadatas(window, name, parent) {
         set_text_image_type(Text_Image_Block::BT_Keep_Block_And_Line_In_Memory);
-        set_use_cursor(true);
+        // set_use_cursor(true);
     }
 
     // GUI_Text_Input destructor
@@ -568,11 +574,17 @@ namespace scls {
 
     }
 
+    // Function called after that the window is resized
+    void GUI_Text_Input::after_resizing(){
+        GUI_Object::after_resizing();
+        place_lines();
+    }
+
     // Format a char
     std::string GUI_Text_Input::_format(std::string letter, bool apply_capitalisation) {
         std::string result = "";
 
-        for(int i = 0;i<letter.size();i++) {
+        for(int i = 0;i<static_cast<int>(letter.size());i++) {
             std::string to_analyse = ""; to_analyse += letter[i];
             result += _format_one_letter(to_analyse, apply_capitalisation);
         }
@@ -691,7 +703,7 @@ namespace scls {
 
     // Input the inputed text
     void GUI_Text_Input::input_text() {
-        if(!is_focused()) return;
+        if(!is_focused() && !has_child_focused()) return;
 
         std::string final_text = text();
         std::string to_add = "";
@@ -795,18 +807,82 @@ namespace scls {
         }
     }
 
+    // Place the lines in the text
+    void GUI_Text_Input::place_lines() {
+        GUI_Object* last_object = 0;
+        for(int i = 0;i<static_cast<int>(children().size());i++) {
+            GUI_Object* current_object = children()[i];
+            if(current_object != 0) {
+                current_object->set_height_in_pixel(current_object->texture()->get_image()->height());
+                current_object->move_left_of_parent();
+                if(last_object == 0) current_object->move_top_of_parent();
+                else current_object->move_bottom_of_object_in_parent(last_object);
+                last_object = current_object;
+            }
+        }
+    }
+
     // Update the text
     void GUI_Text_Input::update_event() {
-        GUI_Text::update_event();
+        GUI_Object::update_event();
         input_text();
         update_cursor();
     }
 
     // Update the cursor behavior
     void GUI_Text_Input::update_cursor() {
-        if(window_struct().key_pressed_or_repeated_pressed("left arrow")) {move_cursor(-1); update_text_texture();}
-        if(window_struct().key_pressed_or_repeated_pressed("right arrow")) {move_cursor(1); update_text_texture();}
+        if(window_struct().key_pressed_or_repeated_pressed("left arrow")) {move_cursor(-1);}
+        if(window_struct().key_pressed_or_repeated_pressed("right arrow")) {move_cursor(1);}
     }
+
+    // Update the texture of the text
+    void GUI_Text_Input::update_text_texture() {
+        if(attached_text_image() == 0) {
+            a_text_image = window_struct().text_image_generator()->new_text_image_block("", text_image_type());
+            attached_text_image()->set_text(text());
+            attached_text_image()->generate_lines();
+        }
+        else {
+            attached_text_image()->set_text(text());
+            attached_text_image()->lines()[attached_text_image()->lines().size() - 1]->set_modified(true);
+            attached_text_image()->generate_lines(false);
+        }
+
+        // Delete the useless children modified
+        for(int i = 0;i<static_cast<int>(children().size());i++) {
+            if(i >= static_cast<int>(attached_text_image()->lines().size())) {
+                 delete children()[i]; children().erase(children().begin() + i); i--;
+            }
+            else if(children()[i] != 0 && (attached_text_image()->lines()[i] == 0 || attached_text_image()->lines()[i]->has_been_modified())) {
+                delete children()[i]; children()[i] = 0;
+            }
+        }
+
+        for(int i = 0;i<static_cast<int>(attached_text_image()->lines().size());i++) {
+            // Create the configuration for the line
+            Text_Image_Line* line_to_apply = attached_text_image()->lines()[i];
+            if(line_to_apply != 0 && (line_to_apply->has_been_modified() || (i < static_cast<int>(children().size()) && children()[i] == 0))) {
+                Image* image_to_apply = line_to_apply->image();
+                line_to_apply->set_has_been_modified(false);
+
+                // Generate the object for the line
+                GUI_Object* new_line = new_object<GUI_Object>(name() + "_line_" + std::to_string(i), 0, i * 60);
+                new_line->set_size_in_scale(glm::vec2(1.0, 0.1)); new_line->set_height_in_pixel(image_to_apply->height());
+                new_line->set_texture_alignment_horizontal(Alignment_Horizontal::H_Left);
+                new_line->texture()->set_image(line_to_apply->shared_image());
+
+                // Place the children
+                if(children()[i] == 0) { children()[i] = new_line; children().pop_back(); }
+            }
+        }
+
+        // Delete the useless children in more
+        for(int i = 0;i<static_cast<int>(children().size()) - static_cast<int>(attached_text_image()->lines().size());i++) {
+            delete children()[children().size() - 1]; children().pop_back();
+        }
+
+        place_lines();
+    };
 
     //*********
     //

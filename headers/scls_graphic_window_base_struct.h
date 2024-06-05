@@ -24,6 +24,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <map>
 #include <random>
+#include <memory>
 #include <string>
 #include <sstream>
 #include <thread>
