@@ -574,6 +574,41 @@ namespace scls {
 
     }
 
+    // Add a text to the input at the cursor position
+    void GUI_Text_Input::add_text(const std::string& text_to_add) {
+        unsigned int cursor_position = cursor_position_in_unformatted_text();
+        std::string text_to_modify = text();
+        std::string final_text = text_to_modify.substr(0, cursor_position) + text_to_add + text_to_modify.substr(cursor_position, text_to_modify.size() - cursor_position);
+        if(final_text != text()) {
+            if(a_text_image != 0) {
+                unsigned int first_size = a_text_image->lines_datas().size();
+                a_text_image->set_text(final_text);
+                unsigned int second_size = a_text_image->lines_datas().size();
+
+                // Calculate if lines should be removed or added
+                if(first_size == second_size) {
+                    Text_Image_Line* current_line = a_text_image->line_at_position_in_plain_text(cursor_position_in_formatted_text());
+                    if(current_line != 0) current_line->set_modified(true);
+                }
+                else {
+                    int position = a_text_image->line_number_at_position_in_plain_text(cursor_position_in_formatted_text());
+                    if(position != -1) {
+                        if(a_text_image->lines()[position] != 0) a_text_image->lines()[position]->set_modified(true);
+
+                        // Add the needed lines
+                        for(int i = 0;i<second_size - first_size;i++) {
+                            children().insert(children().begin() + position + i, 0);
+                            a_text_image->lines().insert(a_text_image->lines().begin() + position + i, 0);
+                        }
+                    }
+                }
+            }
+
+            set_cursor_position_in_formatted_text(cursor_position_in_formatted_text() + window_struct().text_image_generator()->plain_text_size(text_to_add));
+            __GUI_Text_Metadatas::set_text(final_text, false);
+        }
+    };
+
     // Function called after that the window is resized
     void GUI_Text_Input::after_resizing(){
         GUI_Object::after_resizing();
@@ -706,7 +741,7 @@ namespace scls {
 
     // Input the inputed text
     void GUI_Text_Input::input_text() {
-        if(!is_focused() && !has_child_focused()) return;
+        if(!(visible() && (is_focused() || has_child_focused()))) return;
 
         std::string final_text = text();
         std::string to_add = "";
@@ -786,11 +821,7 @@ namespace scls {
 
         // Handle special characters
         if(window_struct().key_pressed_or_repeated_pressed("backspace") == Key_State::Pressed && final_text.size() > 0 && cursor_position_in_unformatted_text() > 0) {
-            unsigned int cursor_position = cursor_position_in_unformatted_text() - 1;
-            unsigned int position_to_delete = window_struct().text_image_generator()->first_plain_text_character_before_position_in_informatted_text(text(), cursor_position);
-            unsigned int size_to_delete = (cursor_position - position_to_delete) + 1;
-            set_cursor_position_in_formatted_text(cursor_position_in_formatted_text() - 1);
-            final_text = final_text.substr(0, position_to_delete) + final_text.substr(position_to_delete + size_to_delete, final_text.size() - (position_to_delete + size_to_delete));
+            remove_text(1);
         }
         if(window_struct().key_pressed_or_repeated_pressed("space")) { to_add += " ";  }
         if(window_struct().key_pressed_or_repeated_pressed("tab")) { to_add += "    ";  }
@@ -802,12 +833,7 @@ namespace scls {
         if(window_struct().key_pressed_or_repeated_pressed("enter") == Key_State::Pressed) { to_add += "</br>";  }
 
         to_add = to_utf_8(to_add);
-        unsigned int cursor_position = cursor_position_in_unformatted_text();
-        final_text = final_text.substr(0, cursor_position) + to_add + final_text.substr(cursor_position, final_text.size() - cursor_position);
-        if(final_text != text()) {
-            set_cursor_position_in_formatted_text(cursor_position_in_formatted_text() + window_struct().text_image_generator()->plain_text_size(to_add));
-            set_text(final_text, false);
-        }
+        add_text(to_add);
     }
 
     // Place the lines in the text
@@ -823,6 +849,53 @@ namespace scls {
                 last_object = current_object;
             }
         }
+    }
+
+    // Remove a text to the input at the cursor position
+    void GUI_Text_Input::remove_text(unsigned int size_to_delete_in_plain_text) {
+        unsigned int cursor_position = cursor_position_in_unformatted_text() - 1;
+        unsigned int position_to_delete = window_struct().text_image_generator()->first_plain_text_character_before_position_in_informatted_text(text(), cursor_position);
+        unsigned int size_to_delete = (cursor_position - position_to_delete) + 1;
+        set_cursor_position_in_formatted_text(cursor_position_in_formatted_text() - 1);
+
+        std::string text_to_modify = text();
+        std::string final_text = text_to_modify.substr(0, position_to_delete) + text_to_modify.substr(position_to_delete + size_to_delete, text_to_modify.size() - (position_to_delete + size_to_delete));
+        if(a_text_image != 0) {
+            if(a_text_image != 0) {
+                unsigned int first_size = a_text_image->lines_datas().size();
+                a_text_image->set_text(final_text);
+                unsigned int second_size = a_text_image->lines_datas().size();
+
+                // Calculate if lines should be removed or added
+                if(first_size == second_size) {
+                    a_text_image->set_text(final_text);
+                    Text_Image_Line* current_line = a_text_image->line_at_position_in_plain_text(cursor_position_in_formatted_text());
+                    if(current_line != 0) current_line->set_modified(true);
+                }
+                else {
+                    int position = a_text_image->line_number_at_position_in_plain_text(cursor_position_in_formatted_text());
+                    if(position != -1) {
+                        // Remove the needed lines
+                        for(int i = 0;i<first_size - second_size;i++) {
+                            if(children()[position + i] != 0) {
+                                delete children()[position + i];
+                            } children().erase(children().begin() + position + i);
+                            if(a_text_image->lines()[position + i] != 0) {
+                                delete a_text_image->lines()[position + i];
+                            } a_text_image->lines().erase(a_text_image->lines().begin() + position + i);
+                        }
+
+                        // Update the needed lines (after the line deleted)
+                        for(int i = position;i<static_cast<int>(a_text_image->lines().size());i++) {
+                            if(a_text_image->lines()[i] != 0) {
+                                a_text_image->lines()[i]->set_modified(true);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        __GUI_Text_Metadatas::set_text(final_text, false);
     }
 
     // Update the text
@@ -847,9 +920,6 @@ namespace scls {
         }
         else {
             attached_text_image()->set_text(text());
-            if(attached_text_image()->lines().size() > 0 && attached_text_image()->lines()[attached_text_image()->lines().size() - 1] != 0) {
-                attached_text_image()->lines()[attached_text_image()->lines().size() - 1]->set_modified(true);
-            }
             attached_text_image()->generate_lines(false);
         }
 
@@ -868,16 +938,18 @@ namespace scls {
             Text_Image_Line* line_to_apply = attached_text_image()->lines()[i];
             if(line_to_apply != 0 && (line_to_apply->has_been_modified() || (i < static_cast<int>(children().size()) && children()[i] == 0))) {
                 Image* image_to_apply = line_to_apply->image();
-                line_to_apply->set_has_been_modified(false);
+                if(image_to_apply != 0) {
+                    line_to_apply->set_has_been_modified(false);
 
-                // Generate the object for the line
-                GUI_Object* new_line = new_object<GUI_Object>(name() + "_line_" + std::to_string(i), 0, i * 60);
-                new_line->set_size_in_scale(glm::vec2(1.0, 0.1)); new_line->set_height_in_pixel(image_to_apply->height());
-                new_line->set_texture_alignment_horizontal(Alignment_Horizontal::H_Left);
-                new_line->texture()->set_image(line_to_apply->shared_image());
+                    // Generate the object for the line
+                    GUI_Object* new_line = new_object<GUI_Object>(name() + "_gen_" + std::to_string(a_generation) + "_line_" + std::to_string(i), 0, i * 60);
+                    new_line->set_size_in_scale(glm::vec2(1.0, 0.1)); new_line->set_height_in_pixel(image_to_apply->height());
+                    new_line->set_texture_alignment_horizontal(Alignment_Horizontal::H_Left);
+                    new_line->texture()->set_image(line_to_apply->shared_image());
 
-                // Place the children
-                if(children()[i] == 0) { children()[i] = new_line; children().pop_back(); }
+                    // Place the children
+                    if(children()[i] == 0) { children()[i] = new_line; children().pop_back(); }
+                }
             }
         }
 
@@ -886,7 +958,7 @@ namespace scls {
             delete children()[children().size() - 1]; children().pop_back();
         }
 
-        place_lines();
+        place_lines(); a_generation++;
     };
 
     //*********

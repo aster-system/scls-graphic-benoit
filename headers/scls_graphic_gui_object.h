@@ -112,13 +112,13 @@ namespace scls {
         // Function called when a child is deleted
         virtual void child_deleted(GUI_Object* child) { if(parent() != 0) parent()->child_deleted(child); };
         // Reset the object without changing it
-        virtual void soft_reset() {set_focusing_state(-1);set_overflighting_state(-1);for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->soft_reset();};
+        virtual void soft_reset() {set_focusing_state(-1);set_overflighting_state(-1);for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i] != 0){children()[i]->soft_reset();}}};
         // Update the object
-        virtual void update(){ for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->update(); };
+        virtual void update(){ for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i] != 0)children()[i]->update();}};
         // Update the object for the events
-        virtual void update_event() {for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->update_event();};
+        virtual void update_event() {for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i] != 0)children()[i]->update_event();}};
         // Update the texture when needed
-        virtual void update_texture() {for(int i = 0;i<static_cast<int>(children().size());i++)children()[i]->update_texture();};
+        virtual void update_texture() {for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i] != 0)children()[i]->update_texture();}};
 
         // Getters and setters (ONLY WITH ATRIBUTES)
         inline Color background_color() {return a_background_color;};
@@ -490,7 +490,7 @@ namespace scls {
         inline void set_font_color(Color new_font_color) {a_global_style.color = new_font_color;};
         inline void set_font_family(std::string new_font_family) {a_global_style.font = get_system_font(new_font_family);};
         inline void set_font_size(unsigned short new_font_size) {a_global_style.font_size = new_font_size;};
-        void set_text(std::string new_text, bool should_move_cursor = true) {if(new_text == a_text)return;a_text = new_text;if(should_move_cursor)set_cursor_position_in_formatted_text(plain_text_size());update_texture();};
+        virtual void set_text(std::string new_text, bool should_move_cursor = true) {if(new_text == a_text)return;a_text = new_text;if(should_move_cursor)set_cursor_position_in_formatted_text(plain_text_size());update_texture();};
         inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {a_global_style.alignment_horizontal = new_text_alignment_horizontal;};
         virtual void set_text_image_type(Text_Image_Block::Block_Type new_text_image_type) {a_text_image_type = new_text_image_type;};
         inline void set_text_offset(double new_text_offset) {a_global_style.text_offset_x = new_text_offset;a_global_style.text_offset_y = new_text_offset;a_global_style.text_offset_width = new_text_offset;a_global_style.text_offset_height = new_text_offset;};
@@ -612,6 +612,8 @@ namespace scls {
         // Update the texture of the text
         void update_text_texture();
 
+        // Add a text to the input at the cursor position
+        void add_text(const std::string& text_to_add);
         // Format a std::string
         std::string _format(std::string letter, bool apply_capitalisation = true);
         // Format an only letter
@@ -620,6 +622,10 @@ namespace scls {
         void input_text();
         // Place the lines in the text
         void place_lines();
+        // Remove a text to the input at the cursor position
+        void remove_text(unsigned int size_to_delete_in_plain_text);
+        // Reset the text and the text image
+        void reset() {if(a_text_image != 0){a_text_image->free_memory();delete a_text_image;}a_text_image=0;};
         // Update the text
         virtual void update_event();
         // Update the cursor behavior
@@ -627,7 +633,8 @@ namespace scls {
 
         // Getters and setters
         inline Text_Image_Block* attached_text_image() {return a_text_image;};
-        virtual void set_text_image_type(Text_Image_Block::Block_Type new_text_image_type) {__GUI_Text_Metadatas::set_text_image_type(new_text_image_type);if(a_text_image != 0){delete a_text_image;a_text_image=0;}};
+        virtual void set_text(std::string new_text, bool should_move_cursor = true) {reset();__GUI_Text_Metadatas::set_text(new_text, should_move_cursor);};
+        virtual void set_text_image_type(Text_Image_Block::Block_Type new_text_image_type) {__GUI_Text_Metadatas::set_text_image_type(new_text_image_type);reset();};
     private:
         //*********
         //
@@ -635,6 +642,8 @@ namespace scls {
         //
         //*********
 
+        // Number of the generation
+        unsigned int a_generation = 0;
         // Last outputted descriptive character (^, ¨...)
         std::string a_last_descriptive_character = "";
         // Text image of the object
