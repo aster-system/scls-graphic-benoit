@@ -511,7 +511,7 @@ namespace scls {
 
         // Getters and setters
         inline unsigned int cursor_position_in_formatted_text() const {return a_cursor_position_in_formatted_text;};
-        inline void set_cursor_position_in_formatted_text(unsigned int new_cursor_position_in_formatted_text) {a_cursor_position_in_formatted_text = new_cursor_position_in_formatted_text;};
+        virtual void set_cursor_position_in_formatted_text(unsigned int new_cursor_position_in_formatted_text) {a_cursor_position_in_formatted_text = new_cursor_position_in_formatted_text;};
         inline void set_use_cursor(bool new_use_cursor) {a_use_cursor = new_use_cursor;};
         inline bool use_cursor() const {return a_use_cursor;};
 
@@ -635,6 +635,31 @@ namespace scls {
         inline Text_Image_Block* attached_text_image() {return a_text_image;};
         virtual void set_text(std::string new_text, bool should_move_cursor = true) {reset();__GUI_Text_Metadatas::set_text(new_text, should_move_cursor);};
         virtual void set_text_image_type(Text_Image_Block::Block_Type new_text_image_type) {__GUI_Text_Metadatas::set_text_image_type(new_text_image_type);reset();};
+
+        //*********
+        //
+        // Cursor handling
+        //
+        //*********
+
+        // Getters and setters
+        virtual void set_cursor_position_in_formatted_text(unsigned int new_cursor_position_in_formatted_text) {
+            if(new_cursor_position_in_formatted_text == cursor_position_in_formatted_text()) return;
+
+            if(a_text_image != 0) {
+                Text_Image_Line* line_to_modify = a_text_image->line_at_position_in_plain_text(cursor_position_in_formatted_text());
+                if(line_to_modify != 0) {
+                    line_to_modify->set_modified(true);
+                }
+            }
+            if(a_text_image != 0) {
+                Text_Image_Line* line_to_modify = a_text_image->line_at_position_in_plain_text(new_cursor_position_in_formatted_text);
+                if(line_to_modify != 0) {
+                    line_to_modify->set_modified(true);
+                }
+            }
+            __GUI_Text_Metadatas::set_cursor_position_in_formatted_text(new_cursor_position_in_formatted_text);
+        };
     private:
         //*********
         //

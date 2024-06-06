@@ -511,6 +511,8 @@ namespace scls {
         }
         else if(final_cursor_position == static_cast<int>(cursor_position_in_formatted_text())) return;
         set_cursor_position_in_formatted_text(final_cursor_position);
+
+        update_texture();
     }
 
     //*********
@@ -915,11 +917,14 @@ namespace scls {
     void GUI_Text_Input::update_text_texture() {
         if(attached_text_image() == 0) {
             a_text_image = window_struct().text_image_generator()->new_text_image_block("", text_image_type());
+            attached_text_image()->set_use_cursor(true);
             attached_text_image()->set_text(text());
+            attached_text_image()->set_cursor_position_in_plain_text(cursor_position_in_formatted_text());
             attached_text_image()->generate_lines();
         }
         else {
             attached_text_image()->set_text(text());
+            attached_text_image()->set_cursor_position_in_plain_text(cursor_position_in_formatted_text());
             attached_text_image()->generate_lines(false);
         }
 
