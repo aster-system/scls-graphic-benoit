@@ -655,6 +655,9 @@ namespace scls {
             if(letter == "<") letter = "&lt;";
         }
 
+        // Check the letter after capitalization (copy pasted)
+        if(letter == ">") letter = "&gt;";
+
         // Set the last descriptive character
         if(a_last_descriptive_character == ""){
             if(letter == "^" || letter == "¨") {
@@ -844,7 +847,9 @@ namespace scls {
         }
         else {
             attached_text_image()->set_text(text());
-            attached_text_image()->lines()[attached_text_image()->lines().size() - 1]->set_modified(true);
+            if(attached_text_image()->lines().size() > 0 && attached_text_image()->lines()[attached_text_image()->lines().size() - 1] != 0) {
+                attached_text_image()->lines()[attached_text_image()->lines().size() - 1]->set_modified(true);
+            }
             attached_text_image()->generate_lines(false);
         }
 
