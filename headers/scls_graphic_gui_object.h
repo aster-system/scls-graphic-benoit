@@ -642,6 +642,9 @@ namespace scls {
         //
         //*********
 
+        // Move the cursor in the Y axis
+        void move_cursor_y(int movement);
+
         // Getters and setters
         virtual void set_cursor_position_in_formatted_text(unsigned int new_cursor_position_in_formatted_text) {
             if(new_cursor_position_in_formatted_text == cursor_position_in_formatted_text()) return;

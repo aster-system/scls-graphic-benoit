@@ -838,6 +838,25 @@ namespace scls {
         add_text(to_add);
     }
 
+    // Move the cursor in the Y axis
+    void GUI_Text_Input::move_cursor_y(int movement) {
+        if(a_text_image == 0) return;
+
+        Text_Image_Line* cursor_line = a_text_image->cursor_line();
+        if(cursor_line != 0) {
+            int cursor_number = cursor_line->datas().line_number + movement;
+            if(cursor_number < 0) {
+                move_cursor(-cursor_position_in_formatted_text());
+            }
+            else if(cursor_number >= a_text_image->lines().size()) {
+                move_cursor(plain_text_size() - cursor_position_in_formatted_text());
+            }
+            else {
+                move_cursor(a_text_image->cursor_position_in_plain_text_at_line_and_x(cursor_number, cursor_line->cursor_x()) - cursor_position_in_formatted_text());
+            }
+        }
+    }
+
     // Place the lines in the text
     void GUI_Text_Input::place_lines() {
         GUI_Object* last_object = 0;
@@ -911,6 +930,9 @@ namespace scls {
     void GUI_Text_Input::update_cursor() {
         if(window_struct().key_pressed_or_repeated_pressed("left arrow")) {move_cursor(-1);}
         if(window_struct().key_pressed_or_repeated_pressed("right arrow")) {move_cursor(1);}
+
+        if(window_struct().key_pressed_or_repeated_pressed("up arrow")) {move_cursor_y(-1);}
+        if(window_struct().key_pressed_or_repeated_pressed("down arrow")) {move_cursor_y(1);}
     }
 
     // Update the texture of the text
