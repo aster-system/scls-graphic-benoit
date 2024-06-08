@@ -484,6 +484,7 @@ namespace scls {
         inline unsigned int plain_text_size() {return plain_text().size();};
 
         // Getters and setters
+        inline Font font() const {return a_global_style.font;};
         inline Color font_color() const {return a_global_style.color;};
         inline std::string font_family() const {return a_global_style.font.font_family;};
         inline unsigned short font_size() const {return a_global_style.font_size;};
