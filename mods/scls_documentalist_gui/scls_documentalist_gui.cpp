@@ -261,7 +261,7 @@ namespace scls_documentalist_gui {
         a_file_pattern_body->move_right_of_parent(0.025);
         // Text in the file pattern
         a_file_pattern_text = a_file_pattern_body->new_object<scls::GUI_Text_Input>("file_pattern_text");
-        a_file_pattern_text->set_font_family("consola");
+        a_file_pattern_text->set_font_family("CascadiaMono");
         a_file_pattern_text->set_font_size(20);
         a_file_pattern_text->set_size_in_scale(glm::vec2(0.95, 0.95));
         a_file_pattern_text->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
