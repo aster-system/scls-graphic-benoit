@@ -581,32 +581,19 @@ namespace scls {
         std::string text_to_modify = text();
         std::string final_text = text_to_modify.substr(0, cursor_position) + text_to_add + text_to_modify.substr(cursor_position, text_to_modify.size() - cursor_position);
         if(final_text != text()) {
-            if(a_text_image != 0) {
-                unsigned int first_size = a_text_image->lines_datas().size();
-                a_text_image->set_text(final_text);
-                unsigned int second_size = a_text_image->lines_datas().size();
-
-                // Calculate if lines should be removed or added
-                if(first_size == second_size) {
-                    Text_Image_Line* current_line = a_text_image->line_at_position_in_plain_text(cursor_position_in_formatted_text());
-                    if(current_line != 0) current_line->set_modified(true);
-                }
-                else {
-                    int position = a_text_image->line_number_at_position_in_plain_text(cursor_position_in_formatted_text());
-                    if(position != -1) {
-                        if(a_text_image->lines()[position] != 0) a_text_image->lines()[position]->set_modified(true);
-
-                        // Add the needed lines
-                        for(int i = 0;i<second_size - first_size;i++) {
-                            children().insert(children().begin() + position + i, 0);
-                            a_text_image->lines().insert(a_text_image->lines().begin() + position + i, 0);
-                        }
-                    }
+            std::vector<std::string> cutted = cut_string(text_to_add, "</br>", false, false);
+            if(a_text_image != 0 && cutted.size() > 1) {
+                for(int i = 0;i<cutted.size() - 1;i++) {
+                    children().insert(children().begin() + a_text_image->line_number_at_position(cursor_position) + i, 0);
                 }
             }
 
+            if(a_text_image != 0) {
+                a_text_image->add_text(cutted, final_text, text_to_add, cursor_position);
+            }
             set_cursor_position_in_formatted_text(cursor_position_in_formatted_text() + window_struct().text_image_generator()->plain_text_size(text_to_add));
             __GUI_Text_Metadatas::set_text(final_text, false);
+            if(a_text_image != 0) a_text_image->set_cursor_position_in_plain_text(cursor_position_in_formatted_text());
         }
     };
 
@@ -971,7 +958,7 @@ namespace scls {
             attached_text_image()->free_memory();
         }
         attached_text_image()->global_style().font = font();
-        attached_text_image()->set_text(text());
+        if(a_text_modified) attached_text_image()->set_text(text()); a_text_modified = false;
         attached_text_image()->set_cursor_position_in_plain_text(cursor_position_in_formatted_text());
 
         // Configure the needed creation settings
@@ -1008,7 +995,7 @@ namespace scls {
                         new_line->texture()->set_image(line_to_apply->shared_image());
 
                         // Place the children
-                        if(children()[i] == 0) { children()[i] = new_line; children().pop_back(); }
+                        if(i < static_cast<int>(children().size()) && children()[i] == 0) { children()[i] = new_line; children().pop_back(); }
                         total_height += image_to_apply->height();
                     }
                 }
