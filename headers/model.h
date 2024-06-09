@@ -358,7 +358,7 @@ public:
         }
 
 	    a_image.reset(new_image);
-	    if(get_image() != 0) get_image()->flip_x();
+	    if(get_image() != 0 && get_image()->flip_x_number() % 2 == 0) get_image()->flip_x();
 	    change_texture();
     };
     inline void set_image(std::shared_ptr<scls::Image>& new_image) {
@@ -370,7 +370,7 @@ public:
         }
 
 	    a_image = new_image;
-	    if(get_image() != 0) get_image()->flip_x();
+	    if(get_image() != 0 && get_image()->flip_x_number() % 2 == 0) get_image()->flip_x();
 	    change_texture();
     };
 	inline bool use_resize() { return resize; };

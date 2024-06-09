@@ -83,7 +83,7 @@ namespace scls {
         vao()->render();
 
         for(int i = 0;i<static_cast<int>(children().size());i++) {
-            if(children()[i]->visible())children()[i]->render(scale_multiplier);
+            if(children()[i] != 0 && children()[i]->visible()) children()[i]->render(scale_multiplier);
         }
 
         soft_reset();
@@ -845,7 +845,7 @@ namespace scls {
             i++; if(i < children().size()) current_object = children()[i];
         }
 
-        move_cursor(a_text_image->cursor_position_in_plain_text_at_line_and_x(i, position[0] * width_in_pixel()) - cursor_position_in_formatted_text());
+        move_cursor(a_text_image->cursor_position_in_plain_text_at_line_and_x(i + line_offset(), position[0] * width_in_pixel()) - cursor_position_in_formatted_text());
     }
 
     // Moves the cursor in the Y axis
@@ -904,7 +904,7 @@ namespace scls {
                     if(current_line != 0) current_line->set_modified(true);
                 }
                 else {
-                    int position = a_text_image->line_number_at_position_in_plain_text(cursor_position_in_formatted_text());
+                    int position = a_text_image->line_number_at_position_in_plain_text(cursor_position_in_formatted_text()) - line_offset();
                     if(position != -1) {
                         // Remove the needed lines
                         for(int i = 0;i<first_size - second_size;i++) {
@@ -947,54 +947,80 @@ namespace scls {
         if(is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT) || has_child_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
             move_cursor_at_position_in_scale(mouse_position_in_scale());
         }
+
+        // Handle wheel scrolling
+        if(has_child_overflighted() ||is_overflighted()) {
+            double final_movement = window_struct().wheel_movement_y_during_this_frame();
+            if(final_movement > 0 && a_line_offset > 0) final_movement = -1;
+            else if(final_movement < 0 && a_line_offset < attached_text_image()->lines_datas().size()) final_movement = 1;
+            else final_movement = 0;
+            if(final_movement != 0) {
+                a_line_offset += final_movement;
+                delete_children();
+                update_texture();
+            }
+        }
     }
 
     // Update the texture of the text
     void GUI_Text_Input::update_text_texture() {
+        // Configure the text image
         if(attached_text_image() == 0) {
             a_text_image = window_struct().text_image_generator()->new_text_image_block("", text_image_type());
             attached_text_image()->set_use_cursor(true);
-            attached_text_image()->global_style().font = font();
-            attached_text_image()->set_text(text());
-            attached_text_image()->set_cursor_position_in_plain_text(cursor_position_in_formatted_text());
-            attached_text_image()->generate_lines();
+            attached_text_image()->free_memory();
         }
-        else {
-            attached_text_image()->global_style().font = font();
-            attached_text_image()->set_text(text());
-            attached_text_image()->set_cursor_position_in_plain_text(cursor_position_in_formatted_text());
-            attached_text_image()->generate_lines(false);
-        }
+        attached_text_image()->global_style().font = font();
+        attached_text_image()->set_text(text());
+        attached_text_image()->set_cursor_position_in_plain_text(cursor_position_in_formatted_text());
+
+        // Configure the needed creation settings
+        attached_text_image()->reset_line_generation();
 
         // Delete the useless children modified
         for(int i = 0;i<static_cast<int>(children().size());i++) {
-            if(i >= static_cast<int>(attached_text_image()->lines().size())) {
+            if(i >= static_cast<int>(attached_text_image()->lines_datas().size())) {
                  delete children()[i]; children().erase(children().begin() + i); i--;
             }
-            else if(children()[i] != 0 && (attached_text_image()->lines()[i] == 0 || attached_text_image()->lines()[i]->has_been_modified())) {
+            else if(children()[i] != 0 && (i + line_offset() < attached_text_image()->lines().size() && attached_text_image()->lines()[i + line_offset()] == 0 || attached_text_image()->lines()[i + line_offset()]->has_been_modified())) {
                 delete children()[i]; children()[i] = 0;
             }
         }
 
-        for(int i = 0;i<static_cast<int>(attached_text_image()->lines().size());i++) {
+        unsigned short line_max_number = 0;
+        unsigned int total_height = 0;
+        for(int i = 0;i + line_offset()<static_cast<int>(attached_text_image()->lines_datas().size());i++) {
             // Create the configuration for the line
-            Text_Image_Line* line_to_apply = attached_text_image()->lines()[i];
-            if(line_to_apply != 0 && (line_to_apply->has_been_modified() || (i < static_cast<int>(children().size()) && children()[i] == 0))) {
-                Image* image_to_apply = line_to_apply->image();
-                if(image_to_apply != 0) {
-                    line_to_apply->set_has_been_modified(false);
+            Text_Image_Line* line_to_apply = attached_text_image()->generate_next_line(i + line_offset());
+            if(line_to_apply != 0) {
+                // Check the total height
+                if(total_height > height_in_pixel()) break;
 
-                    // Generate the object for the line
-                    GUI_Object* new_line = new_object<GUI_Object>(name() + "_gen_" + std::to_string(a_generation) + "_line_" + std::to_string(i), 0, i * 60);
-                    new_line->set_size_in_scale(glm::vec2(1.0, 0.1)); new_line->set_height_in_pixel(image_to_apply->height());
-                    new_line->set_texture_alignment_horizontal(Alignment_Horizontal::H_Left);
-                    new_line->texture()->set_image(line_to_apply->shared_image());
+                if(line_to_apply->has_been_modified() || (i < static_cast<int>(children().size()) && children()[i] == 0) || i >= static_cast<int>(children().size())) {
+                    Image* image_to_apply = line_to_apply->image();
+                    if(image_to_apply != 0) {
+                        line_to_apply->set_has_been_modified(false);
 
-                    // Place the children
-                    if(children()[i] == 0) { children()[i] = new_line; children().pop_back(); }
+                        // Generate the object for the line
+                        GUI_Object* new_line = new_object<GUI_Object>(name() + "_gen_" + std::to_string(a_generation) + "_line_" + std::to_string(i), 0, i * 60);
+                        new_line->set_size_in_scale(glm::vec2(1.0, 0.1)); new_line->set_height_in_pixel(image_to_apply->height());
+                        new_line->set_texture_alignment_horizontal(Alignment_Horizontal::H_Left);
+                        new_line->texture()->set_image(line_to_apply->shared_image());
+
+                        // Place the children
+                        if(children()[i] == 0) { children()[i] = new_line; children().pop_back(); }
+                        total_height += image_to_apply->height();
+                    }
+                }
+                else {
+                    Image* image_to_apply = line_to_apply->image();
+                    if(image_to_apply != 0) total_height += image_to_apply->height();
                 }
             }
         }
+
+        // End configure the needed creation settings
+        attached_text_image()->delete_useless_generated_lines();
 
         // Delete the useless children in more
         for(int i = 0;i<static_cast<int>(children().size()) - static_cast<int>(attached_text_image()->lines().size());i++) {

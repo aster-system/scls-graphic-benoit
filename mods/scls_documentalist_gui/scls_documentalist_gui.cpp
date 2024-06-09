@@ -261,9 +261,10 @@ namespace scls_documentalist_gui {
         a_file_pattern_body->move_right_of_parent(0.025);
         // Text in the file pattern
         a_file_pattern_text = a_file_pattern_body->new_object<scls::GUI_Text_Input>("file_pattern_text");
+        a_file_pattern_text->set_border_width_in_pixel(1);
         a_file_pattern_text->set_font_family("CascadiaMono");
         a_file_pattern_text->set_font_size(20);
-        a_file_pattern_text->set_size_in_scale(glm::vec2(0.95, 0.95));
+        a_file_pattern_text->set_size_in_scale(glm::vec2(1.0, 1.0));
         a_file_pattern_text->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
         a_file_pattern_text->set_texture_alignment_vertical(scls::Alignment_Vertical::V_Top);
         a_file_pattern_text->move_left_of_parent();
@@ -512,6 +513,12 @@ namespace scls_documentalist_gui {
 
     // Place all the objects in the program
     void SCLS_Documentalist_GUI::place_all() {
+        // File pattern body
+        if(a_file_pattern_text != 0) {
+            a_file_pattern_text->set_size_in_scale(glm::vec2(1.0, 1.0));
+            a_file_pattern_text->move_left_of_parent();
+            a_file_pattern_text->move_top_of_parent();
+        }
         // Project main body
         if(a_project_main_body != 0) {
             a_project_main_body->move_bottom_of_object_in_parent(a_main_header);

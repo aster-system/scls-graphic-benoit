@@ -102,7 +102,7 @@ namespace scls {
         // Delete the children of an object
         void delete_children();
         // Hide all the children in the object
-        inline void hide_children() {for(int i = 0;i<static_cast<int>(a_children.size());i++) a_children[i]->set_visible(false);};
+        inline void hide_children() {for(int i = 0;i<static_cast<int>(a_children.size());i++) {if(a_children[i] != 0) a_children[i]->set_visible(false);}};
         // Add a child object to the object
         template<typename O>
         O* new_object(std::string name);
@@ -649,7 +649,7 @@ namespace scls {
         // Remove a text to the input at the cursor position
         void remove_text(unsigned int size_to_delete_in_plain_text);
         // Reset the text and the text image
-        void reset() {if(a_text_image != 0){a_text_image->free_memory();delete a_text_image;}a_text_image=0;};
+        void reset() {if(a_text_image != 0){a_text_image->free_memory();delete a_text_image;}a_text_image=0;a_line_offset = 0;};
         // Update the text
         virtual void update_event();
         // Update the cursor behavior
@@ -657,6 +657,7 @@ namespace scls {
 
         // Getters and setters
         inline Text_Image_Block* attached_text_image() {return a_text_image;};
+        inline unsigned short line_offset() const {return a_line_offset;};
         virtual void set_text(std::string new_text, bool should_move_cursor = true) {reset();__GUI_Text_Metadatas::set_text(new_text, should_move_cursor);};
         virtual void set_text_image_type(Text_Image_Block::Block_Type new_text_image_type) {__GUI_Text_Metadatas::set_text_image_type(new_text_image_type);reset();};
 
@@ -700,6 +701,8 @@ namespace scls {
         unsigned int a_generation = 0;
         // Last outputted descriptive character (^, ¨...)
         std::string a_last_descriptive_character = "";
+        // Offset of the first line
+        unsigned int a_line_offset = 0;
         // Text image of the object
         Text_Image_Block* a_text_image = 0;
     };
