@@ -76,6 +76,12 @@ namespace scls {
         Scale_Size
     };
 
+    //*********
+    //
+    // Mains GUI classes
+    //
+    //*********
+
     class GUI_Object {
         // Class representing an GUI object displayed into the window
     public:
@@ -125,6 +131,7 @@ namespace scls {
         inline Color border_color() {return a_border_color;};
         inline std::vector<GUI_Object*>& children() {return a_children;};
         inline short focused_state() const {return a_focusing_state;};
+        inline bool has_child_clicked_during_this_frame(unsigned int button) { return has_child_overflighted() && window_struct().mouse_button_clicked_during_this_frame(button); };
         inline bool has_child_focused() const {return a_focusing_state > 0;};
         inline bool has_child_overflighted() const {return a_overflighting_state > 0;};
         inline bool is_clicked(unsigned int button) { return is_overflighted() && window_struct().mouse_button_clicked(button); };
@@ -218,8 +225,13 @@ namespace scls {
         double width_in_scale() const;
         // Returns the x position in scale of the object
         double x_in_scale() const;
+        // Returns the most at the bottom y position in scale of the object
+        double y_bottom_in_scale() const;
         // Returns the y position in scale of the object
         double y_in_scale() const;
+
+        // Returns the position of the mouse in scale
+        glm::vec2 mouse_position_in_scale();
 
         // Pixel handling
         // Returns the absolute position of the object in pixel
@@ -312,6 +324,17 @@ namespace scls {
         glm::vec4 object_extremum();
         // Returns the height of the texture in scale of the object
         inline double texture_height_in_scale() const { return static_cast<double>(image()->height()) / static_cast<double>(height_in_pixel()); };
+        // Returns the rect of the texture
+        inline glm::vec4 texture_rect() const {
+            glm::vec4 final_texture_rect = glm::vec4(1);
+            if(texture()->get_image() != 0) {
+                if(texture_alignment() == Alignment_Texture::T_User_Defined) final_texture_rect = user_defined_texture_rect();
+                else if(texture_alignment() == Alignment_Texture::T_Fit) final_texture_rect = fitted_texture_rect();
+                else if(texture_alignment() == Alignment_Texture::T_Fit_Horizontally) final_texture_rect = fitted_horizontally_texture_rect();
+                else if(texture_alignment() == Alignment_Texture::T_Fit_Vertically) final_texture_rect = fitted_vertically_texture_rect();
+            }
+            return final_texture_rect;
+        };
         // Returns the width of the texture in scale of the object
         inline double texture_width_in_scale() const {return static_cast<double>(image()->width()) / static_cast<double>(width_in_pixel()); };
         // Returns the rect of user defined texture
@@ -643,7 +666,9 @@ namespace scls {
         //
         //*********
 
-        // Move the cursor in the Y axis
+        // Moves the cursor at a scale position
+        void move_cursor_at_position_in_scale(glm::vec2 position);
+        // Moves the cursor in the Y axis
         void move_cursor_y(int movement);
 
         // Getters and setters

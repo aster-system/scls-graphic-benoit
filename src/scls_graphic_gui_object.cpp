@@ -67,14 +67,7 @@ namespace scls {
         vao()->get_shader_program()->set_uniform4f_value("border_width", border_width_in_scale());
 
         // Handle the rect of the texture
-        glm::vec4 final_texture_rect = glm::vec4(1);
-        if(texture()->get_image() != 0) {
-            if(texture_alignment() == Alignment_Texture::T_User_Defined) final_texture_rect = user_defined_texture_rect();
-            else if(texture_alignment() == Alignment_Texture::T_Fit) final_texture_rect = fitted_texture_rect();
-            else if(texture_alignment() == Alignment_Texture::T_Fit_Horizontally) final_texture_rect = fitted_horizontally_texture_rect();
-            else if(texture_alignment() == Alignment_Texture::T_Fit_Vertically) final_texture_rect = fitted_vertically_texture_rect();
-        }
-        vao()->get_shader_program()->set_uniform4f_value("texture_rect", final_texture_rect);
+        vao()->get_shader_program()->set_uniform4f_value("texture_rect", texture_rect());
 
         // Handle the texture and the VAO
         if(texture() == 0) {
@@ -275,6 +268,14 @@ namespace scls {
         return to_return;
     }
 
+    // Returns the position of the mouse in scale
+    glm::vec2 GUI_Object::mouse_position_in_scale() {
+        glm::vec2 mouse_pos = glm::vec2(window_struct().mouse_x(), window_struct().window_height() - window_struct().mouse_y());
+        mouse_pos -= position_in_pixel();
+        mouse_pos /= size_in_pixel();
+        return mouse_pos;
+    }
+
     // Returns the extremum of the object
     glm::vec4 GUI_Object::object_extremum() {
         double absolute_y_bottom_to_apply = (y_bottom_in_adapted_absolute_scale() + 1.0) / 2.0;
@@ -389,6 +390,9 @@ namespace scls {
         return to_return;
     }
 
+    // Returns the most at the bottom y position in scale of the object
+    double GUI_Object::y_bottom_in_scale() const { return y_in_scale() - height_in_scale(); }
+
     // Returns the y position in pixel of the object
     double GUI_Object::y_in_pixel() const {
         double to_return = ((y_in_absolute_scale() + 1.0) / 2.0) * window_struct().window_height() - (height_in_pixel() / 2.0);
@@ -421,15 +425,10 @@ namespace scls {
 
     // Returns the y position in scale of the object
     double GUI_Object::y_in_scale() const {
-        double to_return = 0.0;
+        if(a_last_y_definition == _Size_Definition::Scale_Size) { return a_y; }
 
-        if(a_last_y_definition == _Size_Definition::Pixel_Size) {
-            to_return = a_y * one_pixel_in_scale()[1];
-        }
-        else {
-            to_return = a_y;
-            if(a_last_height_definition == _Size_Definition::Absolute_Scale_Size && parent() != 0) to_return -= parent()->y_in_absolute_scale();
-        }
+        double to_return = y_in_absolute_scale();
+        if(parent() != 0) { to_return = (to_return - parent()->y_in_absolute_scale()) / parent()->height_in_absolute_scale(); }
 
         return to_return;
     }
@@ -838,7 +837,18 @@ namespace scls {
         add_text(to_add);
     }
 
-    // Move the cursor in the Y axis
+    // Moves the cursor at a pixel position
+    void GUI_Text_Input::move_cursor_at_position_in_scale(glm::vec2 position) {
+        if(children().size() <= 0) return;
+        GUI_Object* current_object = children()[0]; unsigned int i = 0;
+        while((current_object->y_bottom_in_scale() + 1.0) / 2.0 > position[1] && i < children().size()) {
+            i++; if(i < children().size()) current_object = children()[i];
+        }
+
+        move_cursor(a_text_image->cursor_position_in_plain_text_at_line_and_x(i, position[0] * width_in_pixel()) - cursor_position_in_formatted_text());
+    }
+
+    // Moves the cursor in the Y axis
     void GUI_Text_Input::move_cursor_y(int movement) {
         if(a_text_image == 0) return;
 
@@ -933,6 +943,10 @@ namespace scls {
 
         if(window_struct().key_pressed_or_repeated_pressed("up arrow")) {move_cursor_y(-1);}
         if(window_struct().key_pressed_or_repeated_pressed("down arrow")) {move_cursor_y(1);}
+
+        if(is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT) || has_child_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+            move_cursor_at_position_in_scale(mouse_position_in_scale());
+        }
     }
 
     // Update the texture of the text
