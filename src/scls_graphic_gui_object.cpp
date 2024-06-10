@@ -584,7 +584,12 @@ namespace scls {
             std::vector<std::string> cutted = cut_string(text_to_add, "</br>", false, false);
             if(a_text_image != 0 && cutted.size() > 1) {
                 for(int i = 0;i<cutted.size() - 1;i++) {
-                    children().insert(children().begin() + a_text_image->line_number_at_position(cursor_position) + i, 0);
+                    if((a_text_image->line_number_at_position(cursor_position) - line_offset()) + i < children().size()) {
+                        children().insert(children().begin() + (a_text_image->line_number_at_position(cursor_position) - line_offset()) + i, 0);
+                    }
+                    else {
+                        children().push_back(0);
+                    }
                 }
             }
 
@@ -956,6 +961,7 @@ namespace scls {
             a_text_image = window_struct().text_image_generator()->new_text_image_block("", text_image_type());
             attached_text_image()->set_use_cursor(true);
             attached_text_image()->free_memory();
+            delete_children();
         }
         attached_text_image()->global_style().font = font();
         if(a_text_modified) attached_text_image()->set_text(text()); a_text_modified = false;
@@ -1010,8 +1016,13 @@ namespace scls {
         attached_text_image()->delete_useless_generated_lines();
 
         // Delete the useless children in more
-        for(int i = 0;i<static_cast<int>(children().size()) - static_cast<int>(attached_text_image()->lines().size());i++) {
+        for(int i = 0;i<static_cast<int>(children().size()) - static_cast<int>(attached_text_image()->lines_datas().size());i++) {
             delete children()[children().size() - 1]; children().pop_back();
+        }
+
+        // Delete empty children
+        for(int i = 0;i<static_cast<int>(children().size());i++) {
+            if(children()[i] == 0) {children().erase(children().begin() + i); i--;}
         }
 
         place_lines(); a_generation++;

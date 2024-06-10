@@ -124,7 +124,7 @@ namespace scls {
         // Update the object for the events
         virtual void update_event() {for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i] != 0)children()[i]->update_event();}};
         // Update the texture when needed
-        virtual void update_texture() {for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i] != 0)children()[i]->update_texture();}};
+        virtual void update_texture() {for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] != 0)children()[i]->update_texture();}};
 
         // Getters and setters (ONLY WITH ATRIBUTES)
         inline Color background_color() {return a_background_color;};
