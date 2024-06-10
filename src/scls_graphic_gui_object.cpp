@@ -832,9 +832,16 @@ namespace scls {
     // Moves the cursor at a pixel position
     void GUI_Text_Input::move_cursor_at_position_in_scale(glm::vec2 position) {
         if(children().size() <= 0) return;
-        GUI_Object* current_object = children()[0]; unsigned int i = 0;
+        GUI_Object* current_object = children()[0]; bool good = false; unsigned int i = 0;
         while((current_object->y_bottom_in_scale() + 1.0) / 2.0 > position[1] && i < children().size()) {
-            i++; if(i < children().size()) current_object = children()[i];
+            i++;
+            if(i < children().size()) {
+                current_object = children()[i];
+            }
+        }
+        if(i >= children().size()) {
+            i = children().size() - 1;
+            current_object = children()[children().size() - 1];
         }
 
         move_cursor(a_text_image->cursor_position_in_plain_text_at_line_and_x(i + line_offset(), position[0] * width_in_pixel()) - cursor_position_in_formatted_text());
@@ -846,7 +853,7 @@ namespace scls {
 
         Text_Image_Line* cursor_line = a_text_image->cursor_line();
         if(cursor_line != 0) {
-            int cursor_number = cursor_line->datas().line_number + movement;
+            int cursor_number = (cursor_line->datas().line_number) + movement;
             if(cursor_number < 0) {
                 move_cursor(-cursor_position_in_formatted_text());
             }
