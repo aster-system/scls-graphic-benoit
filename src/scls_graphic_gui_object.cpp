@@ -884,38 +884,12 @@ namespace scls {
         std::string text_to_modify = text();
         std::string final_text = text_to_modify.substr(0, position_to_delete) + text_to_modify.substr(position_to_delete + size_to_delete, text_to_modify.size() - (position_to_delete + size_to_delete));
         if(a_text_image != 0) {
-            if(a_text_image != 0) {
-                unsigned int first_size = a_text_image->lines_datas().size();
-                a_text_image->set_text(final_text);
-                unsigned int second_size = a_text_image->lines_datas().size();
+            unsigned int line_to_delete = a_text_image->line_number_at_position(cursor_position + 1) - line_offset();
+            unsigned int lines_deleted = a_text_image->remove_text(final_text, size_to_delete, size_to_delete_in_plain_text, cursor_position + 1);
 
-                // Calculate if lines should be removed or added
-                if(first_size == second_size) {
-                    a_text_image->set_text(final_text);
-                    Text_Image_Line* current_line = a_text_image->line_at_position_in_plain_text(cursor_position_in_formatted_text());
-                    if(current_line != 0) current_line->set_modified(true);
-                }
-                else {
-                    int position = a_text_image->line_number_at_position_in_plain_text(cursor_position_in_formatted_text()) - line_offset();
-                    if(position != -1) {
-                        // Remove the needed lines
-                        for(int i = 0;i<first_size - second_size;i++) {
-                            if(children()[position + i] != 0) {
-                                delete children()[position + i];
-                            } children().erase(children().begin() + position + i);
-                            if(a_text_image->lines()[position + i] != 0) {
-                                delete a_text_image->lines()[position + i];
-                            } a_text_image->lines().erase(a_text_image->lines().begin() + position + i);
-                        }
-
-                        // Update the needed lines (after the line deleted)
-                        for(int i = position;i<static_cast<int>(a_text_image->lines().size());i++) {
-                            if(a_text_image->lines()[i] != 0) {
-                                a_text_image->lines()[i]->set_modified(true);
-                            }
-                        }
-                    }
-                }
+            // Delete the children to delete
+            for(int i = 0;i<lines_deleted;i++) {
+                delete children()[line_to_delete - i]; children().erase(children().begin() + line_to_delete - i);
             }
         }
         __GUI_Text_Metadatas::set_text(final_text, false);
