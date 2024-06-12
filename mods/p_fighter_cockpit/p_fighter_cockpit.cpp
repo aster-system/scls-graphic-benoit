@@ -29,7 +29,8 @@ namespace p_fighter_cockpit {
         set_scale(glm::vec3(2, 2, 1));
         parent_object()->set_background_color(scls::Color(0, 15, 0));
         parent_object()->set_position_in_pixel(glm::vec2(0, 0));
-        parent_object()->set_size_in_scale(glm::vec2(1, 1));
+        parent_object()->set_height_in_scale(scls::Fraction(1));
+        parent_object()->set_width_in_scale(scls::Fraction(1));
 
         // Create the title of the page
         scls::GUI_Text* title = parent_object()->new_object<scls::GUI_Text>("main_title", 0, 720);
@@ -37,20 +38,13 @@ namespace p_fighter_cockpit {
         title->set_border_width_in_pixel(1);
         title->set_font_color(scls::white);
         title->set_font_size(150);
-        title->set_size_in_scale(glm::vec2(0.8, 0.2));
+        title->set_height_in_scale(scls::Fraction(1, 5));
+        title->set_width_in_scale(scls::Fraction(4, 5));
+        title->set_width_in_scale(1);
         title->set_text("P-Fighter");
         title->set_text_alignment_horizontal(scls::Alignment_Horizontal::H_Center);
-        title->set_position_in_scale(glm::vec2(0.0, 0.7));
-
-        // Test
-        scls::GUI_Text_Input* test = parent_object()->new_object<scls::GUI_Text_Input>("test", 0, 0);
-        test->set_font_color(scls::white);
-        test->set_font_size(20);
-        test->set_position_in_scale(glm::vec2(0.0, 0.4));
-        test->set_size_in_scale(glm::vec2(0.8, 0.3));
-        test->set_text("P-Fighter");
-        test->set_text_alignment_horizontal(scls::Alignment_Horizontal::H_Center);
-        test->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
+        title->set_x_in_scale(scls::Fraction(0));
+        title->set_y_in_scale(scls::Fraction(7, 10));
     }
 
     // P_Fighter_Cockpit destructor

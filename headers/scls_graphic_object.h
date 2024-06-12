@@ -96,7 +96,7 @@ namespace scls {
         virtual void after_hiding() {};
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
-        inline double texture_ratio() {if(texture() == 0)return 1;return texture()->image_ratio();};
+        inline Fraction texture_ratio() {if(texture() == 0)return Fraction(1, 1);return texture()->image_ratio();};
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline bool only_texture_use() {return a_only_texture_user;};
