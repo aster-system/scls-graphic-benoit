@@ -516,10 +516,10 @@ namespace scls {
         inline void set_font_size(unsigned short new_font_size) {a_global_style.font_size = new_font_size;};
         virtual void set_text(std::string new_text, bool should_move_cursor = true) {if(new_text == a_text)return;a_text = new_text;if(should_move_cursor)set_cursor_position_in_formatted_text(plain_text_size());update_texture();};
         inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {a_global_style.alignment_horizontal = new_text_alignment_horizontal;};
-        virtual void set_text_image_type(Text_Image_Block::Block_Type new_text_image_type) {a_text_image_type = new_text_image_type;};
+        virtual void set_text_image_type(Block_Type new_text_image_type) {a_text_image_type = new_text_image_type;};
         inline void set_text_offset(double new_text_offset) {a_global_style.text_offset_x = new_text_offset;a_global_style.text_offset_y = new_text_offset;a_global_style.text_offset_width = new_text_offset;a_global_style.text_offset_height = new_text_offset;};
         inline std::string text() const {return a_text;};
-        inline Text_Image_Block::Block_Type text_image_type() const {return a_text_image_type;};
+        inline Block_Type text_image_type() const {return a_text_image_type;};
         inline glm::vec4 text_offset() const {return glm::vec4(a_global_style.text_offset_x, a_global_style.text_offset_y, a_global_style.text_offset_width, a_global_style.text_offset_height);};
 
         //*********
@@ -554,7 +554,7 @@ namespace scls {
         // Alignment of the text
         Alignment_Horizontal a_text_alignment_horizontal = Alignment_Horizontal::H_Left;
         // Type of the text image
-        Text_Image_Block::Block_Type a_text_image_type = Text_Image_Block::BT_Always_Free_Memory;
+        Block_Type a_text_image_type = Block_Type::BT_Always_Free_Memory;
 
         //*********
         //
@@ -591,8 +591,7 @@ namespace scls {
         void update_text_texture();
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
-        inline Text_Image_Block* attached_text_image() {return a_text_image;};
-        virtual void set_text_image_type(Text_Image_Block::Block_Type new_text_image_type) {__GUI_Text_Metadatas::set_text_image_type(new_text_image_type);if(a_text_image != 0){delete a_text_image;a_text_image=0;}};
+        inline Text_Image_Multi_Block* attached_text_image() {return a_text_image;};
         inline bool text_modified_during_this_frame() {return a_text_modified_during_this_frame;};
     private:
         //*********
@@ -604,7 +603,7 @@ namespace scls {
         // If the text has been modified or not
         bool a_modified = false;
         // Text image of the object
-        Text_Image_Block* a_text_image = 0;
+        Text_Image_Multi_Block* a_text_image = 0;
         // If the text has been modified during this frame
         bool a_text_modified_during_this_frame = false;
     };
@@ -659,7 +658,7 @@ namespace scls {
         inline Text_Image_Block* attached_text_image() {return a_text_image;};
         inline unsigned short line_offset() const {return a_line_offset;};
         virtual void set_text(std::string new_text, bool should_move_cursor = true) {if(new_text == text())return;reset();a_text_modified = true;__GUI_Text_Metadatas::set_text(new_text, should_move_cursor);};
-        virtual void set_text_image_type(Text_Image_Block::Block_Type new_text_image_type) {__GUI_Text_Metadatas::set_text_image_type(new_text_image_type);reset();};
+        virtual void set_text_image_type(Block_Type new_text_image_type) {__GUI_Text_Metadatas::set_text_image_type(new_text_image_type);reset();};
 
         //*********
         //

@@ -514,7 +514,7 @@ namespace scls {
     void GUI_Text::update_text_texture() {
         if(text() != "" || use_cursor()) {
             if(a_text_image == 0) {
-                a_text_image = window_struct().text_image_generator()->new_text_image_block("", text_image_type());
+                a_text_image = window_struct().text_image_generator()->new_text_image_multi_block("");
             }
 
             // Create the text
@@ -527,7 +527,7 @@ namespace scls {
             // a_text_image->set_use_cursor(use_cursor());
 
             // Apply the text
-            Image* image_to_paste = a_text_image->image();
+            std::shared_ptr<Image> image_to_paste = a_text_image->image_shared_pointer();
             texture()->set_image(image_to_paste);
         }
         else {
@@ -551,7 +551,7 @@ namespace scls {
 
     // Most basic GUI_Text constructor
     GUI_Text_Input::GUI_Text_Input(Window& window, std::string name, GUI_Object* parent) : __GUI_Text_Metadatas(window, name, parent) {
-        set_text_image_type(Text_Image_Block::BT_Keep_Block_And_Line_In_Memory);
+        set_text_image_type(Block_Type::BT_Keep_Block_And_Line_In_Memory);
         // set_use_cursor(true);
     }
 

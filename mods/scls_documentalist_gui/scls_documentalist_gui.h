@@ -52,29 +52,29 @@ namespace scls_documentalist_gui {
         //
         //*********
 
-        // Returns if the program contains a loaded project by its name
-        bool contains_loaded_project_by_name(std::string project_name);
+        // Returns if the program contains a loaded pattern by its name
+        bool contains_loaded_pattern_by_name(std::string project_name);
         // Returns if the program contains an opened file pattern
         bool contains_opened_file_pattern(scls::Text_Pattern* pattern_to_test);
         // Create a file pattern with the GUI datas
         void create_file_pattern();
         // Create a file pattern
         void create_file_pattern(std::string name);
-        // Create a project with the GUI datas
-        void create_project();
-        // Create a project
-        void create_project(std::string name, std::string path);
-        // Returns a loaded project by its name, or 0 if it does not exists
-        scls::Project* loaded_project_by_name(std::string project_name);
-        // Open an existing project from a path
-        void open_project(std::string path);
+        // Create a pattern with the GUI datas
+        void create_pattern();
+        // Create a pattern
+        void create_pattern(std::string name, std::string path);
+        // Returns a loaded pattern by its name, or 0 if it does not exists
+        scls::Project* loaded_pattern_by_name(std::string project_name);
+        // Open an existing pattern from a path
+        void open_pattern(std::string path);
         // Save all the project
         void save_all();
-        // Unload every projects
-        void unload_projects();
+        // Unload every patterns
+        void unload_patterns();
 
         // Getters and setters
-        inline scls::Project* currently_displayed_project() const { return a_currently_displayed_project; };
+        inline scls::Project* currently_displayed_pattern() const { return a_currently_displayed_pattern; };
 
         //*********
         //
@@ -91,26 +91,26 @@ namespace scls_documentalist_gui {
         // Load bodies
         // Load the create file pattern body
         void load_create_file_pattern_body();
-        // Load the create project body
-        void load_create_project_body();
+        // Load the create pattern body
+        void load_create_pattern_body();
         // Load the file explorer
         void load_file_explorer();
         // Load the file pattern
         void load_file_pattern_body();
         // Load the help body
         void load_help_body();
-        // Load the project main body
-        void load_project_main_body();
+        // Load the pattern main body
+        void load_pattern_main_body();
         // Load navigations
         // Load the help navigation
         void load_help_navigation();
-        // Load the project navigation
-        void load_project_navigation();
-        // Load the buttons in the project navigation
-        void load_project_navigation_buttons();
+        // Load the pattern navigation
+        void load_pattern_navigation();
+        // Load the buttons in the pattern navigation
+        void load_pattern_navigation_buttons();
         // Load the footers
-        // Load the project footer
-        void load_project_footer();
+        // Load the pattern footer
+        void load_pattern_footer();
         // Load the welcome page footer
         void load_welcome_footer();
 
@@ -125,25 +125,25 @@ namespace scls_documentalist_gui {
         // Display each pages
         // Display the create file pattern page of the software
         void display_create_file_pattern();
-        // Display the create project of the software
-        void display_create_project();
+        // Display the create pattern of the software
+        void display_create_pattern();
         // Display the file explorer of the software
         void display_file_explorer();
         // Display a file pattern of a project
         void display_file_pattern(scls::Text_Pattern* pattern_to_display);
         // Display the help part of the software
         void display_help();
-        // Display the main page of a project
-        void display_project_main(scls::Project* project_to_display);
+        // Display the main page of a pattern
+        void display_pattern_main(scls::Project* project_to_display);
 
         // Reset a page
         // Place all the objects in the program
         void place_all();
-        // Reset the create project page
-        void reset_create_project_page();
-        // Unload the buttons in the project navigation
-        void unload_project_navigation_buttons();
-        // Unset all the project
+        // Reset the create pattern page
+        void reset_create_pattern_page();
+        // Unload the buttons in the pattern navigation
+        void unload_pattern_navigation_buttons();
+        // Unset all the pattern
         void unset_all();
 
         // Returns the parent object of the GUI
@@ -154,14 +154,14 @@ namespace scls_documentalist_gui {
         std::string a_current_path = "";
         // Currently displayed file_pattern
         scls::Text_Pattern* a_currently_displayed_file_pattern = 0;
-        // Currently displayed project
-        scls::Project* a_currently_displayed_project = 0;
+        // Currently displayed pattern
+        scls::Project* a_currently_displayed_pattern = 0;
         // Every loaded projects
-        std::vector<scls::Project*> a_loaded_projects = std::vector<scls::Project*>();
+        std::vector<scls::Project*> a_loaded_patterns = std::vector<scls::Project*>();
         // Every opened patterns files
         std::map<scls::Text_Pattern*, std::string> a_opened_files_pattern = std::map<scls::Text_Pattern*, std::string>();
-        // Buttons in the project navigation
-        std::vector<scls::GUI_Object*> a_project_navigation_buttons = std::vector<scls::GUI_Object*>();
+        // Buttons in the pattern navigation
+        std::vector<scls::GUI_Object*> a_pattern_navigation_buttons = std::vector<scls::GUI_Object*>();
 
         //*********
         //
@@ -185,21 +185,21 @@ namespace scls_documentalist_gui {
         // Validate the creation of the file pattern
         scls::GUI_Text* a_create_file_pattern_validation = 0;
 
-        // Body of the create project page
-        // Parent page of the create project body
-        scls::GUI_Object* a_create_project_body = 0;
-        // Input of the name of the project
-        scls::GUI_Text_Input* a_create_project_name = 0;
-        // Title of the input of the name of the project
-        scls::GUI_Text* a_create_project_name_title = 0;
-        // Input of the path of the project
-        scls::GUI_Text* a_create_project_path = 0;
-        // Button to change the path of the project
-        scls::GUI_Text* a_create_project_path_change = 0;
-        // Title of the input of the path of the project
-        scls::GUI_Text* a_create_project_path_title = 0;
-        // Validation button of the create project body
-        scls::GUI_Text* a_create_project_validation = 0;
+        // Body of the create pattern page
+        // Parent page of the create pattern body
+        scls::GUI_Object* a_create_pattern_body = 0;
+        // Input of the name of the pattern
+        scls::GUI_Text_Input* a_create_pattern_name = 0;
+        // Title of the input of the name of the pattern
+        scls::GUI_Text* a_create_pattern_name_title = 0;
+        // Input of the path of the pattern
+        scls::GUI_Text* a_create_pattern_path = 0;
+        // Button to change the path of the pattern
+        scls::GUI_Text* a_create_pattern_path_change = 0;
+        // Title of the input of the path of the pattern
+        scls::GUI_Text* a_create_pattern_path_title = 0;
+        // Validation button of the create pattern body
+        scls::GUI_Text* a_create_pattern_validation = 0;
 
         // Body of the file explorer
         // Parent page of the file explorer
@@ -232,31 +232,31 @@ namespace scls_documentalist_gui {
         // File button of the header
         scls::GUI_Text* a_main_header_file_button = 0;
 
-        // Footer of the project
-        // Parent page of the project footer
-        scls::GUI_Object* a_project_footer = 0;
-        // Button to create a pattern file in the project footer
-        scls::GUI_Text* a_project_footer_create_file_pattern = 0;
-        // Button to save all in the project footer
-        scls::GUI_Text* a_project_footer_save_all = 0;
+        // Footer of the pattern
+        // Parent page of the pattern footer
+        scls::GUI_Object* a_pattern_footer = 0;
+        // Button to create a pattern file in the pattern footer
+        scls::GUI_Text* a_pattern_footer_create_file_pattern = 0;
+        // Button to save all in the pattern footer
+        scls::GUI_Text* a_pattern_footer_save_all = 0;
 
-        // Navigation of the project
-        // Parent page of the project navigation
-        scls::GUI_Object* a_project_navigation = 0;
+        // Navigation of the pattern
+        // Parent page of the pattern navigation
+        scls::GUI_Object* a_pattern_navigation = 0;
 
-        // Body of the project main
-        // Parent page of the project main body
-        scls::GUI_Object* a_project_main_body = 0;
-        // Home text of the project main body
-        scls::GUI_Text* a_project_main_body_title = 0;
+        // Body of the pattern main
+        // Parent page of the pattern main body
+        scls::GUI_Object* a_pattern_main_body = 0;
+        // Home text of the pattern main body
+        scls::GUI_Text* a_pattern_main_body_title = 0;
 
         // Footer of the welcome
         // Parent page of the welcome footer
         scls::GUI_Object* a_welcome_footer = 0;
-        // Button of creation of project in the welcome footer
-        scls::GUI_Text* a_welcome_footer_create_project = 0;
-        // Button to open a project in the welcome footer
-        scls::GUI_Text* a_welcome_footer_open_project = 0;
+        // Button of creation of pattern in the welcome footer
+        scls::GUI_Text* a_welcome_footer_create_pattern = 0;
+        // Button to open a pattern in the welcome footer
+        scls::GUI_Text* a_welcome_footer_open_pattern = 0;
     };
 
     // Use scls_documentalist_gui easily with a function
