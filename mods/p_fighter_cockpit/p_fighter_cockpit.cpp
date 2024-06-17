@@ -28,7 +28,7 @@ namespace p_fighter_cockpit {
     P_Fighter_Cockpit::P_Fighter_Cockpit(scls::_Window_Advanced_Struct* window, std::string name) : scls::GUI_Page(window, name) {
         set_scale(glm::vec3(2, 2, 1));
         parent_object()->set_background_color(scls::Color(0, 15, 0));
-        parent_object()->set_position_in_pixel(glm::vec2(0, 0));
+        parent_object()->set_position_in_pixel(0, 0);
         parent_object()->set_height_in_scale(scls::Fraction(1));
         parent_object()->set_width_in_scale(scls::Fraction(1));
 

@@ -151,8 +151,8 @@ namespace scls {
         inline std::vector<Shader_Program_Variable> *get_attributes() { return &a_attributes; };
         static std::vector<float> get_base_hud_vbo(std::vector<Shader_Program_Variable> attributes) {
             std::vector<float> a_datas = std::vector<float>();
-            a_datas.push_back(0.5f);
-            a_datas.push_back(0.5f);
+            a_datas.push_back(1.0f);
+            a_datas.push_back(1.0f);
             a_datas.push_back(0.0f);
 
             a_datas.push_back(1.0f);
@@ -169,8 +169,8 @@ namespace scls {
                 a_datas.push_back(1.0f);
             }
 
-            a_datas.push_back(-0.5f);
-            a_datas.push_back(0.5f);
+            a_datas.push_back(0.0f);
+            a_datas.push_back(1.0f);
             a_datas.push_back(0.0f);
 
             a_datas.push_back(0.0f);
@@ -188,8 +188,8 @@ namespace scls {
                 a_datas.push_back(1.0f);
             }
 
-            a_datas.push_back(0.5f);
-            a_datas.push_back(-0.5f);
+            a_datas.push_back(1.0f);
+            a_datas.push_back(0.0f);
             a_datas.push_back(0.0f);
 
             a_datas.push_back(1.0f);
@@ -207,8 +207,8 @@ namespace scls {
                 a_datas.push_back(1.0f);
             }
 
-            a_datas.push_back(0.5f);
-            a_datas.push_back(-0.5f);
+            a_datas.push_back(1.0f);
+            a_datas.push_back(0.0f);
             a_datas.push_back(0.0f);
 
             a_datas.push_back(1.0f);
@@ -226,8 +226,8 @@ namespace scls {
                 a_datas.push_back(1.0f);
             }
 
-            a_datas.push_back(-0.5f);
-            a_datas.push_back(-0.5f);
+            a_datas.push_back(0.0f);
+            a_datas.push_back(0.0f);
             a_datas.push_back(0.0f);
 
             a_datas.push_back(0.0f);
@@ -245,8 +245,8 @@ namespace scls {
                 a_datas.push_back(1.0f);
             }
 
-            a_datas.push_back(-0.5f);
-            a_datas.push_back(0.5f);
+            a_datas.push_back(0.0f);
+            a_datas.push_back(1.0f);
             a_datas.push_back(0.0f);
 
             a_datas.push_back(0.0f);

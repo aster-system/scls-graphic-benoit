@@ -61,10 +61,10 @@ namespace scls {
 
     // Callback function for window resizing
     void _framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-        glViewport(0, 0, width, height);
         _global_screen_height = height;
         _global_screen_width = width;
         _screen_resized = true;
+        glViewport(0, 0, width, height);
     }
 
     //*********
@@ -357,6 +357,7 @@ namespace scls {
         // Calculate the resizing of the window
         if(_screen_resized) {
             _screen_resized = false;
+            after_window_resizing(glm::vec2(a_last_window_width, a_last_window_height));
             after_window_resizing(glm::vec2(a_last_window_width, a_last_window_height));
         }
         a_last_window_height = window_height();

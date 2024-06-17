@@ -214,12 +214,14 @@ namespace scls_documentalist_gui {
         // Body of the help
         // Parent page of the help body
         scls::GUI_Object* a_help_body = 0;
+        // Parent page of the help body logo
+        scls::GUI_Object* a_help_body_logo = 0;
         // Home text of the help body
         scls::GUI_Text* a_help_body_home = 0;
 
         // Navigation for the help
         // Parent page of the navigation
-        scls::GUI_Object* a_help_navigation = 0;
+        scls::GUI_Scroller* a_help_navigation = 0;
         // Home text of the help body
         scls::GUI_Text* a_help_navigation_home_button = 0;
 
