@@ -34,9 +34,9 @@ namespace scls {
         a_shaders_programs["hud_default"] = Shader_Program(Shader_Program::HUD_Default);
 
         // Create a base texture
-        textures()["black"] = new Texture(5, 5, glm::vec4(0, 0, 0, 255));
-        textures()["transparent"] = new Texture(5, 5, glm::vec4(0, 0, 0, 0));
-        textures()["white"] = new Texture(5, 5, glm::vec4(255, 255, 255, 255));
+        textures()["black"] = std::make_shared<Texture>(5, 5, glm::vec4(0, 0, 0, 255));
+        textures()["transparent"] = std::make_shared<Texture>(5, 5, glm::vec4(0, 0, 0, 0));
+        textures()["white"] = std::make_shared<Texture>(5, 5, glm::vec4(255, 255, 255, 255));
 
         // Define attributes for VAOs
         std::vector<Shader_Program_Variable> hud_attributes = _base_hud_shader_program_variables();
@@ -53,26 +53,26 @@ namespace scls {
         {
             if(copy_texture)
             {
-                Texture* to_copy = textures()[texture_name];
-                Texture* to_return = new Texture(*to_copy);
+                Texture* to_copy = textures()[texture_name].get();
+                std::shared_ptr<Texture> to_return = std::make_shared<Texture>(*to_copy);
                 textures()[texture_name + ";copy" + std::to_string(to_copy->copy_count())] = to_return;
-                return to_return;
+                return to_return.get();
             }
-            return textures()[texture_name];
+            return textures()[texture_name].get();
         }
         scls::print("Warning", "SCLS Window", "The \"" + texture_name + "\" texture you want to use does not exists.");
         return 0;
     }
 
-    // Unload all the textures
-    void _Window_Advanced_Struct::unload_textures() {
-        for (std::map<std::string, Texture*>::iterator it = textures().begin(); it != textures().end(); it++)
-        {
-            delete it->second; // Delete textures
-            it->second = 0;
-        }
-        textures().clear();
+    // Returns a texture shared pointer in the struct
+    std::shared_ptr<Texture>& _Window_Advanced_Struct::texture_shared_ptr(std::string texture_name) {
+        if (contains_texture(texture_name)) { return textures()[texture_name]; }
+        scls::print("Warning", "SCLS Window", "The \"" + texture_name + "\" texture you want to use does not exists.");
+        std::shared_ptr<Texture> empty_shared_ptr; return empty_shared_ptr;
     }
+
+    // Unload all the textures
+    void _Window_Advanced_Struct::unload_textures() { textures().clear(); }
 
     // Unload all the VAOs
     void _Window_Advanced_Struct::unload_vaos() {
@@ -98,11 +98,11 @@ namespace scls {
     Texture* _Window_Advanced_Struct::new_texture(std::string name, std::string path, bool texture_resize) {
         if(std::filesystem::exists(path)) {
             if (!contains_texture(name)) {
-                Texture* texture = new Texture(path, texture_resize);
-                texture->change_texture();
+                std::shared_ptr<Texture> texture = std::make_shared<Texture>(path, texture_resize);
+                texture.get()->change_texture();
                 textures()[name] = texture;
 
-                return texture;
+                return texture.get();
             }
             scls::print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to add already exists.");
             return 0;
@@ -112,13 +112,13 @@ namespace scls {
     }
 
     // Returns a texture in the struct
-    Texture* _Window_Advanced_Struct::new_texture(std::string name, unsigned short width, unsigned short height, Color color) {
+    std::shared_ptr<Texture>* _Window_Advanced_Struct::new_texture_shared_ptr(std::string name, unsigned short width, unsigned short height, Color color) {
         if (!contains_texture(name))
         {
-            Texture* texture = new Texture(width, height, color);
-            texture->change_texture();
+            std::shared_ptr<Texture> texture = std::make_shared<Texture>(width, height, color);
+            texture.get()->change_texture();
             textures()[name] = texture;
-            return texture;
+            return &textures()[name];
         }
         scls::print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to add already exists.");
         return 0;
@@ -128,9 +128,9 @@ namespace scls {
     Texture* _Window_Advanced_Struct::new_texture(std::string name, bool texture_resize) {
         if (!contains_texture(name))
         {
-            Texture* texture = new Texture();
+            std::shared_ptr<Texture> texture = std::make_shared<Texture>();
             textures()[name] = texture;
-            return texture;
+            return texture.get();
         }
         scls::print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to add already exists.");
         return 0;
@@ -193,10 +193,9 @@ namespace scls {
 
     // Remove a texture in the window
     void _Window_Advanced_Struct::remove_texture(Texture* texture) {
-        for (std::map<std::string, Texture*>::iterator it = textures().begin(); it != textures().end(); it++) {
-            if (it->second == texture) {
+        for (std::map<std::string, std::shared_ptr<Texture>>::iterator it = textures().begin(); it != textures().end(); it++) {
+            if (it->second.get() == texture) {
                 textures().erase(it);
-                delete texture;
                 return;
             }
         }

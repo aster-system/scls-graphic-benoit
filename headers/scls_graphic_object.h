@@ -18,8 +18,7 @@
 
 // The namespace "scls" is used to simplify the all.
 namespace scls {
-    class Object
-    {
+    class Object {
         // Class representing an object displayed into the window
     public:
 
@@ -106,7 +105,7 @@ namespace scls {
                 print("Warning", "SCLS Graphic Object \"" + name() + "\"", "The texture \"" + new_texture + "\" you want to set as the new texture of the object does not exist.");
                 return;
             }
-            a_texture = window_struct()->texture(new_texture);
+            a_texture = window_struct()->texture_shared_ptr(new_texture);
         };
         inline void set_vao(std::string new_vao) {
             if(!window_struct()->contains_vao(new_vao)) {
@@ -115,7 +114,7 @@ namespace scls {
             }
             a_vao = window_struct()->vao(new_vao);
         };
-        inline Texture* texture() {return a_texture;};
+        inline Texture* texture() {return a_texture.get();};
         inline VAO* vao() {return a_vao;};
 
         //*********
@@ -155,7 +154,7 @@ namespace scls {
     protected:
         // Basic object descriptor
         // Pointer to the Texture used to render the object
-        Texture *a_texture = 0;
+        std::shared_ptr<Texture> a_texture;
         // Type of the object
         std::vector<std::string> a_type = std::vector<std::string>();
 

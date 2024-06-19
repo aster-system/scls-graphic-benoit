@@ -26,7 +26,7 @@ namespace scls {
 
     // Most basic GUI_Object constructor
     GUI_Object::GUI_Object(Window& window, std::string name, GUI_Object* parent) : a_name(name), a_parent(parent), a_window(window) {
-        a_texture = window.new_texture(name, 1, 1, Color(255, 255, 255, 0));
+        a_texture = (*window.new_texture_shared_ptr(name, 1, 1, Color(255, 255, 255, 0)));
         a_vao = window.vao("hud_default");
     }
 
@@ -41,9 +41,8 @@ namespace scls {
     // Delete a child of the object
     void GUI_Object::delete_child(GUI_Object* object) {
         for(int i = 0;i<static_cast<int>(children().size());i++) {
-            if(children()[i] == object) {
+            if(children()[i].get() == object) {
                 children().erase(children().begin() + i);
-                delete object;
                 return;
             }
         }
@@ -52,7 +51,7 @@ namespace scls {
     // Render the object
     void GUI_Object::render(glm::vec3 scale_multiplier) {
         // Handle the matrix
-        if(!a_adapted_scale_updated) calculate_adapted_scale();
+        if(a_adapted_scale_updated) calculate_adapted_scale();
         glm::vec2 absolute_position_to_apply = glm::vec2(x_in_adapted_absolute_scale().to_double(), y_in_adapted_absolute_scale().to_double());
         glm::vec2 absolute_scale_to_apply = glm::vec2(width_in_adapted_absolute_scale().to_double(), height_in_adapted_absolute_scale().to_double());
         absolute_scale_to_apply *= glm::vec2(scale_multiplier[0], scale_multiplier[1]);
@@ -165,11 +164,11 @@ namespace scls {
         // Handle the odd height
         if(height_to_apply_in_pixel % 2 == 1) a_y_in_adapted_absolute_scale += divisor_y / 2.0; //*/
 
-        a_adapted_scale_updated = true;
+        a_adapted_scale_updated = false;
     }
 
     // Delete the children of an object
-    void GUI_Object::delete_children() { for(int i = 0;i<static_cast<int>(children().size());i++) { delete children()[i]; } children().clear(); }
+    void GUI_Object::delete_children() { children().clear(); }
 
     // Returns the rect of the fitted texture
     glm::vec4 GUI_Object::fitted_texture_rect() const {
@@ -255,30 +254,46 @@ namespace scls {
     // Returns the position of the mouse in scale
     glm::vec2 GUI_Object::mouse_position_in_scale() {
         glm::vec2 mouse_pos = glm::vec2(window_struct().mouse_x(), window_struct().window_height() - window_struct().mouse_y());
-        mouse_pos -= glm::vec2(x_in_pixel(), y_in_pixel());
+        mouse_pos -= glm::vec2(x_in_absolute_pixel(), y_in_absolute_pixel());
         mouse_pos /= glm::vec2(width_in_pixel(), height_in_pixel());
         return mouse_pos;
     }
 
+    // Returns the first absolute extremum of the object in the Y axis
+    Fraction GUI_Object::object_absolute_y_first_extremum() {
+        Fraction to_return = y_in_absolute_pixel();
+        Fraction parent_extremum = Fraction(-1);
+        if(parent() != 0) { parent_extremum = parent()->object_absolute_y_first_extremum(); }
+        if(parent_extremum > to_return) to_return = parent_extremum;
+        return to_return;
+    }
+
+    // Returns the last absolute extremum of the object in the Y axis
+    Fraction GUI_Object::object_absolute_y_last_extremum() {
+        Fraction to_return = y_in_absolute_pixel() + height_in_pixel();
+        Fraction parent_extremum = Fraction(window_struct().window_height());
+        if(parent() != 0) { parent_extremum = parent()->object_absolute_y_last_extremum(); }
+        if(parent_extremum < to_return) to_return = parent_extremum;
+        return to_return;
+    }
+
     // Returns the extremum of the object
     glm::vec4 GUI_Object::object_extremum() {
-        double absolute_y_bottom_to_apply = (y_in_adapted_absolute_scale().to_double() + 1.0) / 2.0;
-        double absolute_y_top_to_apply = (y_in_adapted_absolute_scale() + height_in_adapted_absolute_scale()).to_double();
-        double absolute_height_to_apply = height_in_adapted_absolute_scale().to_double();
-        double absolute_y_bottom_parent_to_apply = -1.0;
-        double absolute_y_top_parent_to_apply = 1.0;
+        Fraction absolute_height_to_apply = height_in_adapted_absolute_scale();
+
+        // Calculate the y minimum and maximum scale
+        Fraction y_maximum = object_absolute_y_last_extremum();
+        Fraction y_minimum = object_absolute_y_first_extremum();
         if(parent() != 0) {
-            absolute_y_bottom_parent_to_apply = parent()->y_in_adapted_absolute_scale().to_double();
-            absolute_y_top_parent_to_apply = (parent()->y_in_adapted_absolute_scale() + parent()->height_in_adapted_absolute_scale()).to_double();
+            y_maximum -= y_in_absolute_pixel();
+            y_minimum -= y_in_absolute_pixel();
         }
-        double y_maximum = ((absolute_y_top_to_apply + 1.0) / 2.0 - (absolute_y_top_parent_to_apply + 1.0) / 2.0);
-        double y_minimum = ((absolute_y_bottom_parent_to_apply + 1.0) / 2.0 - absolute_y_bottom_to_apply);
 
         // Apply the local transformations
-        y_maximum /= absolute_height_to_apply; y_maximum = 1.0 - y_maximum;
-        y_minimum /= absolute_height_to_apply;
-        y_minimum = -1.0; y_maximum = 2.0;
-        return glm::vec4(-1.0, y_minimum, 2.0, y_maximum);
+        y_maximum *= one_pixel_height_in_scale();
+        y_minimum *= one_pixel_height_in_scale();
+
+        return glm::vec4(-1.0, y_minimum.to_double(), 2.0, y_maximum.to_double());
     }
 
     // Returns the rect of user defined texture
@@ -336,13 +351,13 @@ namespace scls {
     int GUI_Object::x_in_pixel() const {
         if(a_last_x_definition == _Size_Definition::Pixel_Size) return static_cast<int>(a_x.to_double());
         Fraction to_return = (x_in_absolute_scale() / one_pixel_width_in_absolute_scale());
-        if(parent() != 0) to_return -= parent()->x_in_pixel();
+        if(parent() != 0) to_return -= parent()->x_in_absolute_pixel();
         return static_cast<int>(to_return.to_double());
     }
 
     // Returns the x position in absolute scale of the object
     Fraction GUI_Object::x_in_absolute_scale() const {
-        if(a_last_x_definition == _Size_Definition::Absolute_Scale_Size || (a_last_width_definition == _Size_Definition::Scale_Size && parent() == 0)) return a_x;
+        if(a_last_x_definition == _Size_Definition::Absolute_Scale_Size || (a_last_x_definition == _Size_Definition::Scale_Size && parent() == 0)) return a_x;
         Fraction to_return = Fraction(0);
         Fraction to_add = Fraction(0);
         if(parent() != 0) to_add += parent()->x_in_absolute_scale();
@@ -352,7 +367,9 @@ namespace scls {
             to_return = a_x * one_pixel_width_in_absolute_scale();
         }
         else if(a_last_x_definition == _Size_Definition::Object_Scale_Size) {
-            to_return = (width_in_absolute_scale() * Fraction(-1, 2)) + a_x;
+            to_return = (width_in_absolute_scale() * Fraction(-1, 2));
+            if(parent() == 0) to_return += a_x;
+            else to_return += a_x * parent()->width_in_absolute_scale();
         }
         else {
             to_return = a_x;
@@ -373,34 +390,33 @@ namespace scls {
     // Returns the y position in pixel of the object
     int GUI_Object::y_in_pixel() const {
         if(a_last_y_definition == _Size_Definition::Pixel_Size) return static_cast<int>(a_y.to_double());
-        else if(a_last_y_definition == _Size_Definition::Absolute_Scale_Size) {
-            Fraction to_return = (a_y * one_pixel_height_in_absolute_scale());
-            if(parent() != 0) to_return -= parent()->y_in_pixel();
-            return static_cast<int>(to_return.to_double());
-        }
-        return static_cast<int>((a_y * one_pixel_height_in_absolute_scale()).to_double());
+        Fraction to_return = (y_in_absolute_scale() / one_pixel_height_in_absolute_scale());
+        if(parent() != 0) to_return -= parent()->y_in_absolute_pixel();
+        return static_cast<int>(to_return.to_double());
     }
 
     // Returns the y position in absolute scale of the object
     Fraction GUI_Object::y_in_absolute_scale() const {
-        if(a_last_y_definition == _Size_Definition::Absolute_Scale_Size) return a_y;
+        if(a_last_y_definition == _Size_Definition::Absolute_Scale_Size || (a_last_y_definition == _Size_Definition::Scale_Size && parent() == 0)) return a_y;
+        Fraction to_return = Fraction(0);
+        Fraction to_add = Fraction(0);
+        if(parent() != 0) to_add += parent()->y_in_absolute_scale();
 
-        Fraction to_return = 0.0;
-
-        Fraction to_add = 0;
-        if(a_last_y_definition != _Size_Definition::Absolute_Scale_Size && parent() != 0) to_add += parent()->y_in_absolute_scale();
-
+        // Check for the needed convertions
         if(a_last_y_definition == _Size_Definition::Pixel_Size) {
             to_return = a_y * one_pixel_height_in_absolute_scale();
         }
+        else if(a_last_y_definition == _Size_Definition::Object_Scale_Size) {
+            to_return = (height_in_absolute_scale() * Fraction(-1, 2));
+            if(parent() == 0) to_return += a_y;
+            else to_return += a_y * parent()->height_in_absolute_scale();
+        }
         else {
             to_return = a_y;
-
-            if(a_last_height_definition == _Size_Definition::Scale_Size && parent() != 0) to_return *= parent()->height_in_absolute_scale();
+            if(parent() != 0) to_return *= parent()->height_in_absolute_scale();
         }
 
         to_return += to_add;
-
         return to_return;
     }
 
@@ -425,7 +441,7 @@ namespace scls {
         // Check the overflighted cursor
         GUI_Object* current_overflighted_object = this;
         for(int i = 0;i<static_cast<int>(current_overflighted_object->children().size());i++) {
-            GUI_Object* current_object = current_overflighted_object->children()[i];
+            GUI_Object* current_object = current_overflighted_object->children()[i].get();
             if(current_object->visible() && current_object->is_in_rect_in_pixel(window_struct().mouse_x(), window_struct().window_height() - window_struct().mouse_y())) {
                 current_overflighted_object = current_object;
                 i = -1;
@@ -479,9 +495,10 @@ namespace scls {
     // Most basic GUI_Scroller constructor
     GUI_Scroller::GUI_Scroller(Window& window, std::string name, GUI_Object* parent) : GUI_Object(window, name, parent) {
         a_scroller_children = _create_scroller_children();
-        a_scroller_children->set_position_in_scale(Fraction(0), Fraction(0));
         a_scroller_children->set_height_in_scale(Fraction(1));
         a_scroller_children->set_width_in_scale(Fraction(1));
+        a_scroller_children->move_left_in_parent(1);
+        a_scroller_children->move_top_in_parent(1);
     }
 
     // GUI_Scroller destructor
@@ -499,6 +516,19 @@ namespace scls {
         }
     }
 
+    // Check the browser scroller
+    void GUI_Scroller::check_scroller() {
+        Fraction tallest_point = Fraction(0);
+        for(int i = 0;i<static_cast<int>(a_scroller_children->children().size());i++) {
+            GUI_Object* current_object = a_scroller_children->children()[i].get();
+            if(Fraction(current_object->y_in_pixel()) + Fraction(current_object->height_in_pixel()) > tallest_point) {
+                tallest_point = Fraction(current_object->y_in_pixel()) + current_object->height_in_pixel();
+            }
+        }
+        a_scroller_children->set_height_in_pixel(static_cast<unsigned int>(tallest_point.to_double()));
+        a_scroller_children->move_top_in_parent(1);
+    }
+
     // Private function to create the children scroller
     GUI_Object* GUI_Scroller::_create_scroller_children() {
         return GUI_Object::new_object<GUI_Object>(name() + "_children_scroller");
@@ -507,8 +537,7 @@ namespace scls {
     // Scroll the scroller
     void GUI_Scroller::scroll_y(Fraction movement) {
         movement *= Fraction(1, 30);
-        std::cout << "P " << movement << " " << a_scroller_children->y_in_scale() << std::endl;
-        a_scroller_children->set_y_in_scale(a_scroller_children->y_in_scale() + movement);
+        a_scroller_children->set_y_in_scale(a_scroller_children->y_in_scale() - movement);
         after_resizing();
     }
 
@@ -855,16 +884,16 @@ namespace scls {
     // Moves the cursor at a pixel position
     void GUI_Text_Input::move_cursor_at_position_in_scale(glm::vec2 position) {
         if(children().size() <= 0) return;
-        GUI_Object* current_object = children()[0]; bool good = false; unsigned int i = 0;
-        while((current_object->y_in_scale() + 1.0) / 2.0 > position[1] && i < children().size()) {
+        GUI_Object* current_object = children()[0].get(); bool good = false; unsigned int i = 0;
+        while(current_object->y_in_scale() > position[1] && i < children().size()) {
             i++;
             if(i < children().size()) {
-                current_object = children()[i];
+                current_object = children()[i].get();
             }
         }
         if(i >= children().size()) {
             i = children().size() - 1;
-            current_object = children()[children().size() - 1];
+            current_object = children()[children().size() - 1].get();
         }
 
         move_cursor(a_text_image->cursor_position_in_plain_text_at_line_and_x(i + line_offset(), position[0] * width_in_pixel()) - cursor_position_in_formatted_text());
@@ -893,7 +922,7 @@ namespace scls {
     void GUI_Text_Input::place_lines() {
         GUI_Object* last_object = 0;
         for(int i = 0;i<static_cast<int>(children().size());i++) {
-            GUI_Object* current_object = children()[i];
+            GUI_Object* current_object = children()[i].get();
             if(current_object != 0) {
                 current_object->set_height_in_pixel(current_object->texture()->get_image()->height());
                 current_object->move_left_in_parent();
@@ -918,9 +947,7 @@ namespace scls {
             unsigned int lines_deleted = a_text_image->remove_text(final_text, size_to_delete, size_to_delete_in_plain_text, cursor_position + 1);
 
             // Delete the children to delete
-            for(int i = 0;i<lines_deleted;i++) {
-                delete children()[line_to_delete - i]; children().erase(children().begin() + line_to_delete - i);
-            }
+            for(int i = 0;i<lines_deleted;i++) { children().erase(children().begin() + line_to_delete - i); }
         }
         __GUI_Text_Metadatas::set_text(final_text, false);
     }
@@ -977,10 +1004,10 @@ namespace scls {
         // Delete the useless children modified
         for(int i = 0;i<static_cast<int>(children().size());i++) {
             if(i >= static_cast<int>(attached_text_image()->lines_datas().size())) {
-                 delete children()[i]; children().erase(children().begin() + i); i--;
+                 children().erase(children().begin() + i); i--;
             }
             else if(children()[i] != 0 && (i + line_offset() < attached_text_image()->lines().size() && attached_text_image()->lines()[i + line_offset()] == 0 || attached_text_image()->lines()[i + line_offset()]->has_been_modified())) {
-                delete children()[i]; children()[i] = 0;
+                children()[i].reset();
             }
         }
 
@@ -1005,7 +1032,7 @@ namespace scls {
                         new_line->texture()->set_image(line_to_apply->shared_image());
 
                         // Place the children
-                        if(i < static_cast<int>(children().size()) && children()[i] == 0) { children()[i] = new_line; children().pop_back(); }
+                        if(i < static_cast<int>(children().size()) && children()[i].get() == 0) { children()[i].reset(new_line); children().pop_back(); }
                         total_height += image_to_apply->height();
                     }
                 }
@@ -1021,12 +1048,12 @@ namespace scls {
 
         // Delete the useless children in more
         for(int i = 0;i<static_cast<int>(children().size()) - static_cast<int>(attached_text_image()->lines_datas().size());i++) {
-            delete children()[children().size() - 1]; children().pop_back();
+            children().pop_back();
         }
 
         // Delete empty children
         for(int i = 0;i<static_cast<int>(children().size());i++) {
-            if(children()[i] == 0) {children().erase(children().begin() + i); i--;}
+            if(children()[i].get() == 0) {children().erase(children().begin() + i); i--;}
         }
 
         place_lines(); a_generation++;
@@ -1057,18 +1084,11 @@ namespace scls {
     // Load the explorer
     void GUI_File_Explorer::load() {
         // Browser of the file explorer
-        a_browser = new_object<GUI_Object>("browser");
+        a_browser = new_object<GUI_Scroller>("browser");
         a_browser->set_background_color(scls::white);
         a_browser->set_border_width_in_pixel(1);
         a_browser->set_height_in_scale(Fraction(4, 5));
         a_browser->set_width_in_scale(Fraction(4, 5));
-        // Scroller of the browser of the file explorer
-        a_browser_scroller = a_browser->new_object<GUI_Object>("browser_scroller");
-        a_browser_scroller->set_background_color(scls::white);
-        a_browser_scroller->set_height_in_scale(Fraction(95, 100));
-        a_browser_scroller->set_width_in_scale(Fraction(95, 100));
-        a_browser_scroller->set_x_in_scale(Fraction(0));
-        a_browser_scroller->set_y_in_scale(Fraction(0));
         // Button to chose a file
         a_choose_button = new_object<GUI_Text>("choose_button");
         a_choose_button->set_border_width_in_pixel(1);
@@ -1119,10 +1139,11 @@ namespace scls {
     void GUI_File_Explorer::place_browser_buttons() {
         GUI_Text* last_button = 0;
         for(int i = 0;i<static_cast<int>(a_browser_buttons.size());i++) {
-            a_browser_buttons[i]->move_left_in_parent(Fraction(1, 50));
-            if(last_button == 0) a_browser_buttons[i]->move_top_in_parent();
-            else a_browser_buttons[i]->move_bottom_of_object_in_parent(last_button);
-            last_button = a_browser_buttons[i];
+            GUI_Text* current_button = a_browser_buttons[static_cast<int>(a_browser_buttons.size()) - (i + 1)];
+            current_button->move_left_in_parent(1);
+            if(last_button == 0) current_button->move_bottom_in_parent();
+            else current_button->move_top_of_object_in_parent(last_button);
+            last_button = current_button;
         }
     }
 
@@ -1182,23 +1203,24 @@ namespace scls {
     // Update the browser of the file explorer
     void GUI_File_Explorer::update_browser() {
         unsigned char current_thread_number = 0;
+        bool from_scratch = false;
         unsigned char max_thread_number = 10;
         std::vector<std::string> paths = directory_content(a_current_path);
         std::vector<std::thread*> threads = std::vector<std::thread*>();
         if(a_browser_buttons_to_modify.size() == 0) {
             // Create the buttons from scratch
-            a_browser_scroller->delete_children(); a_browser_buttons.clear();
+            a_browser_buttons.clear(); a_browser->reset(); from_scratch = true;
             for(unsigned int i = 0;i<static_cast<unsigned int>(paths.size());i++) {
                 if(!std::filesystem::exists(paths[i])) continue;
 
                 // Create the button
                 paths[i] = file_name(paths[i], true);
-                GUI_Text* new_button = a_browser_scroller->new_object<GUI_Text>("browser_button_" + std::to_string(i));
+                GUI_Text* new_button = a_browser->new_object_in_scroller<GUI_Text>("browser_button_" + std::to_string(i));
                 new_button->set_background_color(scls::white);
                 new_button->set_font_color(scls::black);
                 new_button->set_font_size(50);
                 new_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
-                new_button->set_height_in_scale(Fraction(1, 10));
+                new_button->set_height_in_pixel(30);
                 new_button->set_width_in_scale(Fraction(4, 5));
                 new_button->set_texture_alignment(scls::Alignment_Texture::T_Fit_Vertically);
                 new_button->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
@@ -1275,6 +1297,7 @@ namespace scls {
         threads.clear();
 
         place_all();
+        if(from_scratch) a_browser->check_scroller();
     }
 
     // Update the explorer during an event
@@ -1300,18 +1323,6 @@ namespace scls {
                 a_current_path = "";
                 set_path(path);
                 break;
-            }
-        }
-
-        // Handle wheel scrolling
-        if(has_child_overflighted() ||is_overflighted()) {
-            double sensibility = 0.1;
-
-            double final_movement = sensibility * window_struct().wheel_movement_y_during_this_frame();
-            if(a_browser_y + final_movement > 0) final_movement = -a_browser_y;
-            if(final_movement != 0) {
-                a_browser_y += final_movement;
-                place_browser_buttons();
             }
         }
     }

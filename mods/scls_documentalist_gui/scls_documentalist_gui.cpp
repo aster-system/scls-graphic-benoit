@@ -159,7 +159,7 @@ namespace scls_documentalist_gui {
         a_create_file_pattern_body->set_height_in_scale(scls::Fraction(3, 5));
         a_create_file_pattern_body->set_border_width_in_pixel(1);
         a_create_file_pattern_body->move_bottom_of_object_in_parent(a_main_header);
-        a_create_file_pattern_body->move_right_in_parent(scls::Fraction(1, 40));
+        a_create_file_pattern_body->move_right_in_parent(1);
         // Input of the name of the file pattern
         a_create_file_pattern_name = a_create_file_pattern_body->new_object<scls::GUI_Text_Input>("create_file_pattern_name");
         a_create_file_pattern_name->set_border_width_in_pixel(1);
@@ -202,14 +202,14 @@ namespace scls_documentalist_gui {
         a_create_pattern_body->set_width_in_scale(scls::Fraction(7, 10));
         a_create_pattern_body->set_border_width_in_pixel(1);
         a_create_pattern_body->move_bottom_of_object_in_parent(a_main_header);
-        a_create_pattern_body->move_right_in_parent(scls::Fraction(1, 40));
+        a_create_pattern_body->move_right_in_parent(1);
         // Input of the name of the pattern
         a_create_pattern_name = a_create_pattern_body->new_object<scls::GUI_Text_Input>("create_pattern_name");
         a_create_pattern_name->set_border_width_in_pixel(1);
         a_create_pattern_name->set_font_size(20);
-        a_create_pattern_name->set_height_in_scale(scls::Fraction(7, 20));
-        a_create_pattern_name->set_width_in_scale(scls::Fraction(1, 10));
-        a_create_pattern_name->set_x_in_scale(scls::Fraction(2, 5));
+        a_create_pattern_name->set_height_in_scale(scls::Fraction(1, 10));
+        a_create_pattern_name->set_width_in_scale(scls::Fraction(7, 20));
+        a_create_pattern_name->set_x_in_object_scale(scls::Fraction(7, 10));
         a_create_pattern_name->set_y_in_scale(scls::Fraction(4, 5));
         a_create_pattern_name->set_text("");
         a_create_pattern_name->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
@@ -217,7 +217,7 @@ namespace scls_documentalist_gui {
         // Title of the input of the name of the pattern
         a_create_pattern_name_title = a_create_pattern_body->new_object<scls::GUI_Text>("create_pattern_name_title");
         a_create_pattern_name_title->set_font_size(100);
-        a_create_pattern_name_title->set_x_in_scale(scls::Fraction(-2, 5));
+        a_create_pattern_name_title->set_x_in_object_scale(scls::Fraction(3, 10));
         a_create_pattern_name_title->set_y_in_scale(scls::Fraction(4, 5));
         a_create_pattern_name_title->set_height_in_scale(scls::Fraction(3, 20));
         a_create_pattern_name_title->set_width_in_scale(scls::Fraction(7, 20));
@@ -226,9 +226,9 @@ namespace scls_documentalist_gui {
         // Input of the path of the pattern
         a_create_pattern_path = a_create_pattern_body->new_object<scls::GUI_Text>("create_pattern_path");
         a_create_pattern_path->set_font_size(100);
-        a_create_pattern_path->set_x_in_scale(scls::Fraction(-2, 5));
+        a_create_pattern_path->set_x_in_object_scale(scls::Fraction(7, 10));
         a_create_pattern_path->set_y_in_scale(scls::Fraction(11, 20));
-        a_create_pattern_path->set_height_in_scale(scls::Fraction(1, 10));
+        a_create_pattern_path->set_height_in_scale(scls::Fraction(3, 20));
         a_create_pattern_path->set_width_in_scale(scls::Fraction(7, 20));
         a_create_pattern_path->set_text("C:/");
         a_create_pattern_path->set_texture_alignment(scls::Alignment_Texture::T_Fit);
@@ -237,8 +237,8 @@ namespace scls_documentalist_gui {
         a_create_pattern_path_change->set_border_width_in_pixel(1);
         a_create_pattern_path_change->set_font_size(50);
         a_create_pattern_path_change->set_overflighted_cursor(GLFW_HAND_CURSOR);
-        a_create_pattern_path_change->set_x_in_scale(scls::Fraction(2, 5));
-        a_create_pattern_path_change->set_y_in_scale(scls::Fraction(3, 10));
+        a_create_pattern_path_change->set_x_in_object_scale(scls::Fraction(7, 10));
+        a_create_pattern_path_change->set_y_in_scale(scls::Fraction(2, 5));
         a_create_pattern_path_change->set_height_in_scale(scls::Fraction(1, 10));
         a_create_pattern_path_change->set_width_in_scale(scls::Fraction(7, 20));
         a_create_pattern_path_change->set_text(a_hud_text_content["change_path"]);
@@ -246,7 +246,7 @@ namespace scls_documentalist_gui {
         // Title of the input of the path of the pattern
         a_create_pattern_path_title = a_create_pattern_body->new_object<scls::GUI_Text>("create_pattern_path_title");
         a_create_pattern_path_title->set_font_size(100);
-        a_create_pattern_path_title->set_x_in_scale(scls::Fraction(-2, 5));
+        a_create_pattern_path_title->set_x_in_object_scale(scls::Fraction(3, 10));
         a_create_pattern_path_title->set_y_in_scale(scls::Fraction(11, 20));
         a_create_pattern_path_title->set_height_in_scale(scls::Fraction(3, 20));
         a_create_pattern_path_title->set_width_in_scale(scls::Fraction(7, 20));
@@ -257,8 +257,8 @@ namespace scls_documentalist_gui {
         a_create_pattern_validation->set_border_width_in_pixel(1);
         a_create_pattern_validation->set_font_size(100);
         a_create_pattern_validation->set_overflighted_cursor(GLFW_HAND_CURSOR);
-        a_create_pattern_validation->set_x_in_scale(scls::Fraction(-2, 5));
-        a_create_pattern_validation->set_y_in_scale(scls::Fraction(-4, 5));
+        a_create_pattern_validation->set_x_in_object_scale(scls::Fraction(3, 10));
+        a_create_pattern_validation->set_y_in_scale(scls::Fraction(1, 20));
         a_create_pattern_validation->set_height_in_scale(scls::Fraction(1, 10));
         a_create_pattern_validation->set_width_in_scale(scls::Fraction(1, 4));
         a_create_pattern_validation->set_text(a_hud_text_content["create_pattern"]);
@@ -271,7 +271,7 @@ namespace scls_documentalist_gui {
         a_file_explorer->set_height_in_scale(scls::Fraction(3, 5));
         a_file_explorer->set_width_in_scale(scls::Fraction(7, 10));
         a_file_explorer->move_bottom_of_object_in_parent(a_main_header);
-        a_file_explorer->move_right_in_parent(scls::Fraction(1, 40));
+        a_file_explorer->move_right_in_parent(1);
     }
 
     // Load the file pattern
@@ -283,7 +283,7 @@ namespace scls_documentalist_gui {
         a_file_pattern_body->set_width_in_scale(scls::Fraction(7, 10));
         a_file_pattern_body->set_border_width_in_pixel(1);
         a_file_pattern_body->move_bottom_of_object_in_parent(a_main_header);
-        a_file_pattern_body->move_right_in_parent(scls::Fraction(1, 40));
+        a_file_pattern_body->move_right_in_parent(1);
         // Text in the file pattern
         a_file_pattern_text = a_file_pattern_body->new_object<scls::GUI_Text_Input>("file_pattern_text");
         a_file_pattern_text->set_border_width_in_pixel(1);
@@ -311,8 +311,8 @@ namespace scls_documentalist_gui {
         a_help_body_logo->set_width_in_scale(scls::Fraction(1, 2));
         a_help_body_logo->set_texture_alignment(scls::Alignment_Texture::T_Fit_Vertically);
         a_help_body_logo->texture()->set_image_by_path("assets/textures/scls_documentalist_logo.png");
-        a_help_body_logo->set_x_in_scale(scls::Fraction(0));
-        a_help_body_logo->move_top_in_parent(scls::Fraction(1, 20));
+        a_help_body_logo->set_x_in_object_scale(scls::Fraction(1, 2));
+        a_help_body_logo->move_top_in_parent(1);
         // Create the home text of the help page
         a_help_body_home = a_help_body->new_object<scls::GUI_Text>("help_body_welcome");
         a_help_body_home->set_font_size(20);
@@ -320,7 +320,7 @@ namespace scls_documentalist_gui {
         a_help_body_home->set_texture_alignment(scls::Alignment_Texture::T_Fit);
         a_help_body_home->set_height_in_scale(scls::Fraction(3, 10));
         a_help_body_home->set_width_in_scale(scls::Fraction(9, 10));
-        a_help_body_home->set_x_in_scale(scls::Fraction(0));
+        a_help_body_home->set_x_in_object_scale(scls::Fraction(1, 2));
         a_help_body_home->move_bottom_in_parent();
     }
 
@@ -413,7 +413,7 @@ namespace scls_documentalist_gui {
         // Footer of the pattern page
         a_pattern_footer = parent_object()->new_object<scls::GUI_Object>("pattern_footer");
         a_pattern_footer->set_background_color(scls::white);
-        a_pattern_footer->set_x_in_scale(0.0);
+        a_pattern_footer->set_x_in_object_scale(scls::Fraction(1, 2));
         a_pattern_footer->set_height_in_scale(scls::Fraction(7, 20));
         a_pattern_footer->set_width_in_scale(scls::Fraction(1));
         a_pattern_footer->set_border_width_in_pixel(1);
@@ -455,7 +455,7 @@ namespace scls_documentalist_gui {
         a_pattern_main_body->set_width_in_scale(scls::Fraction(7, 10));
         a_pattern_main_body->set_border_width_in_pixel(1);
         a_pattern_main_body->move_bottom_of_object_in_parent(a_main_header);
-        a_pattern_main_body->move_right_in_parent(scls::Fraction(1, 40));
+        a_pattern_main_body->move_right_in_parent(1);
         // Home text of the pattern main body
         a_pattern_main_body_title = a_pattern_main_body->new_object<scls::GUI_Text>("pattern_main_body_title");
         a_pattern_main_body_title->set_font_size(100);
@@ -492,7 +492,7 @@ namespace scls_documentalist_gui {
         current_button->set_height_in_scale(scls::Fraction(1, 10));
         current_button->set_width_in_scale(scls::Fraction(1));
         current_button->move_left_in_parent();
-        current_button->move_top_in_parent();
+        current_button->move_top_in_parent(1); current_button->calculate_adapted_scale(true);
         a_pattern_navigation_buttons.push_back(current_button);
 
         // Load each buttons
@@ -508,7 +508,7 @@ namespace scls_documentalist_gui {
             current_button->set_width_in_scale(scls::Fraction(1));
             current_button->move_left_in_parent();
             current_button->move_bottom_of_object_in_parent(last_current_button);
-            a_pattern_navigation_buttons.push_back(current_button);
+            a_pattern_navigation_buttons.push_back(current_button); current_button->calculate_adapted_scale(true);
             last_current_button = current_button;
         }
     }
@@ -566,12 +566,23 @@ namespace scls_documentalist_gui {
             a_main_header_file_button->set_y_in_scale(0);
             a_main_header_file_button->move_left_in_parent();
         }
+
+        // Create pattern body
+        if(a_create_pattern_body != 0) {
+            a_create_pattern_body->move_bottom_of_object_in_parent(a_main_header);
+            a_create_pattern_body->move_right_in_parent(1);
+        }
         // File explorer
         if(a_file_explorer != 0) {
             a_file_explorer->move_bottom_of_object_in_parent(a_main_header);
-            a_file_explorer->move_right_in_parent(scls::Fraction(1, 40));
+            a_file_explorer->move_right_in_parent(1);
         }
         // File pattern body
+        if(a_file_pattern_body != 0) {
+            a_file_pattern_body->move_bottom_of_object_in_parent(a_main_header);
+            a_file_pattern_body->move_right_in_parent(1);
+        }
+        // File pattern text
         if(a_file_pattern_text != 0) {
             a_file_pattern_text->set_height_in_scale(scls::Fraction(1));
             a_file_pattern_text->set_width_in_scale(scls::Fraction(1));
@@ -581,11 +592,11 @@ namespace scls_documentalist_gui {
         // Help body
         if(a_help_body != 0) {
             a_help_body->move_bottom_of_object_in_parent(a_main_header);
-            a_help_body->move_right_in_parent(scls::Fraction(1, 40));
+            a_help_body->move_right_in_parent(1);
         }
         if(a_help_body_logo != 0) {
-            a_help_body_logo->set_x_in_scale(scls::Fraction(0));
-            a_help_body_logo->move_top_in_parent(scls::Fraction(1, 20));
+            a_help_body_logo->set_x_in_object_scale(scls::Fraction(1, 2));
+            a_help_body_logo->move_top_in_parent(1);
         }
         // Help navigation
         if(a_help_navigation != 0) {
@@ -593,16 +604,16 @@ namespace scls_documentalist_gui {
             a_help_navigation->move_left_in_parent();
         }
         if(a_help_navigation_home_button != 0) {
-            a_help_navigation_home_button->move_top_in_parent();
+            a_help_navigation_home_button->move_top_in_parent(1);
         }
         // Pattern main body
         if(a_pattern_main_body != 0) {
             a_pattern_main_body->move_bottom_of_object_in_parent(a_main_header);
-            a_pattern_main_body->move_right_in_parent(scls::Fraction(1, 40));
+            a_pattern_main_body->move_right_in_parent(1);
         }
         if(a_pattern_main_body_title != 0) {
             a_pattern_main_body_title->set_x_in_scale(scls::Fraction(0));
-            a_pattern_main_body_title->move_top_in_parent();
+            a_pattern_main_body_title->move_top_in_parent(1);
         }
         // Pattern main footer
         if(a_pattern_footer != 0) {
@@ -617,6 +628,16 @@ namespace scls_documentalist_gui {
         if(a_pattern_footer_save_all) {
             a_pattern_footer_save_all->move_left_in_parent();
             a_pattern_footer_save_all->move_bottom_in_parent();
+        }
+        // Pattern main body
+        if(a_pattern_main_body != 0) {
+            a_pattern_main_body->move_bottom_of_object_in_parent(a_main_header);
+            a_pattern_main_body->move_right_in_parent(1);
+        }
+        // Pattern navigation
+        if(a_pattern_navigation != 0) {
+            a_pattern_navigation->move_bottom_of_object_in_parent(a_main_header);
+            a_pattern_navigation->move_left_in_parent();
         }
         // Welcome footer
         if(a_welcome_footer_create_pattern != 0) {

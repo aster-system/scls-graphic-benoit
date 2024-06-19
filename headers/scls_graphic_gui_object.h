@@ -95,7 +95,7 @@ namespace scls {
         // Getters and setters (ONLY WITH ATRIBUTES)
         inline Color background_color() {return a_background_color;};
         inline Color border_color() {return a_border_color;};
-        inline std::vector<GUI_Object*>& children() {return a_children;};
+        inline std::vector<std::shared_ptr<GUI_Object>>& children() {return a_children;};
         inline short focused_state() const {return a_focusing_state;};
         inline bool has_child_clicked_during_this_frame(unsigned int button) { return has_child_overflighted() && window_struct().mouse_button_clicked_during_this_frame(button); };
         inline bool has_child_focused() const {return a_focusing_state > 0;};
@@ -142,7 +142,7 @@ namespace scls {
         Fraction y_in_absolute_scale() const;
         // Setters
         inline void set_border_width_in_pixel(int new_width) {a_border_width = glm::vec4(new_width);};
-        inline void set_position_in_pixel(int x, int new_y) {set_y_in_pixel(new_y);};
+        inline void set_position_in_pixel(int new_x, int new_y) {set_x_in_pixel(new_x);set_y_in_pixel(new_y);};
         inline void set_x_in_pixel(Fraction new_x) {if(a_x == new_x && a_last_x_definition == _Size_Definition::Pixel_Size)return;a_x=new_x;a_last_x_definition=_Size_Definition::Pixel_Size;a_adapted_scale_updated=true;};
         inline void set_x_in_pixel(int x) {set_x_in_pixel(Fraction(x));};
         inline void set_y_in_pixel(Fraction new_y) {if(a_y == new_y && a_last_y_definition == _Size_Definition::Pixel_Size)return;a_y=new_y;a_last_y_definition=_Size_Definition::Pixel_Size;a_adapted_scale_updated=true;};
@@ -209,27 +209,29 @@ namespace scls {
 
         // Move precisely the object
         // Move the object at the bottom of its parent
-        inline void move_bottom_in_parent(Fraction offset = Fraction(0)) { set_y_in_pixel(offset); };
+        inline void move_bottom_in_parent(int offset = 0) { set_y_in_pixel(Fraction(offset)); };
         // Move the object bottom of another in the parent
         inline void move_bottom_of_object_in_parent(GUI_Object* another_object, Fraction offset = Fraction(0)) { set_y_in_pixel(Fraction(another_object->y_in_pixel()) - (Fraction(height_in_pixel()) + offset)); };
         // Move the object at the left of its parent
-        inline void move_left_in_parent(Fraction offset = Fraction(0)) { set_x_in_pixel(offset); };
+        inline void move_left_in_parent(int offset = 0) { set_x_in_pixel(Fraction(offset)); };
         // Move the object at the right of its parent
-        inline void move_right_in_parent(Fraction offset = Fraction(0)) {
+        inline void move_right_in_parent(int offset = 0) {
             Fraction width = window_struct().window_width();
             if(parent()!= 0) width = parent()->width_in_pixel();
-            set_x_in_pixel(width - (Fraction(width_in_pixel()) + offset));
+            set_x_in_pixel(width - (Fraction(width_in_pixel()) + Fraction(offset)));
         };
         // Move the object at the right of another of its parent
-        inline void move_right_of_object_in_parent(GUI_Object* another_object, Fraction offset = Fraction(0)) { set_x_in_pixel(Fraction(another_object->x_in_pixel() + another_object->width_in_pixel()) + (Fraction(width_in_pixel()) + offset)); };
+        inline void move_right_of_object_in_parent(GUI_Object* another_object, Fraction offset = Fraction(0)) { set_x_in_pixel(Fraction(another_object->x_in_pixel() + another_object->width_in_pixel()) + offset); };
         // Move the object at the top of its parent
-        inline void move_top_in_parent(Fraction offset = Fraction(0)) {
+        inline void move_top_in_parent(int offset = 0) {
             Fraction height = window_struct().window_height();
             if(parent()!= 0) height = parent()->height_in_pixel();
-            set_y_in_pixel(height - (Fraction(height_in_pixel()) + offset));
+            set_y_in_pixel(height - (Fraction(height_in_pixel()) + Fraction(offset)));
         };
         // Move the object top of another in the parent
-        inline void move_top_of_object_in_parent(GUI_Object* another_object, Fraction offset = Fraction(0)) { set_y_in_pixel(Fraction(another_object->y_in_pixel() + another_object->height_in_pixel()) + (Fraction(height_in_pixel()) + offset)); };
+        inline void move_top_of_object_in_parent(GUI_Object* another_object, Fraction offset = Fraction(0)) {
+            set_y_in_pixel(Fraction(another_object->y_in_pixel() + another_object->height_in_pixel()) + offset);
+        };
 
         //*********
         //
@@ -243,6 +245,10 @@ namespace scls {
         glm::vec4 fitted_horizontally_texture_rect() const;
         // Returns the rect of the vertically fitted texture
         glm::vec4 fitted_vertically_texture_rect() const;
+        // Returns the first absolute extremum of the object in the Y axis
+        Fraction object_absolute_y_first_extremum();
+        // Returns the last absolute extremum of the object in the Y axis
+        Fraction object_absolute_y_last_extremum();
         // Returns the extremum of the object
         glm::vec4 object_extremum();
         // Returns the height of the texture in scale of the object
@@ -263,18 +269,19 @@ namespace scls {
         // Returns the rect of user defined texture
         glm::vec4 user_defined_texture_rect() const;
         // Unload the texture
-        inline void unload_texture() {if(a_texture != 0){delete a_texture; a_texture = 0;}};
+        inline void unload_texture() {a_texture.reset();};
 
         // Getters and setters
         inline Image* image() const {return texture()->get_image();};
         inline void set_texture_alignment(Alignment_Texture new_texture_alignment) {a_texture_alignment = new_texture_alignment;};
         inline void set_texture_alignment_horizontal(Alignment_Horizontal new_texture_alignment_horizontal) {a_texture_alignment_horizontal = new_texture_alignment_horizontal;};
         inline void set_texture_alignment_vertical(Alignment_Vertical new_texture_alignment_vertical) {a_texture_alignment_vertical = new_texture_alignment_vertical;};;
-        inline Texture* texture() const {return a_texture;};
+        inline Texture* texture() const {return a_texture.get();};
         inline Alignment_Texture texture_alignment() const {return a_texture_alignment;};
         inline Alignment_Horizontal texture_alignment_horizontal() const {return a_texture_alignment_horizontal;};
         inline Alignment_Vertical texture_alignment_vertical() const {return a_texture_alignment_vertical;};
         inline bool texture_fill_object() const {return a_texture_fill_object;};
+        inline std::shared_ptr<Texture>& texture_shared_ptr() {return a_texture;};
         inline VAO* vao() const {return a_vao;};
 
     private:
@@ -287,7 +294,7 @@ namespace scls {
         // Background color of the object
         Color a_background_color = Color(0, 0, 0, 0);
         // Children of this object
-        std::vector<GUI_Object*> a_children = std::vector<GUI_Object*>();
+        std::vector<std::shared_ptr<GUI_Object>> a_children = std::vector<std::shared_ptr<GUI_Object>>();
         // The state of focusing of the object (0 == focused, > 0 == child focused)
         short a_focusing_state = -1;
         // Name of this object
@@ -319,7 +326,7 @@ namespace scls {
         //*********
 
         // Texture of this object
-        Texture* a_texture = 0;
+        std::shared_ptr<Texture> a_texture;
         // Type of alignment of the texture
         Alignment_Texture a_texture_alignment = Alignment_Texture::T_User_Defined;
         // Horizontal alignment of the texture, if the texture does not fill the object
@@ -338,7 +345,7 @@ namespace scls {
         //*********
 
         // If the adapted scale is updated or not
-        bool a_adapted_scale_updated = false;
+        bool a_adapted_scale_updated = true;
         // Height of the object
         Fraction a_height = Fraction(1, 1);
         // Height of the object in absolute adapted scale
@@ -424,6 +431,10 @@ namespace scls {
 
         // Check if a scroll should occurs
         void check_scroll();
+        // Check the scroller object
+        void check_scroller();
+        // Reset the scroller
+        void reset() {a_scroller_children->delete_children();};
         // Scroll the scroller on the Y axis
         void scroll_y(Fraction movement);
 
@@ -740,9 +751,7 @@ namespace scls {
         //*********
 
         // Browser of the explorer
-        scls::GUI_Object* a_browser = 0;
-        // Scroller in the browser of the explorer
-        scls::GUI_Object* a_browser_scroller = 0;
+        scls::GUI_Scroller* a_browser = 0;
         // Y position of the buttons in the browser
         double a_browser_y = 0;
         // List of every buttons in the browser
@@ -764,8 +773,6 @@ namespace scls {
         // List of every buttons in the top bar
         std::vector<scls::GUI_Text*> a_top_bar_buttons = std::vector<scls::GUI_Text*>();
     };
-
-    // */
 
     class GUI_Page : public Object {
         // Class representing an GUI page to display on the window
@@ -820,10 +827,13 @@ namespace scls {
     // Add a child object to the object
     template<typename O>
     O* GUI_Object::new_object(std::string name, unsigned int x, unsigned int y) {
-        O* new_object = new O(window_struct(), name, this);
-        new_object->set_position_in_pixel(x, y);
+        // Create the child
+        std::shared_ptr<O> new_ptr = std::make_shared<O>(window_struct(), name, this);
+        children().push_back(new_ptr);
+        O* new_object = new_ptr.get();
 
-        children().push_back(new_object);
+        // Configurate the child
+        new_object->set_position_in_pixel(x, y);
 
         return new_object;
     }
@@ -831,7 +841,12 @@ namespace scls {
     // Add a child object to the scroller with its position
     template<typename O>
     O* GUI_Scroller::new_object_in_scroller(std::string name, unsigned int x, unsigned int y) {
-        return a_scroller_children->new_object<O>(name, x, y);
+        // Create the new object
+        O* new_object = a_scroller_children->new_object<O>(name, x, y);
+
+        // Configurate the scroller
+        check_scroller();
+        return new_object;
     }
 
     // Add a child object to the scroller

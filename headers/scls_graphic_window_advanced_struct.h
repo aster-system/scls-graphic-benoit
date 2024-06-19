@@ -73,7 +73,7 @@ namespace scls {
 
         // Returns if the struct contains a textures
         inline bool contains_texture(std::string name) {
-            for (std::map<std::string, Texture*>::iterator it = textures().begin(); it != textures().end(); it++) {
+            for (std::map<std::string, std::shared_ptr<Texture>>::iterator it = textures().begin(); it != textures().end(); it++) {
                 if (it->first == name) return true;
             }
             return false;
@@ -97,8 +97,13 @@ namespace scls {
         // Create new models
         // Create a texture to the window
         Texture* new_texture(std::string name, std::string path, bool texture_resize = false);
+        // Create a shared pointer texture to the window with its size
+        std::shared_ptr<Texture>* new_texture_shared_ptr(std::string name, unsigned short width, unsigned short height, Color color);
         // Create a texture to the window with its size
-        Texture* new_texture(std::string name, unsigned short width, unsigned short height, Color color);
+        Texture* new_texture(std::string name, unsigned short width, unsigned short height, Color color) {
+            std::shared_ptr<Texture>* current_ptr = new_texture_shared_ptr(name, width, height, color);
+            if(current_ptr == 0) return 0; return current_ptr->get();
+        };
         // Create a texture to the window with the most basic constructor
         Texture* new_texture(std::string name, bool texture_resize = false);
         // Create a new VAO into the window with the most basic constructor
@@ -110,10 +115,11 @@ namespace scls {
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         Texture* texture(std::string texture_name, bool copy_texture = false);
+        std::shared_ptr<Texture>& texture_shared_ptr(std::string texture_name);
         inline VAO* vao(std::string vao_name) {if(contains_vao(vao_name)) return vaos()[vao_name]; print("Warning", "SCLS Window", "The \"" + vao_name + "\" VAO you want to use does not exists."); return 0;};
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
-        inline std::map<std::string, Texture*>& textures() { return a_textures; };
+        inline std::map<std::string, std::shared_ptr<Texture>>& textures() { return a_textures; };
         inline std::map<std::string, VAO*>& vaos() { return a_vaos; };
         inline std::map<std::string, VBO*>& vbos() { return a_vbos; };
     private:
@@ -126,7 +132,7 @@ namespace scls {
         // Each shaders, with their name as key, in the window
         std::map<std::string, Shader_Program> a_shaders_programs = std::map<std::string, Shader_Program>();
         // Each Textures, with their name as key, in the window
-        std::map<std::string, Texture*> a_textures = std::map<std::string, Texture*>();
+        std::map<std::string, std::shared_ptr<Texture>> a_textures = std::map<std::string, std::shared_ptr<Texture>>();
         // Each VAOs, with their name as key, in the window
         std::map<std::string, VAO*> a_vaos = std::map<std::string, VAO*>();
         // Each VBOs base, with their name as key, in the window
