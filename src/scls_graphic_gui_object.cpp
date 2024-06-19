@@ -623,9 +623,7 @@ namespace scls {
     }
 
     // GUI_Text_Input destructor
-    GUI_Text_Input::~GUI_Text_Input() {
-
-    }
+    GUI_Text_Input::~GUI_Text_Input() {}
 
     // Add a text to the input at the cursor position
     void GUI_Text_Input::add_text(const std::string& text_to_add) {
@@ -1026,13 +1024,14 @@ namespace scls {
                         line_to_apply->set_has_been_modified(false);
 
                         // Generate the object for the line
-                        GUI_Object* new_line = new_object<GUI_Object>(name() + "_gen_" + std::to_string(a_generation) + "_line_" + std::to_string(i), 0, i * 60);
+                        std::string final_name = name() + "_gen_" + std::to_string(a_generation) + "_line_" + std::to_string(i);
+                        GUI_Object* new_line = new_object<GUI_Object>(final_name, 0, i * 60);
                         new_line->set_width_in_scale(Fraction(1)); new_line->set_height_in_pixel(image_to_apply->height());
                         new_line->set_texture_alignment_horizontal(Alignment_Horizontal::H_Left);
                         new_line->texture()->set_image(line_to_apply->shared_image());
 
                         // Place the children
-                        if(i < static_cast<int>(children().size()) && children()[i].get() == 0) { children()[i].reset(new_line); children().pop_back(); }
+                        if(i < static_cast<int>(children().size()) && (children()[i].get() == 0 || line_to_apply->has_been_modified())) { children()[i] = children()[children().size() - 1]; children().pop_back(); }
                         total_height += image_to_apply->height();
                     }
                 }
@@ -1372,7 +1371,7 @@ namespace scls {
     GUI_Page::GUI_Page(_Window_Advanced_Struct* window_struct, std::string name) : Object(window_struct, name) {
         set_vao("hud_default");
 
-        a_parent_object = new GUI_Main_Object((*reinterpret_cast<Window*>(window_struct)), "main");
+        a_parent_object = std::make_unique<GUI_Main_Object>((*reinterpret_cast<Window*>(window_struct)), "main");
     }
 
     // Render the page
@@ -1390,12 +1389,5 @@ namespace scls {
     void GUI_Page::update_event() {
         Object::update_event();
         parent_object()->update_event();
-    }
-
-    // GUI_Page destructor
-    GUI_Page::~GUI_Page(){
-        if(a_parent_object != 0) {
-            delete a_parent_object; a_parent_object = 0;
-        }
     }
 }

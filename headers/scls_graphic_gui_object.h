@@ -787,7 +787,7 @@ namespace scls {
         // GUI_Page most basic constructor
         GUI_Page(_Window_Advanced_Struct* window_struct, std::string name);
         // GUI_Page destructor
-        virtual ~GUI_Page();
+        virtual ~GUI_Page() {};
 
         // Function called after that the window is resized
         virtual void after_window_resizing(glm::vec2 last_scale){
@@ -804,7 +804,7 @@ namespace scls {
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline GUI_Object* focused_object() {return a_focused_object;};
         inline GUI_Object* overflighted_object() {return a_overflighted_object;};
-        inline GUI_Main_Object* parent_object() {return a_parent_object;};
+        inline GUI_Main_Object* parent_object() {return a_parent_object.get();};
     private:
         // Handle the focused object
         // Pointer to the focused object
@@ -815,7 +815,7 @@ namespace scls {
         GUI_Object* a_overflighted_object = 0;
 
         // Parent object of the page
-        GUI_Main_Object* a_parent_object = 0;
+        std::unique_ptr<GUI_Main_Object> a_parent_object;
     };
 
     // Add a child object to the object

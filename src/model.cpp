@@ -203,8 +203,7 @@ namespace scls {
     }
 
     // Bind the buffer data of the VBO
-    void VBO::bind_buffer()
-    {
+    void VBO::bind_buffer() {
         std::vector<float> datas = get_datas();
         float* arr = datas.data();
 
@@ -516,8 +515,5 @@ namespace scls {
     }
 
     // Texture destructor
-    Texture::~Texture() {
-        a_image.reset();
-        glDeleteTextures(1, &texture_id);
-    }
+    Texture::~Texture() { a_image.reset(); glDeleteTextures(1, &texture_id); }
 }

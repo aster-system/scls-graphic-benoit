@@ -337,9 +337,7 @@ namespace scls {
         ~Texture(); // Texture destructor
 
         // Set the image from a path
-        inline void set_image_by_path(std::string path) {
-            set_image(new scls::Image(path));
-        };
+        inline void set_image_by_path(std::string path) { set_image(new scls::Image(path)); };
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         inline Fraction image_ratio() {return Fraction(get_image()->width(), get_image()->height());};
