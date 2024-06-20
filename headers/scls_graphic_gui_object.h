@@ -623,14 +623,14 @@ namespace scls {
         // Remove a text to the input at the cursor position
         void remove_text(unsigned int size_to_delete_in_plain_text);
         // Reset the text and the text image
-        void reset() {if(a_text_image != 0){a_text_image->free_memory();delete a_text_image;}a_text_image=0;a_line_offset = 0;};
+        void reset() {a_text_image.reset(0);a_text_image=0;a_line_offset = 0;};
         // Update the text
         virtual void update_event();
         // Update the cursor behavior
         void update_cursor();
 
         // Getters and setters
-        inline Text_Image_Block* attached_text_image() {return a_text_image;};
+        inline Text_Image_Block* attached_text_image() {return a_text_image.get();};
         inline unsigned short line_offset() const {return a_line_offset;};
         virtual void set_text(std::string new_text, bool should_move_cursor = true) {if(new_text == text())return;reset();a_text_modified = true;__GUI_Text_Metadatas::set_text(new_text, should_move_cursor);};
         virtual void set_text_image_type(Block_Type new_text_image_type) {__GUI_Text_Metadatas::set_text_image_type(new_text_image_type);reset();};
@@ -678,7 +678,7 @@ namespace scls {
         // Offset of the first line
         unsigned int a_line_offset = 0;
         // Text image of the object
-        Text_Image_Block* a_text_image = 0;
+        std::unique_ptr<Text_Image_Block> a_text_image;
         // If the text is modified or not
         bool a_text_modified = false;
     };

@@ -987,7 +987,7 @@ namespace scls {
     void GUI_Text_Input::update_text_texture() {
         // Configure the text image
         if(attached_text_image() == 0) {
-            a_text_image = window_struct().text_image_generator()->new_text_image_block("", text_image_type());
+            a_text_image.reset(window_struct().text_image_generator()->new_text_image_block("", text_image_type()));
             attached_text_image()->set_use_cursor(true);
             attached_text_image()->free_memory();
             delete_children();

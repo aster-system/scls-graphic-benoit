@@ -77,11 +77,11 @@ namespace scls_documentalist_gui {
         a_pattern_footer->set_visible(true);
         a_pattern_navigation->set_visible(true);
 
-        if(a_file_pattern_text->attached_text_image() != 0) a_file_pattern_text->reset();
         if(contains_opened_file_pattern(pattern_to_display)) {
             a_file_pattern_text->set_text(a_opened_files_pattern[pattern_to_display]);
         }
         else {
+            if(a_file_pattern_text->attached_text_image() != 0) a_file_pattern_text->reset();
             a_opened_files_pattern[pattern_to_display] = pattern_to_display->base_text().to_std_string();
             a_file_pattern_text->set_text(pattern_to_display->base_text().to_std_string());
         }
