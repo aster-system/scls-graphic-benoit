@@ -27,6 +27,19 @@
 #include "../../scls_graphic.h"
 #include "../../mods_hidden/scls_documentalist.h"
 
+#ifndef _SCLS_CURRENT_FILE_TO_BE_CHOSEN_CREATE_PATTERN
+#define _SCLS_CURRENT_FILE_TO_BE_CHOSEN_CREATE_PATTERN 0
+#endif // _SCLS_CURRENT_FILE_TO_BE_CHOSEN_CREATE_PATTERN
+#ifndef _SCLS_CURRENT_FILE_TO_BE_CHOSEN_OPEN_PATTERN
+#define _SCLS_CURRENT_FILE_TO_BE_CHOSEN_OPEN_PATTERN 1
+#endif // _SCLS_CURRENT_FILE_TO_BE_CHOSEN_OPEN_PATTERN
+#ifndef _SCLS_CURRENT_FILE_TO_BE_CHOSEN_CREATE_REPLICA
+#define _SCLS_CURRENT_FILE_TO_BE_CHOSEN_CREATE_REPLICA 2
+#endif // _SCLS_CURRENT_FILE_TO_BE_CHOSEN_CREATE_REPLICA
+#ifndef _SCLS_CURRENT_FILE_TO_BE_CHOSEN_OPEN_REPLICA
+#define _SCLS_CURRENT_FILE_TO_BE_CHOSEN_OPEN_REPLICA 3
+#endif // _SCLS_CURRENT_FILE_TO_BE_CHOSEN_OPEN_REPLICA
+
 // The namespace "scls_documentalist_gui" is used to simplify the all.
 namespace scls_documentalist_gui {
     class SCLS_Documentalist_GUI : public scls::Window {
@@ -48,7 +61,7 @@ namespace scls_documentalist_gui {
 
         //*********
         //
-        // Project handling function
+        // Pattern handling function
         //
         //*********
 
@@ -64,8 +77,14 @@ namespace scls_documentalist_gui {
         void create_pattern();
         // Create a pattern
         void create_pattern(std::string name, std::string path);
+        // Load an unloaded pattern
+        std::shared_ptr<scls::Pattern_Project>* load_pattern(std::string path);
         // Returns a loaded pattern by its name, or 0 if it does not exists
-        scls::Project* loaded_pattern_by_name(std::string project_name);
+        scls::Pattern_Project* loaded_pattern_by_name(std::string project_name);
+        // Returns a loaded pattern by its path, or 0 if it does not exists
+        scls::Pattern_Project* loaded_pattern_by_path(std::string project_path);
+        // Returns a loaded pattern shared point by its path, or 0 if it does not exists
+        std::shared_ptr<scls::Pattern_Project>* loaded_pattern_by_path_shared_point(std::string project_path);
         // Open an existing pattern from a path
         void open_pattern(std::string path);
         // Save all the project
@@ -74,7 +93,31 @@ namespace scls_documentalist_gui {
         void unload_patterns();
 
         // Getters and setters
-        inline scls::Project* currently_displayed_pattern() const { return a_currently_displayed_pattern; };
+        inline scls::Pattern_Project* currently_displayed_pattern() const { return a_currently_displayed_pattern.get(); };
+
+        //*********
+        //
+        // Replica handling function
+        //
+        //*********
+
+        // Create a replica with the GUI datas
+        void create_replica();
+        // Create a replica
+        void create_replica(std::string name, std::string path);
+        // Open an existing replica from a path
+        void open_replica(std::string path);
+
+        // Save a project replica
+        void save_replica_project(const std::shared_ptr<scls::Replica_Project>& replica_project_to_save);
+        // Unload the loaded replicases
+        inline void unload_replicas() {a_loaded_replicas.clear(); };
+
+        // Load the buttons in the replica navigation
+        void load_replica_navigation_buttons();
+
+        // Getters and setters
+        inline scls::Replica_Project* currently_displayed_replica() const { return a_currently_displayed_replica_project.get(); };
 
         //*********
         //
@@ -93,6 +136,10 @@ namespace scls_documentalist_gui {
         void load_create_file_pattern_body();
         // Load the create pattern body
         void load_create_pattern_body();
+        // Load the create replica body
+        void load_create_replica_body();
+        // Load the create replica file body
+        void load_create_replica_file_body();
         // Load the file explorer
         void load_file_explorer();
         // Load the file pattern
@@ -101,6 +148,8 @@ namespace scls_documentalist_gui {
         void load_help_body();
         // Load the pattern main body
         void load_pattern_main_body();
+        // Load the replica main body
+        void load_replica_main_body();
         // Load navigations
         // Load the help navigation
         void load_help_navigation();
@@ -108,9 +157,13 @@ namespace scls_documentalist_gui {
         void load_pattern_navigation();
         // Load the buttons in the pattern navigation
         void load_pattern_navigation_buttons();
+        // Load the replica navigation
+        void load_replica_navigation();
         // Load the footers
         // Load the pattern footer
         void load_pattern_footer();
+        // Load the replica footer
+        void load_replica_footer();
         // Load the welcome page footer
         void load_welcome_footer();
 
@@ -127,6 +180,10 @@ namespace scls_documentalist_gui {
         void display_create_file_pattern();
         // Display the create pattern of the software
         void display_create_pattern();
+        // Display the create replica page of the software
+        void display_create_replica();
+        // Display the create replica file page of the software
+        void display_create_replica_file();
         // Display the file explorer of the software
         void display_file_explorer();
         // Display a file pattern of a project
@@ -134,15 +191,21 @@ namespace scls_documentalist_gui {
         // Display the help part of the software
         void display_help();
         // Display the main page of a pattern
-        void display_pattern_main(scls::Project* project_to_display);
+        void display_pattern_main(scls::Pattern_Project* project_to_display);
+        // Display the main page of a replica
+        void display_replica_main(const std::shared_ptr<scls::Replica_Project>& replica_to_display);
 
         // Reset a page
         // Place all the objects in the program
         void place_all();
         // Reset the create pattern page
         void reset_create_pattern_page();
+        // Reset the create replica page
+        void reset_create_replica_page();
         // Unload the buttons in the pattern navigation
-        void unload_pattern_navigation_buttons();
+        inline void unload_pattern_navigation_buttons() { a_pattern_navigation->delete_children(); a_pattern_navigation_buttons.clear(); };
+        // Unload the buttons in the replice navigation
+        inline void unload_replica_navigation_buttons() { a_replica_navigation->reset(); a_replica_navigation_buttons.clear(); };
         // Unset all the pattern
         void unset_all();
 
@@ -155,13 +218,26 @@ namespace scls_documentalist_gui {
         // Currently displayed file_pattern
         scls::Text_Pattern* a_currently_displayed_file_pattern = 0;
         // Currently displayed pattern
-        scls::Project* a_currently_displayed_pattern = 0;
+        std::shared_ptr<scls::Pattern_Project> a_currently_displayed_pattern = 0;
         // Every loaded projects
-        std::vector<scls::Project*> a_loaded_patterns = std::vector<scls::Project*>();
+        std::vector<std::shared_ptr<scls::Pattern_Project>> a_loaded_patterns = std::vector<std::shared_ptr<scls::Pattern_Project>>();
         // Every opened patterns files
         std::map<scls::Text_Pattern*, std::string> a_opened_files_pattern = std::map<scls::Text_Pattern*, std::string>();
         // Buttons in the pattern navigation
         std::vector<scls::GUI_Object*> a_pattern_navigation_buttons = std::vector<scls::GUI_Object*>();
+
+        //*********
+        //
+        // Replica handling function
+        //
+        //*********
+
+        // Currently displayed replica project
+        std::shared_ptr<scls::Replica_Project> a_currently_displayed_replica_project;
+        // Every loaded projects
+        std::vector<std::shared_ptr<scls::Replica_Project>> a_loaded_replicas = std::vector<std::shared_ptr<scls::Replica_Project>>();
+        // Buttons in the replica navigation
+        std::vector<scls::GUI_Object*> a_replica_navigation_buttons = std::vector<scls::GUI_Object*>();
 
         //*********
         //
@@ -201,6 +277,32 @@ namespace scls_documentalist_gui {
         // Validation button of the create pattern body
         scls::GUI_Text* a_create_pattern_validation = 0;
 
+        // Body of the create replica page
+        // Parent page of the create replica body
+        scls::GUI_Object* a_create_replica_body = 0;
+        // Input of the name of the replica
+        scls::GUI_Text_Input* a_create_replica_name = 0;
+        // Title of the input of the name of the replica
+        scls::GUI_Text* a_create_replica_name_title = 0;
+        // Input of the path of the replica
+        scls::GUI_Text* a_create_replica_path = 0;
+        // Button to change the path of the replica
+        scls::GUI_Text* a_create_replica_path_change = 0;
+        // Title of the input of the path of the replica
+        scls::GUI_Text* a_create_replica_path_title = 0;
+        // Validation button of the create replica body
+        scls::GUI_Text* a_create_replica_validation = 0;
+
+        // Body of the create replica file page
+        // Parent page of the create replica file body
+        scls::GUI_Object* a_create_replica_file_body = 0;
+        // Input of the name of the replica
+        scls::GUI_Text_Input* a_create_replica_file_name = 0;
+        // Title of the input of the name of the replica file
+        scls::GUI_Text* a_create_replica_file_name_title = 0;
+        // Validation button of the create replica file body
+        scls::GUI_Text* a_create_replica_file_validation = 0;
+
         // Body of the file explorer
         // Parent page of the file explorer
         scls::GUI_File_Explorer* a_file_explorer = 0;
@@ -239,6 +341,8 @@ namespace scls_documentalist_gui {
         scls::GUI_Object* a_pattern_footer = 0;
         // Button to create a pattern file in the pattern footer
         scls::GUI_Text* a_pattern_footer_create_file_pattern = 0;
+        // Button to create a replica file in the pattern footer
+        scls::GUI_Text* a_pattern_footer_create_replica = 0;
         // Button to save all in the pattern footer
         scls::GUI_Text* a_pattern_footer_save_all = 0;
 
@@ -252,6 +356,24 @@ namespace scls_documentalist_gui {
         // Home text of the pattern main body
         scls::GUI_Text* a_pattern_main_body_title = 0;
 
+        // Footer of the replica
+        // Parent page of the replica footer
+        scls::GUI_Object* a_replica_footer = 0;
+        // Button to create a replica file in the replica footer
+        scls::GUI_Text* a_replica_footer_create_file_replica = 0;
+        // Button to save all in the replica footer
+        scls::GUI_Text* a_replica_footer_save_all = 0;
+
+        // Body of the replica main
+        // Parent page of the replica main body
+        scls::GUI_Object* a_replica_main_body = 0;
+        // Home text of the replica main body
+        scls::GUI_Text* a_replica_main_body_title = 0;
+
+        // Navigation of the replica
+        // Parent page of the replica navigation
+        scls::GUI_Scroller* a_replica_navigation = 0;
+
         // Footer of the welcome
         // Parent page of the welcome footer
         scls::GUI_Object* a_welcome_footer = 0;
@@ -259,6 +381,8 @@ namespace scls_documentalist_gui {
         scls::GUI_Text* a_welcome_footer_create_pattern = 0;
         // Button to open a pattern in the welcome footer
         scls::GUI_Text* a_welcome_footer_open_pattern = 0;
+        // Button to open a replica in the welcome footer
+        scls::GUI_Text* a_welcome_footer_open_replica = 0;
     };
 
     // Use scls_documentalist_gui easily with a function

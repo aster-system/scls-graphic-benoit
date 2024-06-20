@@ -527,6 +527,7 @@ namespace scls {
         }
         a_scroller_children->set_height_in_pixel(static_cast<unsigned int>(tallest_point.to_double()));
         a_scroller_children->move_top_in_parent(1);
+        after_resizing();
     }
 
     // Private function to create the children scroller
