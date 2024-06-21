@@ -39,6 +39,9 @@
 #ifndef _SCLS_CURRENT_FILE_TO_BE_CHOSEN_OPEN_REPLICA
 #define _SCLS_CURRENT_FILE_TO_BE_CHOSEN_OPEN_REPLICA 3
 #endif // _SCLS_CURRENT_FILE_TO_BE_CHOSEN_OPEN_REPLICA
+#ifndef _SCLS_CURRENT_FILE_TO_BE_CHOSEN_EXPORT_REPLICA
+#define _SCLS_CURRENT_FILE_TO_BE_CHOSEN_EXPORT_REPLICA 4
+#endif // _SCLS_CURRENT_FILE_TO_BE_CHOSEN_EXPORT_REPLICA
 
 // The namespace "scls_documentalist_gui" is used to simplify the all.
 namespace scls_documentalist_gui {
@@ -101,20 +104,32 @@ namespace scls_documentalist_gui {
         //
         //*********
 
-        // Create a replica with the GUI datas
-        void create_replica();
         // Create a replica
         void create_replica(std::string name, std::string path);
+        // Create a replica with the GUI datas
+        void create_replica();
+        // Create a replica file
+        void create_replica_file(std::string name, scls::Text_Pattern* pattern_file);
+        // Create a replica file with the GUI datas
+        void create_replica_file();
         // Open an existing replica from a path
         void open_replica(std::string path);
 
+        // Export a project replica
+        void export_replica_project(const std::shared_ptr<scls::Replica_Project>& replica_project_to_export, std::string path);
+        // Export a project replica with the GUI datas
+        void export_replica_project();
         // Save a project replica
         void save_replica_project(const std::shared_ptr<scls::Replica_Project>& replica_project_to_save);
-        // Unload the loaded replicases
+        // Unload the loaded replicas
         inline void unload_replicas() {a_loaded_replicas.clear(); };
 
+        // Load the buttons in the create replica file pattern navigation
+        void load_create_replica_file_pattern_navigation_buttons();
         // Load the buttons in the replica navigation
         void load_replica_navigation_buttons();
+        // Unload the loaded buttons in the create replica file pattern navigation
+        inline void unload_create_replica_file_pattern_navigation_buttons() {a_create_replica_pattern_file->reset(); };
 
         // Getters and setters
         inline scls::Replica_Project* currently_displayed_replica() const { return a_currently_displayed_replica_project.get(); };
@@ -148,6 +163,8 @@ namespace scls_documentalist_gui {
         void load_help_body();
         // Load the pattern main body
         void load_pattern_main_body();
+        // Load the replica export body
+        void load_replica_export_body();
         // Load the replica main body
         void load_replica_main_body();
         // Load navigations
@@ -192,6 +209,8 @@ namespace scls_documentalist_gui {
         void display_help();
         // Display the main page of a pattern
         void display_pattern_main(scls::Pattern_Project* project_to_display);
+        // Display the export page of a replica
+        void display_replica_export(const std::shared_ptr<scls::Replica_Project>& replica_to_export);
         // Display the main page of a replica
         void display_replica_main(const std::shared_ptr<scls::Replica_Project>& replica_to_display);
 
@@ -300,6 +319,10 @@ namespace scls_documentalist_gui {
         scls::GUI_Text_Input* a_create_replica_file_name = 0;
         // Title of the input of the name of the replica file
         scls::GUI_Text* a_create_replica_file_name_title = 0;
+        // Input of the pattern file of the replica
+        scls::GUI_Scroller* a_create_replica_pattern_file = 0;
+        // Title of the input of the pattern file of the replica file
+        scls::GUI_Text* a_create_replica_pattern_file_title = 0;
         // Validation button of the create replica file body
         scls::GUI_Text* a_create_replica_file_validation = 0;
 
@@ -356,11 +379,27 @@ namespace scls_documentalist_gui {
         // Home text of the pattern main body
         scls::GUI_Text* a_pattern_main_body_title = 0;
 
+        // Body of the replica export page
+        // Parent page of the replica export page body
+        scls::GUI_Object* a_replica_export_body = 0;
+        // Home text of the replica export body
+        scls::GUI_Text* a_replica_export_body_title = 0;
+        // Input of the path of the replica export body
+        scls::GUI_Text* a_replica_export_body_path = 0;
+        // Button to change the path of the replica export body
+        scls::GUI_Text* a_replica_export_body_path_change = 0;
+        // Title of the input of the path of the replica export body
+        scls::GUI_Text* a_replica_export_body_path_title = 0;
+        // Validate the export of the replica in the replica export body
+        scls::GUI_Text* a_replica_export_body_validation = 0;
+
         // Footer of the replica
         // Parent page of the replica footer
         scls::GUI_Object* a_replica_footer = 0;
         // Button to create a replica file in the replica footer
         scls::GUI_Text* a_replica_footer_create_file_replica = 0;
+        // Button to export in the replica footer
+        scls::GUI_Text* a_replica_footer_export = 0;
         // Button to save all in the replica footer
         scls::GUI_Text* a_replica_footer_save_all = 0;
 
