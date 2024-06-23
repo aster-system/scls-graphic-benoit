@@ -124,11 +124,13 @@ namespace scls_documentalist_gui {
         // Unload the loaded replicas
         inline void unload_replicas() {a_loaded_replicas.clear(); };
 
-        // Load the buttons in the create replica file pattern navigation
+        // Loads the buttons in the create replica file pattern navigation
         void load_create_replica_file_pattern_navigation_buttons();
-        // Load the buttons in the replica navigation
+        // Loads the buttons in the replica global variables
+        void load_replica_main_global_variables();
+        // Loads the buttons in the replica navigation
         void load_replica_navigation_buttons();
-        // Unload the loaded buttons in the create replica file pattern navigation
+        // Unloads the loaded buttons in the create replica file pattern navigation
         inline void unload_create_replica_file_pattern_navigation_buttons() {a_create_replica_pattern_file->reset(); };
 
         // Getters and setters
@@ -247,7 +249,7 @@ namespace scls_documentalist_gui {
 
         //*********
         //
-        // Replica handling function
+        // Replica handling attributes
         //
         //*********
 
@@ -255,6 +257,8 @@ namespace scls_documentalist_gui {
         std::shared_ptr<scls::Replica_Project> a_currently_displayed_replica_project;
         // Every loaded projects
         std::vector<std::shared_ptr<scls::Replica_Project>> a_loaded_replicas = std::vector<std::shared_ptr<scls::Replica_Project>>();
+        // Buttons in the replica global variables in the main body
+        std::vector<scls::GUI_Object*> a_replica_main_global_variable_buttons = std::vector<scls::GUI_Object*>();
         // Buttons in the replica navigation
         std::vector<scls::GUI_Object*> a_replica_navigation_buttons = std::vector<scls::GUI_Object*>();
 
@@ -408,6 +412,10 @@ namespace scls_documentalist_gui {
         scls::GUI_Object* a_replica_main_body = 0;
         // Home text of the replica main body
         scls::GUI_Text* a_replica_main_body_title = 0;
+        // Scroller for each global variables
+        scls::GUI_Scroller* a_replica_main_body_global_variables = 0;
+        // Home text of the replica main body global variables
+        scls::GUI_Text* a_replica_main_body_global_variables_title = 0;
 
         // Navigation of the replica
         // Parent page of the replica navigation

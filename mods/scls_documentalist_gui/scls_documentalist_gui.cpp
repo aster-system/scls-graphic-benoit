@@ -145,6 +145,7 @@ namespace scls_documentalist_gui {
         a_replica_footer->set_visible(true);
         a_replica_main_body->set_visible(true);
         a_replica_navigation->set_visible(true);
+        load_replica_main_global_variables();
 
         load_replica_navigation_buttons();
         a_replica_main_body_title->set_text(a_hud_text_content["replica"] + " : " + replica_to_display->name());
@@ -527,13 +528,15 @@ namespace scls_documentalist_gui {
         a_help_navigation->move_left_in_parent();
         // Create the home button of the navigation
         a_help_navigation_home_button = a_help_navigation->new_object_in_scroller<scls::GUI_Text>("help_navigation_home_button");
-        a_help_navigation_home_button->set_font_size(75);
+        a_help_navigation_home_button->set_font_size(50);
         a_help_navigation_home_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
         a_help_navigation_home_button->set_text(a_hud_text_content["home"]);
         a_help_navigation_home_button->set_texture_alignment(scls::Alignment_Texture::T_Fit_Vertically);
-        a_help_navigation_home_button->set_height_in_scale(scls::Fraction(1, 10));
+        a_help_navigation_home_button->set_height_in_pixel(50);
         a_help_navigation_home_button->set_width_in_scale(scls::Fraction(1));
         a_help_navigation_home_button->move_top_in_parent();
+
+        a_help_navigation->check_scroller();
     }
 
     // Load english
@@ -571,6 +574,7 @@ namespace scls_documentalist_gui {
         help_body_home += "manipuler de lignes de code. Vous pouvez l'utiliser, que vous soyez un développeur qui veut documenter facilement</br>";
         help_body_home += "son code, soit que vous êtes quoi que ce soit d'autre. Il vous est distribué sous la license libre GPL V3.0.</br>";
         help_body_home += "Vous êtes actuellement sur la page d'aide. Naviguez avec le sélécteur à gauche.";
+        a_hud_text_content["global_variable_edit"] = scls::to_utf_8("Modifier une variable globale");
         a_hud_text_content["help_body_home"] = scls::to_utf_8(help_body_home);
         a_hud_text_content["home"] = "Accueil";
         a_hud_text_content["name_pattern"] = scls::to_utf_8("Nom du modèle");
@@ -711,12 +715,12 @@ namespace scls_documentalist_gui {
 
         // Load each buttons
         scls::GUI_Text* last_current_button = current_button;
-        std::vector<scls::Text_Pattern*>& patterns = a_currently_displayed_pattern->patterns();
+        std::vector<std::shared_ptr<scls::Text_Pattern>>& patterns = a_currently_displayed_pattern->patterns();
         for(int i = 0;i<static_cast<int>(patterns.size());i++) {
             current_button = a_pattern_navigation->new_object<scls::GUI_Text>("project_navigation_button_" + std::to_string(i));
             current_button->set_font_size(75);
             current_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
-            current_button->set_text(patterns[i]->name().to_std_string());
+            current_button->set_text(patterns[i].get()->name().to_std_string());
             current_button->set_texture_alignment(scls::Alignment_Texture::T_Fit);
             current_button->set_height_in_scale(scls::Fraction(1, 10));
             current_button->set_width_in_scale(scls::Fraction(1));
@@ -857,6 +861,50 @@ namespace scls_documentalist_gui {
         a_replica_main_body_title->set_width_in_scale(scls::Fraction(9, 10));
         a_replica_main_body_title->set_x_in_scale(scls::Fraction(0));
         a_replica_main_body_title->move_top_in_parent();
+        // Scroller for each global variables
+        a_replica_main_body_global_variables = a_replica_main_body->new_object<scls::GUI_Scroller>("replica_main_body_global_variables");
+        a_replica_main_body_global_variables->set_border_width_in_pixel(1);
+        a_replica_main_body_global_variables->set_height_in_scale(scls::Fraction(3, 5));
+        a_replica_main_body_global_variables->set_width_in_scale(scls::Fraction(9, 10));
+        a_replica_main_body_global_variables->set_x_in_object_scale(scls::Fraction(1, 2));
+        a_replica_main_body_global_variables->set_y_in_object_scale(scls::Fraction(2, 5));
+        // Home text of the replica main body global variables
+        a_replica_main_body_global_variables_title = a_replica_main_body->new_object<scls::GUI_Text>("replica_main_body_global_variables_title");
+        a_replica_main_body_global_variables_title->set_font_size(100);
+        a_replica_main_body_global_variables_title->set_text(a_hud_text_content["global_variable_edit"]);
+        a_replica_main_body_global_variables_title->set_texture_alignment(scls::Alignment_Texture::T_Fit);
+        a_replica_main_body_global_variables_title->set_height_in_scale(scls::Fraction(1, 10));
+        a_replica_main_body_global_variables_title->set_width_in_scale(scls::Fraction(9, 10));
+        a_replica_main_body_global_variables_title->set_x_in_object_scale(scls::Fraction(1, 2));
+        a_replica_main_body_global_variables_title->set_y_in_object_scale(scls::Fraction(4, 5));
+    }
+
+    // Loads the buttons in the replica global variables
+    void SCLS_Documentalist_GUI::load_replica_main_global_variables() {
+        // Load each buttons
+        std::vector<std::shared_ptr<scls::Pattern_Variable>>& global_variables = a_currently_displayed_replica_project.get()->attached_pattern()->global_variables();
+        scls::GUI_Text* last_current_button = 0;
+        a_replica_main_global_variable_buttons.clear();
+        a_replica_main_body_global_variables->reset();
+        for(int i = 0;i<static_cast<int>(global_variables.size());i++) {
+            int current_i = static_cast<int>(global_variables.size()) - (i + 1);
+            std::shared_ptr<scls::Pattern_Variable>& current_variable = global_variables[current_i];
+
+            scls::GUI_Text* current_button = a_replica_main_body_global_variables->new_object_in_scroller<scls::GUI_Text>("replica_main_global_variable_button_" + std::to_string(current_i));
+            current_button->set_font_size(50);
+            current_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
+            current_button->set_text(current_variable.get()->name);
+            current_button->set_texture_alignment(scls::Alignment_Texture::T_Fit);
+            current_button->set_height_in_pixel(50);
+            current_button->set_width_in_scale(scls::Fraction(1));
+            current_button->move_left_in_parent();
+            if(last_current_button == 0) current_button->move_bottom_in_parent(1);
+            else current_button->move_top_of_object_in_parent(last_current_button);
+            a_replica_main_global_variable_buttons.push_back(current_button);
+            last_current_button = current_button;
+        }
+
+        a_replica_main_body_global_variables->check_scroller();
     }
 
     // Load the replica navigation
@@ -1260,7 +1308,7 @@ namespace scls_documentalist_gui {
     // Create a replica file with the GUI datas
     void SCLS_Documentalist_GUI::create_replica_file() {
         std::string name = a_create_replica_file_name->plain_text();
-        scls::Text_Pattern* pattern_file = a_currently_displayed_replica_project.get()->attached_pattern()->patterns()[0];
+        scls::Text_Pattern* pattern_file = a_currently_displayed_replica_project.get()->attached_pattern()->patterns()[0].get();
 
         if(name != "") {
             create_replica_file(name, pattern_file);
@@ -1290,9 +1338,9 @@ namespace scls_documentalist_gui {
 
         // Load each buttons
         scls::GUI_Text* last_current_button = 0;
-        std::vector<scls::Text_Pattern*>& patterns = a_currently_displayed_replica_project.get()->attached_pattern()->patterns();
+        std::vector<std::shared_ptr<scls::Text_Pattern>>& patterns = a_currently_displayed_replica_project.get()->attached_pattern()->patterns();
         for(int i = 0;i<static_cast<int>(patterns.size());i++) {
-            scls::Text_Pattern* current_pattern = patterns[static_cast<int>(patterns.size()) - (i + 1)];
+            scls::Text_Pattern* current_pattern = patterns[static_cast<int>(patterns.size()) - (i + 1)].get();
             scls::GUI_Text* current_button = a_create_replica_pattern_file->new_object_in_scroller<scls::GUI_Text>("create_replica_file_pattern_" + std::to_string(static_cast<int>(patterns.size()) - (i + 1)));
             current_button->set_font_size(75);
             current_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
@@ -1484,7 +1532,7 @@ namespace scls_documentalist_gui {
                 else {
                     for(int i = 0;i<static_cast<int>(a_pattern_navigation_buttons.size());i++) {
                         if(a_pattern_navigation_buttons[i]->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
-                            display_file_pattern(a_currently_displayed_pattern.get()->patterns()[i - 1]);
+                            display_file_pattern(a_currently_displayed_pattern.get()->patterns()[i - 1].get());
                         }
                     }
                 }

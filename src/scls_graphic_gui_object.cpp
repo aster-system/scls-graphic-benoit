@@ -223,9 +223,7 @@ namespace scls {
             to_return *= one_pixel_height_in_absolute_scale();
         }
         else {
-            if(a_last_height_definition == _Size_Definition::Scale_Size && parent() != 0) {
-                to_return *= parent()->height_in_absolute_scale();
-            }
+            if(parent() != 0) { to_return *= parent()->height_in_absolute_scale(); }
         }
 
         return to_return;
