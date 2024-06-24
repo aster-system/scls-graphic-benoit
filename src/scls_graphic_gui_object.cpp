@@ -126,43 +126,16 @@ namespace scls {
         a_height_in_adapted_absolute_scale = divisor_y * height_in_pixel();
         a_height_in_adapted_scale = a_height_in_adapted_absolute_scale;
         if(parent() != 0) a_height_in_adapted_scale /= parent()->height_in_adapted_absolute_scale();
+        a_height_in_adapted_scale -= divisor_y / 2;
 
         // Calculate the real width with the pixel perfect system
         a_width_in_adapted_absolute_scale = divisor_x * width_in_pixel();
         a_width_in_adapted_scale = a_width_in_adapted_absolute_scale;
         if(parent() != 0) a_width_in_adapted_scale /= parent()->width_in_adapted_absolute_scale();
+        a_width_in_adapted_scale -= divisor_x / 2;
 
-        a_x_in_adapted_absolute_scale = divisor_x * x_in_absolute_pixel() * 2;
-        a_y_in_adapted_absolute_scale = divisor_y * y_in_absolute_pixel() * 2;
-
-        /*// Calculate the real local x with the pixel perfect system
-        a_x_in_adapted_absolute_scale = x_in_scale();
-        unsigned int real_x_in_pixel = 0;
-        a_x_in_adapted_absolute_scale++;
-        a_x_in_adapted_absolute_scale -= a_width_in_adapted_absolute_scale;
-        while(a_x_in_adapted_absolute_scale >= divisor_x) {
-            a_x_in_adapted_absolute_scale -= divisor_x;
-            real_x_in_pixel++;
-        }
-        if(a_x_in_adapted_absolute_scale > 0 && a_x_in_adapted_absolute_scale < divisor_x / 2.0) real_x_in_pixel++;
-
-        // Handle the pixel perfect system for the y absolute scale
-        a_y_in_adapted_absolute_scale = y_in_scale();
-        int height_to_apply_in_pixel = (a_height_in_adapted_absolute_scale / divisor_y).to_double();
-        total = 0;
-        a_y_in_adapted_absolute_scale++;
-        a_y_in_adapted_absolute_scale -= a_height_in_adapted_absolute_scale;
-        while(a_y_in_adapted_absolute_scale >= divisor_y) {
-            a_y_in_adapted_absolute_scale -= divisor_y;
-            total++;
-        }
-        if(a_y_in_adapted_absolute_scale > 0 && a_y_in_adapted_absolute_scale < divisor_y / 2.0) total++;
-        a_y_in_adapted_absolute_scale = divisor_y  * total;
-        a_y_in_adapted_absolute_scale += divisor_y / 5.0;
-        a_y_in_adapted_absolute_scale += a_height_in_adapted_absolute_scale;
-        a_y_in_adapted_absolute_scale--;
-        // Handle the odd height
-        if(height_to_apply_in_pixel % 2 == 1) a_y_in_adapted_absolute_scale += divisor_y / 2.0; //*/
+        a_x_in_adapted_absolute_scale = divisor_x * x_in_absolute_pixel() * 2 + divisor_x / 4;
+        a_y_in_adapted_absolute_scale = divisor_y * y_in_absolute_pixel() * 2 + divisor_y / 4;
 
         a_adapted_scale_updated = false;
     }

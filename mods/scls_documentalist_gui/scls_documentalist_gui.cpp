@@ -92,7 +92,7 @@ namespace scls_documentalist_gui {
     }
 
     // Display a file pattern of a pattern
-    void SCLS_Documentalist_GUI::display_file_pattern(scls::Text_Pattern* pattern_to_display) {
+    void SCLS_Documentalist_GUI::display_file_pattern(const std::shared_ptr<scls::Text_Pattern>& pattern_to_display) {
         unset_all();
 
         a_file_pattern_body->set_visible(true);
@@ -100,15 +100,15 @@ namespace scls_documentalist_gui {
         a_pattern_footer->set_visible(true);
         a_pattern_navigation->set_visible(true);
 
-        if(contains_opened_file_pattern(pattern_to_display)) {
-            a_file_pattern_text->set_text(a_opened_files_pattern[pattern_to_display]);
+        if(contains_opened_file_pattern(pattern_to_display.get())) {
+            a_file_pattern_text->set_text(a_opened_files_pattern[pattern_to_display.get()]);
         }
         else {
             if(a_file_pattern_text->attached_text_image() != 0) a_file_pattern_text->reset();
-            a_opened_files_pattern[pattern_to_display] = pattern_to_display->base_text().to_std_string();
-            a_file_pattern_text->set_text(pattern_to_display->base_text().to_std_string());
+            a_opened_files_pattern[pattern_to_display.get()] = pattern_to_display.get()->base_text().to_std_string();
+            a_file_pattern_text->set_text(pattern_to_display.get()->base_text().to_std_string());
         }
-        a_currently_displayed_file_pattern = pattern_to_display;
+        a_current_state.a_currently_displayed_file_pattern = pattern_to_display;
     }
 
     // Display the help page
@@ -123,7 +123,7 @@ namespace scls_documentalist_gui {
 
     // Display the main page of a pattern
     void SCLS_Documentalist_GUI::display_pattern_main(scls::Pattern_Project* project_to_display) {
-        a_currently_displayed_pattern.reset(project_to_display);
+        a_current_state.a_currently_displayed_pattern.reset(project_to_display);
         unset_all();
 
         a_main_header->set_visible(true);
@@ -132,24 +132,8 @@ namespace scls_documentalist_gui {
         a_pattern_navigation->set_visible(true);
 
         load_pattern_navigation_buttons();
-        a_pattern_main_body_title->set_text(a_hud_text_content["pattern"] + " : " + project_to_display->name());
+        a_pattern_main_body_title->set_text(a_gui_text_content["pattern"] + " : " + project_to_display->name());
         a_pattern_main_body_title->set_texture_alignment(scls::Alignment_Texture::T_Fit);
-    }
-
-    // Display the main page of a replica
-    void SCLS_Documentalist_GUI::display_replica_main(const std::shared_ptr<scls::Replica_Project>& replica_to_display) {
-        a_currently_displayed_replica_project = replica_to_display;
-        unset_all();
-
-        a_main_header->set_visible(true);
-        a_replica_footer->set_visible(true);
-        a_replica_main_body->set_visible(true);
-        a_replica_navigation->set_visible(true);
-        load_replica_main_global_variables();
-
-        load_replica_navigation_buttons();
-        a_replica_main_body_title->set_text(a_hud_text_content["replica"] + " : " + replica_to_display->name());
-        a_replica_main_body_title->set_texture_alignment(scls::Alignment_Texture::T_Fit);
     }
 
     // Display the export page of a replica
@@ -163,8 +147,37 @@ namespace scls_documentalist_gui {
         a_replica_navigation->set_visible(true);
 
         load_replica_navigation_buttons();
-        a_replica_export_body_title->set_text(a_hud_text_content["export"] + " " + replica_to_export->name());
+        a_replica_export_body_title->set_text(a_gui_text_content["export"] + " " + replica_to_export->name());
         a_replica_export_body_title->set_texture_alignment(scls::Alignment_Texture::T_Fit);
+    }
+
+    // Display the global variable of a replica
+    void SCLS_Documentalist_GUI::display_replica_global_variable(const std::shared_ptr<scls::Pattern_Variable>& replica_global_variable) {
+        unset_all();
+        a_current_state.a_currently_displayed_replica_global_variable = replica_global_variable;
+
+        a_main_header->set_visible(true);
+        a_replica_footer->set_visible(true);
+        a_replica_global_variables_body->set_visible(true);
+        a_replica_navigation->set_visible(true);
+
+        load_replica_navigation_buttons();
+    }
+
+    // Display the main page of a replica
+    void SCLS_Documentalist_GUI::display_replica_main(const std::shared_ptr<scls::Replica_Project>& replica_to_display) {
+        a_current_state.a_currently_displayed_replica_project = replica_to_display;
+        unset_all();
+
+        a_main_header->set_visible(true);
+        a_replica_footer->set_visible(true);
+        a_replica_main_body->set_visible(true);
+        a_replica_navigation->set_visible(true);
+        load_replica_main_global_variables();
+
+        load_replica_navigation_buttons();
+        a_replica_main_body_title->set_text(a_gui_text_content["replica"] + " : " + replica_to_display->name());
+        a_replica_main_body_title->set_texture_alignment(scls::Alignment_Texture::T_Fit);
     }
 
     // Load the entire gui
@@ -202,6 +215,7 @@ namespace scls_documentalist_gui {
         load_help_body();
         load_pattern_main_body();
         load_replica_export_body();
+        load_replica_global_variables();
         load_replica_main_body();
 
         reset_create_pattern_page();
@@ -239,7 +253,7 @@ namespace scls_documentalist_gui {
         a_create_file_pattern_name_title->set_y_in_scale(scls::Fraction(4, 5));
         a_create_file_pattern_name_title->set_height_in_scale(scls::Fraction(7, 20));
         a_create_file_pattern_name_title->set_width_in_scale(scls::Fraction(3, 20));
-        a_create_file_pattern_name_title->set_text(a_hud_text_content["file_pattern_name"] + " :");
+        a_create_file_pattern_name_title->set_text(a_gui_text_content["file_pattern_name"] + " :");
         a_create_file_pattern_name_title->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
         // Validate the creation of the file pattern
         a_create_file_pattern_validation = a_create_file_pattern_body->new_object<scls::GUI_Text>("create_file_pattern_validation");
@@ -250,7 +264,7 @@ namespace scls_documentalist_gui {
         a_create_file_pattern_validation->set_y_in_scale(scls::Fraction(-4, 5));
         a_create_file_pattern_validation->set_height_in_scale(scls::Fraction(1, 4));
         a_create_file_pattern_validation->set_width_in_scale(scls::Fraction(1, 10));
-        a_create_file_pattern_validation->set_text(a_hud_text_content["file_pattern_create"]);
+        a_create_file_pattern_validation->set_text(a_gui_text_content["file_pattern_create"]);
         a_create_file_pattern_validation->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
     }
 
@@ -282,7 +296,7 @@ namespace scls_documentalist_gui {
         a_create_pattern_name_title->set_y_in_scale(scls::Fraction(4, 5));
         a_create_pattern_name_title->set_height_in_scale(scls::Fraction(3, 20));
         a_create_pattern_name_title->set_width_in_scale(scls::Fraction(7, 20));
-        a_create_pattern_name_title->set_text(a_hud_text_content["name_pattern"] + " :");
+        a_create_pattern_name_title->set_text(a_gui_text_content["name_pattern"] + " :");
         a_create_pattern_name_title->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
         // Input of the path of the pattern
         a_create_pattern_path = a_create_pattern_body->new_object<scls::GUI_Text>("create_pattern_path");
@@ -302,7 +316,7 @@ namespace scls_documentalist_gui {
         a_create_pattern_path_change->set_y_in_scale(scls::Fraction(2, 5));
         a_create_pattern_path_change->set_height_in_scale(scls::Fraction(1, 10));
         a_create_pattern_path_change->set_width_in_scale(scls::Fraction(7, 20));
-        a_create_pattern_path_change->set_text(a_hud_text_content["change_path"]);
+        a_create_pattern_path_change->set_text(a_gui_text_content["change_path"]);
         a_create_pattern_path_change->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
         // Title of the input of the path of the pattern
         a_create_pattern_path_title = a_create_pattern_body->new_object<scls::GUI_Text>("create_pattern_path_title");
@@ -311,7 +325,7 @@ namespace scls_documentalist_gui {
         a_create_pattern_path_title->set_y_in_scale(scls::Fraction(11, 20));
         a_create_pattern_path_title->set_height_in_scale(scls::Fraction(3, 20));
         a_create_pattern_path_title->set_width_in_scale(scls::Fraction(7, 20));
-        a_create_pattern_path_title->set_text(a_hud_text_content["path_project"] + " :");
+        a_create_pattern_path_title->set_text(a_gui_text_content["path_project"] + " :");
         a_create_pattern_path_title->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
         // Validation button of the create pattern body
         a_create_pattern_validation = a_create_pattern_body->new_object<scls::GUI_Text>("create_pattern_validation");
@@ -322,7 +336,7 @@ namespace scls_documentalist_gui {
         a_create_pattern_validation->set_y_in_scale(scls::Fraction(1, 20));
         a_create_pattern_validation->set_height_in_scale(scls::Fraction(1, 10));
         a_create_pattern_validation->set_width_in_scale(scls::Fraction(1, 4));
-        a_create_pattern_validation->set_text(a_hud_text_content["create_pattern"]);
+        a_create_pattern_validation->set_text(a_gui_text_content["create_pattern"]);
         a_create_pattern_validation->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
     }
 
@@ -354,7 +368,7 @@ namespace scls_documentalist_gui {
         a_create_replica_name_title->set_y_in_scale(scls::Fraction(4, 5));
         a_create_replica_name_title->set_height_in_scale(scls::Fraction(3, 20));
         a_create_replica_name_title->set_width_in_scale(scls::Fraction(7, 20));
-        a_create_replica_name_title->set_text(a_hud_text_content["replica_name"] + " :");
+        a_create_replica_name_title->set_text(a_gui_text_content["replica_name"] + " :");
         a_create_replica_name_title->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
         // Input of the path of the replica
         a_create_replica_path = a_create_replica_body->new_object<scls::GUI_Text>("create_replica_path");
@@ -374,7 +388,7 @@ namespace scls_documentalist_gui {
         a_create_replica_path_change->set_y_in_scale(scls::Fraction(2, 5));
         a_create_replica_path_change->set_height_in_scale(scls::Fraction(1, 10));
         a_create_replica_path_change->set_width_in_scale(scls::Fraction(7, 20));
-        a_create_replica_path_change->set_text(a_hud_text_content["change_path"]);
+        a_create_replica_path_change->set_text(a_gui_text_content["change_path"]);
         a_create_replica_path_change->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
         // Title of the input of the path of the replica
         a_create_replica_path_title = a_create_replica_body->new_object<scls::GUI_Text>("create_replica_path_title");
@@ -383,7 +397,7 @@ namespace scls_documentalist_gui {
         a_create_replica_path_title->set_y_in_scale(scls::Fraction(11, 20));
         a_create_replica_path_title->set_height_in_scale(scls::Fraction(3, 20));
         a_create_replica_path_title->set_width_in_scale(scls::Fraction(7, 20));
-        a_create_replica_path_title->set_text(a_hud_text_content["path_project"] + " :");
+        a_create_replica_path_title->set_text(a_gui_text_content["path_project"] + " :");
         a_create_replica_path_title->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
         // Validation button of the create replica body
         a_create_replica_validation = a_create_replica_body->new_object<scls::GUI_Text>("create_replica_validation");
@@ -394,7 +408,7 @@ namespace scls_documentalist_gui {
         a_create_replica_validation->set_y_in_scale(scls::Fraction(1, 20));
         a_create_replica_validation->set_height_in_scale(scls::Fraction(1, 10));
         a_create_replica_validation->set_width_in_scale(scls::Fraction(1, 4));
-        a_create_replica_validation->set_text(a_hud_text_content["create_replica"]);
+        a_create_replica_validation->set_text(a_gui_text_content["create_replica"]);
         a_create_replica_validation->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
     }
 
@@ -426,7 +440,7 @@ namespace scls_documentalist_gui {
         a_create_replica_file_name_title->set_y_in_scale(scls::Fraction(4, 5));
         a_create_replica_file_name_title->set_height_in_scale(scls::Fraction(3, 20));
         a_create_replica_file_name_title->set_width_in_scale(scls::Fraction(7, 20));
-        a_create_replica_file_name_title->set_text(a_hud_text_content["replica_file_name"] + " :");
+        a_create_replica_file_name_title->set_text(a_gui_text_content["replica_file_name"] + " :");
         a_create_replica_file_name_title->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
         // Input of the pattern file of the replica
         a_create_replica_pattern_file_title = a_create_replica_file_body->new_object<scls::GUI_Text>("create_replica_pattern_file_title");
@@ -435,7 +449,7 @@ namespace scls_documentalist_gui {
         a_create_replica_pattern_file_title->set_y_in_scale(scls::Fraction(3, 5));
         a_create_replica_pattern_file_title->set_height_in_scale(scls::Fraction(3, 20));
         a_create_replica_pattern_file_title->set_width_in_scale(scls::Fraction(17, 20));
-        a_create_replica_pattern_file_title->set_text(a_hud_text_content["replica_file_choose_pattern"]);
+        a_create_replica_pattern_file_title->set_text(a_gui_text_content["replica_file_choose_pattern"]);
         a_create_replica_pattern_file_title->set_texture_alignment(scls::Alignment_Texture::T_Fit);
         // Validate the creation of the file pattern
         a_create_replica_file_validation = a_create_replica_file_body->new_object<scls::GUI_Text>("create_replica_file_validation");
@@ -446,7 +460,7 @@ namespace scls_documentalist_gui {
         a_create_replica_file_validation->set_y_in_scale(scls::Fraction(1, 20));
         a_create_replica_file_validation->set_height_in_scale(scls::Fraction(1, 10));
         a_create_replica_file_validation->set_width_in_scale(scls::Fraction(1, 4));
-        a_create_replica_file_validation->set_text(a_hud_text_content["replica_file_create"]);
+        a_create_replica_file_validation->set_text(a_gui_text_content["replica_file_create"]);
         a_create_replica_file_validation->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
 
         // Input of the pattern file of the replica
@@ -509,7 +523,7 @@ namespace scls_documentalist_gui {
         // Create the home text of the help page
         a_help_body_home = a_help_body->new_object<scls::GUI_Text>("help_body_welcome");
         a_help_body_home->set_font_size(20);
-        a_help_body_home->set_text(a_hud_text_content["help_body_home"]);
+        a_help_body_home->set_text(a_gui_text_content["help_body_home"]);
         a_help_body_home->set_texture_alignment(scls::Alignment_Texture::T_Fit);
         a_help_body_home->set_height_in_scale(scls::Fraction(3, 10));
         a_help_body_home->set_width_in_scale(scls::Fraction(9, 10));
@@ -530,7 +544,7 @@ namespace scls_documentalist_gui {
         a_help_navigation_home_button = a_help_navigation->new_object_in_scroller<scls::GUI_Text>("help_navigation_home_button");
         a_help_navigation_home_button->set_font_size(50);
         a_help_navigation_home_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
-        a_help_navigation_home_button->set_text(a_hud_text_content["home"]);
+        a_help_navigation_home_button->set_text(a_gui_text_content["home"]);
         a_help_navigation_home_button->set_texture_alignment(scls::Alignment_Texture::T_Fit_Vertically);
         a_help_navigation_home_button->set_height_in_pixel(50);
         a_help_navigation_home_button->set_width_in_scale(scls::Fraction(1));
@@ -541,58 +555,58 @@ namespace scls_documentalist_gui {
 
     // Load english
     void SCLS_Documentalist_GUI::load_language_en() {
-        a_hud_text_content["create_a_file_pattern"] = scls::to_utf_8("Create a pattern file");
-        a_hud_text_content["create_a_project"] = scls::to_utf_8("Create a project");
-        a_hud_text_content["final_path"] = "Final path";
-        a_hud_text_content["help_body_home"] = "Welcome to SCLS Documentalist \"Agatha\" GUI";
+        a_gui_text_content["create_a_file_pattern"] = scls::to_utf_8("Create a pattern file");
+        a_gui_text_content["create_a_project"] = scls::to_utf_8("Create a project");
+        a_gui_text_content["final_path"] = "Final path";
+        a_gui_text_content["help_body_home"] = "Welcome to SCLS Documentalist \"Agatha\" GUI";
         std::string help_body_welcome_description = "This software, made by Aster System, provides a simply use to SCLS Documentalist \"Agatha\", whitout having to</br>";
         help_body_welcome_description += "handle a lot of lines of code. You can use it, as as a developer who wants to easily documentate its code, or as</br>";
         help_body_welcome_description += "anybody else. The software is published under the terms of the license GPL V3.0.";
-        a_hud_text_content["help_body_home_description"] = scls::to_utf_8(help_body_welcome_description);
-        a_hud_text_content["help_body_home_part"] = scls::to_utf_8("You currently are in the help page. Browse with the</br>selector at your left.");
-        a_hud_text_content["home"] = "Home";
-        a_hud_text_content["home_project"] = "Project home";
-        a_hud_text_content["name_file_pattern"] = "Name of the file pattern";
-        a_hud_text_content["name_project"] = "Name of the project";
-        a_hud_text_content["project"] = "Project";
-        a_hud_text_content["save"] = "Save";
-        a_hud_text_content["save_all"] = "Save all";
-        a_hud_text_content["switch_to_text_creation"] = "Switch to text creation";
+        a_gui_text_content["help_body_home_description"] = scls::to_utf_8(help_body_welcome_description);
+        a_gui_text_content["help_body_home_part"] = scls::to_utf_8("You currently are in the help page. Browse with the</br>selector at your left.");
+        a_gui_text_content["home"] = "Home";
+        a_gui_text_content["home_project"] = "Project home";
+        a_gui_text_content["name_file_pattern"] = "Name of the file pattern";
+        a_gui_text_content["name_project"] = "Name of the project";
+        a_gui_text_content["project"] = "Project";
+        a_gui_text_content["save"] = "Save";
+        a_gui_text_content["save_all"] = "Save all";
+        a_gui_text_content["switch_to_text_creation"] = "Switch to text creation";
     }
 
     // Load french
     void SCLS_Documentalist_GUI::load_language_fr() {
-        a_hud_text_content["change_path"] = scls::to_utf_8("Changer le chemin d'accès");
-        a_hud_text_content["create_pattern"] = scls::to_utf_8("Créer un modèle");
-        a_hud_text_content["create_replica"] = scls::to_utf_8("Créer une réplique");
-        a_hud_text_content["export"] = scls::to_utf_8("Exporter");
-        a_hud_text_content["file_pattern_create"] = scls::to_utf_8("Créer un fichier modèle");
-        a_hud_text_content["file_pattern_name"] = scls::to_utf_8("Nom du fichier modèle");
-        a_hud_text_content["final_path"] = "Fichier final";
+        a_gui_text_content["change_path"] = scls::to_utf_8("Changer le chemin d'accès");
+        a_gui_text_content["create_pattern"] = scls::to_utf_8("Créer un modèle");
+        a_gui_text_content["create_replica"] = scls::to_utf_8("Créer une réplique");
+        a_gui_text_content["export"] = scls::to_utf_8("Exporter");
+        a_gui_text_content["file_pattern_create"] = scls::to_utf_8("Créer un fichier modèle");
+        a_gui_text_content["file_pattern_name"] = scls::to_utf_8("Nom du fichier modèle");
+        a_gui_text_content["final_path"] = "Fichier final";
         std::string help_body_home = "<h1>Bienvenue sur la GUI de SCLS Documentalist \"Agatha\"</h1>";
         help_body_home += "Ce logiciel, fait par Aster Système, vous permet d'utiliser SCLS Documentalist \"Agatha\" simplement, sans avoir à</br>";
         help_body_home += "manipuler de lignes de code. Vous pouvez l'utiliser, que vous soyez un développeur qui veut documenter facilement</br>";
         help_body_home += "son code, soit que vous êtes quoi que ce soit d'autre. Il vous est distribué sous la license libre GPL V3.0.</br>";
         help_body_home += "Vous êtes actuellement sur la page d'aide. Naviguez avec le sélécteur à gauche.";
-        a_hud_text_content["global_variable_edit"] = scls::to_utf_8("Modifier une variable globale");
-        a_hud_text_content["help_body_home"] = scls::to_utf_8(help_body_home);
-        a_hud_text_content["home"] = "Accueil";
-        a_hud_text_content["name_pattern"] = scls::to_utf_8("Nom du modèle");
-        a_hud_text_content["open_pattern"] = scls::to_utf_8("Ouvrir un modèle");
-        a_hud_text_content["path_project"] = scls::to_utf_8("Chemin d'accès du projet");
-        a_hud_text_content["pattern"] = scls::to_utf_8("Modèle");
-        a_hud_text_content["project_home"] = "Accueil du projet";
-        a_hud_text_content["replica"] = scls::to_utf_8("Réplique");
-        a_hud_text_content["replica_create"] = scls::to_utf_8("Créer une réplique");
-        a_hud_text_content["replica_file_choose_pattern"] = scls::to_utf_8("Choisissez le fichier modèle de ce fichier réplique à gauche");
-        a_hud_text_content["replica_file_create"] = scls::to_utf_8("Créer un fichier réplique");
-        a_hud_text_content["replica_file_name"] = scls::to_utf_8("Nom du fichier réplique");
-        a_hud_text_content["replica_home"] = scls::to_utf_8("Accueil de la réplique");
-        a_hud_text_content["replica_open"] = scls::to_utf_8("Ouvrir une réplique");
-        a_hud_text_content["replica_name"] = scls::to_utf_8("Nom de la réplique");
-        a_hud_text_content["save"] = "Sauvegarder";
-        a_hud_text_content["save_all"] = "Sauvegarder tout";
-        a_hud_text_content["switch_to_text_creation"] = scls::to_utf_8("Passer à la création de texte");
+        a_gui_text_content["global_variable_edit"] = scls::to_utf_8("Modifier une variable globale");
+        a_gui_text_content["help_body_home"] = scls::to_utf_8(help_body_home);
+        a_gui_text_content["home"] = "Accueil";
+        a_gui_text_content["name_pattern"] = scls::to_utf_8("Nom du modèle");
+        a_gui_text_content["open_pattern"] = scls::to_utf_8("Ouvrir un modèle");
+        a_gui_text_content["path_project"] = scls::to_utf_8("Chemin d'accès du projet");
+        a_gui_text_content["pattern"] = scls::to_utf_8("Modèle");
+        a_gui_text_content["project_home"] = "Accueil du projet";
+        a_gui_text_content["replica"] = scls::to_utf_8("Réplique");
+        a_gui_text_content["replica_create"] = scls::to_utf_8("Créer une réplique");
+        a_gui_text_content["replica_file_choose_pattern"] = scls::to_utf_8("Choisissez le fichier modèle de ce fichier réplique à gauche");
+        a_gui_text_content["replica_file_create"] = scls::to_utf_8("Créer un fichier réplique");
+        a_gui_text_content["replica_file_name"] = scls::to_utf_8("Nom du fichier réplique");
+        a_gui_text_content["replica_home"] = scls::to_utf_8("Accueil de la réplique");
+        a_gui_text_content["replica_open"] = scls::to_utf_8("Ouvrir une réplique");
+        a_gui_text_content["replica_name"] = scls::to_utf_8("Nom de la réplique");
+        a_gui_text_content["save"] = "Sauvegarder";
+        a_gui_text_content["save_all"] = "Sauvegarder tout";
+        a_gui_text_content["switch_to_text_creation"] = scls::to_utf_8("Passer à la création de texte");
     }
 
     // Load the main header
@@ -631,7 +645,7 @@ namespace scls_documentalist_gui {
         a_pattern_footer_create_file_pattern->set_font_size(75);
         a_pattern_footer_create_file_pattern->set_text_offset(0.05);
         a_pattern_footer_create_file_pattern->set_overflighted_cursor(GLFW_HAND_CURSOR);
-        a_pattern_footer_create_file_pattern->set_text(a_hud_text_content["file_pattern_create"]);
+        a_pattern_footer_create_file_pattern->set_text(a_gui_text_content["file_pattern_create"]);
         a_pattern_footer_create_file_pattern->set_border_width_in_pixel(1);
         a_pattern_footer_create_file_pattern->set_height_in_scale(scls::Fraction(1, 5));
         a_pattern_footer_create_file_pattern->set_width_in_scale(scls::Fraction(3, 10));
@@ -643,7 +657,7 @@ namespace scls_documentalist_gui {
         a_pattern_footer_create_replica->set_font_size(75);
         a_pattern_footer_create_replica->set_text_offset(0.05);
         a_pattern_footer_create_replica->set_overflighted_cursor(GLFW_HAND_CURSOR);
-        a_pattern_footer_create_replica->set_text(a_hud_text_content["replica_create"]);
+        a_pattern_footer_create_replica->set_text(a_gui_text_content["replica_create"]);
         a_pattern_footer_create_replica->set_border_width_in_pixel(1);
         a_pattern_footer_create_replica->set_height_in_scale(scls::Fraction(1, 5));
         a_pattern_footer_create_replica->set_width_in_scale(scls::Fraction(3, 10));
@@ -655,7 +669,7 @@ namespace scls_documentalist_gui {
         a_pattern_footer_save_all->set_font_size(75);
         a_pattern_footer_save_all->set_text_offset(0.05);
         a_pattern_footer_save_all->set_overflighted_cursor(GLFW_HAND_CURSOR);
-        a_pattern_footer_save_all->set_text(a_hud_text_content["save_all"]);
+        a_pattern_footer_save_all->set_text(a_gui_text_content["save_all"]);
         a_pattern_footer_save_all->set_border_width_in_pixel(1);
         a_pattern_footer_save_all->set_height_in_scale(scls::Fraction(1, 5));
         a_pattern_footer_save_all->set_width_in_scale(scls::Fraction(3, 10));
@@ -705,7 +719,7 @@ namespace scls_documentalist_gui {
         scls::GUI_Text* current_button = a_pattern_navigation->new_object<scls::GUI_Text>("project_navigation_home_button");
         current_button->set_font_size(75);
         current_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
-        current_button->set_text(a_hud_text_content["project_home"]);
+        current_button->set_text(a_gui_text_content["project_home"]);
         current_button->set_texture_alignment(scls::Alignment_Texture::T_Fit);
         current_button->set_height_in_scale(scls::Fraction(1, 10));
         current_button->set_width_in_scale(scls::Fraction(1));
@@ -715,7 +729,7 @@ namespace scls_documentalist_gui {
 
         // Load each buttons
         scls::GUI_Text* last_current_button = current_button;
-        std::vector<std::shared_ptr<scls::Text_Pattern>>& patterns = a_currently_displayed_pattern->patterns();
+        std::vector<std::shared_ptr<scls::Text_Pattern>>& patterns = a_current_state.a_currently_displayed_pattern->patterns();
         for(int i = 0;i<static_cast<int>(patterns.size());i++) {
             current_button = a_pattern_navigation->new_object<scls::GUI_Text>("project_navigation_button_" + std::to_string(i));
             current_button->set_font_size(75);
@@ -768,7 +782,7 @@ namespace scls_documentalist_gui {
         a_replica_export_body_path_change->set_y_in_scale(scls::Fraction(2, 5));
         a_replica_export_body_path_change->set_height_in_scale(scls::Fraction(1, 10));
         a_replica_export_body_path_change->set_width_in_scale(scls::Fraction(7, 20));
-        a_replica_export_body_path_change->set_text(a_hud_text_content["change_path"]);
+        a_replica_export_body_path_change->set_text(a_gui_text_content["change_path"]);
         a_replica_export_body_path_change->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
         // Title of the input of the path of the replica
         a_replica_export_body_path_title = a_replica_export_body->new_object<scls::GUI_Text>("replica_export_body_path_title");
@@ -777,7 +791,7 @@ namespace scls_documentalist_gui {
         a_replica_export_body_path_title->set_y_in_scale(scls::Fraction(11, 20));
         a_replica_export_body_path_title->set_height_in_scale(scls::Fraction(3, 20));
         a_replica_export_body_path_title->set_width_in_scale(scls::Fraction(7, 20));
-        a_replica_export_body_path_title->set_text(a_hud_text_content["path_project"] + " :");
+        a_replica_export_body_path_title->set_text(a_gui_text_content["path_project"] + " :");
         a_replica_export_body_path_title->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
         // Validate the export of the replica in the replica export body
         a_replica_export_body_validation = a_replica_export_body->new_object<scls::GUI_Text>("replica_export_body_validation");
@@ -788,7 +802,7 @@ namespace scls_documentalist_gui {
         a_replica_export_body_validation->set_y_in_scale(scls::Fraction(1, 20));
         a_replica_export_body_validation->set_height_in_scale(scls::Fraction(1, 10));
         a_replica_export_body_validation->set_width_in_scale(scls::Fraction(1, 4));
-        a_replica_export_body_validation->set_text(a_hud_text_content["export"]);
+        a_replica_export_body_validation->set_text(a_gui_text_content["export"]);
         a_replica_export_body_validation->set_texture_alignment(scls::Alignment_Texture::T_Fit);
     }
 
@@ -809,7 +823,7 @@ namespace scls_documentalist_gui {
         a_replica_footer_create_file_replica->set_font_size(75);
         a_replica_footer_create_file_replica->set_text_offset(0.05);
         a_replica_footer_create_file_replica->set_overflighted_cursor(GLFW_HAND_CURSOR);
-        a_replica_footer_create_file_replica->set_text(a_hud_text_content["replica_file_create"]);
+        a_replica_footer_create_file_replica->set_text(a_gui_text_content["replica_file_create"]);
         a_replica_footer_create_file_replica->set_border_width_in_pixel(1);
         a_replica_footer_create_file_replica->set_height_in_scale(scls::Fraction(1, 5));
         a_replica_footer_create_file_replica->set_width_in_scale(scls::Fraction(3, 10));
@@ -821,7 +835,7 @@ namespace scls_documentalist_gui {
         a_replica_footer_export->set_font_size(75);
         a_replica_footer_export->set_text_offset(0.05);
         a_replica_footer_export->set_overflighted_cursor(GLFW_HAND_CURSOR);
-        a_replica_footer_export->set_text(a_hud_text_content["export"]);
+        a_replica_footer_export->set_text(a_gui_text_content["export"]);
         a_replica_footer_export->set_border_width_in_pixel(1);
         a_replica_footer_export->set_height_in_scale(scls::Fraction(1, 5));
         a_replica_footer_export->set_width_in_scale(scls::Fraction(3, 10));
@@ -833,13 +847,36 @@ namespace scls_documentalist_gui {
         a_replica_footer_save_all->set_font_size(75);
         a_replica_footer_save_all->set_text_offset(0.05);
         a_replica_footer_save_all->set_overflighted_cursor(GLFW_HAND_CURSOR);
-        a_replica_footer_save_all->set_text(a_hud_text_content["save_all"]);
+        a_replica_footer_save_all->set_text(a_gui_text_content["save_all"]);
         a_replica_footer_save_all->set_border_width_in_pixel(1);
         a_replica_footer_save_all->set_height_in_scale(scls::Fraction(1, 5));
         a_replica_footer_save_all->set_width_in_scale(scls::Fraction(3, 10));
         a_replica_footer_save_all->set_texture_alignment(scls::Alignment_Texture::T_Fit);
         a_replica_footer_save_all->move_left_in_parent();
         a_replica_footer_save_all->move_bottom_in_parent();
+    }
+
+    // Load the replica global variables
+    void SCLS_Documentalist_GUI::load_replica_global_variables() {
+        // Parent page of the replica global variables body
+        a_replica_global_variables_body = parent_object()->new_object<scls::GUI_Object>("replica_global_variables_body");
+        a_replica_global_variables_body->set_background_color(scls::white);
+        a_replica_global_variables_body->set_height_in_scale(scls::Fraction(3, 5));
+        a_replica_global_variables_body->set_width_in_scale(scls::Fraction(7, 10));
+        a_replica_global_variables_body->set_border_width_in_pixel(1);
+        a_replica_global_variables_body->move_bottom_of_object_in_parent(a_main_header);
+        a_replica_global_variables_body->move_right_in_parent(1);
+        // Text in the file pattern
+        a_replica_global_variables_text = a_replica_global_variables_body->new_object<scls::GUI_Text_Input>("replica_global_variables_text");
+        a_replica_global_variables_text->set_border_width_in_pixel(1);
+        a_replica_global_variables_text->set_font_family("CascadiaMono");
+        a_replica_global_variables_text->set_font_size(14);
+        a_replica_global_variables_text->set_height_in_scale(scls::Fraction(1));
+        a_replica_global_variables_text->set_width_in_scale(scls::Fraction(1));
+        a_replica_global_variables_text->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
+        a_replica_global_variables_text->set_texture_alignment_vertical(scls::Alignment_Vertical::V_Top);
+        a_replica_global_variables_text->move_left_in_parent();
+        a_replica_global_variables_text->move_top_in_parent();
     }
 
     // Load the replica main body
@@ -871,7 +908,7 @@ namespace scls_documentalist_gui {
         // Home text of the replica main body global variables
         a_replica_main_body_global_variables_title = a_replica_main_body->new_object<scls::GUI_Text>("replica_main_body_global_variables_title");
         a_replica_main_body_global_variables_title->set_font_size(100);
-        a_replica_main_body_global_variables_title->set_text(a_hud_text_content["global_variable_edit"]);
+        a_replica_main_body_global_variables_title->set_text(a_gui_text_content["global_variable_edit"]);
         a_replica_main_body_global_variables_title->set_texture_alignment(scls::Alignment_Texture::T_Fit);
         a_replica_main_body_global_variables_title->set_height_in_scale(scls::Fraction(1, 10));
         a_replica_main_body_global_variables_title->set_width_in_scale(scls::Fraction(9, 10));
@@ -882,7 +919,7 @@ namespace scls_documentalist_gui {
     // Loads the buttons in the replica global variables
     void SCLS_Documentalist_GUI::load_replica_main_global_variables() {
         // Load each buttons
-        std::vector<std::shared_ptr<scls::Pattern_Variable>>& global_variables = a_currently_displayed_replica_project.get()->attached_pattern()->global_variables();
+        std::vector<std::shared_ptr<scls::Pattern_Variable>>& global_variables = a_current_state.a_currently_displayed_replica_project.get()->attached_pattern()->global_variables();
         scls::GUI_Text* last_current_button = 0;
         a_replica_main_global_variable_buttons.clear();
         a_replica_main_body_global_variables->reset();
@@ -935,7 +972,7 @@ namespace scls_documentalist_gui {
         a_welcome_footer_create_pattern->set_font_size(75);
         a_welcome_footer_create_pattern->set_text_offset(0.05);
         a_welcome_footer_create_pattern->set_overflighted_cursor(GLFW_HAND_CURSOR);
-        a_welcome_footer_create_pattern->set_text(a_hud_text_content["create_pattern"]);
+        a_welcome_footer_create_pattern->set_text(a_gui_text_content["create_pattern"]);
         a_welcome_footer_create_pattern->set_border_width_in_pixel(1);
         a_welcome_footer_create_pattern->set_height_in_scale(scls::Fraction(1, 4));
         a_welcome_footer_create_pattern->set_width_in_scale(scls::Fraction(1, 4));
@@ -947,7 +984,7 @@ namespace scls_documentalist_gui {
         a_welcome_footer_open_replica->set_font_size(75);
         a_welcome_footer_open_replica->set_text_offset(0.05);
         a_welcome_footer_open_replica->set_overflighted_cursor(GLFW_HAND_CURSOR);
-        a_welcome_footer_open_replica->set_text(a_hud_text_content["replica_open"]);
+        a_welcome_footer_open_replica->set_text(a_gui_text_content["replica_open"]);
         a_welcome_footer_open_replica->set_border_width_in_pixel(1);
         a_welcome_footer_open_replica->set_height_in_scale(scls::Fraction(1, 4));
         a_welcome_footer_open_replica->set_width_in_scale(scls::Fraction(1, 4));
@@ -959,7 +996,7 @@ namespace scls_documentalist_gui {
         a_welcome_footer_open_pattern->set_font_size(75);
         a_welcome_footer_open_pattern->set_text_offset(0.05);
         a_welcome_footer_open_pattern->set_overflighted_cursor(GLFW_HAND_CURSOR);
-        a_welcome_footer_open_pattern->set_text(a_hud_text_content["open_pattern"]);
+        a_welcome_footer_open_pattern->set_text(a_gui_text_content["open_pattern"]);
         a_welcome_footer_open_pattern->set_border_width_in_pixel(1);
         a_welcome_footer_open_pattern->set_x_in_scale(scls::Fraction(1, 2));
         a_welcome_footer_open_pattern->set_height_in_scale(scls::Fraction(1, 4));
@@ -1074,6 +1111,11 @@ namespace scls_documentalist_gui {
             a_pattern_navigation->move_bottom_of_object_in_parent(a_main_header);
             a_pattern_navigation->move_left_in_parent();
         }
+        // Replica global variables body
+        if(a_replica_global_variables_body != 0) {
+            a_replica_global_variables_body->move_bottom_of_object_in_parent(a_main_header);
+            a_replica_global_variables_body->move_right_in_parent(1);
+        }
         // Replica export body
         if(a_replica_export_body != 0) {
             a_replica_export_body->move_bottom_of_object_in_parent(a_main_header);
@@ -1130,14 +1172,14 @@ namespace scls_documentalist_gui {
 
     // Reload each HUD text
     void SCLS_Documentalist_GUI::reload_text() {
-        a_create_pattern_name_title->set_text(a_hud_text_content["name_pattern"] + " :");
-        a_create_pattern_path_title->set_text(a_hud_text_content["path_project"] + " :");
-        a_help_body_home->set_text(a_hud_text_content["help_body_home"]);
-        a_help_navigation_home_button->set_text(a_hud_text_content["home"]);
-        a_pattern_footer_create_file_pattern->set_text(a_hud_text_content["file_pattern_create"]);
-        a_pattern_footer_save_all->set_text(a_hud_text_content["save_all"]);
-        a_welcome_footer_create_pattern->set_text(a_hud_text_content["create_pattern"]);
-        a_welcome_footer_open_pattern->set_text(a_hud_text_content["open_pattern"]);
+        a_create_pattern_name_title->set_text(a_gui_text_content["name_pattern"] + " :");
+        a_create_pattern_path_title->set_text(a_gui_text_content["path_project"] + " :");
+        a_help_body_home->set_text(a_gui_text_content["help_body_home"]);
+        a_help_navigation_home_button->set_text(a_gui_text_content["home"]);
+        a_pattern_footer_create_file_pattern->set_text(a_gui_text_content["file_pattern_create"]);
+        a_pattern_footer_save_all->set_text(a_gui_text_content["save_all"]);
+        a_welcome_footer_create_pattern->set_text(a_gui_text_content["create_pattern"]);
+        a_welcome_footer_open_pattern->set_text(a_gui_text_content["open_pattern"]);
     }
 
     // Reset the create pattern page
@@ -1148,27 +1190,32 @@ namespace scls_documentalist_gui {
 
     // Save all the project
     void SCLS_Documentalist_GUI::save_all() {
-        if(a_currently_displayed_file_pattern != 0) {
-            a_opened_files_pattern[a_currently_displayed_file_pattern] = a_file_pattern_text->text();
+        if(a_current_state.a_currently_displayed_file_pattern != 0) {
+            a_opened_files_pattern[a_current_state.a_currently_displayed_file_pattern.get()] = a_file_pattern_text->text();
         }
 
         for(std::map<scls::Text_Pattern*, std::string>::iterator it = a_opened_files_pattern.begin();it!=a_opened_files_pattern.end();it++) {
             it->first->set_base_text(scls::String(it->second));
         } a_opened_files_pattern.clear();
 
-        currently_displayed_pattern()->save_sda_0_1(a_current_path);
+        currently_displayed_pattern()->save_sda_0_1(a_current_state.a_currently_displayed_pattern.get()->path());
     }
 
     // Unset all the project
     void SCLS_Documentalist_GUI::unset_all() {
-        if(a_currently_displayed_file_pattern != 0) {
-            a_opened_files_pattern[a_currently_displayed_file_pattern] = a_file_pattern_text->text();
+        if(a_current_state.a_currently_displayed_file_pattern.get() != 0) {
+            a_opened_files_pattern[a_current_state.a_currently_displayed_file_pattern.get()] = a_file_pattern_text->text();
+        }
+        if(a_current_state.a_currently_displayed_replica_global_variable.get() != 0 && a_current_state.a_currently_displayed_replica_project.get() != 0) {
+            std::string content = a_replica_global_variables_text->plain_text();
+            a_current_state.a_currently_displayed_replica_project.get()->global_variables_values()[a_current_state.a_currently_displayed_replica_global_variable.get()->name] = content;
         }
 
         unload_create_replica_file_pattern_navigation_buttons();
 
-        a_currently_displayed_file_pattern = 0;
-        a_current_file_to_be_chosen = 0;
+        a_current_state.a_currently_displayed_file_pattern.reset();
+        a_current_state.a_currently_displayed_replica_global_variable.reset();
+        a_current_state.a_current_file_to_be_chosen = 0;
         parent_object()->hide_children();
     }
 
@@ -1188,16 +1235,16 @@ namespace scls_documentalist_gui {
     void SCLS_Documentalist_GUI::create_file_pattern() {
         std::string name = a_create_file_pattern_name->plain_text();
 
-        if(name != "" && !a_currently_displayed_pattern->contains_pattern_by_name(name)) {
+        if(name != "" && !a_current_state.a_currently_displayed_pattern->contains_pattern_by_name(name)) {
             create_file_pattern(name);
         }
     }
 
     // Create a file pattern
     void SCLS_Documentalist_GUI::create_file_pattern(std::string name) {
-        scls::Text_Pattern* new_pattern = a_currently_displayed_pattern->new_pattern(name, "");
+        std::shared_ptr<scls::Text_Pattern>* new_pattern = a_current_state.a_currently_displayed_pattern->new_pattern(name, "");
 
-        display_file_pattern(new_pattern);
+        display_file_pattern(*new_pattern);
         load_pattern_navigation_buttons();
     }
 
@@ -1205,7 +1252,6 @@ namespace scls_documentalist_gui {
     void SCLS_Documentalist_GUI::create_pattern(std::string name, std::string path) {
         path += "/" + name + "/";
         std::filesystem::create_directory(path);
-        a_current_path = path;
 
         std::shared_ptr<scls::Pattern_Project> new_pattern = std::make_shared<scls::Pattern_Project>(name, path + "/" + name + ".sda");
         a_loaded_patterns.push_back(new_pattern);
@@ -1228,9 +1274,8 @@ namespace scls_documentalist_gui {
     void SCLS_Documentalist_GUI::create_replica(std::string name, std::string path) {
         path += "/" + name + "/";
         std::filesystem::create_directory(path);
-        a_current_path = path;
 
-        std::shared_ptr<scls::Replica_Project> new_project = std::make_shared<scls::Replica_Project>(name, a_currently_displayed_pattern);
+        std::shared_ptr<scls::Replica_Project> new_project = std::make_shared<scls::Replica_Project>(name, path, a_current_state.a_currently_displayed_pattern);
         a_loaded_replicas.push_back(new_project);
 
         display_replica_main(new_project);
@@ -1253,7 +1298,6 @@ namespace scls_documentalist_gui {
 
         std::shared_ptr<scls::Pattern_Project> new_pattern; new_pattern.reset(scls::Pattern_Project::load_sda_0_1(path));
         path = scls::path_parent(path) + "/";
-        a_current_path = path;
 
         a_loaded_patterns.push_back(new_pattern);
         return (&a_loaded_patterns[a_loaded_patterns.size() - 1]);
@@ -1297,18 +1341,18 @@ namespace scls_documentalist_gui {
 
     // Create a replica file
     void SCLS_Documentalist_GUI::create_replica_file(std::string name, scls::Text_Pattern* pattern_file) {
-        scls::Replica_Project* replica_project = a_currently_displayed_replica_project.get();
+        scls::Replica_Project* replica_project = a_current_state.a_currently_displayed_replica_project.get();
         scls::Replica_File* new_replica = replica_project->add_replica_file(name, pattern_file);
 
         if(new_replica != 0) {
-            save_replica_project(a_currently_displayed_replica_project);
+            save_replica_project(a_current_state.a_currently_displayed_replica_project);
         }
     }
 
     // Create a replica file with the GUI datas
     void SCLS_Documentalist_GUI::create_replica_file() {
         std::string name = a_create_replica_file_name->plain_text();
-        scls::Text_Pattern* pattern_file = a_currently_displayed_replica_project.get()->attached_pattern()->patterns()[0].get();
+        scls::Text_Pattern* pattern_file = a_current_state.a_currently_displayed_replica_project.get()->attached_pattern()->patterns()[0].get();
 
         if(name != "") {
             create_replica_file(name, pattern_file);
@@ -1329,7 +1373,7 @@ namespace scls_documentalist_gui {
     void SCLS_Documentalist_GUI::export_replica_project() {
         std::string path = a_replica_export_body_path->plain_text();
 
-        export_replica_project(a_currently_displayed_replica_project, path);
+        export_replica_project(a_current_state.a_currently_displayed_replica_project, path);
     }
 
     // Load the buttons in the create replica file pattern navigation
@@ -1338,7 +1382,7 @@ namespace scls_documentalist_gui {
 
         // Load each buttons
         scls::GUI_Text* last_current_button = 0;
-        std::vector<std::shared_ptr<scls::Text_Pattern>>& patterns = a_currently_displayed_replica_project.get()->attached_pattern()->patterns();
+        std::vector<std::shared_ptr<scls::Text_Pattern>>& patterns = a_current_state.a_currently_displayed_replica_project.get()->attached_pattern()->patterns();
         for(int i = 0;i<static_cast<int>(patterns.size());i++) {
             scls::Text_Pattern* current_pattern = patterns[static_cast<int>(patterns.size()) - (i + 1)].get();
             scls::GUI_Text* current_button = a_create_replica_pattern_file->new_object_in_scroller<scls::GUI_Text>("create_replica_file_pattern_" + std::to_string(static_cast<int>(patterns.size()) - (i + 1)));
@@ -1366,7 +1410,7 @@ namespace scls_documentalist_gui {
         scls::GUI_Text* current_button = a_replica_navigation->new_object_in_scroller<scls::GUI_Text>("replica_navigation_home_button");
         current_button->set_font_size(75);
         current_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
-        current_button->set_text(a_hud_text_content["replica_home"]);
+        current_button->set_text(a_gui_text_content["replica_home"]);
         current_button->set_texture_alignment(scls::Alignment_Texture::T_Fit);
         current_button->set_height_in_pixel(75);
         current_button->set_width_in_scale(scls::Fraction(1));
@@ -1406,7 +1450,6 @@ namespace scls_documentalist_gui {
         // Create the replica
         std::shared_ptr<scls::Replica_Project> new_replica; new_replica.reset(scls::Replica_Project::load_sda_0_2(path, *needed_pattern));
         path = scls::path_parent(path) + "/";
-        a_current_path = path;
 
         a_loaded_replicas.push_back(new_replica);
         display_replica_main(new_replica);
@@ -1416,7 +1459,7 @@ namespace scls_documentalist_gui {
     void SCLS_Documentalist_GUI::save_replica_project(const std::shared_ptr<scls::Replica_Project>& replica_project_to_save) {
         if(replica_project_to_save.get() == 0) return;
 
-        replica_project_to_save.get()->save_sda_0_2(a_current_path);
+        replica_project_to_save.get()->save_sda_0_2(replica_project_to_save.get()->path());
     }
 
     //*********
@@ -1440,28 +1483,28 @@ namespace scls_documentalist_gui {
             else if(a_create_pattern_path_change->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
                 a_file_explorer->set_current_user_document_directory();
                 display_file_explorer();
-                a_current_file_to_be_chosen = _SCLS_CURRENT_FILE_TO_BE_CHOSEN_CREATE_PATTERN;
+                a_current_state.a_current_file_to_be_chosen = _SCLS_CURRENT_FILE_TO_BE_CHOSEN_CREATE_PATTERN;
             }
 
             // Handle file explorer
             if(a_file_explorer->file_chosen()) {
-                if(a_current_file_to_be_chosen == _SCLS_CURRENT_FILE_TO_BE_CHOSEN_CREATE_PATTERN) {
+                if(a_current_state.a_current_file_to_be_chosen == _SCLS_CURRENT_FILE_TO_BE_CHOSEN_CREATE_PATTERN) {
                     a_create_pattern_path->set_text(a_file_explorer->currently_selected_path());
                     display_create_pattern();
                 }
-                else if(a_current_file_to_be_chosen == _SCLS_CURRENT_FILE_TO_BE_CHOSEN_OPEN_PATTERN) {
+                else if(a_current_state.a_current_file_to_be_chosen == _SCLS_CURRENT_FILE_TO_BE_CHOSEN_OPEN_PATTERN) {
                     open_pattern(a_file_explorer->currently_selected_path());
                 }
-                else if(a_current_file_to_be_chosen == _SCLS_CURRENT_FILE_TO_BE_CHOSEN_CREATE_REPLICA) {
+                else if(a_current_state.a_current_file_to_be_chosen == _SCLS_CURRENT_FILE_TO_BE_CHOSEN_CREATE_REPLICA) {
                     a_create_replica_path->set_text(a_file_explorer->currently_selected_path());
                     display_create_replica();
                 }
-                else if(a_current_file_to_be_chosen == _SCLS_CURRENT_FILE_TO_BE_CHOSEN_OPEN_REPLICA) {
+                else if(a_current_state.a_current_file_to_be_chosen == _SCLS_CURRENT_FILE_TO_BE_CHOSEN_OPEN_REPLICA) {
                     open_replica(a_file_explorer->currently_selected_path());
                 }
-                else if(a_current_file_to_be_chosen == _SCLS_CURRENT_FILE_TO_BE_CHOSEN_EXPORT_REPLICA) {
+                else if(a_current_state.a_current_file_to_be_chosen == _SCLS_CURRENT_FILE_TO_BE_CHOSEN_EXPORT_REPLICA) {
                     a_replica_export_body_path->set_text(a_file_explorer->currently_selected_path());
-                    display_replica_export(a_currently_displayed_replica_project);
+                    display_replica_export(a_current_state.a_currently_displayed_replica_project);
                 }
             }
 
@@ -1469,7 +1512,7 @@ namespace scls_documentalist_gui {
             if(a_welcome_footer_open_pattern->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
                 a_file_explorer->set_current_user_document_directory();
                 display_file_explorer();
-                a_current_file_to_be_chosen = _SCLS_CURRENT_FILE_TO_BE_CHOSEN_OPEN_PATTERN;
+                a_current_state.a_current_file_to_be_chosen = _SCLS_CURRENT_FILE_TO_BE_CHOSEN_OPEN_PATTERN;
             }
 
             if(a_create_pattern_validation->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
@@ -1494,7 +1537,7 @@ namespace scls_documentalist_gui {
             if(a_create_replica_path_change->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
                 a_file_explorer->set_current_user_document_directory();
                 display_file_explorer();
-                a_current_file_to_be_chosen = _SCLS_CURRENT_FILE_TO_BE_CHOSEN_CREATE_REPLICA;
+                a_current_state.a_current_file_to_be_chosen = _SCLS_CURRENT_FILE_TO_BE_CHOSEN_CREATE_REPLICA;
             }
             if(a_create_replica_validation->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
                 create_replica();
@@ -1505,15 +1548,18 @@ namespace scls_documentalist_gui {
             if(a_welcome_footer_open_replica->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
                 a_file_explorer->set_current_user_document_directory();
                 display_file_explorer();
-                a_current_file_to_be_chosen = _SCLS_CURRENT_FILE_TO_BE_CHOSEN_OPEN_REPLICA;
+                a_current_state.a_current_file_to_be_chosen = _SCLS_CURRENT_FILE_TO_BE_CHOSEN_OPEN_REPLICA;
             }
             if(a_create_replica_file_validation->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
                 create_replica_file();
             }
+            if(a_replica_footer_save_all->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                save_replica_project(a_current_state.a_currently_displayed_replica_project);
+            }
 
             // Handle replica export
             if(a_replica_footer_export->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
-                display_replica_export(a_currently_displayed_replica_project);
+                display_replica_export(a_current_state.a_currently_displayed_replica_project);
             }
             if(a_replica_export_body_validation->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
                 export_replica_project();
@@ -1521,18 +1567,34 @@ namespace scls_documentalist_gui {
             if(a_replica_export_body_path_change->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
                 a_file_explorer->set_current_user_document_directory();
                 display_file_explorer();
-                a_current_file_to_be_chosen = _SCLS_CURRENT_FILE_TO_BE_CHOSEN_EXPORT_REPLICA;
+                a_current_state.a_current_file_to_be_chosen = _SCLS_CURRENT_FILE_TO_BE_CHOSEN_EXPORT_REPLICA;
+            }
+
+            // Handle replica navigation buttons
+            if(a_replica_navigation_buttons.size() > 0) {
+                if(a_replica_navigation_buttons[0]->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                    display_replica_main(a_current_state.a_currently_displayed_replica_project);
+                }
+            }
+
+            // Handle replica global variables buttons
+            if(a_replica_main_global_variable_buttons.size() > 0) {
+                for(int i = 0;i<static_cast<int>(a_replica_main_global_variable_buttons.size());i++) {
+                    if(a_replica_main_global_variable_buttons[i]->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                        display_replica_global_variable(a_current_state.a_currently_displayed_replica_project.get()->attached_pattern()->global_variables()[i]);
+                    }
+                }
             }
 
             // Handle pattern navigation buttons
             if(a_pattern_navigation_buttons.size() > 0) {
                 if(a_pattern_navigation_buttons[0]->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
-                    display_pattern_main(a_currently_displayed_pattern.get());
+                    display_pattern_main(a_current_state.a_currently_displayed_pattern.get());
                 }
                 else {
                     for(int i = 0;i<static_cast<int>(a_pattern_navigation_buttons.size());i++) {
                         if(a_pattern_navigation_buttons[i]->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
-                            display_file_pattern(a_currently_displayed_pattern.get()->patterns()[i - 1].get());
+                            display_file_pattern(a_current_state.a_currently_displayed_pattern.get()->patterns()[i - 1]);
                         }
                     }
                 }

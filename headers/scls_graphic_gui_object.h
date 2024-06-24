@@ -189,9 +189,9 @@ namespace scls {
         // Returns the position of the mouse in scale
         glm::vec2 mouse_position_in_scale();
         // One pixel in height
-        inline Fraction one_pixel_height_in_scale() const {if(parent()==0)return one_pixel_height_in_absolute_scale();return one_pixel_height_in_absolute_scale() / height_in_absolute_scale();};
+        inline Fraction one_pixel_height_in_scale() const {if(parent()==0)return one_pixel_height_in_absolute_scale();return Fraction(1, height_in_pixel());};
         // One pixel in width
-        inline Fraction one_pixel_width_in_scale() const {if(parent()==0)return one_pixel_width_in_absolute_scale();return one_pixel_width_in_absolute_scale() / width_in_absolute_scale();};
+        inline Fraction one_pixel_width_in_scale() const {if(parent()==0)return one_pixel_width_in_absolute_scale();return Fraction(1, width_in_pixel());};
         // Returns the width of the object in scale
         Fraction width_in_scale() const;
         // Returns the x of the object in scale

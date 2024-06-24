@@ -96,7 +96,7 @@ namespace scls_documentalist_gui {
         void unload_patterns();
 
         // Getters and setters
-        inline scls::Pattern_Project* currently_displayed_pattern() const { return a_currently_displayed_pattern.get(); };
+        inline scls::Pattern_Project* currently_displayed_pattern() const { return a_current_state.a_currently_displayed_pattern.get(); };
 
         //*********
         //
@@ -134,7 +134,7 @@ namespace scls_documentalist_gui {
         inline void unload_create_replica_file_pattern_navigation_buttons() {a_create_replica_pattern_file->reset(); };
 
         // Getters and setters
-        inline scls::Replica_Project* currently_displayed_replica() const { return a_currently_displayed_replica_project.get(); };
+        inline scls::Replica_Project* currently_displayed_replica() const { return a_current_state.a_currently_displayed_replica_project.get(); };
 
         //*********
         //
@@ -183,6 +183,8 @@ namespace scls_documentalist_gui {
         void load_pattern_footer();
         // Load the replica footer
         void load_replica_footer();
+        // Load the replica global variables
+        void load_replica_global_variables();
         // Load the welcome page footer
         void load_welcome_footer();
 
@@ -206,13 +208,15 @@ namespace scls_documentalist_gui {
         // Display the file explorer of the software
         void display_file_explorer();
         // Display a file pattern of a project
-        void display_file_pattern(scls::Text_Pattern* pattern_to_display);
+        void display_file_pattern(const std::shared_ptr<scls::Text_Pattern>& pattern_to_display);
         // Display the help part of the software
         void display_help();
         // Display the main page of a pattern
         void display_pattern_main(scls::Pattern_Project* project_to_display);
         // Display the export page of a replica
         void display_replica_export(const std::shared_ptr<scls::Replica_Project>& replica_to_export);
+        // Display the global variable of a replica
+        void display_replica_global_variable(const std::shared_ptr<scls::Pattern_Variable>& replica_global_variable);
         // Display the main page of a replica
         void display_replica_main(const std::shared_ptr<scls::Replica_Project>& replica_to_display);
 
@@ -234,12 +238,36 @@ namespace scls_documentalist_gui {
         inline scls::GUI_Object* parent_object() {return a_page->parent_object();};
     private:
 
-        // Current path of the program
-        std::string a_current_path = "";
-        // Currently displayed file_pattern
-        scls::Text_Pattern* a_currently_displayed_file_pattern = 0;
-        // Currently displayed pattern
-        std::shared_ptr<scls::Pattern_Project> a_currently_displayed_pattern = 0;
+        //*********
+        //
+        // Main software attributes
+        //
+        //*********
+
+        // Current state of the software
+        struct {
+            // Current state to know how to use the chosen file with the file explorer
+            unsigned char a_current_file_to_be_chosen = 0;
+
+            // Displayed things
+            // Currently displayed file pattern
+            std::shared_ptr<scls::Text_Pattern> a_currently_displayed_file_pattern;
+            // Currently displayed pattern
+            std::shared_ptr<scls::Pattern_Project> a_currently_displayed_pattern = 0;
+            // Currently displayed pattern variable
+            std::shared_ptr<scls::Pattern_Variable> a_currently_displayed_replica_global_variable = 0;
+            // Currently displayed replica project
+            std::shared_ptr<scls::Replica_Project> a_currently_displayed_replica_project;
+        } a_current_state;
+        // Content of each GUI text in the current langage language
+        std::map<std::string, std::string> a_gui_text_content = std::map<std::string, std::string>();
+
+        //*********
+        //
+        // Pattern project handling attributes
+        //
+        //*********
+
         // Every loaded projects
         std::vector<std::shared_ptr<scls::Pattern_Project>> a_loaded_patterns = std::vector<std::shared_ptr<scls::Pattern_Project>>();
         // Every opened patterns files
@@ -253,8 +281,6 @@ namespace scls_documentalist_gui {
         //
         //*********
 
-        // Currently displayed replica project
-        std::shared_ptr<scls::Replica_Project> a_currently_displayed_replica_project;
         // Every loaded projects
         std::vector<std::shared_ptr<scls::Replica_Project>> a_loaded_replicas = std::vector<std::shared_ptr<scls::Replica_Project>>();
         // Buttons in the replica global variables in the main body
@@ -267,9 +293,6 @@ namespace scls_documentalist_gui {
         // Annoying GUI stuff
         //
         //*********
-
-        // Current state to know how to use the chosen file with the file explorer
-        unsigned char a_current_file_to_be_chosen = 0;
 
         // Main page of the GUI
         scls::GUI_Page* a_page = 0;
@@ -354,9 +377,6 @@ namespace scls_documentalist_gui {
         // Home text of the help body
         scls::GUI_Text* a_help_navigation_home_button = 0;
 
-        // Content of each HUD text in a specified language
-        std::map<std::string, std::string> a_hud_text_content = std::map<std::string, std::string>();
-
         // Main header for the mains buttons
         // Parent page of the header
         scls::GUI_Object* a_main_header = 0;
@@ -406,6 +426,12 @@ namespace scls_documentalist_gui {
         scls::GUI_Text* a_replica_footer_export = 0;
         // Button to save all in the replica footer
         scls::GUI_Text* a_replica_footer_save_all = 0;
+
+        // Global variables body of the replica
+        // Parent page of the replica global variables body
+        scls::GUI_Object* a_replica_global_variables_body = 0;
+        // Text in the replica global variables body
+        scls::GUI_Text_Input* a_replica_global_variables_text = 0;
 
         // Body of the replica main
         // Parent page of the replica main body
