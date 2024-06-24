@@ -155,6 +155,7 @@ namespace scls_documentalist_gui {
     void SCLS_Documentalist_GUI::display_replica_global_variable(const std::shared_ptr<scls::Pattern_Variable>& replica_global_variable) {
         unset_all();
         a_current_state.a_currently_displayed_replica_global_variable = replica_global_variable;
+        a_replica_global_variables_text->set_text(a_current_state.a_currently_displayed_replica_project.get()->global_variables_values()[replica_global_variable.get()->name]);
 
         a_main_header->set_visible(true);
         a_replica_footer->set_visible(true);
@@ -1198,7 +1199,7 @@ namespace scls_documentalist_gui {
             it->first->set_base_text(scls::String(it->second));
         } a_opened_files_pattern.clear();
 
-        currently_displayed_pattern()->save_sda_0_1(a_current_state.a_currently_displayed_pattern.get()->path());
+        currently_displayed_pattern()->save_sda_0_1(a_current_state.a_currently_displayed_pattern.get()->directory());
     }
 
     // Unset all the project
@@ -1207,7 +1208,7 @@ namespace scls_documentalist_gui {
             a_opened_files_pattern[a_current_state.a_currently_displayed_file_pattern.get()] = a_file_pattern_text->text();
         }
         if(a_current_state.a_currently_displayed_replica_global_variable.get() != 0 && a_current_state.a_currently_displayed_replica_project.get() != 0) {
-            std::string content = a_replica_global_variables_text->plain_text();
+            std::string content = a_replica_global_variables_text->text();
             a_current_state.a_currently_displayed_replica_project.get()->global_variables_values()[a_current_state.a_currently_displayed_replica_global_variable.get()->name] = content;
         }
 
@@ -1458,6 +1459,10 @@ namespace scls_documentalist_gui {
     // Save a project replica
     void SCLS_Documentalist_GUI::save_replica_project(const std::shared_ptr<scls::Replica_Project>& replica_project_to_save) {
         if(replica_project_to_save.get() == 0) return;
+        if(a_current_state.a_currently_displayed_replica_global_variable.get() != 0 && a_current_state.a_currently_displayed_replica_project.get() != 0) {
+            std::string content = a_replica_global_variables_text->text();
+            a_current_state.a_currently_displayed_replica_project.get()->global_variables_values()[a_current_state.a_currently_displayed_replica_global_variable.get()->name] = content;
+        }
 
         replica_project_to_save.get()->save_sda_0_2(replica_project_to_save.get()->path());
     }
@@ -1581,7 +1586,7 @@ namespace scls_documentalist_gui {
             if(a_replica_main_global_variable_buttons.size() > 0) {
                 for(int i = 0;i<static_cast<int>(a_replica_main_global_variable_buttons.size());i++) {
                     if(a_replica_main_global_variable_buttons[i]->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
-                        display_replica_global_variable(a_current_state.a_currently_displayed_replica_project.get()->attached_pattern()->global_variables()[i]);
+                        display_replica_global_variable(a_current_state.a_currently_displayed_replica_project.get()->attached_pattern()->global_variables()[a_replica_main_global_variable_buttons.size() - (i + 1)]);
                     }
                 }
             }

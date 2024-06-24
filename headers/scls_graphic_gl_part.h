@@ -1,12 +1,37 @@
-#pragma once
+//******************
+//
+// scls_graphic_gl_part.h
+//
+//******************
+// Presentation :
+//
+// SCLS is a project containing base functions for C++.
+// It can also be use in any projects.
+//
+// The 3D "Margaret" part allows the user to simply display a 3D graphic window.
+//
+// This file contains the lowest level OpenGL handling.
+//
+
+#ifndef SCLS_GRAPHIC_GL_PART
+#define SCLS_GRAPHIC_GL_PART
 
 #include "../headers/scls_graphic_window_base_struct.h"
 
+// Using of the "scls" namespace to simplify the programmation
 namespace scls {
-    struct Shader_Program_Variable
-    {
+
+    //*********
+    //
+    // The Shaders handling
+    //
+    //*********
+
+    struct Shader_Program_Variable {
         // Struct representing the values for a "in" variable in the shader program
+        // Type of the shader program
         unsigned short type = GL_FLOAT; // 0 = GL_FLOAT
+        // Size of the variable, in vector part
         unsigned short vector_size = 1;
     };
 
@@ -127,146 +152,168 @@ namespace scls {
         std::string vertex_shader = ""; // Content of the vertex shader
     };
 
+    //*********
+    //
+    // The VBO class
+    //
+    //*********
+
     class VBO {
         // Class representing a VBO interface
     public:
         // Most basic VBO constructor
         VBO();
-        VBO(std::vector<Shader_Program_Variable> attributes, std::vector<float> datas, bool use_ebo = true); // VBO complete constructor
+        VBO(std::vector<Shader_Program_Variable> attributes, std::vector<double> datas, bool use_ebo = true); // VBO complete constructor
         VBO(std::vector<Shader_Program_Variable> attributes, bool fill_datas = true, bool use_ebo = true); // VBO constructor
         void bind(); // Bind the VBO into the GPU memory
         void bind_buffer(); // Bind the buffer data of the VBO
         unsigned int get_vertice_number(); // Returns the number of vertices into the VBO
         // Load the VBO from binary
         void load_from_binary(char* binary);
-        void load_from_file(std::string path); // Load the vertices from a file
+        // Load the vertices from a file
+        void load_from_file(std::string path);
         // Load the VBO into the GPU memory
         void load_vbo();
         // Create a new VBO from this one
         VBO* new_copy();
-        void unbind(); // Unbind the VBO from the GPU memory
-        ~VBO(); // VBO destructor
+        // Unbind the VBO from the GPU memory
+        void unbind();
+        // VBO destructor
+        ~VBO();
 
-        // Getters and setters
-        inline std::vector<Shader_Program_Variable> *get_attributes() { return &a_attributes; };
-        static std::vector<float> get_base_hud_vbo(std::vector<Shader_Program_Variable> attributes) {
-            std::vector<float> a_datas = std::vector<float>();
-            a_datas.push_back(1.0f);
-            a_datas.push_back(1.0f);
-            a_datas.push_back(0.0f);
+        // Returns the datas convert in float
+        std::vector<float> datas_to_float() {
+            std::vector<float> datas = std::vector<float>();
+            std::vector<double>& base_datas = a_datas;
+            for(int i = 0;i<static_cast<int>(base_datas.size());i++) {
+                datas.push_back(base_datas[i]);
+            }
+            return datas;
+        };
 
-            a_datas.push_back(1.0f);
-            a_datas.push_back(1.0f);
+        // Built-in VBOs
+        // Returns the datas for a gui vbo
+        static std::vector<double> gui_vbo(std::vector<Shader_Program_Variable> attributes) {
+            std::vector<double> a_datas = std::vector<double>();
+            a_datas.push_back(1.0);
+            a_datas.push_back(1.0);
+            a_datas.push_back(0.0);
+
+            a_datas.push_back(1.0);
+            a_datas.push_back(1.0);
 
             if (attributes.size() > 2) {
-                a_datas.push_back(0.0f);
-                a_datas.push_back(0.0f);
-                a_datas.push_back(1.0f);
-                a_datas.push_back(1.0f);
+                a_datas.push_back(0.0);
+                a_datas.push_back(0.0);
+                a_datas.push_back(1.0);
+                a_datas.push_back(1.0);
 
-                a_datas.push_back(0.0f);
-                a_datas.push_back(-1.0f);
-                a_datas.push_back(1.0f);
+                a_datas.push_back(0.0);
+                a_datas.push_back(-1.0);
+                a_datas.push_back(1.0);
             }
 
-            a_datas.push_back(0.0f);
-            a_datas.push_back(1.0f);
-            a_datas.push_back(0.0f);
+            a_datas.push_back(0.0);
+            a_datas.push_back(1.0);
+            a_datas.push_back(0.0);
 
-            a_datas.push_back(0.0f);
-            a_datas.push_back(1.0f);
+            a_datas.push_back(0.0);
+            a_datas.push_back(1.0);
 
             if (attributes.size() > 2)
             {
-                a_datas.push_back(0.0f);
-                a_datas.push_back(0.0f);
-                a_datas.push_back(1.0f);
-                a_datas.push_back(1.0f);
+                a_datas.push_back(0.0);
+                a_datas.push_back(0.0);
+                a_datas.push_back(1.0);
+                a_datas.push_back(1.0);
 
-                a_datas.push_back(0.0f);
-                a_datas.push_back(-1.0f);
-                a_datas.push_back(1.0f);
+                a_datas.push_back(0.0);
+                a_datas.push_back(-1.0);
+                a_datas.push_back(1.0);
             }
 
-            a_datas.push_back(1.0f);
-            a_datas.push_back(0.0f);
-            a_datas.push_back(0.0f);
+            a_datas.push_back(1.0);
+            a_datas.push_back(0.0);
+            a_datas.push_back(0.0);
 
-            a_datas.push_back(1.0f);
-            a_datas.push_back(0.0f);
+            a_datas.push_back(1.0);
+            a_datas.push_back(0.0);
 
             if (attributes.size() > 2)
             {
-                a_datas.push_back(0.0f);
-                a_datas.push_back(0.0f);
-                a_datas.push_back(1.0f);
-                a_datas.push_back(1.0f);
+                a_datas.push_back(0.0);
+                a_datas.push_back(0.0);
+                a_datas.push_back(1.0);
+                a_datas.push_back(1.0);
 
-                a_datas.push_back(0.0f);
-                a_datas.push_back(-1.0f);
-                a_datas.push_back(1.0f);
+                a_datas.push_back(0.0);
+                a_datas.push_back(-1.0);
+                a_datas.push_back(1.0);
             }
 
-            a_datas.push_back(1.0f);
-            a_datas.push_back(0.0f);
-            a_datas.push_back(0.0f);
+            a_datas.push_back(1.0);
+            a_datas.push_back(0.0);
+            a_datas.push_back(0.0);
 
-            a_datas.push_back(1.0f);
-            a_datas.push_back(0.0f);
+            a_datas.push_back(1.0);
+            a_datas.push_back(0.0);
 
             if (attributes.size() > 2)
             {
-                a_datas.push_back(0.0f);
-                a_datas.push_back(0.0f);
-                a_datas.push_back(1.0f);
-                a_datas.push_back(1.0f);
+                a_datas.push_back(0.0);
+                a_datas.push_back(0.0);
+                a_datas.push_back(1.0);
+                a_datas.push_back(1.0);
 
-                a_datas.push_back(0.0f);
-                a_datas.push_back(-1.0f);
-                a_datas.push_back(1.0f);
+                a_datas.push_back(0.0);
+                a_datas.push_back(-1.0);
+                a_datas.push_back(1.0);
             }
 
-            a_datas.push_back(0.0f);
-            a_datas.push_back(0.0f);
-            a_datas.push_back(0.0f);
+            a_datas.push_back(0.0);
+            a_datas.push_back(0.0);
+            a_datas.push_back(0.0);
 
-            a_datas.push_back(0.0f);
-            a_datas.push_back(0.0f);
+            a_datas.push_back(0.0);
+            a_datas.push_back(0.0);
 
             if (attributes.size() > 2)
             {
-                a_datas.push_back(0.0f);
-                a_datas.push_back(0.0f);
-                a_datas.push_back(1.0f);
-                a_datas.push_back(1.0f);
+                a_datas.push_back(0.0);
+                a_datas.push_back(0.0);
+                a_datas.push_back(1.0);
+                a_datas.push_back(1.0);
 
-                a_datas.push_back(0.0f);
-                a_datas.push_back(-1.0f);
-                a_datas.push_back(1.0f);
+                a_datas.push_back(0.0);
+                a_datas.push_back(-1.0);
+                a_datas.push_back(1.0);
             }
 
-            a_datas.push_back(0.0f);
-            a_datas.push_back(1.0f);
-            a_datas.push_back(0.0f);
+            a_datas.push_back(0.0);
+            a_datas.push_back(1.0);
+            a_datas.push_back(0.0);
 
-            a_datas.push_back(0.0f);
-            a_datas.push_back(1.0f);
+            a_datas.push_back(0.0);
+            a_datas.push_back(1.0);
 
             if (attributes.size() > 2)
             {
-                a_datas.push_back(0.0f);
-                a_datas.push_back(0.0f);
-                a_datas.push_back(1.0f);
-                a_datas.push_back(1.0f);
+                a_datas.push_back(0.0);
+                a_datas.push_back(0.0);
+                a_datas.push_back(1.0);
+                a_datas.push_back(1.0);
 
-                a_datas.push_back(0.0f);
-                a_datas.push_back(-1.0f);
-                a_datas.push_back(1.0f);
+                a_datas.push_back(0.0);
+                a_datas.push_back(-1.0);
+                a_datas.push_back(1.0);
             }
 
             return a_datas;
         }
-        inline std::vector<float> get_datas() { return a_datas; };
+
+        // Getters and setters
+        inline std::vector<Shader_Program_Variable> *get_attributes() { return &a_attributes; };
+        inline std::vector<double> get_datas() { return a_datas; };
         inline std::vector<unsigned int> get_indices() { return a_indices; };
         inline unsigned int* get_indices_in_array() { return a_indices.data(); };
         inline unsigned int& get_vbo() { return vbo; };
@@ -280,8 +327,14 @@ namespace scls {
         std::vector<Shader_Program_Variable> a_attributes = std::vector<Shader_Program_Variable>(); // Each Shader_Program_Variable in the VBO
     protected:
         std::vector<unsigned int> a_indices = std::vector<unsigned int>(); // Each EBOs in the VBO
-        std::vector<float> a_datas = std::vector<float>(); // Each vertices in the VBO
+        std::vector<double> a_datas = std::vector<double>(); // Each vertices in the VBO
     };
+
+    //*********
+    //
+    // The VAO class
+    //
+    //*********
 
     class VAO {
         // Class representing a VAO interface
@@ -317,6 +370,12 @@ namespace scls {
         Shader_Program *a_shader_program = 0;
         VBO *a_vbo = 0; // Pointer to the VBO
     };
+
+    //*********
+    //
+    // The Texture class
+    //
+    //*********
 
     class Texture {
         // Class representing a texture interface
@@ -386,3 +445,5 @@ namespace scls {
         int width = 0; // Width of the texture
     };
 }
+
+#endif // SCLS_GRAPHIC_GL_PART

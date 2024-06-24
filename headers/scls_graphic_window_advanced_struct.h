@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../headers/scls_graphic_window_base_struct.h"
-#include "../headers/model.h"
+#include "scls_graphic_window_base_struct.h"
+#include "scls_graphic_gl_part.h"
 
 // Using of the "scls" namespace to simplify the programmation
 namespace scls {

@@ -15,7 +15,6 @@
 //
 
 #include "../headers/scls_graphic_window.h"
-#include "../headers/model.h"
 
 // Using of the "scls" namespace to simplify the programmation
 namespace scls {

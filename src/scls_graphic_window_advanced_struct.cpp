@@ -39,11 +39,11 @@ namespace scls {
         textures()["white"] = std::make_shared<Texture>(5, 5, glm::vec4(255, 255, 255, 255));
 
         // Define attributes for VAOs
-        std::vector<Shader_Program_Variable> hud_attributes = _base_hud_shader_program_variables();
+        std::vector<Shader_Program_Variable> gui_attributes = _base_hud_shader_program_variables();
 
         // Create VAOs
-        VBO hud_vbo = VBO(hud_attributes, VBO::get_base_hud_vbo(hud_attributes), false);
-        vaos()["hud_default"] = new VAO(a_shaders_programs["hud_default"], hud_attributes, &hud_vbo);
+        VBO hud_vbo = VBO(gui_attributes, VBO::gui_vbo(gui_attributes), false);
+        vaos()["hud_default"] = new VAO(a_shaders_programs["hud_default"], gui_attributes, &hud_vbo);
         vaos()["hud_default"]->load_vao();
     }
 

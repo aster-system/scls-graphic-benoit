@@ -103,23 +103,25 @@ namespace scls {
 
     // Hidden parts of the render object
     void Object::_render(glm::mat4 matrix) {
-        // Write some uniform variables into the shader
-        vao()->get_shader_program()->set_uniform4fv_value("model", matrix);
-        if(texture() == 0) {
-            vao()->get_shader_program()->set_uniformb_value("texture_binded", false);
-        }
-        else {
-            texture()->bind(); // Bind the texture
-            vao()->get_shader_program()->set_uniformb_value("texture_binded", true);
-        }
+        if(vao() != 0) {
+            // Write some uniform variables into the shader
+            vao()->get_shader_program()->set_uniform4fv_value("model", matrix);
+            if(texture() == 0) {
+                vao()->get_shader_program()->set_uniformb_value("texture_binded", false);
+            }
+            else {
+                texture()->bind(); // Bind the texture
+                vao()->get_shader_program()->set_uniformb_value("texture_binded", true);
+            }
 
-        if (texture() != 0 && texture()->use_resize())
-        {
-            vao()->render(transform()->get_scale()); // Render the object with scaling
-        }
-        else
-        {
-            vao()->render(); // Render the object without scaling
+            if (texture() != 0 && texture()->use_resize())
+            {
+                vao()->render(transform()->get_scale()); // Render the object with scaling
+            }
+            else
+            {
+                vao()->render(); // Render the object without scaling
+            }
         }
 
         for(int i = 0;i<static_cast<int>(children().size());i++) {

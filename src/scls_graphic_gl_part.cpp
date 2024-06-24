@@ -1,21 +1,40 @@
-#include "../headers/model.h"
+//******************
+//
+// scls_graphic_gl_part.cpp
+//
+//******************
+// Presentation :
+//
+// SCLS is a project containing base functions for C++.
+// It can also be use in any projects.
+//
+// The 3D "Margaret" part allows the user to simply display a 3D graphic window.
+//
+// This file contains the source code of scls_graphic_gl_part.h.
+//
+
+#include "../headers/scls_graphic_gl_part.h"
 
 namespace scls {
+
+    //*********
+    //
+    // The Shaders handling
+    //
+    //*********
+
     // Shader_Program constructor
-    Shader_Program::Shader_Program(Built_In_Shader shader_type) : Shader_Program(Shader_Program::get_built_in_vertex_shader(shader_type), Shader_Program::get_built_in_fragment_shader(shader_type))
-    {
+    Shader_Program::Shader_Program(Built_In_Shader shader_type) : Shader_Program(Shader_Program::get_built_in_vertex_shader(shader_type), Shader_Program::get_built_in_fragment_shader(shader_type)) {
 
     }
 
     // Shader_Program constructor
-    Shader_Program::Shader_Program(std::string a_vertex_shader, std::string a_fragment_shader): fragment_shader(a_fragment_shader), vertex_shader(a_vertex_shader)
-    {
+    Shader_Program::Shader_Program(std::string a_vertex_shader, std::string a_fragment_shader): fragment_shader(a_fragment_shader), vertex_shader(a_vertex_shader) {
 
     }
 
     // Load the Shader
-    void Shader_Program::load_shader()
-    {
+    void Shader_Program::load_shader() {
         // Convert the fragment and vertex shader (string) to an char*
         char* char_array_fragment = new char[get_fragment_shader().length() + 1];
         char_array_fragment[get_fragment_shader().length()] = '\0';
@@ -76,16 +95,14 @@ namespace scls {
     }
 
     // Create a new Shader_Program from this one
-    Shader_Program* Shader_Program::new_copy()
-    {
+    Shader_Program* Shader_Program::new_copy() {
         Shader_Program* copy = new Shader_Program(vertex_shader, fragment_shader);
 
         return copy;
     }
 
     // Pass variable to the shader program
-    void Shader_Program::pass_variable(std::vector<Shader_Program_Variable> *variables)
-    {
+    void Shader_Program::pass_variable(std::vector<Shader_Program_Variable> *variables) {
         // Define necessary variable size for binding
         unsigned int total_size = 0;
         for (std::vector<Shader_Program_Variable>::iterator it = variables->begin(); it != variables->end(); it++)
@@ -118,71 +135,68 @@ namespace scls {
     }
 
     // Change the value of a uniform float value
-    void Shader_Program::set_uniform1f_value(std::string name, float v1)
-    {
+    void Shader_Program::set_uniform1f_value(std::string name, float v1) {
         int uniform_location = glGetUniformLocation(shader_program, name.c_str());
         use();
         glUniform1f(uniform_location, v1);
     }
 
     // Change the value of a uniform vec2 float value
-    void Shader_Program::set_uniform2f_value(std::string name, float v1, float v2)
-    {
+    void Shader_Program::set_uniform2f_value(std::string name, float v1, float v2) {
         int uniform_location = glGetUniformLocation(shader_program, name.c_str());
         use();
         glUniform2f(uniform_location, v1, v2);
     }
 
     // Change the value of a uniform vec3 float value
-    void Shader_Program::set_uniform3f_value(std::string name, float v1, float v2, float v3)
-    {
+    void Shader_Program::set_uniform3f_value(std::string name, float v1, float v2, float v3) {
         int uniform_location = glGetUniformLocation(shader_program, name.c_str());
         use();
         glUniform3f(uniform_location, v1, v2, v3);
     }
 
     // Change the value of a uniform vec4 float value
-    void Shader_Program::set_uniform4f_value(std::string name, float v1, float v2, float v3, float v4)
-    {
+    void Shader_Program::set_uniform4f_value(std::string name, float v1, float v2, float v3, float v4) {
         int uniform_location = glGetUniformLocation(shader_program, name.c_str());
         use();
         glUniform4f(uniform_location, v1, v2, v3, v4);
     }
 
     // Change the value of a uniform vec4 float value
-    void Shader_Program::set_uniform4f_value(std::string name, glm::vec4 v)
-    {
+    void Shader_Program::set_uniform4f_value(std::string name, glm::vec4 v) {
         set_uniform4f_value(name, v[0], v[1], v[2], v[3]);
     }
 
     // Change the value of a matrix mat4 float value
-    void Shader_Program::set_uniform4fv_value(std::string name, glm::mat4 fv)
-    {
+    void Shader_Program::set_uniform4fv_value(std::string name, glm::mat4 fv) {
         use();
         int uniform_location = glGetUniformLocation(shader_program, name.c_str());
         glUniformMatrix4fv(uniform_location, 1, GL_FALSE, glm::value_ptr(fv));
     }
 
     // Start using the shader
-    void Shader_Program::use()
-    {
+    void Shader_Program::use() {
         glUseProgram(shader_program);
     }
 
     // Shader_Program destructor
-    Shader_Program::~Shader_Program()
-    {
-        if(loaded())glDeleteProgram(shader_program);
+    Shader_Program::~Shader_Program() {
+        if(loaded()) glDeleteProgram(shader_program);
     }
+
+    //*********
+    //
+    // The VBO class
+    //
+    //*********
 
     // Most basic VBO constructor
-    VBO::VBO()
-    {
+    VBO::VBO() {
 
     }
 
-    VBO::VBO(std::vector<Shader_Program_Variable> attributes, std::vector<float> datas, bool use_ebo): VBO() // VBO complete constructor
-    {
+    // VBO complete constructor
+    VBO::VBO(std::vector<Shader_Program_Variable> attributes, std::vector<double> datas, bool use_ebo): VBO() {
         a_attributes = attributes;
         a_datas = datas;
         a_use_ebo = use_ebo;
@@ -191,20 +205,18 @@ namespace scls {
     }
 
     // VBO constructor
-    VBO::VBO(std::vector<Shader_Program_Variable> attributes, bool fill_datas, bool use_ebo): VBO(attributes, get_base_hud_vbo(a_attributes), use_ebo)
-    {
+    VBO::VBO(std::vector<Shader_Program_Variable> attributes, bool fill_datas, bool use_ebo): VBO(attributes, gui_vbo(a_attributes), use_ebo) {
 
     }
 
     // Bind the VBO into the GPU memory
-    void VBO::bind()
-    {
+    void VBO::bind() {
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
     }
 
     // Bind the buffer data of the VBO
     void VBO::bind_buffer() {
-        std::vector<float> datas = get_datas();
+        std::vector<float> datas = datas_to_float();
         float* arr = datas.data();
 
         // Bind the data into the GPU memory
@@ -222,7 +234,7 @@ namespace scls {
 
     // Returns the number of vertices into the VBO
     unsigned int VBO::get_vertice_number() {
-        std::vector<float> datas = get_datas();
+        std::vector<float> datas = datas_to_float();
         unsigned int attribute_size = 0;
         for(int i = 0;i<static_cast<int>(get_attributes()->size());i++)
         {
@@ -322,6 +334,12 @@ namespace scls {
     VBO::~VBO() {
         glDeleteBuffers(1, &vbo);
     }
+
+    //*********
+    //
+    // The VAO class
+    //
+    //*********
 
     // Most basic VAO constructor
     VAO::VAO() {
@@ -443,6 +461,12 @@ namespace scls {
         delete get_vbo(); a_vbo = 0;
         glDeleteVertexArrays(1, &vao);
     }
+
+    //*********
+    //
+    // The Texture class
+    //
+    //*********
 
     // Texture constructor
     Texture::Texture(std::string a_texture_path, bool a_resize): resize(a_resize), texture_path(a_texture_path), a_image(new scls::Image()) {

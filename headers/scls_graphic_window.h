@@ -19,7 +19,7 @@
 
 #include "scls_graphic_window_advanced_struct.h"
 #include "scls_graphic_window_base_struct.h"
-#include "model.h"
+#include "scls_graphic_gl_part.h"
 #include "scls_graphic_object.h"
 
 // The namespace "scls" is used to simplify the all.
