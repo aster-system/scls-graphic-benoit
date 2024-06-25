@@ -1364,7 +1364,7 @@ namespace scls_documentalist_gui {
     void SCLS_Documentalist_GUI::export_replica_project(const std::shared_ptr<scls::Replica_Project>& replica_project_to_export, std::string path) {
         if(replica_project_to_export.get() == 0) return;
 
-        replica_project_to_export.get()->export_project(path);
+        replica_project_to_export.get()->export_project(path, text_image_generator());
 
         // GUI part
         display_replica_main(replica_project_to_export);
