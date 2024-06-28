@@ -36,7 +36,7 @@ namespace scls {
         Object(_Window_Advanced_Struct* window_struct);
         // Object most basic constructor with a transform parent
         Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent);
-        // Most parent Object constructor used for displaying
+        // Most parent Object constructor used for displaying (used for new_object)
         Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name = "hud_default");
         // Object constructor used for displaying
         Object(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name = "hud_default");

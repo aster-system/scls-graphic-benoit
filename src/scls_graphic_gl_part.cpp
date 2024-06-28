@@ -342,30 +342,28 @@ namespace scls {
     //*********
 
     // Most basic VAO constructor
-    VAO::VAO() {
+    VAO::VAO(const std::shared_ptr<VBO>& vbo) : a_vbo(vbo) {
 
     }
 
     // Most usefull VAO constructor
-    VAO::VAO(Shader_Program* shader_program, VBO* vbo) : VAO() {
+    VAO::VAO(Shader_Program* shader_program, const std::shared_ptr<VBO>& vbo) : VAO(vbo) {
         a_shader_program = shader_program->new_copy();
-        a_vbo = vbo->new_copy();
     }
 
     // VAO constructor
-    VAO::VAO(std::string shader_path, std::vector<Shader_Program_Variable> a_attributes, VBO* vbo) : VAO(load_shader_program(shader_path), a_attributes, vbo) {
-
-    }
-
-    // VAO constructor
-    VAO::VAO(Shader_Program* shader_program, std::vector<Shader_Program_Variable> a_attributes, VBO* vbo) : VAO(*shader_program, a_attributes, vbo) {
+    VAO::VAO(std::string shader_path, std::vector<Shader_Program_Variable> a_attributes, const std::shared_ptr<VBO>& vbo) : VAO(load_shader_program(shader_path), a_attributes, vbo) {
 
     }
 
     // VAO constructor
-    VAO::VAO(Shader_Program shader_program, std::vector<Shader_Program_Variable> a_attributes, VBO* vbo) : VAO() {
+    VAO::VAO(Shader_Program* shader_program, std::vector<Shader_Program_Variable> a_attributes, const std::shared_ptr<VBO>& vbo) : VAO(*shader_program, a_attributes, vbo) {
+
+    }
+
+    // VAO constructor
+    VAO::VAO(Shader_Program shader_program, std::vector<Shader_Program_Variable> a_attributes, const std::shared_ptr<VBO>& vbo) : VAO(vbo) {
         a_shader_program = shader_program.new_copy();
-        a_vbo = vbo->new_copy();
     }
 
     // Bind the VAO into the GPU memory
@@ -458,7 +456,6 @@ namespace scls {
     // VAO destructor
     VAO::~VAO() {
         delete get_shader_program(); a_shader_program = 0;
-        delete get_vbo(); a_vbo = 0;
         glDeleteVertexArrays(1, &vao);
     }
 

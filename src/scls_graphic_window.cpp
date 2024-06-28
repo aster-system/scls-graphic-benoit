@@ -110,7 +110,6 @@ namespace scls {
         glEnable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glDepthFunc(GL_LESS);
 
         // Callback functions
         glfwSetCursorPosCallback(a_window, _mouse_callback);
@@ -162,7 +161,7 @@ namespace scls {
         // Destroy the cursor
         if(cursor() != 0) glfwDestroyCursor(cursor());
 
-        std::map<std::string, Object*>& all_pages = pages();
+        std::map<std::string, Object*>& all_pages = pages_2d();
         for (std::map<std::string, Object*>::iterator it = all_pages.begin(); it != all_pages.end(); it++)
         {
             delete it->second; // Destroy each pages
@@ -307,10 +306,11 @@ namespace scls {
         }
         a_cursor_changed = false;
 
+        // Render 2D pages
         glDepthFunc(GL_ALWAYS);
-        if (displayed_pages_names().size() > 0)
+        if (displayed_pages_2d_names().size() > 0)
         {
-            std::vector<Object*> to_display = displayed_pages();
+            std::vector<Object*> to_display = displayed_pages_2d();
             for(int i = 0;i<static_cast<int>(to_display.size());i++) {
                 to_display[i]->render();
             }
@@ -323,9 +323,10 @@ namespace scls {
 
     // Update one frame of the game
     void Window::update() {
-        if (displayed_pages_names().size() > 0)
+        // Update 2D pages
+        if (displayed_pages_2d_names().size() > 0)
         {
-            std::vector<Object*> to_display = displayed_pages();
+            std::vector<Object*> to_display = displayed_pages_2d();
             for(int i = 0;i<static_cast<int>(to_display.size());i++) {
                 to_display[i]->update();
             }
@@ -439,9 +440,9 @@ namespace scls {
         set_last_mouse_y(mouse_y());
 
         // Update the event of the pages
-        if (displayed_pages_names().size() > 0)
+        if (displayed_pages_2d_names().size() > 0)
         {
-            std::vector<Object*> to_display = displayed_pages();
+            std::vector<Object*> to_display = displayed_pages_2d();
             for(int i = 0;i<static_cast<int>(to_display.size());i++) {
                 to_display[i]->update_event();
             }

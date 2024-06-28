@@ -27,7 +27,7 @@ namespace scls {
     // Most basic GUI_Object constructor
     GUI_Object::GUI_Object(Window& window, std::string name, GUI_Object* parent) : a_name(name), a_parent(parent), a_window(window) {
         a_texture = (*window.new_texture_shared_ptr(name, 1, 1, Color(255, 255, 255, 0)));
-        a_vao = window.vao("hud_default");
+        a_vao = (*window.vao_shared_ptr("gui_default"));
     }
 
     // Function called after that the window is resized
@@ -50,12 +50,17 @@ namespace scls {
 
     // Render the object
     void GUI_Object::render(glm::vec3 scale_multiplier) {
-        // Handle the matrix
         if(a_adapted_scale_updated) calculate_adapted_scale();
+
+        // Handle the extremum
+        glm::vec4 final_extremum = object_extremum();
+        if(final_extremum[1] >= 1 || final_extremum[3]<= 0) return;
+
+        // Handle the matrix
+        glm::mat4 matrix = glm::mat4(1.0);
         glm::vec2 absolute_position_to_apply = glm::vec2(x_in_adapted_absolute_scale().to_double(), y_in_adapted_absolute_scale().to_double());
         glm::vec2 absolute_scale_to_apply = glm::vec2(width_in_adapted_absolute_scale().to_double(), height_in_adapted_absolute_scale().to_double());
         absolute_scale_to_apply *= glm::vec2(scale_multiplier[0], scale_multiplier[1]);
-        glm::mat4 matrix = glm::mat4(1.0);
         matrix = glm::translate(matrix, glm::vec3(-1.0, -1.0, 0.0));
         matrix = glm::translate(matrix, glm::vec3(absolute_position_to_apply[0], absolute_position_to_apply[1], 0));
         matrix = glm::scale(matrix, glm::vec3(absolute_scale_to_apply[0], absolute_scale_to_apply[1], 1));
@@ -79,15 +84,13 @@ namespace scls {
             vao()->get_shader_program()->set_uniformb_value("texture_binded", true);
         }
         vao()->get_shader_program()->set_uniform4fv_value("model", matrix);
-        vao()->get_shader_program()->set_uniform4f_value("object_extremum", object_extremum());
+        vao()->get_shader_program()->set_uniform4f_value("object_extremum", final_extremum);
         vao()->get_shader_program()->set_uniform4f_value("object_rect", glm::vec4(0, 0, 1.0, 1.0));
         vao()->render();
 
         for(int i = 0;i<static_cast<int>(children().size());i++) {
             if(children()[i] != 0 && children()[i]->visible()) children()[i]->render(scale_multiplier);
         }
-
-        soft_reset();
     }
 
     // GUI_Object destructor
@@ -136,6 +139,19 @@ namespace scls {
 
         a_x_in_adapted_absolute_scale = divisor_x * x_in_absolute_pixel() * 2 + divisor_x / 4;
         a_y_in_adapted_absolute_scale = divisor_y * y_in_absolute_pixel() * 2 + divisor_y / 4;
+
+        Fraction absolute_height_to_apply = height_in_adapted_absolute_scale();
+
+        // Calculate the y minimum and maximum scale
+        a_object_y_maximum = object_absolute_y_last_extremum();
+        a_object_y_minimum = object_absolute_y_first_extremum();
+        if(parent() != 0) {
+            a_object_y_maximum -= y_in_absolute_pixel();
+            a_object_y_minimum -= y_in_absolute_pixel();
+        }
+        // Apply the local transformations
+        a_object_y_maximum *= one_pixel_height_in_scale();
+        a_object_y_minimum *= one_pixel_height_in_scale();
 
         a_adapted_scale_updated = false;
     }
@@ -249,23 +265,7 @@ namespace scls {
     }
 
     // Returns the extremum of the object
-    glm::vec4 GUI_Object::object_extremum() {
-        Fraction absolute_height_to_apply = height_in_adapted_absolute_scale();
-
-        // Calculate the y minimum and maximum scale
-        Fraction y_maximum = object_absolute_y_last_extremum();
-        Fraction y_minimum = object_absolute_y_first_extremum();
-        if(parent() != 0) {
-            y_maximum -= y_in_absolute_pixel();
-            y_minimum -= y_in_absolute_pixel();
-        }
-
-        // Apply the local transformations
-        y_maximum *= one_pixel_height_in_scale();
-        y_minimum *= one_pixel_height_in_scale();
-
-        return glm::vec4(-1.0, y_minimum.to_double(), 2.0, y_maximum.to_double());
-    }
+    glm::vec4 GUI_Object::object_extremum() { return glm::vec4(-1.0, a_object_y_minimum.to_double(), 2.0, a_object_y_maximum.to_double()); }
 
     // Returns the rect of user defined texture
     glm::vec4 GUI_Object::user_defined_texture_rect() const {
@@ -1341,8 +1341,6 @@ namespace scls {
 
     // GUI_Page most basic constructor
     GUI_Page::GUI_Page(_Window_Advanced_Struct* window_struct, std::string name) : Object(window_struct, name) {
-        set_vao("hud_default");
-
         a_parent_object = std::make_unique<GUI_Main_Object>((*reinterpret_cast<Window*>(window_struct)), "main");
     }
 

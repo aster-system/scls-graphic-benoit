@@ -186,13 +186,13 @@ namespace scls_documentalist_gui {
         load_language_fr();
 
         // Page of the GUI
-        a_page = new_page<scls::GUI_Page>("scls_documentalist_agatha");
+        a_page = new_page_2d<scls::GUI_Page>("scls_documentalist_agatha");
         a_page->set_scale(glm::vec3(2, 2, 1));
         a_page->parent_object()->set_background_color(scls::Color(255, 255, 255));
         a_page->parent_object()->set_position_in_pixel(0, 0);
         a_page->parent_object()->set_height_in_scale(scls::Fraction(1));
         a_page->parent_object()->set_width_in_scale(scls::Fraction(1));
-        display_page("scls_documentalist_agatha");
+        display_page_2d("scls_documentalist_agatha");
 
         load_main_header();
 

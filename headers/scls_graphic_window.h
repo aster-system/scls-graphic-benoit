@@ -119,40 +119,40 @@ namespace scls {
 
         // Create a new page to the Window and return it
         template <typename _P>
-        _P* new_page(std::string name);
+        _P* new_page_2d(std::string page_name);
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
-        inline bool contains_page(std::string name) { for(std::map<std::string, Object*>::iterator it = pages().begin();it!=pages().end();it++) if(it->first == name) return true; return false;};
-        inline bool contains_displayed_page(std::string name) { for(int i = 0;i<static_cast<int>(displayed_pages_names().size());i++) { if(displayed_pages_names()[i] == name) return true;} return false;};
-        inline std::vector<Object*> displayed_pages() {
+        inline bool contains_page_2d(std::string name) { for(std::map<std::string, Object*>::iterator it = pages_2d().begin();it!=pages_2d().end();it++) if(it->first == name) return true; return false;};
+        inline bool contains_displayed_page_2d(std::string name) { for(int i = 0;i<static_cast<int>(displayed_pages_2d_names().size());i++) { if(displayed_pages_2d_names()[i] == name) return true;} return false;};
+        inline std::vector<Object*> displayed_pages_2d() {
             std::vector<Object*> to_return = std::vector<Object*>();
-            if(displayed_pages_names().size() > 0) {
-                for(int i = 0;i<static_cast<int>(displayed_pages_names().size());i++) {
-                    to_return.push_back(pages()[displayed_pages_names()[i]]);
+            if(displayed_pages_2d_names().size() > 0) {
+                for(int i = 0;i<static_cast<int>(displayed_pages_2d_names().size());i++) {
+                    to_return.push_back(pages_2d()[displayed_pages_2d_names()[i]]);
                 }
             }
             return to_return;
         };
-        inline void display_page(std::string new_page) {
-            if(new_page != "" && !contains_page(new_page)) scls::print("Warning", "SCLS Window", "The \"" + new_page + "\" page you want to display does not exists.");
-            else if(!contains_displayed_page(new_page)) displayed_pages_names().push_back(new_page);
+        inline void display_page_2d(std::string new_page_2d) {
+            if(new_page_2d != "" && !contains_page_2d(new_page_2d)) scls::print("Warning", "SCLS Window", "The \"" + new_page_2d + "\" page you want to display does not exists.");
+            else if(!contains_displayed_page_2d(new_page_2d)) displayed_pages_2d_names().push_back(new_page_2d);
         };
-        inline void hide_all_pages() {
-            for(int i = 0;i<static_cast<int>(displayed_pages_names().size());i++) {
-                pages()[displayed_pages_names()[i]]->after_hiding();
+        inline void hide_all_pages_2d() {
+            for(int i = 0;i<static_cast<int>(displayed_pages_2d_names().size());i++) {
+                pages_2d()[displayed_pages_2d_names()[i]]->after_hiding();
             }
-            displayed_pages_names().clear();
+            displayed_pages_2d_names().clear();
         };
-        inline Object* page(std::string name) {
-            if(contains_page(name)) return pages()[name];
-            scls::print("Warning", "SCLS Window", "The \"" + name + "\" page you want to get does not exists.");
+        inline Object* page_2d(std::string page_name) {
+            if(contains_page_2d(page_name)) return pages_2d()[page_name];
+            scls::print("Warning", "SCLS Window", "The \"" + page_name + "\" page you want to get does not exists.");
             return 0;
         };
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
-        inline std::vector<std::string>& displayed_pages_names() {return a_displayed_pages;};
+        inline std::vector<std::string>& displayed_pages_2d_names() {return a_displayed_pages_2d;};
         inline bool is_resize_possible() {return a_is_resize_possible;};
-        inline std::map<std::string, Object*>& pages() {return a_pages;};
+        inline std::map<std::string, Object*>& pages_2d() {return a_pages_2d;};
         inline void set_is_resize_possible(bool new_is_resize_possible) {a_is_resize_possible = new_is_resize_possible;resize_window(window_width(), window_height());};
 
         //*********
@@ -164,7 +164,7 @@ namespace scls {
         // Function called after that the window has been resized
         virtual void after_window_resizing(glm::vec2 last_size){apply_window_resizing(last_size);};
         // Hidden function to call the children that there has been a resizing
-        inline void apply_window_resizing(glm::vec2 last_size){for(std::map<std::string, Object*>::iterator it = pages().begin(); it != pages().end(); it++) {it->second->after_window_resizing(last_size);}};
+        inline void apply_window_resizing(glm::vec2 last_size){for(std::map<std::string, Object*>::iterator it = pages_2d().begin(); it != pages_2d().end(); it++) {it->second->after_window_resizing(last_size);}};
         // Render the scene
         virtual void render();
         // Update one frame of the game
@@ -208,9 +208,9 @@ namespace scls {
         //*********
 
         // Names of the displayed page
-        std::vector<std::string> a_displayed_pages = std::vector<std::string>();
-        // Map containing each pages in the window with their name as key
-        std::map<std::string, Object*> a_pages = std::map<std::string, Object*>();
+        std::vector<std::string> a_displayed_pages_2d = std::vector<std::string>();
+        // Map containing each pages 2D in the window with their name as key
+        std::map<std::string, Object*> a_pages_2d = std::map<std::string, Object*>();
 
         //*********
         //
@@ -233,14 +233,14 @@ namespace scls {
 
     // Create a new page to the Window and return it
     template <typename O>
-    O* Window::new_page(std::string name) {
-        if(contains_page(name)) {
-            scls::print("Warning", "SCLS Window", "The \"" + name + "\" page you want to add in the window already exist.");
+    O* Window::new_page_2d(std::string page_name) {
+        if(contains_page_2d(page_name)) {
+            scls::print("Warning", "SCLS Window", "The \"" + page_name + "\" page you want to add in the window already exist.");
             return 0;
         }
 
-        O* page = new O(this, name);
-        pages()[name] = page;
+        O* page = new O(this, page_name);
+        pages_2d()[page_name] = page;
 
         return page;
     }

@@ -86,11 +86,11 @@ namespace scls {
         // Reset the object without changing it
         virtual void soft_reset() {set_focusing_state(-1);set_overflighting_state(-1);for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i] != 0){children()[i]->soft_reset();}}};
         // Update the object
-        virtual void update(){ for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i] != 0)children()[i]->update();}};
+        virtual void update(){ for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i] != 0 && children()[i]->visible())children()[i]->update();}};
         // Update the object for the events
-        virtual void update_event() {for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i] != 0)children()[i]->update_event();}};
+        virtual void update_event() {for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i] != 0 && children()[i]->visible())children()[i]->update_event();}};
         // Update the texture when needed
-        virtual void update_texture() {for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] != 0)children()[i]->update_texture();}};
+        virtual void update_texture() {for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] != 0 && children()[i]->visible())children()[i]->update_texture();}};
 
         // Getters and setters (ONLY WITH ATRIBUTES)
         inline Color background_color() {return a_background_color;};
@@ -180,6 +180,7 @@ namespace scls {
         int y_in_pixel() const;
         // Setters
         inline void set_height_in_pixel(unsigned int new_height) {if(a_height == new_height && a_last_height_definition == _Size_Definition::Pixel_Size)return;a_height=new_height;a_last_height_definition=_Size_Definition::Pixel_Size;a_adapted_scale_updated=true;};
+        inline void set_width_in_pixel(unsigned int new_width) {if(a_width == new_width && a_last_width_definition == _Size_Definition::Pixel_Size)return;a_width=new_width;a_last_width_definition=_Size_Definition::Pixel_Size;a_adapted_scale_updated=true;};
 
         // Scale plan
         // Returns the width of the border in scale
@@ -282,7 +283,7 @@ namespace scls {
         inline Alignment_Vertical texture_alignment_vertical() const {return a_texture_alignment_vertical;};
         inline bool texture_fill_object() const {return a_texture_fill_object;};
         inline std::shared_ptr<Texture>& texture_shared_ptr() {return a_texture;};
-        inline VAO* vao() const {return a_vao;};
+        inline VAO* vao() const {return a_vao.get();};
 
     private:
         //*********
@@ -336,7 +337,7 @@ namespace scls {
         // If the texture fill the object or not
         bool a_texture_fill_object = false;
         // VAO of this object (GUI)
-        VAO* a_vao = 0;
+        std::shared_ptr<VAO> a_vao = 0;
 
         //*********
         //
@@ -362,6 +363,10 @@ namespace scls {
         _Size_Definition a_last_x_definition = _Size_Definition::Scale_Size;
         // Last type of definition of the y
         _Size_Definition a_last_y_definition = _Size_Definition::Scale_Size;
+        // Maximum y position of the object
+        Fraction a_object_y_maximum = Fraction(0);
+        // Minimum y position of the object
+        Fraction a_object_y_minimum = Fraction(0);
         // Parent of this object
         GUI_Object* a_parent = 0;
         // Width of the object
@@ -376,12 +381,16 @@ namespace scls {
         Fraction a_x_in_adapted_absolute_scale = Fraction(0, 1);
         // X position of the object in adapted scale
         Fraction a_x_in_adapted_scale = Fraction(0, 1);
+        // X position of the object in real pixel
+        int a_x_in_real_pixel = 0;
         // Y position of the object
         Fraction a_y = Fraction(0, 1);
         // Y position of the object in absolute adapted scale
         Fraction a_y_in_adapted_absolute_scale = Fraction(0, 1);
         // Y position of the object in adapted scale
         Fraction a_y_in_adapted_scale = Fraction(0, 1);
+        // X position of the object in real pixel
+        int a_y_in_real_pixel = 0;
     };
 
     class GUI_Main_Object : public GUI_Object {

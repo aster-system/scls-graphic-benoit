@@ -31,7 +31,7 @@ namespace scls {
     void _Window_Advanced_Struct::load_VAOs() {
         // Create the base shaders
         a_shaders_programs["default"] = Shader_Program();
-        a_shaders_programs["hud_default"] = Shader_Program(Shader_Program::HUD_Default);
+        a_shaders_programs["gui_default"] = Shader_Program(Shader_Program::HUD_Default);
 
         // Create a base texture
         textures()["black"] = std::make_shared<Texture>(5, 5, glm::vec4(0, 0, 0, 255));
@@ -39,12 +39,18 @@ namespace scls {
         textures()["white"] = std::make_shared<Texture>(5, 5, glm::vec4(255, 255, 255, 255));
 
         // Define attributes for VAOs
+        std::vector<Shader_Program_Variable> object_3d_attributes = _base_3d_shader_program_variables();
         std::vector<Shader_Program_Variable> gui_attributes = _base_hud_shader_program_variables();
 
         // Create VAOs
-        VBO hud_vbo = VBO(gui_attributes, VBO::gui_vbo(gui_attributes), false);
-        vaos()["hud_default"] = new VAO(a_shaders_programs["hud_default"], gui_attributes, &hud_vbo);
-        vaos()["hud_default"]->load_vao();
+        // GUI VAO
+        std::shared_ptr<VBO> gui_vbo = std::make_shared<VBO>(gui_attributes, VBO::gui_vbo(gui_attributes), false); add_vbo("gui_default", gui_vbo);
+        vaos()["gui_default"] = std::make_shared<VAO>(a_shaders_programs["gui_default"], gui_attributes, gui_vbo);
+        vaos()["gui_default"].get()->load_vao();
+        // Cube VAO
+        std::shared_ptr<VBO> cube_vbo = std::make_shared<VBO>(object_3d_attributes, VBO::cube_vbo(), false); add_vbo("cube", cube_vbo);
+        vaos()["cube"] = std::make_shared<VAO>(a_shaders_programs["default"], object_3d_attributes, cube_vbo);
+        vaos()["cube"].get()->load_vao();
     }
 
     // Returns a texture in the struct
@@ -75,24 +81,10 @@ namespace scls {
     void _Window_Advanced_Struct::unload_textures() { textures().clear(); }
 
     // Unload all the VAOs
-    void _Window_Advanced_Struct::unload_vaos() {
-        for (std::map<std::string, VAO*>::iterator it = vaos().begin(); it != vaos().end(); it++)
-        {
-            delete it->second; // Delete VAOs
-            it->second = 0;
-        }
-        vaos().clear();
-    }
+    void _Window_Advanced_Struct::unload_vaos() { vaos().clear(); }
 
     // Unload all the VBOs
-    void _Window_Advanced_Struct::unload_vbos() {
-        for (std::map<std::string, VBO*>::iterator it = vbos().begin(); it != vbos().end(); it++)
-        {
-            delete it->second; // Delete VBOs
-            it->second = 0;
-        }
-        vbos().clear();
-    }
+    void _Window_Advanced_Struct::unload_vbos() { vbos().clear(); }
 
     // Add a texture to the game
     Texture* _Window_Advanced_Struct::new_texture(std::string name, std::string path, bool texture_resize) {
@@ -171,9 +163,9 @@ namespace scls {
                 return 0;
             }
 
-            vaos()[name] = new VAO(&a_shaders_programs[shader], vbos()[vbo]);
-            vaos()[name]->load_vao();
-            return vaos()[name];
+            vaos()[name] = std::make_shared<VAO>(&a_shaders_programs[shader], vbos()[vbo]);
+            vaos()[name].get()->load_vao();
+            return vaos()[name].get();
         }
         print("Warning", "SCLS Window", "Matrix game : error ! The \"" + name + "\" VAO already exists.");
         return 0;
@@ -183,9 +175,9 @@ namespace scls {
     VBO* _Window_Advanced_Struct::new_vbo(std::string name) {
         if (!contains_vbo(name))
         {
-            VBO* vbo = new VBO();
+            std::shared_ptr<VBO> vbo = std::make_shared<VBO>();
             add_vbo(name, vbo);
-            return vbo;
+            return vbo.get();
         }
         print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to add already exists.");
         return 0;

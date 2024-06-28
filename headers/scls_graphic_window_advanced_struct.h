@@ -69,7 +69,10 @@ namespace scls {
         //*********
 
         // Add an existing VBO into the game
-        inline void add_vbo(std::string name, VBO* vbo) { if (!contains_vbo(name)) vbos()[name] = vbo; else print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to add already exists."); };
+        inline void add_vbo(std::string name, const std::shared_ptr<VBO>& vbo) {
+            if (!contains_vbo(name)) vbos()[name] = vbo;
+            else print("Warning", "SCLS Window", "The \"" + name + "\" VBO you want to add already exists.");
+        };
 
         // Returns if the struct contains a textures
         inline bool contains_texture(std::string name) {
@@ -79,9 +82,19 @@ namespace scls {
             return false;
         };
         // Returns if the struct contains a VAO
-        inline bool contains_vao(std::string name) { for (std::map<std::string, VAO*>::iterator it = vaos().begin(); it != vaos().end(); it++) { if (it->first == name) return true; } return false; };
+        inline bool contains_vao(std::string name) {
+            for (std::map<std::string, std::shared_ptr<VAO>>::iterator it = vaos().begin(); it != vaos().end(); it++) {
+                if (it->first == name) return true;
+            }
+            return false;
+        };
         // Returns if the struct contains a VBO
-        inline bool contains_vbo(std::string name) { for (std::map<std::string, VBO*>::iterator it = vbos().begin(); it != vbos().end(); it++) { if (it->first == name) return true; } return false; };
+        inline bool contains_vbo(std::string name) {
+            for (std::map<std::string, std::shared_ptr<VBO>>::iterator it = vbos().begin(); it != vbos().end(); it++) {
+                if (it->first == name) return true;
+            }
+            return false;
+        };
 
         // Loads the built-in VAOs in the _Window_Advanced_Struct
         void load_VAOs();
@@ -116,12 +129,13 @@ namespace scls {
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         Texture* texture(std::string texture_name, bool copy_texture = false);
         std::shared_ptr<Texture>& texture_shared_ptr(std::string texture_name);
-        inline VAO* vao(std::string vao_name) {if(contains_vao(vao_name)) return vaos()[vao_name]; print("Warning", "SCLS Window", "The \"" + vao_name + "\" VAO you want to use does not exists."); return 0;};
+        inline VAO* vao(std::string vao_name) { if(contains_vao(vao_name)) return vaos()[vao_name].get(); return 0; };
+        inline std::shared_ptr<VAO>* vao_shared_ptr(std::string vao_name) { if(contains_vao(vao_name)) return &vaos()[vao_name]; return 0; };
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline std::map<std::string, std::shared_ptr<Texture>>& textures() { return a_textures; };
-        inline std::map<std::string, VAO*>& vaos() { return a_vaos; };
-        inline std::map<std::string, VBO*>& vbos() { return a_vbos; };
+        inline std::map<std::string, std::shared_ptr<VAO>>& vaos() { return a_vaos; };
+        inline std::map<std::string, std::shared_ptr<VBO>>& vbos() { return a_vbos; };
     private:
         //*********
         //
@@ -134,8 +148,8 @@ namespace scls {
         // Each Textures, with their name as key, in the window
         std::map<std::string, std::shared_ptr<Texture>> a_textures = std::map<std::string, std::shared_ptr<Texture>>();
         // Each VAOs, with their name as key, in the window
-        std::map<std::string, VAO*> a_vaos = std::map<std::string, VAO*>();
+        std::map<std::string, std::shared_ptr<VAO>> a_vaos = std::map<std::string, std::shared_ptr<VAO>>();
         // Each VBOs base, with their name as key, in the window
-        std::map<std::string, VBO*> a_vbos = std::map<std::string, VBO*>();
+        std::map<std::string, std::shared_ptr<VBO>> a_vbos = std::map<std::string, std::shared_ptr<VBO>>();
     };
 }
