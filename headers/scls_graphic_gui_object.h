@@ -164,6 +164,8 @@ namespace scls {
         inline void set_y_in_object_scale(Fraction new_y) {if(a_y == new_y && a_last_y_definition == _Size_Definition::Object_Scale_Size)return;a_y=new_y;a_last_y_definition=_Size_Definition::Object_Scale_Size;a_adapted_scale_updated=true;};
 
         // Pixel plan
+        // Returns the border in the pixel plan
+        glm::vec4 border_width_in_pixel() const {return a_border_width;};
         // Returns the height of the object in pixel plan
         unsigned int height_in_pixel() const;
         // Returns if a pixel is in the object
@@ -247,9 +249,9 @@ namespace scls {
         // Returns the rect of the vertically fitted texture
         glm::vec4 fitted_vertically_texture_rect() const;
         // Returns the first absolute extremum of the object in the Y axis
-        Fraction object_absolute_y_first_extremum();
+        Fraction object_absolute_y_first_extremum(bool remove_border = false);
         // Returns the last absolute extremum of the object in the Y axis
-        Fraction object_absolute_y_last_extremum();
+        Fraction object_absolute_y_last_extremum(bool remove_border = false);
         // Returns the extremum of the object
         glm::vec4 object_extremum();
         // Returns the height of the texture in scale of the object
@@ -438,6 +440,8 @@ namespace scls {
         // GUI_Scroller destructor
         virtual ~GUI_Scroller();
 
+        // Function called after that the window is resized
+        virtual void after_resizing() {check_scroller();};
         // Check if a scroll should occurs
         void check_scroll();
         // Check the scroller object

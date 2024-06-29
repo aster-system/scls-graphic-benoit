@@ -321,6 +321,7 @@ namespace scls {
         inline double delta_time() { return a_delta_time; };
 
         // Keyboard
+        inline bool key_pressed(std::string name) const { return a_keys_state_frame.at(name) == Key_State::Pressed || a_keys_state_frame.at(name) == Key_State::Already_Pressed || a_keys_state_frame.at(name) == Key_State::Pressed_Repeated; };
         inline bool key_pressed_or_repeated_pressed(std::string name) const { return a_keys_state_frame.at(name) == Key_State::Pressed || a_keys_state_frame.at(name) == Key_State::Pressed_Repeated; };
         inline unsigned short key_state(std::string name) const { return a_keys_state.at(name); };
         inline unsigned short key_state_frame(std::string name) const { return a_keys_state_frame.at(name); };

@@ -546,10 +546,11 @@ namespace scls_documentalist_gui {
         a_help_navigation_home_button->set_font_size(50);
         a_help_navigation_home_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
         a_help_navigation_home_button->set_text(a_gui_text_content["home"]);
-        a_help_navigation_home_button->set_texture_alignment(scls::Alignment_Texture::T_Fit_Vertically);
+        a_help_navigation_home_button->set_texture_alignment(scls::Alignment_Texture::T_Fit);
         a_help_navigation_home_button->set_height_in_pixel(50);
         a_help_navigation_home_button->set_width_in_scale(scls::Fraction(1));
-        a_help_navigation_home_button->move_top_in_parent();
+        a_help_navigation_home_button->move_bottom_in_parent(1);
+        a_help_navigation_home_button->move_left_in_parent();
 
         a_help_navigation->check_scroller();
     }
@@ -1073,7 +1074,7 @@ namespace scls_documentalist_gui {
             a_help_navigation->move_left_in_parent();
         }
         if(a_help_navigation_home_button != 0) {
-            a_help_navigation_home_button->move_top_in_parent(1);
+            a_help_navigation_home_button->move_bottom_in_parent(1);
         }
         // Pattern main body
         if(a_pattern_main_body != 0) {

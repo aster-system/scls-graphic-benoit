@@ -54,7 +54,7 @@ namespace scls {
 
         // Handle the extremum
         glm::vec4 final_extremum = object_extremum();
-        if(final_extremum[1] >= 1 || final_extremum[3]<= 0) return;
+        if(final_extremum[1] >= 1 || final_extremum[3] <= 0) return;
 
         // Handle the matrix
         glm::mat4 matrix = glm::mat4(1.0);
@@ -224,16 +224,8 @@ namespace scls {
     // Returns the height in scale of the object
     Fraction GUI_Object::height_in_scale() const {
         if(a_last_height_definition == _Size_Definition::Scale_Size || (a_last_height_definition == _Size_Definition::Absolute_Scale_Size && parent() == 0)) return a_height;
-        Fraction to_return = a_height;
-
-        if(a_last_height_definition == _Size_Definition::Pixel_Size) {
-            to_return *= one_pixel_height_in_absolute_scale();
-        }
-        else {
-            if(a_last_height_definition == _Size_Definition::Absolute_Scale_Size && parent() != 0) {
-                to_return /= parent()->height_in_absolute_scale();
-            }
-        }
+        Fraction to_return = height_in_absolute_scale();
+        if(parent() != 0) to_return /= parent()->height_in_absolute_scale();
 
         return to_return;
     }
@@ -247,19 +239,21 @@ namespace scls {
     }
 
     // Returns the first absolute extremum of the object in the Y axis
-    Fraction GUI_Object::object_absolute_y_first_extremum() {
+    Fraction GUI_Object::object_absolute_y_first_extremum(bool remove_border) {
         Fraction to_return = y_in_absolute_pixel();
+        if(remove_border) to_return += border_width_in_pixel()[2];
         Fraction parent_extremum = Fraction(-1);
-        if(parent() != 0) { parent_extremum = parent()->object_absolute_y_first_extremum(); }
+        if(parent() != 0) { parent_extremum = parent()->object_absolute_y_first_extremum(true); }
         if(parent_extremum > to_return) to_return = parent_extremum;
         return to_return;
     }
 
     // Returns the last absolute extremum of the object in the Y axis
-    Fraction GUI_Object::object_absolute_y_last_extremum() {
-        Fraction to_return = y_in_absolute_pixel() + height_in_pixel();
+    Fraction GUI_Object::object_absolute_y_last_extremum(bool remove_border) {
+        Fraction to_return = (y_in_absolute_pixel() + height_in_pixel());
+        if(remove_border) to_return -= border_width_in_pixel()[0];
         Fraction parent_extremum = Fraction(window_struct().window_height());
-        if(parent() != 0) { parent_extremum = parent()->object_absolute_y_last_extremum(); }
+        if(parent() != 0) { parent_extremum = parent()->object_absolute_y_last_extremum(true); }
         if(parent_extremum < to_return) to_return = parent_extremum;
         return to_return;
     }
@@ -489,6 +483,7 @@ namespace scls {
 
     // Check the browser scroller
     void GUI_Scroller::check_scroller() {
+        GUI_Object::after_resizing();
         Fraction tallest_point = Fraction(0);
         for(int i = 0;i<static_cast<int>(a_scroller_children->children().size());i++) {
             GUI_Object* current_object = a_scroller_children->children()[i].get();
@@ -498,7 +493,7 @@ namespace scls {
         }
         a_scroller_children->set_height_in_pixel(static_cast<unsigned int>(tallest_point.to_double()));
         a_scroller_children->move_top_in_parent(1);
-        after_resizing();
+        GUI_Object::after_resizing();
     }
 
     // Private function to create the children scroller
@@ -508,9 +503,17 @@ namespace scls {
 
     // Scroll the scroller
     void GUI_Scroller::scroll_y(Fraction movement) {
-        movement *= Fraction(1, 30);
-        a_scroller_children->set_y_in_scale(a_scroller_children->y_in_scale() - movement);
-        after_resizing();
+        if(a_scroller_children->height_in_scale() > 1) {
+            movement *= Fraction(1, 30);
+            Fraction final_pos = a_scroller_children->y_in_scale() - movement;
+            if(final_pos > 0) final_pos = Fraction(0);
+            if(final_pos < a_scroller_children->height_in_scale() * Fraction(-1) + Fraction(1)) final_pos = a_scroller_children->height_in_scale() * Fraction(-1) + Fraction(1);
+            a_scroller_children->set_y_in_scale(final_pos);
+        }
+        else {
+            a_scroller_children->move_top_in_parent();
+        }
+        GUI_Object::after_resizing();
     }
 
     //*********
@@ -1353,6 +1356,9 @@ namespace scls {
         // Soft reset the page
         parent_object()->soft_reset();
         soft_reset();
+
+        // using namespace std::chrono_literals;
+        // std::this_thread::sleep_for(10ms);
     };
 
     // Update the event of the page
