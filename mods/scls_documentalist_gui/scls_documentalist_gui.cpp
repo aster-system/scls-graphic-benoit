@@ -726,7 +726,7 @@ namespace scls_documentalist_gui {
         current_button->set_height_in_scale(scls::Fraction(1, 10));
         current_button->set_width_in_scale(scls::Fraction(1));
         current_button->move_left_in_parent();
-        current_button->move_top_in_parent(1); current_button->calculate_adapted_scale(true);
+        current_button->move_top_in_parent(1);
         a_pattern_navigation_buttons.push_back(current_button);
 
         // Load each buttons
@@ -742,7 +742,7 @@ namespace scls_documentalist_gui {
             current_button->set_width_in_scale(scls::Fraction(1));
             current_button->move_left_in_parent();
             current_button->move_bottom_of_object_in_parent(last_current_button);
-            a_pattern_navigation_buttons.push_back(current_button); current_button->calculate_adapted_scale(true);
+            a_pattern_navigation_buttons.push_back(current_button);
             last_current_button = current_button;
         }
     }
@@ -1397,7 +1397,6 @@ namespace scls_documentalist_gui {
             current_button->move_left_in_parent();
             if(last_current_button == 0) current_button->move_bottom_in_parent();
             else  current_button->move_top_of_object_in_parent(last_current_button);
-            current_button->calculate_adapted_scale(true);
             last_current_button = current_button;
         } //*/
         a_create_replica_pattern_file->check_scroller();
@@ -1417,7 +1416,7 @@ namespace scls_documentalist_gui {
         current_button->set_height_in_pixel(75);
         current_button->set_width_in_scale(scls::Fraction(1));
         current_button->move_left_in_parent();
-        current_button->move_bottom_in_parent(1); current_button->calculate_adapted_scale(true);
+        current_button->move_bottom_in_parent(1);
         a_replica_navigation_buttons.push_back(current_button);
 
         /*// Load each buttons

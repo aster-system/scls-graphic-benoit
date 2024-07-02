@@ -18,6 +18,268 @@
 
 // Using of the "scls" namespace to simplify the programmation
 namespace scls {
+
+    //*********
+    //
+    // __GUI_Transformation main functions
+    //
+    //*********
+
+    // Most basic __GUI_Transformation constructor
+    __GUI_Transformation::__GUI_Transformation(unsigned int window_height, unsigned int window_width, std::shared_ptr<__GUI_Transformation> parent) : a_window_height(window_height), a_window_width(window_width), a_parent(parent) {}
+
+    // Calculate the transformation
+    void __GUI_Transformation::calculate_transformation() {
+        Fraction divisor_x = Fraction(1, window_width());
+        Fraction divisor_y = Fraction(1, window_height());
+
+        // Calculate the real height with the pixel perfect system
+        a_height_in_adapted_absolute_scale = divisor_y * height_in_pixel();
+        a_height_in_adapted_scale = a_height_in_adapted_absolute_scale;
+        if(parent() != 0) a_height_in_adapted_scale /= parent()->height_in_adapted_absolute_scale();
+        a_height_in_adapted_scale -= divisor_y / 2;
+
+        // Calculate the real width with the pixel perfect system
+        a_width_in_adapted_absolute_scale = divisor_x * width_in_pixel();
+        a_width_in_adapted_scale = a_width_in_adapted_absolute_scale;
+        if(parent() != 0) a_width_in_adapted_scale /= parent()->width_in_adapted_absolute_scale();
+        a_width_in_adapted_scale -= divisor_x / 2;
+
+        a_x_in_adapted_absolute_scale = divisor_x * x_in_absolute_pixel() * 2 + divisor_x / 4;
+        a_y_in_adapted_absolute_scale = divisor_y * y_in_absolute_pixel() * 2 + divisor_y / 4;
+
+        Fraction absolute_height_to_apply = height_in_adapted_absolute_scale();
+
+        // Calculate the y minimum and maximum scale
+        a_object_y_maximum = object_absolute_y_last_extremum();
+        a_object_y_minimum = object_absolute_y_first_extremum();
+        if(parent() != 0) {
+            a_object_y_maximum -= y_in_absolute_pixel();
+            a_object_y_minimum -= y_in_absolute_pixel();
+        }
+        // Apply the local transformations
+        a_object_y_maximum *= one_pixel_height_in_scale();
+        a_object_y_minimum *= one_pixel_height_in_scale();
+    }
+
+    //*********
+    //
+    // Border handling
+    //
+    //*********
+
+    // Returns the first absolute extremum of the object in the Y axis
+    Fraction __GUI_Transformation::object_absolute_y_first_extremum(bool remove_border) {
+        Fraction to_return = y_in_absolute_pixel();
+        if(remove_border) to_return += border_width_in_pixel()[2];
+        Fraction parent_extremum = Fraction(-1);
+        if(parent() != 0) { parent_extremum = parent()->object_absolute_y_first_extremum(true); }
+        if(parent_extremum > to_return) to_return = parent_extremum;
+        return to_return;
+    }
+
+    // Returns the last absolute extremum of the object in the Y axis
+    Fraction __GUI_Transformation::object_absolute_y_last_extremum(bool remove_border) {
+        Fraction to_return = (y_in_absolute_pixel() + height_in_pixel());
+        if(remove_border) to_return -= border_width_in_pixel()[0];
+        Fraction parent_extremum = Fraction(window_height());
+        if(parent() != 0) { parent_extremum = parent()->object_absolute_y_last_extremum(true); }
+        if(parent_extremum < to_return) to_return = parent_extremum;
+        return to_return;
+    }
+
+    // Returns the extremum of the object
+    glm::vec4 __GUI_Transformation::object_extremum() { return glm::vec4(-1.0, a_object_y_minimum.to_double(), 2.0, a_object_y_maximum.to_double()); }
+
+    //*********
+    //
+    // Absolute scale plan
+    //
+    //*********
+
+    // Returns the height in absolute scale of the object
+    Fraction __GUI_Transformation::height_in_absolute_scale() const {
+        if(a_last_height_definition == _Size_Definition::Absolute_Scale_Size || (a_last_height_definition == _Size_Definition::Scale_Size && parent() == 0)) return a_height;
+        Fraction to_return = a_height;
+
+        if(a_last_height_definition == _Size_Definition::Pixel_Size) {
+            to_return *= one_pixel_height_in_absolute_scale();
+        }
+        else {
+            if(parent() != 0) { to_return *= parent()->height_in_absolute_scale(); }
+        }
+
+        return to_return;
+    }
+
+    // Returns the height in absolute scale and by counting the window of the object
+    Fraction __GUI_Transformation::height_in_absolute_scale_and_window() const { return height_in_absolute_scale() / Fraction(window_width(), window_height()); }
+
+    // Returns the width in absolute scale of the object
+    Fraction __GUI_Transformation::width_in_absolute_scale() const {
+        if(a_last_width_definition == _Size_Definition::Absolute_Scale_Size || (a_last_width_definition == _Size_Definition::Scale_Size && parent() == 0)) return a_width;
+        Fraction to_return = a_width;
+
+        if(a_last_width_definition == _Size_Definition::Pixel_Size) {
+            to_return *= one_pixel_width_in_absolute_scale();
+        }
+        else if(a_last_width_definition == _Size_Definition::Scale_Size) {
+            to_return *= parent()->width_in_absolute_scale();
+        }
+
+        return to_return;
+    }
+
+    // Returns the x position in absolute scale of the object
+    Fraction __GUI_Transformation::x_in_absolute_scale() const {
+        if(a_last_x_definition == _Size_Definition::Absolute_Scale_Size || (a_last_x_definition == _Size_Definition::Scale_Size && parent() == 0)) return a_x;
+        Fraction to_return = Fraction(0);
+        Fraction to_add = Fraction(0);
+        if(parent() != 0) to_add += parent()->x_in_absolute_scale();
+
+        // Check for the needed convertions
+        if(a_last_x_definition == _Size_Definition::Pixel_Size) {
+            to_return = a_x * one_pixel_width_in_absolute_scale();
+        }
+        else if(a_last_x_definition == _Size_Definition::Object_Scale_Size) {
+            to_return = (width_in_absolute_scale() * Fraction(-1, 2));
+            if(parent() == 0) to_return += a_x;
+            else to_return += a_x * parent()->width_in_absolute_scale();
+        }
+        else {
+            to_return = a_x;
+            if(parent() != 0) to_return *= parent()->width_in_absolute_scale();
+        }
+
+        to_return += to_add;
+        return to_return;
+    }
+
+    // Returns the y position in absolute scale of the object
+    Fraction __GUI_Transformation::y_in_absolute_scale() const {
+        if(a_last_y_definition == _Size_Definition::Absolute_Scale_Size || (a_last_y_definition == _Size_Definition::Scale_Size && parent() == 0)) return a_y;
+        Fraction to_return = Fraction(0);
+        Fraction to_add = Fraction(0);
+        if(parent() != 0) to_add += parent()->y_in_absolute_scale();
+
+        // Check for the needed convertions
+        if(a_last_y_definition == _Size_Definition::Pixel_Size) {
+            to_return = a_y * one_pixel_height_in_absolute_scale();
+        }
+        else if(a_last_y_definition == _Size_Definition::Object_Scale_Size) {
+            to_return = (height_in_absolute_scale() * Fraction(-1, 2));
+            if(parent() == 0) to_return += a_y;
+            else to_return += a_y * parent()->height_in_absolute_scale();
+        }
+        else {
+            to_return = a_y;
+            if(parent() != 0) to_return *= parent()->height_in_absolute_scale();
+        }
+
+        to_return += to_add;
+        return to_return;
+    }
+
+    //*********
+    //
+    // Pixel plan scale
+    //
+    //*********
+
+    // Returns the height in pixel of the object
+    unsigned int __GUI_Transformation::height_in_pixel() const {
+        if(a_last_height_definition == _Size_Definition::Pixel_Size) return static_cast<unsigned int>(a_height.to_double());
+
+        // Calculate the real height with the pixel perfect system
+        Fraction divisor_y = Fraction(1, window_height());
+        Fraction start_height = height_in_absolute_scale();
+        unsigned int real_height_in_pixel = 0;
+        while(start_height >= divisor_y) {
+            start_height -= divisor_y;
+            real_height_in_pixel++;
+        }
+        if(start_height > 0 && start_height < divisor_y / 2.0) real_height_in_pixel++;
+        return real_height_in_pixel;
+    }
+
+    // Returns the width in pixel of the object
+    unsigned int __GUI_Transformation::width_in_pixel() const {
+        if(a_last_width_definition == _Size_Definition::Pixel_Size) return a_width.to_double();
+
+        // Calculate the real width with the pixel perfect system
+        Fraction divisor_x = Fraction(1, window_width());
+        Fraction start_width = width_in_absolute_scale();
+        unsigned int real_width_in_pixel = 0;
+        while(start_width >= divisor_x) {
+            start_width -= divisor_x;
+            real_width_in_pixel++;
+        }
+        if(start_width > 0 && start_width < divisor_x / 2.0) real_width_in_pixel++;
+        return real_width_in_pixel;
+    }
+
+    // Returns the x position in pixel of the object
+    int __GUI_Transformation::x_in_pixel() const {
+        if(a_last_x_definition == _Size_Definition::Pixel_Size) return static_cast<int>(a_x.to_double());
+        Fraction to_return = (x_in_absolute_scale() / one_pixel_width_in_absolute_scale());
+        if(parent() != 0) to_return -= parent()->x_in_absolute_pixel();
+        return static_cast<int>(to_return.to_double());
+    }
+
+    // Returns the y position in pixel of the object
+    int __GUI_Transformation::y_in_pixel() const {
+        if(a_last_y_definition == _Size_Definition::Pixel_Size) return static_cast<int>(a_y.to_double());
+        Fraction to_return = (y_in_absolute_scale() / one_pixel_height_in_absolute_scale());
+        if(parent() != 0) to_return -= parent()->y_in_absolute_pixel();
+        return static_cast<int>(to_return.to_double());
+    }
+
+    //*********
+    //
+    // Scale plan
+    //
+    //*********
+
+    // Returns the scale of the border width
+    glm::vec4 __GUI_Transformation::border_width_in_scale() const {
+        double one_pixel_height = one_pixel_height_in_scale().to_double();
+        double one_pixel_width = one_pixel_width_in_scale().to_double();
+        return a_border_width * glm::vec4(one_pixel_height, one_pixel_width, one_pixel_height, one_pixel_width);
+    }
+
+    // Returns the height in scale of the object
+    Fraction __GUI_Transformation::height_in_scale() const {
+        if(a_last_height_definition == _Size_Definition::Scale_Size || (a_last_height_definition == _Size_Definition::Absolute_Scale_Size && parent() == 0)) return a_height;
+        Fraction to_return = height_in_absolute_scale();
+        if(parent() != 0) to_return /= parent()->height_in_absolute_scale();
+
+        return to_return;
+    }
+
+    // Returns the width in scale of the object
+    Fraction __GUI_Transformation::width_in_scale() const {
+        if(a_last_width_definition == _Size_Definition::Scale_Size || (a_last_width_definition == _Size_Definition::Absolute_Scale_Size && parent() == 0)) return a_width;
+        if(parent() != 0) return width_in_absolute_scale() / parent()->width_in_absolute_scale();
+        return width_in_absolute_scale();
+    }
+
+    // Returns the x position in scale of the object
+    Fraction __GUI_Transformation::x_in_scale() const {
+        if(a_last_x_definition == _Size_Definition::Scale_Size || (a_last_width_definition == _Size_Definition::Absolute_Scale_Size && parent() == 0)) return a_x;
+        if(parent() != 0) return x_in_absolute_scale() / parent()->x_in_absolute_scale();
+        return x_in_absolute_scale();
+    }
+
+    // Returns the y position in scale of the object
+    Fraction __GUI_Transformation::y_in_scale() const {
+        if(a_last_y_definition == _Size_Definition::Scale_Size) { return a_y; }
+
+        Fraction to_return = y_in_absolute_scale();
+        if(parent() != 0) { to_return = (to_return - parent()->y_in_absolute_scale()) / parent()->height_in_absolute_scale(); }
+
+        return to_return;
+    }
+
     //*********
     //
     // GUI Object main functions
@@ -32,7 +294,7 @@ namespace scls {
 
     // Function called after that the window is resized
     void GUI_Object::after_resizing(){
-        calculate_adapted_scale(true);
+        calculate_transformation(true);
 
         // Apply to children
         for(int i = 0;i<static_cast<int>(a_children.size());i++) a_children[i]->after_resizing();
@@ -50,7 +312,7 @@ namespace scls {
 
     // Render the object
     void GUI_Object::render(glm::vec3 scale_multiplier) {
-        if(a_adapted_scale_updated) calculate_adapted_scale();
+        if(a_transformation_updated) calculate_transformation();
 
         // Handle the extremum
         glm::vec4 final_extremum = object_extremum();
@@ -108,59 +370,49 @@ namespace scls {
     //
     //*********
 
-    // Returns the scale of the border width
-    glm::vec4 GUI_Object::border_width_in_scale() {
-        if(a_last_border_width_definition_type == _Size_Definition::Pixel_Size) {
-            double one_pixel_height = one_pixel_height_in_scale().to_double();
-            double one_pixel_width = one_pixel_width_in_scale().to_double();
-            return a_border_width * glm::vec4(one_pixel_height, one_pixel_width, one_pixel_height, one_pixel_width);
-        }
-        return a_border_width;
-    }
-
     // Calculate the adapted scale
-    void GUI_Object::calculate_adapted_scale(bool force) {
-        if(a_adapted_scale_updated && !force) return;
-
-        Fraction divisor_x = Fraction(1, window_struct().window_width());
-        Fraction divisor_y = Fraction(1, window_struct().window_height());
-
-        // Calculate the real height with the pixel perfect system
-        a_height_in_adapted_absolute_scale = divisor_y * height_in_pixel();
-        a_height_in_adapted_scale = a_height_in_adapted_absolute_scale;
-        if(parent() != 0) a_height_in_adapted_scale /= parent()->height_in_adapted_absolute_scale();
-        a_height_in_adapted_scale -= divisor_y / 2;
-
-        // Calculate the real width with the pixel perfect system
-        a_width_in_adapted_absolute_scale = divisor_x * width_in_pixel();
-        a_width_in_adapted_scale = a_width_in_adapted_absolute_scale;
-        if(parent() != 0) a_width_in_adapted_scale /= parent()->width_in_adapted_absolute_scale();
-        a_width_in_adapted_scale -= divisor_x / 2;
-
-        a_x_in_adapted_absolute_scale = divisor_x * x_in_absolute_pixel() * 2 + divisor_x / 4;
-        a_y_in_adapted_absolute_scale = divisor_y * y_in_absolute_pixel() * 2 + divisor_y / 4;
-
-        Fraction absolute_height_to_apply = height_in_adapted_absolute_scale();
-
-        // Calculate the y minimum and maximum scale
-        a_object_y_maximum = object_absolute_y_last_extremum();
-        a_object_y_minimum = object_absolute_y_first_extremum();
-        if(parent() != 0) {
-            a_object_y_maximum -= y_in_absolute_pixel();
-            a_object_y_minimum -= y_in_absolute_pixel();
+    void GUI_Object::calculate_transformation(bool force) {
+        // Create the new transformation
+        std::shared_ptr<__GUI_Transformation> parent_transformation;
+        if(parent() != 0) parent_transformation = parent()->a_transformation;
+        if(a_transformation.get() == 0) a_transformation = std::make_shared<__GUI_Transformation>(window_struct().window_width(), window_struct().window_height(), parent_transformation);
+        else {
+            a_transformation = std::make_shared<__GUI_Transformation>(*a_transformation.get());
         }
-        // Apply the local transformations
-        a_object_y_maximum *= one_pixel_height_in_scale();
-        a_object_y_minimum *= one_pixel_height_in_scale();
+        a_last_transformation = a_transformation;
+        a_transformation.get()->set_window_height(window_struct().window_height());
+        a_transformation.get()->set_window_width(window_struct().window_width());
+        if(a_last_transformation.get()->parent() != parent_transformation.get()) {
+            a_transformation.get()->parent_shared_ptr() = parent_transformation;
+        }
 
-        a_adapted_scale_updated = false;
+        // Calculate the transformation
+        // Pass the border
+        a_transformation.get()->set_border_width_in_pixel(a_border_width);
+        // Pass the height
+        if(a_last_height_definition == _Size_Definition::Scale_Size || a_last_height_definition == _Size_Definition::Object_Scale_Size) a_transformation.get()->set_height_in_scale(a_height);
+        else if(a_last_height_definition == _Size_Definition::Pixel_Size) a_transformation.get()->set_height_in_pixel(a_height);
+        // Pass the width
+        if(a_last_width_definition == _Size_Definition::Scale_Size || a_last_width_definition == _Size_Definition::Object_Scale_Size) a_transformation.get()->set_width_in_scale(a_width);
+        else if(a_last_width_definition == _Size_Definition::Pixel_Size) a_transformation.get()->set_width_in_pixel(a_width);
+        // Pass the X
+        if(a_last_x_definition == _Size_Definition::Scale_Size) a_transformation.get()->set_x_in_scale(a_x);
+        else if(a_last_x_definition == _Size_Definition::Object_Scale_Size) a_transformation.get()->set_x_in_object_scale(a_x);
+        else if(a_last_x_definition == _Size_Definition::Pixel_Size) a_transformation.get()->set_x_in_pixel(a_x);
+        // Pass the Y
+        if(a_last_y_definition == _Size_Definition::Scale_Size) a_transformation.get()->set_y_in_scale(a_y);
+        else if(a_last_y_definition == _Size_Definition::Object_Scale_Size) a_transformation.get()->set_y_in_object_scale(a_y);
+        else if(a_last_y_definition == _Size_Definition::Pixel_Size) a_transformation.get()->set_y_in_pixel(a_y);
+        a_transformation.get()->calculate_transformation();
+
+        a_transformation_updated = false;
     }
 
     // Delete the children of an object
     void GUI_Object::delete_children() { children().clear(); }
 
     // Returns the rect of the fitted texture
-    glm::vec4 GUI_Object::fitted_texture_rect() const {
+    glm::vec4 GUI_Object::fitted_texture_rect() {
         if(texture()->image_ratio() > (width_in_absolute_scale() / height_in_absolute_scale_and_window())) {
             return fitted_horizontally_texture_rect();
         }
@@ -168,7 +420,7 @@ namespace scls {
     }
 
     // Returns the rect of the horizontally fitted texture
-    glm::vec4 GUI_Object::fitted_horizontally_texture_rect() const {
+    glm::vec4 GUI_Object::fitted_horizontally_texture_rect() {
         Fraction height_texture = (width_in_absolute_scale() / height_in_absolute_scale_and_window()) / texture()->image_ratio();
         Fraction width_texture = Fraction(1);
         Fraction x_texture = Fraction(1, 2) - width_texture / Fraction(2);
@@ -177,7 +429,7 @@ namespace scls {
     }
 
     // Returns the rect of the vertically fitted texture
-    glm::vec4 GUI_Object::fitted_vertically_texture_rect() const {
+    glm::vec4 GUI_Object::fitted_vertically_texture_rect() {
         Fraction height_texture = Fraction(1);
         Fraction width_texture = texture()->image_ratio() / (width_in_absolute_scale() / height_in_absolute_scale_and_window());
         Fraction x_texture = Fraction(0);
@@ -185,49 +437,6 @@ namespace scls {
         if(texture_alignment_horizontal() == Alignment_Horizontal::H_Center) x_texture = Fraction(1, 2) - width_texture / 2.0;
         else if(texture_alignment_horizontal() == Alignment_Horizontal::H_Right) x_texture = Fraction(1) - width_texture;
         return glm::vec4(x_texture.to_double(), y_texture.to_double(), width_texture.to_double(), height_texture.to_double());
-    }
-
-    // Returns the height in pixel of the object
-    unsigned int GUI_Object::height_in_pixel() const {
-        if(a_last_height_definition == _Size_Definition::Pixel_Size) return static_cast<unsigned int>(a_height.to_double());
-
-        // Calculate the real height with the pixel perfect system
-        Fraction divisor_y = Fraction(1, window_struct().window_height());
-        Fraction start_height = height_in_absolute_scale();
-        unsigned int real_height_in_pixel = 0;
-        while(start_height >= divisor_y) {
-            start_height -= divisor_y;
-            real_height_in_pixel++;
-        }
-        if(start_height > 0 && start_height < divisor_y / 2.0) real_height_in_pixel++;
-        return real_height_in_pixel;
-    }
-
-    // Returns the height in absolute scale of the object
-    Fraction GUI_Object::height_in_absolute_scale() const {
-        if(a_last_height_definition == _Size_Definition::Absolute_Scale_Size || (a_last_height_definition == _Size_Definition::Scale_Size && parent() == 0)) return a_height;
-        Fraction to_return = a_height;
-
-        if(a_last_height_definition == _Size_Definition::Pixel_Size) {
-            to_return *= one_pixel_height_in_absolute_scale();
-        }
-        else {
-            if(parent() != 0) { to_return *= parent()->height_in_absolute_scale(); }
-        }
-
-        return to_return;
-    }
-
-    // Returns the height in absolute scale and by counting the window of the object
-    Fraction GUI_Object::height_in_absolute_scale_and_window() const { return height_in_absolute_scale() / window_struct().window_ratio(); }
-
-    // Returns the height in scale of the object
-    Fraction GUI_Object::height_in_scale() const {
-        if(a_last_height_definition == _Size_Definition::Scale_Size || (a_last_height_definition == _Size_Definition::Absolute_Scale_Size && parent() == 0)) return a_height;
-        Fraction to_return = height_in_absolute_scale();
-        if(parent() != 0) to_return /= parent()->height_in_absolute_scale();
-
-        return to_return;
     }
 
     // Returns the position of the mouse in scale
@@ -238,31 +447,8 @@ namespace scls {
         return mouse_pos;
     }
 
-    // Returns the first absolute extremum of the object in the Y axis
-    Fraction GUI_Object::object_absolute_y_first_extremum(bool remove_border) {
-        Fraction to_return = y_in_absolute_pixel();
-        if(remove_border) to_return += border_width_in_pixel()[2];
-        Fraction parent_extremum = Fraction(-1);
-        if(parent() != 0) { parent_extremum = parent()->object_absolute_y_first_extremum(true); }
-        if(parent_extremum > to_return) to_return = parent_extremum;
-        return to_return;
-    }
-
-    // Returns the last absolute extremum of the object in the Y axis
-    Fraction GUI_Object::object_absolute_y_last_extremum(bool remove_border) {
-        Fraction to_return = (y_in_absolute_pixel() + height_in_pixel());
-        if(remove_border) to_return -= border_width_in_pixel()[0];
-        Fraction parent_extremum = Fraction(window_struct().window_height());
-        if(parent() != 0) { parent_extremum = parent()->object_absolute_y_last_extremum(true); }
-        if(parent_extremum < to_return) to_return = parent_extremum;
-        return to_return;
-    }
-
-    // Returns the extremum of the object
-    glm::vec4 GUI_Object::object_extremum() { return glm::vec4(-1.0, a_object_y_minimum.to_double(), 2.0, a_object_y_maximum.to_double()); }
-
     // Returns the rect of user defined texture
-    glm::vec4 GUI_Object::user_defined_texture_rect() const {
+    glm::vec4 GUI_Object::user_defined_texture_rect() {
         Fraction height_texture = texture_height_in_scale();
         Fraction width_texture = texture_width_in_scale();
         Fraction x_texture = Fraction(0);
@@ -272,127 +458,6 @@ namespace scls {
         if(texture_alignment_vertical() == Alignment_Vertical::V_Center) y_texture = Fraction(1, 2) - height_texture /Fraction(2);
         else if(texture_alignment_vertical() == Alignment_Vertical::V_Top) y_texture = Fraction(1) - height_texture;
         return glm::vec4(x_texture.to_double(), y_texture.to_double(), width_texture.to_double(), height_texture.to_double());
-    }
-
-    // Returns the width in pixel of the object
-    unsigned int GUI_Object::width_in_pixel() const {
-        if(a_last_width_definition == _Size_Definition::Pixel_Size) return a_width.to_double();
-
-        // Calculate the real width with the pixel perfect system
-        Fraction divisor_x = Fraction(1, window_struct().window_width());
-        Fraction start_width = width_in_absolute_scale();
-        unsigned int real_width_in_pixel = 0;
-        while(start_width >= divisor_x) {
-            start_width -= divisor_x;
-            real_width_in_pixel++;
-        }
-        if(start_width > 0 && start_width < divisor_x / 2.0) real_width_in_pixel++;
-        return real_width_in_pixel;
-    }
-
-    // Returns the width in absolute scale of the object
-    Fraction GUI_Object::width_in_absolute_scale() const {
-        if(a_last_width_definition == _Size_Definition::Absolute_Scale_Size || (a_last_width_definition == _Size_Definition::Scale_Size && parent() == 0)) return a_width;
-        Fraction to_return = a_width;
-
-        if(a_last_width_definition == _Size_Definition::Pixel_Size) {
-            to_return *= one_pixel_width_in_absolute_scale();
-        }
-        else if(a_last_width_definition == _Size_Definition::Scale_Size) {
-            to_return *= parent()->width_in_absolute_scale();
-        }
-
-        return to_return;
-    }
-
-    // Returns the width in scale of the object
-    Fraction GUI_Object::width_in_scale() const {
-        if(a_last_width_definition == _Size_Definition::Scale_Size || (a_last_width_definition == _Size_Definition::Absolute_Scale_Size && parent() == 0)) return a_width;
-        if(parent() != 0) return width_in_absolute_scale() / parent()->width_in_absolute_scale();
-        return width_in_absolute_scale();
-    }
-
-    // Returns the x position in pixel of the object
-    int GUI_Object::x_in_pixel() const {
-        if(a_last_x_definition == _Size_Definition::Pixel_Size) return static_cast<int>(a_x.to_double());
-        Fraction to_return = (x_in_absolute_scale() / one_pixel_width_in_absolute_scale());
-        if(parent() != 0) to_return -= parent()->x_in_absolute_pixel();
-        return static_cast<int>(to_return.to_double());
-    }
-
-    // Returns the x position in absolute scale of the object
-    Fraction GUI_Object::x_in_absolute_scale() const {
-        if(a_last_x_definition == _Size_Definition::Absolute_Scale_Size || (a_last_x_definition == _Size_Definition::Scale_Size && parent() == 0)) return a_x;
-        Fraction to_return = Fraction(0);
-        Fraction to_add = Fraction(0);
-        if(parent() != 0) to_add += parent()->x_in_absolute_scale();
-
-        // Check for the needed convertions
-        if(a_last_x_definition == _Size_Definition::Pixel_Size) {
-            to_return = a_x * one_pixel_width_in_absolute_scale();
-        }
-        else if(a_last_x_definition == _Size_Definition::Object_Scale_Size) {
-            to_return = (width_in_absolute_scale() * Fraction(-1, 2));
-            if(parent() == 0) to_return += a_x;
-            else to_return += a_x * parent()->width_in_absolute_scale();
-        }
-        else {
-            to_return = a_x;
-            if(parent() != 0) to_return *= parent()->width_in_absolute_scale();
-        }
-
-        to_return += to_add;
-        return to_return;
-    }
-
-    // Returns the x position in scale of the object
-    Fraction GUI_Object::x_in_scale() const {
-        if(a_last_x_definition == _Size_Definition::Scale_Size || (a_last_width_definition == _Size_Definition::Absolute_Scale_Size && parent() == 0)) return a_x;
-        if(parent() != 0) return x_in_absolute_scale() / parent()->x_in_absolute_scale();
-        return x_in_absolute_scale();
-    }
-
-    // Returns the y position in pixel of the object
-    int GUI_Object::y_in_pixel() const {
-        if(a_last_y_definition == _Size_Definition::Pixel_Size) return static_cast<int>(a_y.to_double());
-        Fraction to_return = (y_in_absolute_scale() / one_pixel_height_in_absolute_scale());
-        if(parent() != 0) to_return -= parent()->y_in_absolute_pixel();
-        return static_cast<int>(to_return.to_double());
-    }
-
-    // Returns the y position in absolute scale of the object
-    Fraction GUI_Object::y_in_absolute_scale() const {
-        if(a_last_y_definition == _Size_Definition::Absolute_Scale_Size || (a_last_y_definition == _Size_Definition::Scale_Size && parent() == 0)) return a_y;
-        Fraction to_return = Fraction(0);
-        Fraction to_add = Fraction(0);
-        if(parent() != 0) to_add += parent()->y_in_absolute_scale();
-
-        // Check for the needed convertions
-        if(a_last_y_definition == _Size_Definition::Pixel_Size) {
-            to_return = a_y * one_pixel_height_in_absolute_scale();
-        }
-        else if(a_last_y_definition == _Size_Definition::Object_Scale_Size) {
-            to_return = (height_in_absolute_scale() * Fraction(-1, 2));
-            if(parent() == 0) to_return += a_y;
-            else to_return += a_y * parent()->height_in_absolute_scale();
-        }
-        else {
-            to_return = a_y;
-            if(parent() != 0) to_return *= parent()->height_in_absolute_scale();
-        }
-
-        to_return += to_add;
-        return to_return;
-    }
-
-    // Returns the y position in scale of the object
-    Fraction GUI_Object::y_in_scale() const {
-        if(a_last_y_definition == _Size_Definition::Scale_Size) { return a_y; }
-
-        Fraction to_return = y_in_absolute_scale();
-        if(parent() != 0) { to_return = (to_return - parent()->y_in_absolute_scale()) / parent()->height_in_absolute_scale(); }
-
-        return to_return;
     }
 
     //*********
@@ -482,7 +547,8 @@ namespace scls {
     }
 
     // Check the browser scroller
-    void GUI_Scroller::check_scroller() {
+    void GUI_Scroller::check_scroller(bool reset) {
+        int last_y_position = (a_scroller_children->last_transformation()->y_in_pixel() + a_scroller_children->last_transformation()->height_in_pixel()) - last_transformation()->height_in_pixel();
         GUI_Object::after_resizing();
         Fraction tallest_point = Fraction(0);
         for(int i = 0;i<static_cast<int>(a_scroller_children->children().size());i++) {
@@ -493,6 +559,18 @@ namespace scls {
         }
         a_scroller_children->set_height_in_pixel(static_cast<unsigned int>(tallest_point.to_double()));
         a_scroller_children->move_top_in_parent(1);
+
+        // Calculate according to the last position
+        if(!reset) {
+            if(last_y_position >= 0) {
+                if(last_y_position < static_cast<int>(a_scroller_children->height_in_pixel()) - static_cast<int>(height_in_pixel())) {
+                    a_scroller_children->move_top_in_parent(-last_y_position);
+                }
+                else {
+                    a_scroller_children->move_bottom_in_parent(1);
+                }
+            }
+        }
         GUI_Object::after_resizing();
     }
 
@@ -1082,7 +1160,7 @@ namespace scls {
         // Top bar of the file explorer
         a_top_bar = new_object<GUI_Object>("top_bar");
         a_top_bar->set_background_color(scls::Color(209, 209, 209));
-        a_top_bar->set_height_in_scale(Fraction(3, 40));
+        a_top_bar->set_height_in_pixel(30);
         a_top_bar->set_width_in_scale(Fraction(1));
         a_top_bar->set_x_in_scale(Fraction(0));
 
@@ -1102,6 +1180,7 @@ namespace scls {
         a_final_path->move_right_in_parent();
         a_browser->move_right_in_parent();
         a_browser->move_top_of_object_in_parent(a_final_path);
+        a_top_bar->set_height_in_pixel(30);
         a_top_bar->set_x_in_scale(Fraction(0));
         a_top_bar->move_top_in_parent();
 
@@ -1125,7 +1204,9 @@ namespace scls {
     void GUI_File_Explorer::place_top_bar_buttons() {
         GUI_Text* last_button = 0;
         for(int i = 0;i<static_cast<int>(a_top_bar_buttons.size());i++) {
-            // a_top_bar_buttons[i]->collapse_size_on_texture_with_height(1.0);
+            a_top_bar_buttons[i]->set_height_in_pixel(a_top_bar_buttons[i]->texture()->get_image()->height());
+            a_top_bar_buttons[i]->set_width_in_pixel(a_top_bar_buttons[i]->texture()->get_image()->width());
+            a_top_bar_buttons[i]->move_top_in_parent();
             if(last_button == 0) a_top_bar_buttons[i]->move_left_in_parent();
             else a_top_bar_buttons[i]->move_right_of_object_in_parent(last_button);
             last_button = a_top_bar_buttons[i];
@@ -1179,7 +1260,7 @@ namespace scls {
         unsigned char current_thread_number = 0;
         bool from_scratch = false;
         unsigned char max_thread_number = 10;
-        std::vector<std::string> paths = directory_content(a_current_path);
+        std::vector<std::string> paths = directory_content(to_utf_8(a_current_path));
         std::vector<std::thread*> threads = std::vector<std::thread*>();
         if(a_browser_buttons_to_modify.size() == 0) {
             // Create the buttons from scratch
@@ -1188,7 +1269,7 @@ namespace scls {
                 if(!std::filesystem::exists(paths[i])) continue;
 
                 // Create the button
-                paths[i] = file_name(paths[i], true);
+                paths[i] = to_utf_8_code_point(file_name(paths[i], true));
                 GUI_Text* new_button = a_browser->new_object_in_scroller<GUI_Text>("browser_button_" + std::to_string(i));
                 new_button->set_background_color(scls::white);
                 new_button->set_font_color(scls::black);
@@ -1271,7 +1352,7 @@ namespace scls {
         threads.clear();
 
         place_all();
-        if(from_scratch) a_browser->check_scroller();
+        a_browser->check_scroller(from_scratch);
     }
 
     // Update the explorer during an event
@@ -1280,7 +1361,7 @@ namespace scls {
 
         // Check if a browser button is clicked
         for(int i = 0;i<static_cast<int>(a_browser_buttons.size());i++) {
-            std::string path = a_current_path + "/" + a_browser_buttons[i]->plain_text();
+            std::string path = a_current_path + "/" + to_utf_8(a_browser_buttons[i]->plain_text());
             if(a_browser_buttons[i]->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
                 set_path(path);
                 break;
@@ -1319,13 +1400,12 @@ namespace scls {
             if(button_text == "") continue;
             if(button_text != first_text) button_text += "/";
             GUI_Text* new_button = a_top_bar->new_object<GUI_Text>("top_bar_button_" + std::to_string(i), 0, 0);
-            new_button->set_font_size(50);
+            new_button->set_font_size(22);
             new_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
             new_button->set_text(button_text);
-            new_button->set_height_in_pixel(25);
-            new_button->set_width_in_scale(0.15);
-            new_button->set_texture_alignment(scls::Alignment_Texture::T_Fit_Vertically);
-            new_button->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
+            new_button->set_height_in_pixel(22);
+            new_button->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
+            new_button->set_texture_alignment_vertical(scls::Alignment_Vertical::V_Center);
             a_top_bar_buttons.push_back(new_button);
         }
         place_all();
