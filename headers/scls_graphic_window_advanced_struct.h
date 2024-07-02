@@ -69,9 +69,10 @@ namespace scls {
         //*********
 
         // Add an existing VBO into the game
-        inline void add_vbo(std::string name, const std::shared_ptr<VBO>& vbo) {
-            if (!contains_vbo(name)) vbos()[name] = vbo;
+        inline std::shared_ptr<VBO>* add_vbo(std::string name, const std::shared_ptr<VBO>& vbo) {
+            if (!contains_vbo(name)) {vbos()[name] = vbo;return &(vbos()[name]);}
             else print("Warning", "SCLS Window", "The \"" + name + "\" VBO you want to add already exists.");
+            return 0;
         };
 
         // Returns if the struct contains a textures
@@ -118,13 +119,13 @@ namespace scls {
             if(current_ptr == 0) return 0; return current_ptr->get();
         };
         // Create a texture to the window with the most basic constructor
-        Texture* new_texture(std::string name, bool texture_resize = false);
+        Texture* new_texture(std::string name);
         // Create a new VAO into the window with the most basic constructor
         VAO* new_vao(std::string name, char* binary);
         // Create a new VAO into the window
         VAO* new_vao(std::string name, std::string vbo, std::string shader = "default");
         // Create a new VBO into the game
-        VBO* new_vbo(std::string name);
+        std::shared_ptr<VBO>* new_vbo(std::string name);
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         Texture* texture(std::string texture_name, bool copy_texture = false);

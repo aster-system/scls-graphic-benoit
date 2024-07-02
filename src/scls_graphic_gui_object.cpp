@@ -850,7 +850,7 @@ namespace scls {
 
         if(window_struct().key_pressed_or_repeated_pressed("enter") == Key_State::Pressed) { to_add += "</br>";  }
 
-        to_add = to_utf_8(to_add);
+        to_add = to_utf_8_code_point(to_add);
         add_text(to_add);
     }
 

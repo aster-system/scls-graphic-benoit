@@ -56,7 +56,7 @@ namespace p_fighter_cockpit {
     void use_p_fighter_cockpit(std::string exec_path) {
         scls::Window* window = new scls::Window(900, 900, exec_path);
 
-        P_Fighter_Cockpit* page = window->new_page_2d<P_Fighter_Cockpit>("p_fighter_cockpit");
+        std::shared_ptr<P_Fighter_Cockpit> page = *window->new_page_2d<P_Fighter_Cockpit>("p_fighter_cockpit");
         window->display_page_2d("p_fighter_cockpit");
 
         while(window->run()) {

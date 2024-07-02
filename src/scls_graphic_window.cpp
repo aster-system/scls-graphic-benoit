@@ -160,13 +160,7 @@ namespace scls {
     Window::~Window() {
         // Destroy the cursor
         if(cursor() != 0) glfwDestroyCursor(cursor());
-
-        std::map<std::string, Object*>& all_pages = pages_2d();
-        for (std::map<std::string, Object*>::iterator it = all_pages.begin(); it != all_pages.end(); it++)
-        {
-            delete it->second; // Destroy each pages
-            it->second = 0;
-        }
+        pages_2d().clear();
     }
 
     //*********
@@ -255,8 +249,7 @@ namespace scls {
         a_keys["tab"] = GLFW_KEY_TAB;
         a_keys["up arrow"] = GLFW_KEY_UP;
 
-        for (std::map<std::string, unsigned int>::iterator it = a_keys.begin(); it != a_keys.end(); it++)
-        {
+        for (std::map<std::string, unsigned int>::iterator it = a_keys.begin(); it != a_keys.end(); it++) {
             keys_state()[it->first] = Key_State::Nothing; // Reset keys
             keys_state_frame()[it->first] = Key_State::Nothing; // Reset keys
         }
@@ -307,12 +300,20 @@ namespace scls {
         a_cursor_changed = false;
 
         // Render 2D pages
-        glDepthFunc(GL_ALWAYS);
-        if (displayed_pages_2d_names().size() > 0)
-        {
-            std::vector<Object*> to_display = displayed_pages_2d();
+        glDepthFunc(GL_LESS);
+        if (displayed_pages_3d_names().size() > 0) {
+            std::vector<std::shared_ptr<Object>> to_display = displayed_pages_3d();
             for(int i = 0;i<static_cast<int>(to_display.size());i++) {
-                to_display[i]->render();
+                to_display[i].get()->render();
+            }
+        }
+
+        // Render 2D pages
+        glDepthFunc(GL_ALWAYS);
+        if (displayed_pages_2d_names().size() > 0) {
+            std::vector<std::shared_ptr<Object>> to_display = displayed_pages_2d();
+            for(int i = 0;i<static_cast<int>(to_display.size());i++) {
+                to_display[i].get()->render();
             }
         }
 
@@ -324,11 +325,10 @@ namespace scls {
     // Update one frame of the game
     void Window::update() {
         // Update 2D pages
-        if (displayed_pages_2d_names().size() > 0)
-        {
-            std::vector<Object*> to_display = displayed_pages_2d();
+        if (displayed_pages_2d_names().size() > 0) {
+            std::vector<std::shared_ptr<Object>> to_display = displayed_pages_2d();
             for(int i = 0;i<static_cast<int>(to_display.size());i++) {
-                to_display[i]->update();
+                to_display[i].get()->update();
             }
         }
     }
@@ -442,9 +442,9 @@ namespace scls {
         // Update the event of the pages
         if (displayed_pages_2d_names().size() > 0)
         {
-            std::vector<Object*> to_display = displayed_pages_2d();
+            std::vector<std::shared_ptr<Object>> to_display = displayed_pages_2d();
             for(int i = 0;i<static_cast<int>(to_display.size());i++) {
-                to_display[i]->update_event();
+                to_display[i].get()->update_event();
             }
         }
     }

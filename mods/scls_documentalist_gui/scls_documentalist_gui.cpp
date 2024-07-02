@@ -186,12 +186,12 @@ namespace scls_documentalist_gui {
         load_language_fr();
 
         // Page of the GUI
-        a_page = new_page_2d<scls::GUI_Page>("scls_documentalist_agatha");
-        a_page->set_scale(glm::vec3(2, 2, 1));
-        a_page->parent_object()->set_background_color(scls::Color(255, 255, 255));
-        a_page->parent_object()->set_position_in_pixel(0, 0);
-        a_page->parent_object()->set_height_in_scale(scls::Fraction(1));
-        a_page->parent_object()->set_width_in_scale(scls::Fraction(1));
+        a_page = *new_page_2d<scls::GUI_Page>("scls_documentalist_agatha");
+        a_page.get()->set_scale(glm::vec3(2, 2, 1));
+        a_page.get()->parent_object()->set_background_color(scls::Color(255, 255, 255));
+        a_page.get()->parent_object()->set_position_in_pixel(0, 0);
+        a_page.get()->parent_object()->set_height_in_scale(scls::Fraction(1));
+        a_page.get()->parent_object()->set_width_in_scale(scls::Fraction(1));
         display_page_2d("scls_documentalist_agatha");
 
         load_main_header();
@@ -557,15 +557,15 @@ namespace scls_documentalist_gui {
 
     // Load english
     void SCLS_Documentalist_GUI::load_language_en() {
-        a_gui_text_content["create_a_file_pattern"] = scls::to_utf_8("Create a pattern file");
-        a_gui_text_content["create_a_project"] = scls::to_utf_8("Create a project");
+        a_gui_text_content["create_a_file_pattern"] = scls::to_utf_8_code_point("Create a pattern file");
+        a_gui_text_content["create_a_project"] = scls::to_utf_8_code_point("Create a project");
         a_gui_text_content["final_path"] = "Final path";
         a_gui_text_content["help_body_home"] = "Welcome to SCLS Documentalist \"Agatha\" GUI";
         std::string help_body_welcome_description = "This software, made by Aster System, provides a simply use to SCLS Documentalist \"Agatha\", whitout having to</br>";
         help_body_welcome_description += "handle a lot of lines of code. You can use it, as as a developer who wants to easily documentate its code, or as</br>";
         help_body_welcome_description += "anybody else. The software is published under the terms of the license GPL V3.0.";
-        a_gui_text_content["help_body_home_description"] = scls::to_utf_8(help_body_welcome_description);
-        a_gui_text_content["help_body_home_part"] = scls::to_utf_8("You currently are in the help page. Browse with the</br>selector at your left.");
+        a_gui_text_content["help_body_home_description"] = scls::to_utf_8_code_point(help_body_welcome_description);
+        a_gui_text_content["help_body_home_part"] = scls::to_utf_8_code_point("You currently are in the help page. Browse with the</br>selector at your left.");
         a_gui_text_content["home"] = "Home";
         a_gui_text_content["home_project"] = "Project home";
         a_gui_text_content["name_file_pattern"] = "Name of the file pattern";
@@ -578,37 +578,37 @@ namespace scls_documentalist_gui {
 
     // Load french
     void SCLS_Documentalist_GUI::load_language_fr() {
-        a_gui_text_content["change_path"] = scls::to_utf_8("Changer le chemin d'accès");
-        a_gui_text_content["create_pattern"] = scls::to_utf_8("Créer un modèle");
-        a_gui_text_content["create_replica"] = scls::to_utf_8("Créer une réplique");
-        a_gui_text_content["export"] = scls::to_utf_8("Exporter");
-        a_gui_text_content["file_pattern_create"] = scls::to_utf_8("Créer un fichier modèle");
-        a_gui_text_content["file_pattern_name"] = scls::to_utf_8("Nom du fichier modèle");
+        a_gui_text_content["change_path"] = scls::to_utf_8_code_point("Changer le chemin d'accès");
+        a_gui_text_content["create_pattern"] = scls::to_utf_8_code_point("Créer un modèle");
+        a_gui_text_content["create_replica"] = scls::to_utf_8_code_point("Créer une réplique");
+        a_gui_text_content["export"] = scls::to_utf_8_code_point("Exporter");
+        a_gui_text_content["file_pattern_create"] = scls::to_utf_8_code_point("Créer un fichier modèle");
+        a_gui_text_content["file_pattern_name"] = scls::to_utf_8_code_point("Nom du fichier modèle");
         a_gui_text_content["final_path"] = "Fichier final";
         std::string help_body_home = "<h1>Bienvenue sur la GUI de SCLS Documentalist \"Agatha\"</h1>";
         help_body_home += "Ce logiciel, fait par Aster Système, vous permet d'utiliser SCLS Documentalist \"Agatha\" simplement, sans avoir à</br>";
         help_body_home += "manipuler de lignes de code. Vous pouvez l'utiliser, que vous soyez un développeur qui veut documenter facilement</br>";
         help_body_home += "son code, soit que vous êtes quoi que ce soit d'autre. Il vous est distribué sous la license libre GPL V3.0.</br>";
         help_body_home += "Vous êtes actuellement sur la page d'aide. Naviguez avec le sélécteur à gauche.";
-        a_gui_text_content["global_variable_edit"] = scls::to_utf_8("Modifier une variable globale");
-        a_gui_text_content["help_body_home"] = scls::to_utf_8(help_body_home);
+        a_gui_text_content["global_variable_edit"] = scls::to_utf_8_code_point("Modifier une variable globale");
+        a_gui_text_content["help_body_home"] = scls::to_utf_8_code_point(help_body_home);
         a_gui_text_content["home"] = "Accueil";
-        a_gui_text_content["name_pattern"] = scls::to_utf_8("Nom du modèle");
-        a_gui_text_content["open_pattern"] = scls::to_utf_8("Ouvrir un modèle");
-        a_gui_text_content["path_project"] = scls::to_utf_8("Chemin d'accès du projet");
-        a_gui_text_content["pattern"] = scls::to_utf_8("Modèle");
+        a_gui_text_content["name_pattern"] = scls::to_utf_8_code_point("Nom du modèle");
+        a_gui_text_content["open_pattern"] = scls::to_utf_8_code_point("Ouvrir un modèle");
+        a_gui_text_content["path_project"] = scls::to_utf_8_code_point("Chemin d'accès du projet");
+        a_gui_text_content["pattern"] = scls::to_utf_8_code_point("Modèle");
         a_gui_text_content["project_home"] = "Accueil du projet";
-        a_gui_text_content["replica"] = scls::to_utf_8("Réplique");
-        a_gui_text_content["replica_create"] = scls::to_utf_8("Créer une réplique");
-        a_gui_text_content["replica_file_choose_pattern"] = scls::to_utf_8("Choisissez le fichier modèle de ce fichier réplique à gauche");
-        a_gui_text_content["replica_file_create"] = scls::to_utf_8("Créer un fichier réplique");
-        a_gui_text_content["replica_file_name"] = scls::to_utf_8("Nom du fichier réplique");
-        a_gui_text_content["replica_home"] = scls::to_utf_8("Accueil de la réplique");
-        a_gui_text_content["replica_open"] = scls::to_utf_8("Ouvrir une réplique");
-        a_gui_text_content["replica_name"] = scls::to_utf_8("Nom de la réplique");
+        a_gui_text_content["replica"] = scls::to_utf_8_code_point("Réplique");
+        a_gui_text_content["replica_create"] = scls::to_utf_8_code_point("Créer une réplique");
+        a_gui_text_content["replica_file_choose_pattern"] = scls::to_utf_8_code_point("Choisissez le fichier modèle de ce fichier réplique à gauche");
+        a_gui_text_content["replica_file_create"] = scls::to_utf_8_code_point("Créer un fichier réplique");
+        a_gui_text_content["replica_file_name"] = scls::to_utf_8_code_point("Nom du fichier réplique");
+        a_gui_text_content["replica_home"] = scls::to_utf_8_code_point("Accueil de la réplique");
+        a_gui_text_content["replica_open"] = scls::to_utf_8_code_point("Ouvrir une réplique");
+        a_gui_text_content["replica_name"] = scls::to_utf_8_code_point("Nom de la réplique");
         a_gui_text_content["save"] = "Sauvegarder";
         a_gui_text_content["save_all"] = "Sauvegarder tout";
-        a_gui_text_content["switch_to_text_creation"] = scls::to_utf_8("Passer à la création de texte");
+        a_gui_text_content["switch_to_text_creation"] = scls::to_utf_8_code_point("Passer à la création de texte");
     }
 
     // Load the main header

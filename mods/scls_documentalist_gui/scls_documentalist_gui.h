@@ -295,7 +295,7 @@ namespace scls_documentalist_gui {
         //*********
 
         // Main page of the GUI
-        scls::GUI_Page* a_page = 0;
+        std::shared_ptr<scls::GUI_Page> a_page = 0;
 
         // Body of the create file pattern page
         // Parent page of the create file pattern body

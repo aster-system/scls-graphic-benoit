@@ -91,7 +91,9 @@ namespace scls {
             to_return += "out vec4 FragColor;\n";
             to_return += "uniform vec3 scale;\n";
             to_return += "uniform sampler2D texture_0;\n";
+            to_return += "uniform bool texture_binded;\n";
             to_return += "void main(){\n";
+            to_return += "if(texture_binded){";
             to_return += "  vec2 final_tex_pos = (tex_pos - tex_rect.xy);";
             to_return += "  if (tex_multiplier.x == 0) final_tex_pos.x = final_tex_pos.x * scale.x;";
             to_return += "  else if (tex_multiplier.x == 1) final_tex_pos.y = final_tex_pos.y * scale.x;";
@@ -102,6 +104,9 @@ namespace scls {
             to_return += "  while(final_tex_pos.x > tex_rect[2])final_tex_pos.x -= tex_rect[2];\n";
             to_return += "  while (final_tex_pos.y > tex_rect[3])final_tex_pos.y -= tex_rect[3];\n";
             to_return += "  FragColor = texture(texture_0, tex_rect.xy + final_tex_pos);\n";
+            to_return += "} else {";
+            to_return += "  FragColor = vec4(1, 1, 1, 1);";
+            to_return += "}";
             to_return += "}";
             return to_return;
         };

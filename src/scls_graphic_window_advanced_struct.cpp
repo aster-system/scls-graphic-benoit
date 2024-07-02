@@ -117,7 +117,7 @@ namespace scls {
     }
 
     // Add a texture to the game with the most basic constructor
-    Texture* _Window_Advanced_Struct::new_texture(std::string name, bool texture_resize) {
+    Texture* _Window_Advanced_Struct::new_texture(std::string name) {
         if (!contains_texture(name))
         {
             std::shared_ptr<Texture> texture = std::make_shared<Texture>();
@@ -172,12 +172,10 @@ namespace scls {
     }
 
     // Create a new VBO into the game
-    VBO* _Window_Advanced_Struct::new_vbo(std::string name) {
-        if (!contains_vbo(name))
-        {
+    std::shared_ptr<VBO>* _Window_Advanced_Struct::new_vbo(std::string name) {
+        if (!contains_vbo(name)) {
             std::shared_ptr<VBO> vbo = std::make_shared<VBO>();
-            add_vbo(name, vbo);
-            return vbo.get();
+            return add_vbo(name, vbo);
         }
         print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to add already exists.");
         return 0;

@@ -255,8 +255,8 @@ namespace scls {
                             // Get the data of the VBO
                             char* vbo_input = new char[size];
                             scls::read_file_binary(path, vbo_input, size, current_pos);
-                            VBO* vbo = window->new_vbo(name);
-                            vbo->load_from_binary(vbo_input);
+                            std::shared_ptr<VBO>& vbo = *window->new_vbo(name);
+                            vbo.get()->load_from_binary(vbo_input);
                             delete[] vbo_input; vbo_input = 0;
                         }
                     }

@@ -77,7 +77,7 @@ namespace scls {
         inline std::vector<std::string> type() {return a_type;};
         inline std::string type(unsigned short position) {if(position >= a_type.size())return "";return a_type[position];};
         inline bool visible() const {return a_visible;};
-        inline _Window_Advanced_Struct* window_struct() { return a_window_struct;};
+        inline _Window_Advanced_Struct* window_struct() const { return a_window_struct;};
 
         //*********
         //
