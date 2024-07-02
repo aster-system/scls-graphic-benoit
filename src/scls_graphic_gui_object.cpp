@@ -293,12 +293,7 @@ namespace scls {
     }
 
     // Function called after that the window is resized
-    void GUI_Object::after_resizing(){
-        calculate_transformation(true);
-
-        // Apply to children
-        for(int i = 0;i<static_cast<int>(a_children.size());i++) a_children[i]->after_resizing();
-    }
+    void GUI_Object::after_resizing(){ calculate_transformation(true); }
 
     // Delete a child of the object
     void GUI_Object::delete_child(GUI_Object* object) {
@@ -372,19 +367,19 @@ namespace scls {
 
     // Calculate the adapted scale
     void GUI_Object::calculate_transformation(bool force) {
+        if(!a_transformation_updated && !force) return;
+
         // Create the new transformation
         std::shared_ptr<__GUI_Transformation> parent_transformation;
         if(parent() != 0) parent_transformation = parent()->a_transformation;
-        if(a_transformation.get() == 0) a_transformation = std::make_shared<__GUI_Transformation>(window_struct().window_width(), window_struct().window_height(), parent_transformation);
+        if(a_transformation.get() == 0) a_transformation = std::make_shared<__GUI_Transformation>(window_struct().window_height(), window_struct().window_width(), parent_transformation);
         else {
             a_transformation = std::make_shared<__GUI_Transformation>(*a_transformation.get());
         }
         a_last_transformation = a_transformation;
+        a_transformation.get()->parent_shared_ptr() = parent_transformation;
         a_transformation.get()->set_window_height(window_struct().window_height());
         a_transformation.get()->set_window_width(window_struct().window_width());
-        if(a_last_transformation.get()->parent() != parent_transformation.get()) {
-            a_transformation.get()->parent_shared_ptr() = parent_transformation;
-        }
 
         // Calculate the transformation
         // Pass the border
@@ -406,6 +401,9 @@ namespace scls {
         a_transformation.get()->calculate_transformation();
 
         a_transformation_updated = false;
+
+        // Apply to children
+        for(int i = 0;i<static_cast<int>(a_children.size());i++) a_children[i]->after_resizing();
     }
 
     // Delete the children of an object
