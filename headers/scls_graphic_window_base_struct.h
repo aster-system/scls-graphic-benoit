@@ -286,6 +286,7 @@ namespace scls {
         inline Camera* camera() { return &a_camera; };
         inline std::string config_file_path() { return a_config_file_path; };
         inline std::string exec_path() { return a_exec_path; };
+        inline double execution_time() const {return a_execution_time;};
         inline glm::mat4 projection() {return camera()->get_projection(window_height(), window_width());};
         inline void set_assets_directory_path(std::string new_assets_directory_path) {
             new_assets_directory_path = file_formatted(new_assets_directory_path);
@@ -442,6 +443,8 @@ namespace scls {
         // Number of frame during this second
         unsigned short a_frame_count = 0;
 
+        // Total time of execution
+        double a_execution_time = 0;
         // Time since the last FPS calculation
         double a_time_since_last_fps_calculation = 0;
 

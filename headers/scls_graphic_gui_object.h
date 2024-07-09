@@ -28,6 +28,7 @@ namespace scls {
 
     // Possibles alignment of a texture
     enum Alignment_Texture {
+        T_Fill,
         T_Fit,
         T_Fit_Horizontally,
         T_Fit_Vertically,
@@ -44,7 +45,7 @@ namespace scls {
 
     //*********
     //
-    // Mains GUI classes
+    // GUI core classes
     //
     //*********
 
@@ -276,54 +277,28 @@ namespace scls {
         int a_y_in_real_pixel = 0;
     };
 
-    class GUI_Object {
-        // Class representing an GUI object displayed into the window
+    class __GUI_Object_Core {
+        // Class containing the core features for a GUI object
     public:
 
         //*********
         //
-        // GUI Object main functions
+        // __GUI_Object_Core main functions
         //
         //*********
 
-        // Most basic GUI_Object constructor
-        GUI_Object(Window& window, std::string name, GUI_Object* parent);
-        // GUI_Object destructor
-        virtual ~GUI_Object();
+        // Most basic __GUI_Object_Core constructor
+        __GUI_Object_Core(Window& window, __GUI_Object_Core* parent);
+        // __GUI_Object_Core destructor
+        virtual ~__GUI_Object_Core(){};
 
-        // Delete a child of the object
-        void delete_child(GUI_Object* object);
-        // Delete the children of an object
-        void delete_children();
-        // Hide all the children in the object
-        inline void hide_children() {for(int i = 0;i<static_cast<int>(a_children.size());i++) {if(a_children[i] != 0) a_children[i]->set_visible(false);}};
-        // Add a child object to the object
-        template<typename O>
-        O* new_object(std::string name);
-        // Add a child object to the object with its position
-        template<typename O>
-        O* new_object(std::string name, unsigned int x, unsigned int y);
-        // Render the object
-        virtual void render(glm::vec3 scale_multiplier = glm::vec3(1, 1, 1));
+        //*********
+        //
+        // Input handling
+        //
+        //*********
 
-        // Hierarchy functions
-        // Function called after that the window is resized
-        virtual void after_resizing();
-        // Function called when a child is deleted
-        virtual void child_deleted(GUI_Object* child) { if(parent() != 0) parent()->child_deleted(child); };
-        // Reset the object without changing it
-        virtual void soft_reset() {set_focusing_state(-1);set_overflighting_state(-1);for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i] != 0){children()[i]->soft_reset();}}};
-        // Update the object
-        virtual void update(){ for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i] != 0 && children()[i]->visible())children()[i]->update();}};
-        // Update the object for the events
-        virtual void update_event() {for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i] != 0 && children()[i]->visible())children()[i]->update_event();}};
-        // Update the texture when needed
-        virtual void update_texture() {for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] != 0 && children()[i]->visible())children()[i]->update_texture();}};
-
-        // Getters and setters (ONLY WITH ATRIBUTES)
-        inline Color background_color() {return a_background_color;};
-        inline Color border_color() {return a_border_color;};
-        inline std::vector<std::shared_ptr<GUI_Object>>& children() {return a_children;};
+        // Getters or setters
         inline short focused_state() const {return a_focusing_state;};
         inline bool has_child_clicked_during_this_frame(unsigned int button) { return has_child_overflighted() && window_struct().mouse_button_clicked_during_this_frame(button); };
         inline bool has_child_focused() const {return a_focusing_state > 0;};
@@ -332,16 +307,11 @@ namespace scls {
         inline bool is_clicked_during_this_frame(unsigned int button) { return is_overflighted() && window_struct().mouse_button_clicked_during_this_frame(button); };
         inline bool is_focused() const {return a_focusing_state == 0;};
         inline bool is_overflighted() const {return a_overflighting_state == 0;};
-        inline std::string name() const {return a_name;};
         inline unsigned long overflighted_cursor() const {return a_overflighted_cursor;};
         inline short overflighting_state() const {return a_overflighting_state;};
-        inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
-        inline void set_border_color(Color new_color) {a_border_color = new_color;};
         inline void set_focusing_state(bool new_focusing_state) {a_focusing_state = new_focusing_state;};
         inline void set_overflighted_cursor(unsigned long new_overflighted_cursor) {a_overflighted_cursor = new_overflighted_cursor;};
         inline void set_overflighting_state(short new_overflighting_state) {a_overflighting_state = new_overflighting_state;};
-        inline void set_visible(bool new_visible) {a_visible = new_visible;};
-        inline bool visible() {return a_visible;};
         inline Window& window_struct() const {return a_window;};
 
         //*********
@@ -350,11 +320,24 @@ namespace scls {
         //
         //*********
 
-        // Calculate the transformations
-        void calculate_transformation(bool force = true);
+        // Calculate the transformation of the object
+        void _apply_calculate_transformation(std::shared_ptr<__GUI_Transformation> current_transformation);
+        // Calculate the transformation of the object
+        virtual void calculate_transformation(bool force = false, bool with_children = true) {};
 
         // Getters
-        inline __GUI_Transformation* last_transformation() const {return a_last_transformation.get();};
+        inline __GUI_Transformation* last_transformation() {return a_last_transformation.get();};
+        inline  std::shared_ptr<__GUI_Transformation>& last_transformation_shared_ptr() {return a_last_transformation;};
+        inline __GUI_Transformation* transformation() {return a_transformation.get();};
+        inline std::shared_ptr<__GUI_Transformation>& transformation_shared_ptr() {return a_transformation;};
+        inline std::shared_ptr<__GUI_Transformation>& transformation_parent() {return transformation()->parent_shared_ptr();};
+
+        // Returns the first absolute extremum of the object in the Y axis
+        Fraction object_absolute_y_first_extremum(bool remove_border = false) {if(a_transformation_updated)calculate_transformation();return a_transformation.get()->object_absolute_y_first_extremum(remove_border);};
+        // Returns the last absolute extremum of the object in the Y axis
+        Fraction object_absolute_y_last_extremum(bool remove_border = false) {if(a_transformation_updated)calculate_transformation();return a_transformation.get()->object_absolute_y_last_extremum(remove_border);};
+        // Returns the extremum of the object
+        glm::vec4 object_extremum() {if(a_transformation_updated)calculate_transformation();return a_transformation.get()->object_extremum();};
 
         // Absolute scale plan
         // Returns the height of the object in absolute scale
@@ -417,8 +400,6 @@ namespace scls {
         glm::vec4 border_width_in_scale() {if(a_transformation_updated)calculate_transformation();return a_transformation.get()->border_width_in_scale();};
         // Returns the height of the object in scale
         Fraction height_in_scale() {if(a_transformation_updated)calculate_transformation();return a_transformation.get()->height_in_scale();};
-        // Returns the position of the mouse in scale
-        glm::vec2 mouse_position_in_scale();
         // One pixel in height
         inline Fraction one_pixel_height_in_scale() {if(a_transformation_updated)calculate_transformation();return a_transformation.get()->one_pixel_height_in_scale();};
         // One pixel in width
@@ -430,7 +411,6 @@ namespace scls {
         // Returns the y of the object in scale
         Fraction y_in_scale() {if(a_transformation_updated)calculate_transformation();return a_transformation.get()->y_in_scale();};
         // Setters
-        inline GUI_Object* parent() const {return a_parent;};
         inline void set_height_in_scale(Fraction new_height) {if(a_height == new_height && a_last_height_definition == _Size_Definition::Scale_Size)return;a_height=new_height;a_last_height_definition=_Size_Definition::Scale_Size;a_transformation_updated=true;};
         inline void set_position_in_scale(Fraction new_x, Fraction new_y) {set_x_in_scale(new_x);set_y_in_scale(new_y);};
         inline void set_width_in_scale(Fraction new_width) {if(a_width == new_width && a_last_width_definition == _Size_Definition::Scale_Size)return;a_width=new_width;a_last_width_definition=_Size_Definition::Scale_Size;a_transformation_updated=true;};
@@ -441,27 +421,178 @@ namespace scls {
         // Move the object at the bottom of its parent
         inline void move_bottom_in_parent(int offset = 0) { set_y_in_pixel(Fraction(offset)); };
         // Move the object bottom of another in the parent
-        inline void move_bottom_of_object_in_parent(GUI_Object* another_object, Fraction offset = Fraction(0)) { set_y_in_pixel(Fraction(another_object->y_in_pixel()) - (Fraction(height_in_pixel()) + offset)); };
+        inline void move_bottom_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) { set_y_in_pixel(Fraction(another_object->y_in_pixel()) - (Fraction(height_in_pixel()) + offset)); };
+        inline void move_bottom_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, Fraction offset = Fraction(0)) { move_bottom_of_object_in_parent(another_object.get(), offset); };
         // Move the object at the left of its parent
         inline void move_left_in_parent(int offset = 0) { set_x_in_pixel(Fraction(offset)); };
         // Move the object at the right of its parent
         inline void move_right_in_parent(int offset = 0) {
             Fraction width = window_struct().window_width();
-            if(parent()!= 0) width = parent()->width_in_pixel();
+            if(transformation_parent()!= 0) width = transformation_parent()->width_in_pixel();
             set_x_in_pixel(width - (Fraction(width_in_pixel()) + Fraction(offset)));
         };
         // Move the object at the right of another of its parent
-        inline void move_right_of_object_in_parent(GUI_Object* another_object, Fraction offset = Fraction(0)) { set_x_in_pixel(Fraction(another_object->x_in_pixel() + another_object->width_in_pixel()) + offset); };
+        inline void move_right_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) { set_x_in_pixel(Fraction(another_object->x_in_pixel() + another_object->width_in_pixel()) + offset); };
+        inline void move_right_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, Fraction offset = Fraction(0)) { move_right_of_object_in_parent(another_object.get(), offset); };
         // Move the object at the top of its parent
         inline void move_top_in_parent(int offset = 0) {
             Fraction height = window_struct().window_height();
-            if(parent()!= 0) height = parent()->height_in_pixel();
+            if(transformation_parent().get()!= 0) height = transformation_parent().get()->height_in_pixel();
             set_y_in_pixel(height - (Fraction(height_in_pixel()) + Fraction(offset)));
         };
         // Move the object top of another in the parent
-        inline void move_top_of_object_in_parent(GUI_Object* another_object, Fraction offset = Fraction(0)) {
+        inline void move_top_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) {
             set_y_in_pixel(Fraction(another_object->y_in_pixel() + another_object->height_in_pixel()) + offset);
         };
+        inline void move_top_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, Fraction offset = Fraction(0)) { move_top_of_object_in_parent(another_object.get(), offset); };
+
+    protected:
+
+        //*********
+        //
+        // Transform handling
+        //
+        //*********
+
+        // If the adapted scale is updated or not
+        bool a_transformation_updated = true;
+
+    private:
+
+        //*********
+        //
+        // __GUI_Object_Core main functions
+        //
+        //*********
+
+        // Children of this object
+        std::vector<std::shared_ptr<__GUI_Object_Core>> a_children = std::vector<std::shared_ptr<__GUI_Object_Core>>();
+        // Last transformation of the object
+        std::shared_ptr<__GUI_Transformation> a_last_transformation;
+        // Transformation of the object
+        std::shared_ptr<__GUI_Transformation> a_transformation;
+        // Pointer to the main window
+        Window& a_window;
+
+        //*********
+        //
+        // Border handling
+        //
+        //*********
+
+        // Width of the border
+        glm::vec4 a_border_width = glm::vec4(0, 0, 0, 0);
+
+        //*********
+        //
+        // Input handling
+        //
+        //*********
+
+        // The state of focusing of the object (0 == focused, > 0 == child focused)
+        short a_focusing_state = -1;
+        // Id of the overflighted cursor
+        unsigned long a_overflighted_cursor = GLFW_ARROW_CURSOR;
+        // The state of overflighting of the object (0 == overflighted, > 0 == child overflighted)
+        short a_overflighting_state = -1;
+
+        //*********
+        //
+        // Transform handling
+        //
+        //*********
+
+        // Last transformations
+        // Last type of definition of the height
+        _Size_Definition a_last_height_definition = _Size_Definition::Pixel_Size;
+        // Last type of definition of the width
+        _Size_Definition a_last_width_definition = _Size_Definition::Pixel_Size;
+        // Last type of definition of the x
+        _Size_Definition a_last_x_definition = _Size_Definition::Scale_Size;
+        // Last type of definition of the y
+        _Size_Definition a_last_y_definition = _Size_Definition::Scale_Size;
+        // Height position of the object
+        Fraction a_height = Fraction(1);
+        // Width position of the object
+        Fraction a_width = Fraction(1);
+        // X position of the object
+        Fraction a_x = Fraction(0);
+        // Y position of the object
+        Fraction a_y = Fraction(0);
+    };
+
+    //*********
+    //
+    // Mains GUI classes
+    //
+    //*********
+
+    class GUI_Object : public __GUI_Object_Core {
+        // Class representing an GUI object displayed into the window
+    public:
+
+        //*********
+        //
+        // GUI Object main functions
+        //
+        //*********
+
+        // Most basic GUI_Object constructor
+        GUI_Object(Window& window, std::string name, GUI_Object* parent);
+        // GUI_Object destructor
+        virtual ~GUI_Object();
+
+        // Delete a child of the object
+        void delete_child(GUI_Object* object);
+        // Delete the children of an object
+        void delete_children();
+        // Hide all the children in the object
+        inline void hide_children() {for(int i = 0;i<static_cast<int>(a_children.size());i++) {if(a_children[i] != 0) a_children[i]->set_visible(false);}};
+        // Add a child object to the object
+        template<typename O>
+        std::shared_ptr<O>* new_object(std::string name);
+        // Add a child object to the object with its position
+        template<typename O>
+        std::shared_ptr<O>* new_object(std::string name, unsigned int x, unsigned int y);
+        // Render the object
+        virtual void render(glm::vec3 scale_multiplier = glm::vec3(1, 1, 1));
+
+        // Hierarchy functions
+        // Function called after that the window is resized
+        virtual void after_resizing();
+        // Reset the object without changing it
+        virtual void soft_reset() {set_focusing_state(-1);set_overflighting_state(-1);for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i] != 0){children()[i]->soft_reset();}}};
+        // Update the object
+        virtual void update(){ for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i] != 0 && children()[i]->visible())children()[i]->update();}};
+        // Update the object for the events
+        virtual void update_event() {for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i] != 0 && children()[i]->visible())children()[i]->update_event();}};
+        // Update the texture when needed
+        virtual void update_texture() {for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] != 0 && children()[i]->visible())children()[i]->update_texture();}};
+
+        // Getters and setters (ONLY WITH ATRIBUTES)
+        inline Color background_color() {return a_background_color;};
+        inline Color border_color() {return a_border_color;};
+        inline std::vector<std::shared_ptr<GUI_Object>>& children() {return a_children;};
+        inline std::string name() const {return a_name;};
+        inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
+        inline void set_border_color(Color new_color) {a_border_color = new_color;};
+        inline void set_visible(bool new_visible) {a_visible = new_visible;};
+        inline bool visible() {return a_visible;};
+
+        //*********
+        //
+        // Transform handling
+        //
+        //*********
+
+        // Calculate the transformations
+        void calculate_transformation(bool force = true, bool with_children = true);
+
+        // Returns the position of the mouse in scale
+        glm::vec2 mouse_position_in_scale();
+
+        // Getters
+        inline GUI_Object* parent() const {return a_parent;};
 
         //*********
         //
@@ -475,12 +606,6 @@ namespace scls {
         glm::vec4 fitted_horizontally_texture_rect();
         // Returns the rect of the vertically fitted texture
         glm::vec4 fitted_vertically_texture_rect();
-        // Returns the first absolute extremum of the object in the Y axis
-        Fraction object_absolute_y_first_extremum(bool remove_border = false) {if(a_transformation_updated)calculate_transformation();return a_transformation.get()->object_absolute_y_first_extremum(remove_border);};
-        // Returns the last absolute extremum of the object in the Y axis
-        Fraction object_absolute_y_last_extremum(bool remove_border = false) {if(a_transformation_updated)calculate_transformation();return a_transformation.get()->object_absolute_y_last_extremum(remove_border);};
-        // Returns the extremum of the object
-        glm::vec4 object_extremum() {if(a_transformation_updated)calculate_transformation();return a_transformation.get()->object_extremum();};
         // Returns the height of the texture in scale of the object
         inline Fraction texture_height_in_scale() { return Fraction(image()->height(), height_in_pixel()); };
         // Returns the rect of the texture
@@ -491,6 +616,7 @@ namespace scls {
                 else if(texture_alignment() == Alignment_Texture::T_Fit) final_texture_rect = fitted_texture_rect();
                 else if(texture_alignment() == Alignment_Texture::T_Fit_Horizontally) final_texture_rect = fitted_horizontally_texture_rect();
                 else if(texture_alignment() == Alignment_Texture::T_Fit_Vertically) final_texture_rect = fitted_vertically_texture_rect();
+                else if(texture_alignment() == Alignment_Texture::T_Fill) final_texture_rect = glm::vec4(0, 0, 1, 1);
             }
             return final_texture_rect;
         };
@@ -514,6 +640,18 @@ namespace scls {
         inline std::shared_ptr<Texture>& texture_shared_ptr() {return a_texture;};
         inline VAO* vao() const {return a_vao.get();};
 
+    protected:
+        //*********
+        //
+        // GUI Object base attributes
+        //
+        //*********
+
+        // Parent of the object
+        GUI_Object* a_parent = 0;
+        // Parent shared pointer to the object
+        std::shared_ptr<GUI_Object>* a_shared_ptr = 0;
+
     private:
         //*********
         //
@@ -525,18 +663,10 @@ namespace scls {
         Color a_background_color = Color(0, 0, 0, 0);
         // Children of this object
         std::vector<std::shared_ptr<GUI_Object>> a_children = std::vector<std::shared_ptr<GUI_Object>>();
-        // The state of focusing of the object (0 == focused, > 0 == child focused)
-        short a_focusing_state = -1;
         // Name of this object
         std::string a_name = "";
-        // Id of the overflighted cursor
-        unsigned long a_overflighted_cursor = GLFW_ARROW_CURSOR;
-        // The state of overflighting of the object (0 == overflighted, > 0 == child overflighted)
-        short a_overflighting_state = -1;
         // If the object is visible
         bool a_visible = true;
-        // Pointer to the main window
-        Window& a_window;
 
         //*********
         //
@@ -546,8 +676,6 @@ namespace scls {
 
         // Color of the border
         Color a_border_color = Color(0, 0, 0, 255);
-        // Width of the border
-        glm::vec4 a_border_width = glm::vec4(0, 0, 0, 0);
 
         //*********
         //
@@ -567,39 +695,6 @@ namespace scls {
         bool a_texture_fill_object = false;
         // VAO of this object (GUI)
         std::shared_ptr<VAO> a_vao = 0;
-
-        //*********
-        //
-        // Transform handling
-        //
-        //*********
-
-        // Last transformation of the object
-        std::shared_ptr<__GUI_Transformation> a_last_transformation;
-        // Parent of the object
-        GUI_Object* a_parent = 0;
-        // Current transformation of the object
-        std::shared_ptr<__GUI_Transformation> a_transformation;
-        // If the adapted scale is updated or not
-        bool a_transformation_updated = true;
-
-        // Last transformations
-        // Last type of definition of the height
-        _Size_Definition a_last_height_definition = _Size_Definition::Pixel_Size;
-        // Last type of definition of the width
-        _Size_Definition a_last_width_definition = _Size_Definition::Pixel_Size;
-        // Last type of definition of the x
-        _Size_Definition a_last_x_definition = _Size_Definition::Scale_Size;
-        // Last type of definition of the y
-        _Size_Definition a_last_y_definition = _Size_Definition::Scale_Size;
-        // Height position of the object
-        Fraction a_height = Fraction(1);
-        // Width position of the object
-        Fraction a_width = Fraction(1);
-        // X position of the object
-        Fraction a_x = Fraction(0);
-        // Y position of the object
-        Fraction a_y = Fraction(0);
     };
 
     class GUI_Main_Object : public GUI_Object {
@@ -617,8 +712,6 @@ namespace scls {
         // GUI_Main_Object destructor
         virtual ~GUI_Main_Object() {};
 
-        // Function called when a child is deleted
-        virtual void child_deleted(GUI_Object* child) { if(a_focused_object == child) a_focused_object = 0; GUI_Object::child_deleted(child); };
         // Update the object for the events
         virtual void update_event();
 
@@ -654,16 +747,16 @@ namespace scls {
         // Check the scroller object
         void check_scroller(bool reset = false);
         // Reset the scroller
-        void reset() {a_scroller_children->delete_children();};
+        void reset() {a_scroller_children.get()->delete_children();};
         // Scroll the scroller on the Y axis
         void scroll_y(Fraction movement);
 
         // Add a child object to the scroller with its position
         template<typename O>
-        O* new_object_in_scroller(std::string name, unsigned int x, unsigned int y);
+        std::shared_ptr<O>* new_object_in_scroller(std::string name, unsigned int x, unsigned int y);
         // Add a child object to the scroller
         template<typename O>
-        O* new_object_in_scroller(std::string name);
+        std::shared_ptr<O>* new_object_in_scroller(std::string name);
         // Update the object for the events
         virtual void update_event() {GUI_Object::update_event();check_scroll();};
 
@@ -676,9 +769,9 @@ namespace scls {
         //*********
 
         // Private function to create the children scroller
-        GUI_Object* _create_scroller_children();
+        std::shared_ptr<GUI_Object>* _create_scroller_children();
         // Scroller children which contains each elements
-        GUI_Object* a_scroller_children = 0;
+        std::shared_ptr<GUI_Object> a_scroller_children;
     };
 
     class __GUI_Text_Metadatas : public GUI_Object {
@@ -971,27 +1064,27 @@ namespace scls {
         //*********
 
         // Browser of the explorer
-        scls::GUI_Scroller* a_browser = 0;
+        std::shared_ptr<scls::GUI_Scroller> a_browser = 0;
         // Y position of the buttons in the browser
         double a_browser_y = 0;
         // List of every buttons in the browser
-        std::vector<scls::GUI_Text*> a_browser_buttons = std::vector<scls::GUI_Text*>();
+        std::vector<std::shared_ptr<scls::GUI_Text>> a_browser_buttons = std::vector<std::shared_ptr<scls::GUI_Text>>();
         // List of every buttons in the browser to modify
         std::vector<unsigned int> a_browser_buttons_to_modify = std::vector<unsigned int>();
         // Button to chose a file
-        scls::GUI_Text* a_choose_button = 0;
+        std::shared_ptr<scls::GUI_Text> a_choose_button = 0;
         // Text in the chose button
         std::string a_choose_button_text = "Choose";
         // If tbe file has been chose or not
         bool a_file_chose = false;
         // Final path selected
-        scls::GUI_Text* a_final_path = 0;
+        std::shared_ptr<scls::GUI_Text> a_final_path = 0;
         // Text in the final path
         std::string a_final_path_text = "Final path";
         // Top bar of the explorer
-        scls::GUI_Object* a_top_bar = 0;
+        std::shared_ptr<scls::GUI_Object> a_top_bar = 0;
         // List of every buttons in the top bar
-        std::vector<scls::GUI_Text*> a_top_bar_buttons = std::vector<scls::GUI_Text*>();
+        std::vector<std::shared_ptr<scls::GUI_Text>> a_top_bar_buttons = std::vector<std::shared_ptr<scls::GUI_Text>>();
     };
 
     class GUI_Page : public Object {
@@ -1035,34 +1128,33 @@ namespace scls {
         GUI_Object* a_overflighted_object = 0;
 
         // Parent object of the page
-        std::unique_ptr<GUI_Main_Object> a_parent_object;
+        std::shared_ptr<GUI_Main_Object> a_parent_object;
     };
 
     // Add a child object to the object
     template<typename O>
-    O* GUI_Object::new_object(std::string name) {
-        return new_object<O>(name, 0, 0);
-    }
+    std::shared_ptr<O>* GUI_Object::new_object(std::string name) { return new_object<O>(name, 0, 0); }
 
     // Add a child object to the object
     template<typename O>
-    O* GUI_Object::new_object(std::string name, unsigned int x, unsigned int y) {
+    std::shared_ptr<O>* GUI_Object::new_object(std::string name, unsigned int x, unsigned int y) {
         // Create the child
-        std::shared_ptr<O> new_ptr = std::make_shared<O>(window_struct(), name, this);
-        children().push_back(new_ptr);
-        O* new_object = new_ptr.get();
+        std::shared_ptr<O> new_ptr; children().push_back(new_ptr);
+        std::shared_ptr<O>* to_return = reinterpret_cast<std::shared_ptr<O>*>(&children()[children().size() - 1]);
+        *to_return = std::make_shared<O>(window_struct(), name, this);
+        O* new_object = to_return->get();
 
         // Configurate the child
         new_object->set_position_in_pixel(x, y);
 
-        return new_object;
+        return to_return;
     }
 
     // Add a child object to the scroller with its position
     template<typename O>
-    O* GUI_Scroller::new_object_in_scroller(std::string name, unsigned int x, unsigned int y) {
+    std::shared_ptr<O>* GUI_Scroller::new_object_in_scroller(std::string name, unsigned int x, unsigned int y) {
         // Create the new object
-        O* new_object = a_scroller_children->new_object<O>(name, x, y);
+        std::shared_ptr<O>* new_object = a_scroller_children->new_object<O>(name, x, y);
 
         // Configurate the scroller
         check_scroller();
@@ -1071,7 +1163,7 @@ namespace scls {
 
     // Add a child object to the scroller
     template<typename O>
-    O* GUI_Scroller::new_object_in_scroller(std::string name) { return new_object_in_scroller<O>(name, 0, 0); }
+    std::shared_ptr<O>* GUI_Scroller::new_object_in_scroller(std::string name) { return new_object_in_scroller<O>(name, 0, 0); }
 }
 
 #endif // SCLS_GRAPHIC_GUI_OBJECT

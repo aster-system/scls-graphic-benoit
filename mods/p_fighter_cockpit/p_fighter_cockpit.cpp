@@ -33,7 +33,7 @@ namespace p_fighter_cockpit {
         parent_object()->set_width_in_scale(scls::Fraction(1));
 
         // Create the title of the page
-        scls::GUI_Text* title = parent_object()->new_object<scls::GUI_Text>("main_title", 0, 720);
+        scls::GUI_Text* title = (*parent_object()->new_object<scls::GUI_Text>("main_title", 0, 720)).get();
         title->set_border_color(scls::red);
         title->set_border_width_in_pixel(1);
         title->set_font_color(scls::white);

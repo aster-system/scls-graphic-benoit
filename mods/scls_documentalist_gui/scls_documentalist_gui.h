@@ -132,6 +132,8 @@ namespace scls_documentalist_gui {
         void load_replica_navigation_buttons();
         // Unloads the loaded buttons in the create replica file pattern navigation
         inline void unload_create_replica_file_pattern_navigation_buttons() {a_create_replica_pattern_file->reset(); };
+        // Unloads the buttons in the replica navigation
+        void unload_replica_navigation_buttons() {a_replica_navigation_buttons.clear();a_replica_navigation->reset();};
 
         // Getters and setters
         inline scls::Replica_Project* currently_displayed_replica() const { return a_current_state.a_currently_displayed_replica_project.get(); };
@@ -228,9 +230,7 @@ namespace scls_documentalist_gui {
         // Reset the create replica page
         void reset_create_replica_page();
         // Unload the buttons in the pattern navigation
-        inline void unload_pattern_navigation_buttons() { a_pattern_navigation->delete_children(); a_pattern_navigation_buttons.clear(); };
-        // Unload the buttons in the replice navigation
-        inline void unload_replica_navigation_buttons() { a_replica_navigation->reset(); a_replica_navigation_buttons.clear(); };
+        inline void unload_pattern_navigation_buttons() { a_pattern_navigation_buttons.clear(); a_pattern_navigation->delete_children(); };
         // Unset all the pattern
         void unset_all();
 
@@ -273,7 +273,7 @@ namespace scls_documentalist_gui {
         // Every opened patterns files
         std::map<scls::Text_Pattern*, std::string> a_opened_files_pattern = std::map<scls::Text_Pattern*, std::string>();
         // Buttons in the pattern navigation
-        std::vector<scls::GUI_Object*> a_pattern_navigation_buttons = std::vector<scls::GUI_Object*>();
+        std::vector<std::shared_ptr<scls::GUI_Object>> a_pattern_navigation_buttons = std::vector<std::shared_ptr<scls::GUI_Object>>();
 
         //*********
         //
@@ -284,9 +284,9 @@ namespace scls_documentalist_gui {
         // Every loaded projects
         std::vector<std::shared_ptr<scls::Replica_Project>> a_loaded_replicas = std::vector<std::shared_ptr<scls::Replica_Project>>();
         // Buttons in the replica global variables in the main body
-        std::vector<scls::GUI_Object*> a_replica_main_global_variable_buttons = std::vector<scls::GUI_Object*>();
+        std::vector<std::shared_ptr<scls::GUI_Object>> a_replica_main_global_variable_buttons = std::vector<std::shared_ptr<scls::GUI_Object>>();
         // Buttons in the replica navigation
-        std::vector<scls::GUI_Object*> a_replica_navigation_buttons = std::vector<scls::GUI_Object*>();
+        std::vector<std::shared_ptr<scls::GUI_Object>> a_replica_navigation_buttons = std::vector<std::shared_ptr<scls::GUI_Object>>();
 
         //*********
         //
@@ -299,163 +299,163 @@ namespace scls_documentalist_gui {
 
         // Body of the create file pattern page
         // Parent page of the create file pattern body
-        scls::GUI_Object* a_create_file_pattern_body = 0;
+        std::shared_ptr<scls::GUI_Object> a_create_file_pattern_body;
         // Input of the name of the file pattern
-        scls::GUI_Text_Input* a_create_file_pattern_name = 0;
+        std::shared_ptr<scls::GUI_Text_Input> a_create_file_pattern_name;
         // Title of the input of the name of the file pattern
-        scls::GUI_Text* a_create_file_pattern_name_title = 0;
+        std::shared_ptr<scls::GUI_Text> a_create_file_pattern_name_title;
         // Validate the creation of the file pattern
-        scls::GUI_Text* a_create_file_pattern_validation = 0;
+        std::shared_ptr<scls::GUI_Text> a_create_file_pattern_validation;
 
         // Body of the create pattern page
         // Parent page of the create pattern body
-        scls::GUI_Object* a_create_pattern_body = 0;
+        std::shared_ptr<scls::GUI_Object> a_create_pattern_body;
         // Input of the name of the pattern
-        scls::GUI_Text_Input* a_create_pattern_name = 0;
+        std::shared_ptr<scls::GUI_Text_Input> a_create_pattern_name;
         // Title of the input of the name of the pattern
-        scls::GUI_Text* a_create_pattern_name_title = 0;
+        std::shared_ptr<scls::GUI_Text> a_create_pattern_name_title;
         // Input of the path of the pattern
-        scls::GUI_Text* a_create_pattern_path = 0;
+        std::shared_ptr<scls::GUI_Text> a_create_pattern_path;
         // Button to change the path of the pattern
-        scls::GUI_Text* a_create_pattern_path_change = 0;
+        std::shared_ptr<scls::GUI_Text> a_create_pattern_path_change;
         // Title of the input of the path of the pattern
-        scls::GUI_Text* a_create_pattern_path_title = 0;
+        std::shared_ptr<scls::GUI_Text> a_create_pattern_path_title;
         // Validation button of the create pattern body
-        scls::GUI_Text* a_create_pattern_validation = 0;
+        std::shared_ptr<scls::GUI_Text> a_create_pattern_validation;
 
         // Body of the create replica page
         // Parent page of the create replica body
-        scls::GUI_Object* a_create_replica_body = 0;
+        std::shared_ptr<scls::GUI_Object> a_create_replica_body;
         // Input of the name of the replica
-        scls::GUI_Text_Input* a_create_replica_name = 0;
+        std::shared_ptr<scls::GUI_Text_Input> a_create_replica_name;
         // Title of the input of the name of the replica
-        scls::GUI_Text* a_create_replica_name_title = 0;
+        std::shared_ptr<scls::GUI_Text> a_create_replica_name_title;
         // Input of the path of the replica
-        scls::GUI_Text* a_create_replica_path = 0;
+        std::shared_ptr<scls::GUI_Text> a_create_replica_path;
         // Button to change the path of the replica
-        scls::GUI_Text* a_create_replica_path_change = 0;
+        std::shared_ptr<scls::GUI_Text> a_create_replica_path_change;
         // Title of the input of the path of the replica
-        scls::GUI_Text* a_create_replica_path_title = 0;
+        std::shared_ptr<scls::GUI_Text> a_create_replica_path_title;
         // Validation button of the create replica body
-        scls::GUI_Text* a_create_replica_validation = 0;
+        std::shared_ptr<scls::GUI_Text> a_create_replica_validation;
 
         // Body of the create replica file page
         // Parent page of the create replica file body
-        scls::GUI_Object* a_create_replica_file_body = 0;
+        std::shared_ptr<scls::GUI_Object> a_create_replica_file_body;
         // Input of the name of the replica
-        scls::GUI_Text_Input* a_create_replica_file_name = 0;
+        std::shared_ptr<scls::GUI_Text_Input> a_create_replica_file_name;
         // Title of the input of the name of the replica file
-        scls::GUI_Text* a_create_replica_file_name_title = 0;
+        std::shared_ptr<scls::GUI_Text> a_create_replica_file_name_title;
         // Input of the pattern file of the replica
-        scls::GUI_Scroller* a_create_replica_pattern_file = 0;
+        std::shared_ptr<scls::GUI_Scroller> a_create_replica_pattern_file;
         // Title of the input of the pattern file of the replica file
-        scls::GUI_Text* a_create_replica_pattern_file_title = 0;
+        std::shared_ptr<scls::GUI_Text> a_create_replica_pattern_file_title;
         // Validation button of the create replica file body
-        scls::GUI_Text* a_create_replica_file_validation = 0;
+        std::shared_ptr<scls::GUI_Text> a_create_replica_file_validation;
 
         // Body of the file explorer
         // Parent page of the file explorer
-        scls::GUI_File_Explorer* a_file_explorer = 0;
+        std::shared_ptr<scls::GUI_File_Explorer> a_file_explorer;
 
         // Body of the file pattern page
         // Parent page of the file pattern body
-        scls::GUI_Object* a_file_pattern_body = 0;
+        std::shared_ptr<scls::GUI_Object> a_file_pattern_body;
         // Text in the file pattern
-        scls::GUI_Text_Input* a_file_pattern_text = 0;
+        std::shared_ptr<scls::GUI_Text_Input> a_file_pattern_text;
 
         // Body of the help
         // Parent page of the help body
-        scls::GUI_Object* a_help_body = 0;
+        std::shared_ptr<scls::GUI_Object> a_help_body;
         // Parent page of the help body logo
-        scls::GUI_Object* a_help_body_logo = 0;
+        std::shared_ptr<scls::GUI_Object> a_help_body_logo;
         // Home text of the help body
-        scls::GUI_Text* a_help_body_home = 0;
+        std::shared_ptr<scls::GUI_Text> a_help_body_home;
 
         // Navigation for the help
         // Parent page of the navigation
-        scls::GUI_Scroller* a_help_navigation = 0;
+        std::shared_ptr<scls::GUI_Scroller> a_help_navigation;
         // Home text of the help body
-        scls::GUI_Text* a_help_navigation_home_button = 0;
+        std::shared_ptr<scls::GUI_Text> a_help_navigation_home_button;
 
         // Main header for the mains buttons
         // Parent page of the header
-        scls::GUI_Object* a_main_header = 0;
+        std::shared_ptr<scls::GUI_Object> a_main_header;
         // File button of the header
-        scls::GUI_Text* a_main_header_file_button = 0;
+        std::shared_ptr<scls::GUI_Text> a_main_header_file_button;
 
         // Footer of the pattern
         // Parent page of the pattern footer
-        scls::GUI_Object* a_pattern_footer = 0;
+        std::shared_ptr<scls::GUI_Object> a_pattern_footer;
         // Button to create a pattern file in the pattern footer
-        scls::GUI_Text* a_pattern_footer_create_file_pattern = 0;
+        std::shared_ptr<scls::GUI_Text> a_pattern_footer_create_file_pattern;
         // Button to create a replica file in the pattern footer
-        scls::GUI_Text* a_pattern_footer_create_replica = 0;
+        std::shared_ptr<scls::GUI_Text> a_pattern_footer_create_replica;
         // Button to save all in the pattern footer
-        scls::GUI_Text* a_pattern_footer_save_all = 0;
+        std::shared_ptr<scls::GUI_Text> a_pattern_footer_save_all;
 
         // Navigation of the pattern
         // Parent page of the pattern navigation
-        scls::GUI_Object* a_pattern_navigation = 0;
+        std::shared_ptr<scls::GUI_Object> a_pattern_navigation;
 
         // Body of the pattern main
         // Parent page of the pattern main body
-        scls::GUI_Object* a_pattern_main_body = 0;
+        std::shared_ptr<scls::GUI_Object> a_pattern_main_body;
         // Home text of the pattern main body
-        scls::GUI_Text* a_pattern_main_body_title = 0;
+        std::shared_ptr<scls::GUI_Text> a_pattern_main_body_title;
 
         // Body of the replica export page
         // Parent page of the replica export page body
-        scls::GUI_Object* a_replica_export_body = 0;
+        std::shared_ptr<scls::GUI_Object> a_replica_export_body;
         // Home text of the replica export body
-        scls::GUI_Text* a_replica_export_body_title = 0;
+        std::shared_ptr<scls::GUI_Text> a_replica_export_body_title;
         // Input of the path of the replica export body
-        scls::GUI_Text* a_replica_export_body_path = 0;
+        std::shared_ptr<scls::GUI_Text> a_replica_export_body_path;
         // Button to change the path of the replica export body
-        scls::GUI_Text* a_replica_export_body_path_change = 0;
+        std::shared_ptr<scls::GUI_Text> a_replica_export_body_path_change;
         // Title of the input of the path of the replica export body
-        scls::GUI_Text* a_replica_export_body_path_title = 0;
+        std::shared_ptr<scls::GUI_Text> a_replica_export_body_path_title;
         // Validate the export of the replica in the replica export body
-        scls::GUI_Text* a_replica_export_body_validation = 0;
+        std::shared_ptr<scls::GUI_Text> a_replica_export_body_validation;
 
         // Footer of the replica
         // Parent page of the replica footer
-        scls::GUI_Object* a_replica_footer = 0;
+        std::shared_ptr<scls::GUI_Object> a_replica_footer;
         // Button to create a replica file in the replica footer
-        scls::GUI_Text* a_replica_footer_create_file_replica = 0;
+        std::shared_ptr<scls::GUI_Text> a_replica_footer_create_file_replica;
         // Button to export in the replica footer
-        scls::GUI_Text* a_replica_footer_export = 0;
+        std::shared_ptr<scls::GUI_Text> a_replica_footer_export;
         // Button to save all in the replica footer
-        scls::GUI_Text* a_replica_footer_save_all = 0;
+        std::shared_ptr<scls::GUI_Text> a_replica_footer_save_all;
 
         // Global variables body of the replica
         // Parent page of the replica global variables body
-        scls::GUI_Object* a_replica_global_variables_body = 0;
+        std::shared_ptr<scls::GUI_Object> a_replica_global_variables_body;
         // Text in the replica global variables body
-        scls::GUI_Text_Input* a_replica_global_variables_text = 0;
+        std::shared_ptr<scls::GUI_Text_Input> a_replica_global_variables_text;
 
         // Body of the replica main
         // Parent page of the replica main body
-        scls::GUI_Object* a_replica_main_body = 0;
+        std::shared_ptr<scls::GUI_Object> a_replica_main_body;
         // Home text of the replica main body
-        scls::GUI_Text* a_replica_main_body_title = 0;
+        std::shared_ptr<scls::GUI_Text> a_replica_main_body_title;
         // Scroller for each global variables
-        scls::GUI_Scroller* a_replica_main_body_global_variables = 0;
+        std::shared_ptr<scls::GUI_Scroller> a_replica_main_body_global_variables;
         // Home text of the replica main body global variables
-        scls::GUI_Text* a_replica_main_body_global_variables_title = 0;
+        std::shared_ptr<scls::GUI_Text> a_replica_main_body_global_variables_title;
 
         // Navigation of the replica
         // Parent page of the replica navigation
-        scls::GUI_Scroller* a_replica_navigation = 0;
+        std::shared_ptr<scls::GUI_Scroller> a_replica_navigation;
 
         // Footer of the welcome
         // Parent page of the welcome footer
-        scls::GUI_Object* a_welcome_footer = 0;
+        std::shared_ptr<scls::GUI_Object> a_welcome_footer;
         // Button of creation of pattern in the welcome footer
-        scls::GUI_Text* a_welcome_footer_create_pattern = 0;
+        std::shared_ptr<scls::GUI_Text> a_welcome_footer_create_pattern;
         // Button to open a pattern in the welcome footer
-        scls::GUI_Text* a_welcome_footer_open_pattern = 0;
+        std::shared_ptr<scls::GUI_Text> a_welcome_footer_open_pattern;
         // Button to open a replica in the welcome footer
-        scls::GUI_Text* a_welcome_footer_open_replica = 0;
+        std::shared_ptr<scls::GUI_Text> a_welcome_footer_open_replica;
     };
 
     // Use scls_documentalist_gui easily with a function

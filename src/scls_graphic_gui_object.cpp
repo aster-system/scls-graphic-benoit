@@ -282,12 +282,48 @@ namespace scls {
 
     //*********
     //
+    // __GUI_Object_Core main functions
+    //
+    //*********
+
+    // Most basic __GUI_Object_Core constructor
+    __GUI_Object_Core::__GUI_Object_Core(Window& window, __GUI_Object_Core* parent) : a_window(window) {
+         if(parent != 0) a_transformation = std::make_shared<__GUI_Transformation>(window_struct().window_height(), window_struct().window_width(), parent->transformation_shared_ptr());
+         else {
+            std::shared_ptr<__GUI_Transformation> empty_ptr;
+            a_transformation = std::make_shared<__GUI_Transformation>(window_struct().window_height(), window_struct().window_width(), empty_ptr);
+         }
+    }
+
+    // Calculate the transformation of the object
+    void __GUI_Object_Core::_apply_calculate_transformation(std::shared_ptr<__GUI_Transformation> current_transformation) {
+        // Calculate the transformation
+        // Pass the border
+        current_transformation.get()->set_border_width_in_pixel(a_border_width);
+        // Pass the height
+        if(a_last_height_definition == _Size_Definition::Scale_Size || a_last_height_definition == _Size_Definition::Object_Scale_Size) current_transformation.get()->set_height_in_scale(a_height);
+        else if(a_last_height_definition == _Size_Definition::Pixel_Size) current_transformation.get()->set_height_in_pixel(a_height);
+        // Pass the width
+        if(a_last_width_definition == _Size_Definition::Scale_Size || a_last_width_definition == _Size_Definition::Object_Scale_Size) current_transformation.get()->set_width_in_scale(a_width);
+        else if(a_last_width_definition == _Size_Definition::Pixel_Size) current_transformation.get()->set_width_in_pixel(a_width);
+        // Pass the X
+        if(a_last_x_definition == _Size_Definition::Scale_Size) current_transformation.get()->set_x_in_scale(a_x);
+        else if(a_last_x_definition == _Size_Definition::Object_Scale_Size) current_transformation.get()->set_x_in_object_scale(a_x);
+        else if(a_last_x_definition == _Size_Definition::Pixel_Size) current_transformation.get()->set_x_in_pixel(a_x);
+        // Pass the Y
+        if(a_last_y_definition == _Size_Definition::Scale_Size) current_transformation.get()->set_y_in_scale(a_y);
+        else if(a_last_y_definition == _Size_Definition::Object_Scale_Size) current_transformation.get()->set_y_in_object_scale(a_y);
+        else if(a_last_y_definition == _Size_Definition::Pixel_Size) current_transformation.get()->set_y_in_pixel(a_y);
+    }
+
+    //*********
+    //
     // GUI Object main functions
     //
     //*********
 
     // Most basic GUI_Object constructor
-    GUI_Object::GUI_Object(Window& window, std::string name, GUI_Object* parent) : a_name(name), a_parent(parent), a_window(window) {
+    GUI_Object::GUI_Object(Window& window, std::string name, GUI_Object* parent) : __GUI_Object_Core(window, parent), a_name(name), a_parent(parent) {
         a_texture = (*window.new_texture_shared_ptr(name, 1, 1, Color(255, 255, 255, 0)));
         a_vao = (*window.vao_shared_ptr("gui_default"));
     }
@@ -296,18 +332,11 @@ namespace scls {
     void GUI_Object::after_resizing(){ calculate_transformation(true); }
 
     // Delete a child of the object
-    void GUI_Object::delete_child(GUI_Object* object) {
-        for(int i = 0;i<static_cast<int>(children().size());i++) {
-            if(children()[i].get() == object) {
-                children().erase(children().begin() + i);
-                return;
-            }
-        }
-    }
+    void GUI_Object::delete_child(GUI_Object* object) { for(int i = 0;i<static_cast<int>(children().size());i++) { if(children()[i].get() == object) { children().erase(children().begin() + i); return; } } }
 
     // Render the object
     void GUI_Object::render(glm::vec3 scale_multiplier) {
-        if(a_transformation_updated) calculate_transformation();
+        if(a_transformation_updated) calculate_transformation(true);
 
         // Handle the extremum
         glm::vec4 final_extremum = object_extremum();
@@ -353,10 +382,8 @@ namespace scls {
     // GUI_Object destructor
     GUI_Object::~GUI_Object() {
         delete_children();
-
-        if(parent() != 0) parent()->child_deleted(this);
-
         window_struct().remove_texture(texture());
+        a_shared_ptr = 0;
     }
 
     //*********
@@ -366,44 +393,30 @@ namespace scls {
     //*********
 
     // Calculate the adapted scale
-    void GUI_Object::calculate_transformation(bool force) {
+    void GUI_Object::calculate_transformation(bool force, bool with_children) {
         if(!a_transformation_updated && !force) return;
 
         // Create the new transformation
+        last_transformation_shared_ptr() = transformation_shared_ptr();
         std::shared_ptr<__GUI_Transformation> parent_transformation;
-        if(parent() != 0) parent_transformation = parent()->a_transformation;
-        if(a_transformation.get() == 0) a_transformation = std::make_shared<__GUI_Transformation>(window_struct().window_height(), window_struct().window_width(), parent_transformation);
-        else {
-            a_transformation = std::make_shared<__GUI_Transformation>(*a_transformation.get());
+        if(parent() != 0) {
+            parent()->calculate_transformation(false, false);
+            parent_transformation = parent()->transformation_shared_ptr();
         }
-        a_last_transformation = a_transformation;
-        a_transformation.get()->parent_shared_ptr() = parent_transformation;
-        a_transformation.get()->set_window_height(window_struct().window_height());
-        a_transformation.get()->set_window_width(window_struct().window_width());
+        if(transformation() == 0) transformation_shared_ptr() = std::make_shared<__GUI_Transformation>(0, 0, parent_transformation);
+        else { transformation_shared_ptr() = std::make_shared<__GUI_Transformation>(*transformation()); }
+        transformation()->parent_shared_ptr() = parent_transformation;
+        transformation()->set_window_height(window_struct().window_height());
+        transformation()->set_window_width(window_struct().window_width());
 
         // Calculate the transformation
-        // Pass the border
-        a_transformation.get()->set_border_width_in_pixel(a_border_width);
-        // Pass the height
-        if(a_last_height_definition == _Size_Definition::Scale_Size || a_last_height_definition == _Size_Definition::Object_Scale_Size) a_transformation.get()->set_height_in_scale(a_height);
-        else if(a_last_height_definition == _Size_Definition::Pixel_Size) a_transformation.get()->set_height_in_pixel(a_height);
-        // Pass the width
-        if(a_last_width_definition == _Size_Definition::Scale_Size || a_last_width_definition == _Size_Definition::Object_Scale_Size) a_transformation.get()->set_width_in_scale(a_width);
-        else if(a_last_width_definition == _Size_Definition::Pixel_Size) a_transformation.get()->set_width_in_pixel(a_width);
-        // Pass the X
-        if(a_last_x_definition == _Size_Definition::Scale_Size) a_transformation.get()->set_x_in_scale(a_x);
-        else if(a_last_x_definition == _Size_Definition::Object_Scale_Size) a_transformation.get()->set_x_in_object_scale(a_x);
-        else if(a_last_x_definition == _Size_Definition::Pixel_Size) a_transformation.get()->set_x_in_pixel(a_x);
-        // Pass the Y
-        if(a_last_y_definition == _Size_Definition::Scale_Size) a_transformation.get()->set_y_in_scale(a_y);
-        else if(a_last_y_definition == _Size_Definition::Object_Scale_Size) a_transformation.get()->set_y_in_object_scale(a_y);
-        else if(a_last_y_definition == _Size_Definition::Pixel_Size) a_transformation.get()->set_y_in_pixel(a_y);
-        a_transformation.get()->calculate_transformation();
+        _apply_calculate_transformation(transformation_shared_ptr());
 
         a_transformation_updated = false;
+        transformation()->calculate_transformation();
 
         // Apply to children
-        for(int i = 0;i<static_cast<int>(a_children.size());i++) a_children[i]->after_resizing();
+        if(with_children) {for(int i = 0;i<static_cast<int>(a_children.size());i++) a_children[i].get()->after_resizing();}
     }
 
     // Delete the children of an object
@@ -522,11 +535,11 @@ namespace scls {
 
     // Most basic GUI_Scroller constructor
     GUI_Scroller::GUI_Scroller(Window& window, std::string name, GUI_Object* parent) : GUI_Object(window, name, parent) {
-        a_scroller_children = _create_scroller_children();
-        a_scroller_children->set_height_in_scale(Fraction(1));
-        a_scroller_children->set_width_in_scale(Fraction(1));
-        a_scroller_children->move_left_in_parent(1);
-        a_scroller_children->move_top_in_parent(1);
+        a_scroller_children = *_create_scroller_children();
+        a_scroller_children.get()->set_height_in_scale(Fraction(1));
+        a_scroller_children.get()->set_width_in_scale(Fraction(1));
+        a_scroller_children.get()->move_left_in_parent(1);
+        a_scroller_children.get()->move_top_in_parent(1);
     }
 
     // GUI_Scroller destructor
@@ -546,7 +559,7 @@ namespace scls {
 
     // Check the browser scroller
     void GUI_Scroller::check_scroller(bool reset) {
-        int last_y_position = (a_scroller_children->last_transformation()->y_in_pixel() + a_scroller_children->last_transformation()->height_in_pixel()) - last_transformation()->height_in_pixel();
+        int last_y_position = (a_scroller_children->y_in_pixel() + a_scroller_children->height_in_pixel()) - a_scroller_children->transformation()->parent()->height_in_pixel();
         GUI_Object::after_resizing();
         Fraction tallest_point = Fraction(0);
         for(int i = 0;i<static_cast<int>(a_scroller_children->children().size());i++) {
@@ -573,8 +586,9 @@ namespace scls {
     }
 
     // Private function to create the children scroller
-    GUI_Object* GUI_Scroller::_create_scroller_children() {
-        return GUI_Object::new_object<GUI_Object>(name() + "_children_scroller");
+    std::shared_ptr<GUI_Object>* GUI_Scroller::_create_scroller_children() {
+        std::shared_ptr<GUI_Object>* to_return = GUI_Object::new_object<GUI_Object>(name() + "_children_scroller");
+        return to_return;
     }
 
     // Scroll the scroller
@@ -624,9 +638,7 @@ namespace scls {
     //*********
 
     // Most basic GUI_Text constructor
-    GUI_Text::GUI_Text(Window& window, std::string name, GUI_Object* parent) : __GUI_Text_Metadatas(window, name, parent) {
-
-    }
+    GUI_Text::GUI_Text(Window& window, std::string name, GUI_Object* parent) : __GUI_Text_Metadatas(window, name, parent) {}
 
     // Update the texture of the text
     void GUI_Text::update_text_texture() {
@@ -1076,10 +1088,10 @@ namespace scls {
 
                         // Generate the object for the line
                         std::string final_name = name() + "_gen_" + std::to_string(a_generation) + "_line_" + std::to_string(i);
-                        GUI_Object* new_line = new_object<GUI_Object>(final_name, 0, i * 60);
-                        new_line->set_width_in_scale(Fraction(1)); new_line->set_height_in_pixel(image_to_apply->height());
-                        new_line->set_texture_alignment_horizontal(Alignment_Horizontal::H_Left);
-                        new_line->texture()->set_image(line_to_apply->shared_image());
+                        std::shared_ptr<GUI_Object> new_line = *new_object<GUI_Object>(final_name, 0, i * 60);
+                        new_line.get()->set_width_in_scale(Fraction(1)); new_line.get()->set_height_in_pixel(image_to_apply->height());
+                        new_line.get()->set_texture_alignment_horizontal(Alignment_Horizontal::H_Left);
+                        new_line.get()->texture()->set_image(line_to_apply->shared_image());
 
                         // Place the children
                         if(i < static_cast<int>(children().size()) && (children()[i].get() == 0 || line_to_apply->has_been_modified())) { children()[i] = children()[children().size() - 1]; children().pop_back(); }
@@ -1116,9 +1128,7 @@ namespace scls {
     //*********
 
     // Most parent GUI_File_Explorer constructor used for displaying
-    GUI_File_Explorer::GUI_File_Explorer(Window& window, std::string name, GUI_Object* parent) : GUI_Object(window, name, parent) {
-        load();
-    }
+    GUI_File_Explorer::GUI_File_Explorer(Window& window, std::string name, GUI_Object* parent) : GUI_Object(window, name, parent) { load(); }
 
     // Function called after that the window is resized
     void GUI_File_Explorer::after_resizing() {
@@ -1134,33 +1144,33 @@ namespace scls {
     // Load the explorer
     void GUI_File_Explorer::load() {
         // Browser of the file explorer
-        a_browser = new_object<GUI_Scroller>("browser");
-        a_browser->set_background_color(scls::white);
-        a_browser->set_border_width_in_pixel(1);
-        a_browser->set_height_in_scale(Fraction(4, 5));
-        a_browser->set_width_in_scale(Fraction(4, 5));
+        a_browser = *new_object<GUI_Scroller>("browser");
+        a_browser.get()->set_background_color(scls::white);
+        a_browser.get()->set_border_width_in_pixel(1);
+        a_browser.get()->set_height_in_scale(Fraction(4, 5));
+        a_browser.get()->set_width_in_scale(Fraction(4, 5));
         // Button to chose a file
-        a_choose_button = new_object<GUI_Text>("choose_button");
-        a_choose_button->set_border_width_in_pixel(1);
-        a_choose_button->set_font_size(50);
-        a_choose_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
-        a_choose_button->set_text(choose_button_text());
-        a_choose_button->set_texture_alignment(scls::Alignment_Texture::T_Fit);
-        a_choose_button->set_height_in_scale(Fraction(1, 10));
-        a_choose_button->set_width_in_scale(Fraction(3, 20));
+        a_choose_button = *new_object<GUI_Text>("choose_button");
+        a_choose_button.get()->set_border_width_in_pixel(1);
+        a_choose_button.get()->set_font_size(50);
+        a_choose_button.get()->set_overflighted_cursor(GLFW_HAND_CURSOR);
+        a_choose_button.get()->set_text(choose_button_text());
+        a_choose_button.get()->set_texture_alignment(scls::Alignment_Texture::T_Fit);
+        a_choose_button.get()->set_height_in_scale(Fraction(1, 10));
+        a_choose_button.get()->set_width_in_scale(Fraction(3, 20));
         // Final path of the file explorer
-        a_final_path = new_object<GUI_Text>("final_path");
-        a_final_path->set_font_size(50);
-        a_final_path->set_text(final_path_text());
-        a_final_path->set_texture_alignment(scls::Alignment_Texture::T_Fit);
-        a_final_path->set_height_in_scale(Fraction(1, 10));
-        a_final_path->set_width_in_scale(Fraction(4, 5));
+        a_final_path = *new_object<GUI_Text>("final_path");
+        a_final_path.get()->set_font_size(50);
+        a_final_path.get()->set_text(final_path_text());
+        a_final_path.get()->set_texture_alignment(scls::Alignment_Texture::T_Fit);
+        a_final_path.get()->set_height_in_scale(Fraction(1, 10));
+        a_final_path.get()->set_width_in_scale(Fraction(4, 5));
         // Top bar of the file explorer
-        a_top_bar = new_object<GUI_Object>("top_bar");
-        a_top_bar->set_background_color(scls::Color(209, 209, 209));
-        a_top_bar->set_height_in_pixel(30);
-        a_top_bar->set_width_in_scale(Fraction(1));
-        a_top_bar->set_x_in_scale(Fraction(0));
+        a_top_bar = *new_object<GUI_Object>("top_bar");
+        a_top_bar.get()->set_background_color(scls::Color(209, 209, 209));
+        a_top_bar.get()->set_height_in_pixel(30);
+        a_top_bar.get()->set_width_in_scale(Fraction(1));
+        a_top_bar.get()->set_x_in_scale(Fraction(0));
 
         place_all();
     }
@@ -1188,25 +1198,25 @@ namespace scls {
 
     // Place correctly all the buttons in the browser
     void GUI_File_Explorer::place_browser_buttons() {
-        GUI_Text* last_button = 0;
+        std::shared_ptr<GUI_Text> last_button = 0;
         for(int i = 0;i<static_cast<int>(a_browser_buttons.size());i++) {
-            GUI_Text* current_button = a_browser_buttons[static_cast<int>(a_browser_buttons.size()) - (i + 1)];
-            current_button->move_left_in_parent(1);
-            if(last_button == 0) current_button->move_bottom_in_parent();
-            else current_button->move_top_of_object_in_parent(last_button);
+            std::shared_ptr<GUI_Text> current_button = a_browser_buttons[static_cast<int>(a_browser_buttons.size()) - (i + 1)];
+            current_button.get()->move_left_in_parent(1);
+            if(last_button.get() == 0) current_button.get()->move_bottom_in_parent();
+            else current_button.get()->move_top_of_object_in_parent(last_button);
             last_button = current_button;
         }
     }
 
     // Place correctly all the buttons in the top bar
     void GUI_File_Explorer::place_top_bar_buttons() {
-        GUI_Text* last_button = 0;
+        std::shared_ptr<GUI_Text> last_button;
         for(int i = 0;i<static_cast<int>(a_top_bar_buttons.size());i++) {
-            a_top_bar_buttons[i]->set_height_in_pixel(a_top_bar_buttons[i]->texture()->get_image()->height());
-            a_top_bar_buttons[i]->set_width_in_pixel(a_top_bar_buttons[i]->texture()->get_image()->width());
-            a_top_bar_buttons[i]->move_top_in_parent();
-            if(last_button == 0) a_top_bar_buttons[i]->move_left_in_parent();
-            else a_top_bar_buttons[i]->move_right_of_object_in_parent(last_button);
+            a_top_bar_buttons[i].get()->set_height_in_pixel(a_top_bar_buttons[i]->texture()->get_image()->height());
+            a_top_bar_buttons[i].get()->set_width_in_pixel(a_top_bar_buttons[i]->texture()->get_image()->width());
+            a_top_bar_buttons[i].get()->move_top_in_parent();
+            if(last_button.get() == 0) a_top_bar_buttons[i].get()->move_left_in_parent();
+            else a_top_bar_buttons[i].get()->move_right_of_object_in_parent(last_button);
             last_button = a_top_bar_buttons[i];
         }
     }
@@ -1262,21 +1272,23 @@ namespace scls {
         std::vector<std::thread*> threads = std::vector<std::thread*>();
         if(a_browser_buttons_to_modify.size() == 0) {
             // Create the buttons from scratch
-            a_browser_buttons.clear(); a_browser->reset(); from_scratch = true;
+            a_browser->reset();
+            a_browser_buttons.clear();
+            from_scratch = true;
             for(unsigned int i = 0;i<static_cast<unsigned int>(paths.size());i++) {
                 if(!std::filesystem::exists(paths[i])) continue;
 
                 // Create the button
                 paths[i] = to_utf_8_code_point(file_name(paths[i], true));
-                GUI_Text* new_button = a_browser->new_object_in_scroller<GUI_Text>("browser_button_" + std::to_string(i));
-                new_button->set_background_color(scls::white);
-                new_button->set_font_color(scls::black);
-                new_button->set_font_size(50);
-                new_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
-                new_button->set_height_in_pixel(30);
-                new_button->set_width_in_scale(Fraction(4, 5));
-                new_button->set_texture_alignment(scls::Alignment_Texture::T_Fit_Vertically);
-                new_button->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
+                std::shared_ptr<GUI_Text> new_button = *a_browser.get()->new_object_in_scroller<GUI_Text>("browser_button_" + std::to_string(i));
+                new_button.get()->set_background_color(scls::white);
+                new_button.get()->set_font_color(scls::black);
+                new_button.get()->set_font_size(50);
+                new_button.get()->set_overflighted_cursor(GLFW_HAND_CURSOR);
+                new_button.get()->set_height_in_pixel(30);
+                new_button.get()->set_width_in_scale(Fraction(4, 5));
+                new_button.get()->set_texture_alignment(scls::Alignment_Texture::T_Fit_Vertically);
+                new_button.get()->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
                 a_browser_buttons.push_back(new_button);
 
                 // Create the thread
@@ -1292,12 +1304,12 @@ namespace scls {
                     }
                     std::string& button_text_reference = paths[i];
                     bool move_cursor = false;
-                    std::thread* current_thread = new std::thread(&GUI_Text::set_text, new_button, button_text_reference, &move_cursor);
+                    std::thread* current_thread = new std::thread(&GUI_Text::set_text, new_button.get(), button_text_reference, &move_cursor);
                     threads.push_back(current_thread);
                     current_thread_number++;
                 }
                 else {
-                    new_button->set_text(paths[i], false);
+                    new_button.get()->set_text(paths[i], false);
                 }
             }
 
@@ -1305,36 +1317,36 @@ namespace scls {
                 std::thread* current_thread = threads[j];
                 current_thread->join();
                 delete current_thread; current_thread = 0;
-                a_browser_buttons[(a_browser_buttons.size() - threads.size()) + j]->texture()->change_texture();
+                a_browser_buttons[(a_browser_buttons.size() - threads.size()) + j].get()->texture()->change_texture();
             } threads.clear();
 
             a_browser_y = 0;
         }
         else {
             // Modify some buttons
-            std::vector<GUI_Text*> buttons_to_modify = std::vector<GUI_Text*>();
+            std::vector<std::shared_ptr<GUI_Text>> buttons_to_modify = std::vector<std::shared_ptr<GUI_Text>>();
             for(unsigned int i = 0;i<static_cast<unsigned int>(paths.size());i++) {
                 if(!std::filesystem::exists(paths[i]) || !contains<unsigned int>(a_browser_buttons_to_modify, i)) continue;
 
                 // Get the button
-                GUI_Text* new_button = a_browser_buttons[i];
-                std::string button_text = new_button->text();
+                std::shared_ptr<GUI_Text> new_button = a_browser_buttons[i];
+                std::string button_text = new_button.get()->text();
                 buttons_to_modify.push_back(new_button);
 
                 // Change the specification of the button
                 if(contains_selected_file(button_text)) {
-                    new_button->set_background_color(scls::blue);
-                    new_button->set_font_color(scls::white);
+                    new_button.get()->set_background_color(scls::blue);
+                    new_button.get()->set_font_color(scls::white);
                 }
                 else {
-                    new_button->set_background_color(scls::white);
-                    new_button->set_font_color(scls::black);
+                    new_button.get()->set_background_color(scls::white);
+                    new_button.get()->set_font_color(scls::black);
                 }
 
                 // Create the thread
                 std::string& button_text_reference = button_text;
                 bool move_cursor = false;
-                std::thread* current_thread = new std::thread(&GUI_Text::set_text, new_button, button_text_reference, &move_cursor);
+                std::thread* current_thread = new std::thread(&GUI_Text::set_text, new_button.get(), button_text_reference, &move_cursor);
                 threads.push_back(current_thread);
             }
             a_browser_buttons_to_modify.clear();
@@ -1344,13 +1356,13 @@ namespace scls {
                 std::thread* current_thread = threads[i];
                 current_thread->join();
                 delete current_thread; current_thread = 0;
-                buttons_to_modify[i]->texture()->change_texture();
+                buttons_to_modify[i].get()->texture()->change_texture();
             }
         }
         threads.clear();
 
         place_all();
-        a_browser->check_scroller(from_scratch);
+        a_browser.get()->check_scroller(from_scratch);
     }
 
     // Update the explorer during an event
@@ -1387,7 +1399,7 @@ namespace scls {
 
     // Update the current path in the top bar
     void GUI_File_Explorer::update_top_bar() {
-        a_top_bar->delete_children(); a_top_bar_buttons.clear();
+        a_top_bar.get()->delete_children(); a_top_bar_buttons.clear();
 
         // Create the buttons
         std::string first_text = "Ce PC >";
@@ -1397,13 +1409,13 @@ namespace scls {
             std::string button_text = path_pieces[path_pieces.size() - (1 + i)];
             if(button_text == "") continue;
             if(button_text != first_text) button_text += "/";
-            GUI_Text* new_button = a_top_bar->new_object<GUI_Text>("top_bar_button_" + std::to_string(i), 0, 0);
-            new_button->set_font_size(22);
-            new_button->set_overflighted_cursor(GLFW_HAND_CURSOR);
-            new_button->set_text(button_text);
-            new_button->set_height_in_pixel(22);
-            new_button->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
-            new_button->set_texture_alignment_vertical(scls::Alignment_Vertical::V_Center);
+            std::shared_ptr<GUI_Text> new_button = *a_top_bar->new_object<GUI_Text>("top_bar_button_" + std::to_string(i), 0, 0);
+            new_button.get()->set_font_size(22);
+            new_button.get()->set_overflighted_cursor(GLFW_HAND_CURSOR);
+            new_button.get()->set_text(button_text);
+            new_button.get()->set_height_in_pixel(22);
+            new_button.get()->set_texture_alignment(scls::Alignment_Texture::T_Fit_Horizontally);
+            new_button.get()->set_texture_alignment_vertical(scls::Alignment_Vertical::V_Center);
             a_top_bar_buttons.push_back(new_button);
         }
         place_all();
@@ -1421,9 +1433,7 @@ namespace scls {
     //*********
 
     // GUI_Page most basic constructor
-    GUI_Page::GUI_Page(_Window_Advanced_Struct* window_struct, std::string name) : Object(window_struct, name) {
-        a_parent_object = std::make_unique<GUI_Main_Object>((*reinterpret_cast<Window*>(window_struct)), "main");
-    }
+    GUI_Page::GUI_Page(_Window_Advanced_Struct* window_struct, std::string name) : Object(window_struct, name) { a_parent_object = std::make_shared<GUI_Main_Object>((*reinterpret_cast<Window*>(window_struct)), "main"); }
 
     // Render the page
     void GUI_Page::render(){

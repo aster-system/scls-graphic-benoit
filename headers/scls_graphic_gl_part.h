@@ -882,7 +882,7 @@ namespace scls {
             if(get_image() != 0 && get_image()->flip_x_number() % 2 == 0) get_image()->flip_x();
             change_texture();
         };
-        inline void set_image(std::shared_ptr<scls::Image>& new_image) {
+        inline void set_image(const std::shared_ptr<scls::Image>& new_image) {
             if(new_image.get() == 0 && get_image() != 0) {
                 glDeleteTextures(1, &texture_id);
             }

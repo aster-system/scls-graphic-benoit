@@ -338,6 +338,7 @@ namespace scls {
         // Calculate delta time
         set_delta_time(glfwGetTime() - a_last_frame_time);
         a_last_frame_time = glfwGetTime();
+        a_execution_time += delta_time();
 
         if (delta_time() > 0.1) set_delta_time(0);
 
