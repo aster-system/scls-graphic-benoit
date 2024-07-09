@@ -382,7 +382,13 @@ namespace scls {
     // GUI_Object destructor
     GUI_Object::~GUI_Object() {
         delete_children();
+
+        if(parent() != 0) {
+            parent()->child_deleted(this);
+        }
+
         window_struct().remove_texture(texture());
+
         a_shared_ptr = 0;
     }
 

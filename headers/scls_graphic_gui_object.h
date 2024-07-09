@@ -542,6 +542,8 @@ namespace scls {
         // GUI_Object destructor
         virtual ~GUI_Object();
 
+        // Function called when a child is deleted
+        virtual void child_deleted(GUI_Object* child) { if(parent() != 0) parent()->child_deleted(child); };
         // Delete a child of the object
         void delete_child(GUI_Object* object);
         // Delete the children of an object
@@ -712,6 +714,8 @@ namespace scls {
         // GUI_Main_Object destructor
         virtual ~GUI_Main_Object() {};
 
+        // Function called when a child is deleted
+        virtual void child_deleted(GUI_Object* child) { if(a_focused_object == child) a_focused_object = 0; GUI_Object::child_deleted(child); };
         // Update the object for the events
         virtual void update_event();
 
