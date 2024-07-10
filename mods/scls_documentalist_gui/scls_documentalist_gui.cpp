@@ -1434,11 +1434,11 @@ namespace scls_documentalist_gui {
         } //*/
 
         // Place each buttons
-        std::shared_ptr<scls::GUI_Object> current_object = 0;
-        if(a_replica_navigation_buttons.size() > 0) current_object = a_replica_navigation_buttons[a_replica_navigation_buttons.size() - 1];
-        std::shared_ptr<scls::GUI_Object> last_current_object = 0;
+        std::shared_ptr<scls::GUI_Object> current_object;
+        std::shared_ptr<scls::GUI_Object> last_current_object;
         for(int i = 0;i<static_cast<int>(a_replica_navigation_buttons.size());i++) {
-            if(last_current_object == 0) current_object.get()->move_bottom_in_parent(1);
+            current_object = a_replica_navigation_buttons[a_replica_navigation_buttons.size() - (i + 1)];
+            if(last_current_object.get() == 0) current_object.get()->move_bottom_in_parent(1);
             else current_object.get()->move_top_of_object_in_parent(last_current_object);
             last_current_object = current_object;
         }
