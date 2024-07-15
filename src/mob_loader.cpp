@@ -242,7 +242,8 @@ namespace scls {
                                 flip_y = datas[get_flip_y_texture_data_number()].data[0];
                             }
                             Texture* texture = window->new_texture(name);
-                            texture->get_image()->_load_png_file(texture_input);
+                            std::shared_ptr<__Image_Error> error = std::make_shared<__Image_Error>();
+                            texture->get_image()->_load_png_file(texture_input, error);
                             if (flip_y) texture->get_image()->flip_y();
                             texture->load_texture();
                             delete texture_input; texture_input = 0;

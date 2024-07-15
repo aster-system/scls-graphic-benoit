@@ -25,6 +25,20 @@ namespace scls_documentalist_gui {
     // SCLS_Documentalist_GUI base constructor
     SCLS_Documentalist_GUI::SCLS_Documentalist_GUI(int window_width, int window_height, std::string exec_path) : Window(window_width, window_height, exec_path) {
         set_background_color(scls::Color(200, 200, 200));
+
+        // Page of the GUI
+        a_page = *new_page_2d<scls::GUI_Page>("scls_documentalist_agatha");
+        a_page.get()->set_scale(glm::vec3(2, 2, 1));
+        a_page.get()->parent_object()->set_background_color(scls::Color(255, 255, 255));
+        a_page.get()->parent_object()->set_position_in_pixel(0, 0);
+        a_page.get()->parent_object()->set_height_in_scale(scls::Fraction(1));
+        a_page.get()->parent_object()->set_width_in_scale(scls::Fraction(1));
+        display_page_2d("scls_documentalist_agatha");
+
+        // Create the needed textures
+        std::shared_ptr<scls::Image> arrow = std::make_shared<scls::Image>(100, 100, scls::Color(255, 255, 255));
+        arrow.get()->fill_triangle(20, 0, 20, 100, 90, 50, scls::Color(0, 0, 0));
+        text_image_generator()->add_image("cool_image", arrow);
     }
 
     // SCLS_Documentalist_GUI base destructor
@@ -185,26 +199,20 @@ namespace scls_documentalist_gui {
     void SCLS_Documentalist_GUI::load() {
         load_language_fr();
 
-        // Page of the GUI
-        a_page = *new_page_2d<scls::GUI_Page>("scls_documentalist_agatha");
-        a_page.get()->set_scale(glm::vec3(2, 2, 1));
-        a_page.get()->parent_object()->set_background_color(scls::Color(255, 255, 255));
-        a_page.get()->parent_object()->set_position_in_pixel(0, 0);
-        a_page.get()->parent_object()->set_height_in_scale(scls::Fraction(1));
-        a_page.get()->parent_object()->set_width_in_scale(scls::Fraction(1));
-        display_page_2d("scls_documentalist_agatha");
-
         load_main_header();
 
-        // Load navigations
+        // Load help part
+        load_help_body();
         load_help_navigation();
+        load_welcome_footer(); //*/
+
+        // Load navigations
         load_pattern_navigation();
         load_replica_navigation();
 
         // Load footers
         load_pattern_footer();
         load_replica_footer();
-        load_welcome_footer();
 
         // Load bodies
         load_create_file_pattern_body();
@@ -213,7 +221,6 @@ namespace scls_documentalist_gui {
         load_create_replica_file_body();
         load_file_explorer();
         load_file_pattern_body();
-        load_help_body();
         load_pattern_main_body();
         load_replica_export_body();
         load_replica_global_variables();
@@ -1409,25 +1416,25 @@ namespace scls_documentalist_gui {
 
         // Add the "project_home" button
         std::shared_ptr<scls::GUI_Text> current_button = *a_replica_navigation.get()->new_object_in_scroller<scls::GUI_Text>("replica_navigation_home_button");
-        current_button.get()->set_font_size(75);
+        current_button.get()->set_font_size(25);
         current_button.get()->set_overflighted_cursor(GLFW_HAND_CURSOR);
         current_button.get()->set_text(a_gui_text_content["replica_home"]);
-        current_button.get()->set_texture_alignment(scls::Alignment_Texture::T_Fit);
-        current_button.get()->set_height_in_pixel(75);
+        current_button.get()->set_height_in_pixel(40);
+        current_button.get()->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
         current_button.get()->set_width_in_scale(scls::Fraction(1));
         current_button.get()->move_left_in_parent();
         current_button.get()->move_bottom_in_parent(1);
         a_replica_navigation_buttons.push_back(current_button);
 
         // Load each buttons
-        std::vector<scls::Replica_File>& replica_files = currently_displayed_replica()->replica_files();
-        for(int i = 0;i<static_cast<int>(replica_files.size());i++) {
+        std::shared_ptr<std::vector<std::string>> replica_files = currently_displayed_replica()->replica_files_first_sorted_by_path();
+        for(int i = 0;i<static_cast<int>(replica_files.get()->size());i++) {
             current_button = *a_replica_navigation.get()->new_object_in_scroller<scls::GUI_Text>("replica_navigation_button_" + std::to_string(i));
-            current_button.get()->set_font_size(75);
+            current_button.get()->set_font_size(25);
             current_button.get()->set_overflighted_cursor(GLFW_HAND_CURSOR);
-            current_button.get()->set_text(replica_files[i].internal_path);
-            current_button.get()->set_texture_alignment(scls::Alignment_Texture::T_Fit);
-            current_button.get()->set_height_in_pixel(75);
+            current_button.get()->set_text("<img src=\"#cool_image\">" + replica_files.get()->at(i));
+            current_button.get()->set_height_in_pixel(40);
+            current_button.get()->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
             current_button.get()->set_width_in_scale(scls::Fraction(1));
             current_button.get()->move_left_in_parent();
             a_replica_navigation_buttons.push_back(current_button);
@@ -1610,7 +1617,7 @@ namespace scls_documentalist_gui {
                         }
                     }
                 }
-            }
+            } //*/
 
             render();
         }

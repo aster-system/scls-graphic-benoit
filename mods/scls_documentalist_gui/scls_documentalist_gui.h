@@ -131,9 +131,9 @@ namespace scls_documentalist_gui {
         // Loads the buttons in the replica navigation
         void load_replica_navigation_buttons();
         // Unloads the loaded buttons in the create replica file pattern navigation
-        inline void unload_create_replica_file_pattern_navigation_buttons() {a_create_replica_pattern_file->reset(); };
+        inline void unload_create_replica_file_pattern_navigation_buttons() {if(a_create_replica_pattern_file.get() != 0)a_create_replica_pattern_file->reset(); };
         // Unloads the buttons in the replica navigation
-        void unload_replica_navigation_buttons() {a_replica_navigation_buttons.clear();a_replica_navigation->reset();};
+        void unload_replica_navigation_buttons() {a_replica_navigation_buttons.clear();if(a_replica_navigation.get() != 0)a_replica_navigation->reset();};
 
         // Getters and setters
         inline scls::Replica_Project* currently_displayed_replica() const { return a_current_state.a_currently_displayed_replica_project.get(); };
