@@ -249,20 +249,20 @@ namespace scls {
     void VBO::load_from_binary(char* binary) {
         unsigned int cursor_pos = 0;
         unsigned char attribute_number = binary[0]; cursor_pos++;
-        for (int i = 0; i < attribute_number; i++)
-        {
+        unsigned int attribute_size = 0;
+        for (int i = 0; i < attribute_number; i++) {
             unsigned short type = scls::extract_2bytes_from_char_array(binary, cursor_pos, true); cursor_pos += 2;
             unsigned short vector_size = scls::extract_2bytes_from_char_array(binary, cursor_pos, true); cursor_pos += 2;
 
             Shader_Program_Variable variable; variable.type = type; variable.vector_size = vector_size;
             a_attributes.push_back(variable);
+            attribute_size += vector_size;
         }
 
-        unsigned int size = scls::extract_4bytes_from_char_array(binary, cursor_pos, true); cursor_pos += 4;
-        for (unsigned int i = 0; i < size; i++)
-        {
-            double data = scls::extract_double_from_char_array(binary, cursor_pos);
-            cursor_pos += 8;
+        // Get each datas
+        unsigned int datas_number = scls::extract_4bytes_from_char_array(binary, cursor_pos, true); cursor_pos += 4;
+        for (unsigned int i = 0; i < datas_number * attribute_size; i++) {
+            double data = scls::extract_double_from_char_array(binary, cursor_pos); cursor_pos += 8;
             a_datas.push_back(static_cast<float>(data));
         }
     }
