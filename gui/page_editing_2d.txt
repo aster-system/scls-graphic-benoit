@@ -1,0 +1,7 @@
+<gui_object name="background_image">
+	<height value=1 type=scale>
+    <texture alignment=fit>
+	<width value=3/4 type=scale>
+	<x value=1/4 type=scale>
+	<y value=0 type=scale>
+</gui_object>

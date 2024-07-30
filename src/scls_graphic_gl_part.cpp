@@ -251,8 +251,8 @@ namespace scls {
         unsigned char attribute_number = binary[0]; cursor_pos++;
         unsigned int attribute_size = 0;
         for (int i = 0; i < attribute_number; i++) {
-            unsigned short type = scls::extract_2bytes_from_char_array(binary, cursor_pos, true); cursor_pos += 2;
-            unsigned short vector_size = scls::extract_2bytes_from_char_array(binary, cursor_pos, true); cursor_pos += 2;
+            unsigned short type = scls::__extract_2bytes_from_char_array(binary, cursor_pos, true); cursor_pos += 2;
+            unsigned short vector_size = scls::__extract_2bytes_from_char_array(binary, cursor_pos, true); cursor_pos += 2;
 
             Shader_Program_Variable variable; variable.type = type; variable.vector_size = vector_size;
             a_attributes.push_back(variable);
@@ -260,9 +260,9 @@ namespace scls {
         }
 
         // Get each datas
-        unsigned int datas_number = scls::extract_4bytes_from_char_array(binary, cursor_pos, true); cursor_pos += 4;
+        unsigned int datas_number = scls::__extract_4bytes_from_char_array(binary, cursor_pos, true); cursor_pos += 4;
         for (unsigned int i = 0; i < datas_number * attribute_size; i++) {
-            double data = scls::extract_double_from_char_array(binary, cursor_pos); cursor_pos += 8;
+            double data = scls::__extract_double_from_char_array(binary, cursor_pos); cursor_pos += 8;
             a_datas.push_back(static_cast<float>(data));
         }
     }

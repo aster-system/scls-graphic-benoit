@@ -1,0 +1,4 @@
+<texture name="scls_documentalist_logo" src="assets/textures/scls_documentalist_logo.png">
+<page_2d name="main_page" type="gui" displayed>
+	<content src="page_editing_2d.txt">
+</page_2d>

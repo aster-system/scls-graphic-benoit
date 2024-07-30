@@ -287,7 +287,7 @@ namespace scls {
     //*********
 
     // Most basic __GUI_Object_Core constructor
-    __GUI_Object_Core::__GUI_Object_Core(Window& window, __GUI_Object_Core* parent) : a_window(window) {
+    __GUI_Object_Core::__GUI_Object_Core(_Window_Advanced_Struct& window, __GUI_Object_Core* parent) : a_window(window) {
          if(parent != 0) a_transformation = std::make_shared<__GUI_Transformation>(window_struct().window_height(), window_struct().window_width(), parent->transformation_shared_ptr());
          else {
             std::shared_ptr<__GUI_Transformation> empty_ptr;
@@ -323,7 +323,7 @@ namespace scls {
     //*********
 
     // Most basic GUI_Object constructor
-    GUI_Object::GUI_Object(Window& window, std::string name, GUI_Object* parent) : __GUI_Object_Core(window, parent), a_name(name), a_parent(parent) {
+    GUI_Object::GUI_Object(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent) : __GUI_Object_Core(window, parent), a_name(name), a_parent(parent) {
         a_texture = (*window.new_texture_shared_ptr(name, 1, 1, Color(255, 255, 255, 0)));
         a_vao = (*window.vao_shared_ptr("gui_default"));
     }
@@ -390,6 +390,237 @@ namespace scls {
         window_struct().remove_texture(texture());
 
         a_shared_ptr = 0;
+    }
+
+    //*********
+    //
+    // Loading handler
+    //
+    //*********
+
+    // Handle an attribute from XML
+    void GUI_Object::set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, const std::vector<_Text_Balise_Part>& cutted, int& i) {
+        if(xml_attribute_name == "background_color") {
+            // Load the background color
+            Color background_color(0, 0, 0, 255);
+            for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
+                std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
+                std::string value = attribute_value(xml_attribute_value[j]);
+                if(value.size() > 0) {
+                    // Remove the "
+                    if(value[0] == '\"') value = value.substr(1, value.size() - 1);
+                    if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
+                }
+
+                if(current_attribute_name == "red") {
+                    // Red part of the color
+                    background_color.set_red(std::stoi(value));
+                }
+                else if(current_attribute_name == "green") {
+                    // Red part of the color
+                    background_color.set_green(std::stoi(value));
+                }
+                else if(current_attribute_name == "blue") {
+                    // Red part of the color
+                    background_color.set_blue(std::stoi(value));
+                }
+                else if(current_attribute_name == "alpha") {
+                    // Alpha part of the color
+                    background_color.set_alpha(std::stoi(value));
+                }
+            }
+            set_background_color(background_color);
+        }
+        else if(xml_attribute_name == "border") {
+            // Load the border
+            Color border_color(0, 0, 0, 255);
+            Fraction border_bottom = Fraction(0);
+            Fraction border_left = Fraction(0);
+            Fraction border_right = Fraction(0);
+            Fraction border_top = Fraction(0);
+            for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
+                std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
+                std::string value = attribute_value(xml_attribute_value[j]);
+                if(value.size() > 0) {
+                    // Remove the "
+                    if(value[0] == '\"') value = value.substr(1, value.size() - 1);
+                    if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
+                }
+
+                if(current_attribute_name == "red") {
+                    // Red part of the color
+                    border_color.set_red(std::stoi(value));
+                }
+                else if(current_attribute_name == "green") {
+                    // Red part of the color
+                    border_color.set_green(std::stoi(value));
+                }
+                else if(current_attribute_name == "blue") {
+                    // Red part of the color
+                    border_color.set_blue(std::stoi(value));
+                }
+                else if(current_attribute_name == "bottom") {
+                    // Bottom width of the border
+                    border_bottom = Fraction::from_std_string(value);
+                }
+                else if(current_attribute_name == "left") {
+                    // Left width of the border
+                    border_left = Fraction::from_std_string(value);
+                }
+                else if(current_attribute_name == "right") {
+                    // Right width of the border
+                    border_right = Fraction::from_std_string(value);
+                }
+                else if(current_attribute_name == "top") {
+                    // Top width of the border
+                    border_top = Fraction::from_std_string(value);
+                }
+            }
+            set_border_color(border_color);
+            set_border_width_in_pixel(border_top.to_double());
+        }
+        else if(xml_attribute_name == "height") {
+            // Load the height of the object
+            Fraction height = Fraction(1);
+            _Size_Definition height_type = _Size_Definition::Scale_Size;
+            for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
+                std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
+                std::string value = attribute_value(xml_attribute_value[j]);
+                if(value.size() > 0) {
+                    // Remove the "
+                    if(value[0] == '\"') value = value.substr(1, value.size() - 1);
+                    if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
+                }
+
+                if(current_attribute_name == "value") {
+                    // Value of the height
+                    height = Fraction::from_std_string(value);
+                }
+                else if(current_attribute_name == "type") {
+                    //Type of the height
+                    if(value == "scale") height_type = _Size_Definition::Scale_Size;
+                    else if(value == "pixel") height_type = _Size_Definition::Pixel_Size;
+                }
+            }
+            // Set the height
+            if(height_type == _Size_Definition::Pixel_Size) set_height_in_pixel(height.to_double());
+            else set_height_in_scale(height);
+        }
+        else if(xml_attribute_name == "texture") {
+            // Load the texture position
+            Alignment_Texture texture_alignment = Alignment_Texture::T_Fill;
+            std::string texture_name = "";
+            for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
+                std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
+                std::string value = attribute_value(xml_attribute_value[j]);
+                if(value.size() > 0) {
+                    // Remove the "
+                    if(value[0] == '\"') value = value.substr(1, value.size() - 1);
+                    if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
+                }
+
+                if(current_attribute_name == "name") {
+                    // Value of the name
+                    texture_name = value;
+                }
+                else if(current_attribute_name == "alignment") {
+                    // Alignment of the texture
+                    if(value == "fill") texture_alignment = Alignment_Texture::T_Fill;
+                    else if(value == "fit") texture_alignment = Alignment_Texture::T_Fit;
+                    else if(value == "fit_horizontally") texture_alignment = Alignment_Texture::T_Fit_Horizontally;
+                    else if(value == "fit_vertically") texture_alignment = Alignment_Texture::T_Fit_Vertically;
+                    else if(value == "user_defined") texture_alignment = Alignment_Texture::T_User_Defined;
+                }
+            }
+            // Set the goot texture
+            if(texture_name != "") set_texture(texture_name);
+            set_texture_alignment(texture_alignment);
+        }
+        else if(xml_attribute_name == "width") {
+            // Load the width of the object
+            Fraction width = Fraction(1);
+            _Size_Definition width_type = _Size_Definition::Scale_Size;
+            for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
+                std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
+                std::string value = attribute_value(xml_attribute_value[j]);
+                if(value.size() > 0) {
+                    // Remove the "
+                    if(value[0] == '\"') value = value.substr(1, value.size() - 1);
+                    if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
+                }
+
+                if(current_attribute_name == "value") {
+                    // Value of the width
+                    width = Fraction::from_std_string(value);
+                }
+                else if(current_attribute_name == "type") {
+                    //Type of the width
+                    if(value == "scale") width_type = _Size_Definition::Scale_Size;
+                    else if(value == "pixel") width_type = _Size_Definition::Pixel_Size;
+                }
+            }
+            // Set the width
+            if(width_type == _Size_Definition::Pixel_Size) set_width_in_pixel(width.to_double());
+            else set_width_in_scale(width);
+        }
+        else if(xml_attribute_name == "x") {
+            // Load the X position
+            Fraction x = Fraction(1);
+            _Size_Definition x_type = _Size_Definition::Scale_Size;
+            for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
+                std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
+                std::string value = attribute_value(xml_attribute_value[j]);
+                if(value.size() > 0) {
+                    // Remove the "
+                    if(value[0] == '\"') value = value.substr(1, value.size() - 1);
+                    if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
+                }
+
+                if(current_attribute_name == "value") {
+                    // Value of the width
+                    x = Fraction::from_std_string(value);
+                }
+                else if(current_attribute_name == "type") {
+                    //Type of the width
+                    if(value == "scale") x_type = _Size_Definition::Scale_Size;
+                    else if(value == "pixel") x_type = _Size_Definition::Pixel_Size;
+                    else if(value == "object_scale") x_type = _Size_Definition::Object_Scale_Size;
+                }
+            }
+            // Set the x
+            if(x_type == _Size_Definition::Object_Scale_Size) set_x_in_object_scale(x);
+            else if(x_type == _Size_Definition::Pixel_Size) set_x_in_pixel(x.to_double());
+            else set_x_in_scale(x);
+        }
+        else if(xml_attribute_name == "y") {
+            // Load the Y position
+            Fraction y = Fraction(1);
+            _Size_Definition y_type = _Size_Definition::Scale_Size;
+            for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
+                std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
+                std::string value = attribute_value(xml_attribute_value[j]);
+                if(value.size() > 0) {
+                    // Remove the "
+                    if(value[0] == '\"') value = value.substr(1, value.size() - 1);
+                    if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
+                }
+
+                if(current_attribute_name == "value") {
+                    // Value of the width
+                    y = Fraction::from_std_string(value);
+                }
+                else if(current_attribute_name == "type") {
+                    //Type of the width
+                    if(value == "scale") y_type = _Size_Definition::Scale_Size;
+                    else if(value == "pixel") y_type = _Size_Definition::Pixel_Size;
+                    else if(value == "object_scale") y_type = _Size_Definition::Object_Scale_Size;
+                }
+            }
+            // Set the y
+            if(y_type == _Size_Definition::Object_Scale_Size) set_y_in_object_scale(y);
+            else if(y_type == _Size_Definition::Pixel_Size) set_y_in_pixel(y.to_double());
+            else set_y_in_scale(y);
+        }
     }
 
     //*********
@@ -540,7 +771,7 @@ namespace scls {
     //*********
 
     // Most basic GUI_Scroller constructor
-    GUI_Scroller::GUI_Scroller(Window& window, std::string name, GUI_Object* parent) : GUI_Object(window, name, parent) {
+    GUI_Scroller::GUI_Scroller(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent) : GUI_Object(window, name, parent) {
         a_scroller_children = *_create_scroller_children();
         a_scroller_children.get()->set_height_in_scale(Fraction(1));
         a_scroller_children.get()->set_width_in_scale(Fraction(1));
@@ -644,7 +875,7 @@ namespace scls {
     //*********
 
     // Most basic GUI_Text constructor
-    GUI_Text::GUI_Text(Window& window, std::string name, GUI_Object* parent) : __GUI_Text_Metadatas(window, name, parent) {}
+    GUI_Text::GUI_Text(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent) : __GUI_Text_Metadatas(window, name, parent) {}
 
     // Update the texture of the text
     void GUI_Text::update_text_texture() {
@@ -681,12 +912,84 @@ namespace scls {
 
     //*********
     //
+    // Loading handler
+    //
+    //*********
+
+    // Handle an attribute from XML
+    void GUI_Text::set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, const std::vector<_Text_Balise_Part>& cutted, int& i) {
+        if(xml_attribute_name == "content") {
+            // Load the background color
+            std::string final_content = "";
+            // Get each attributes
+            for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
+                std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
+                std::string value = attribute_value(xml_attribute_value[j]);
+                if(value.size() > 0) {
+                    // Remove the "
+                    if(value[0] == '\"') value = value.substr(1, value.size() - 1);
+                    if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
+                }
+
+                // Load the font size of the text
+                if(current_attribute_name == "font_size") {
+                    // Value of the font size
+                    set_font_size(Fraction::from_std_string(value).to_double());
+                }
+            }
+            // Get the content of the text
+            i++;
+            while(i < cutted.size()) {
+                std::string current_content = cutted[i].content;
+                if(current_content[0] == '<') {
+                    std::string current_balise = formatted_balise(current_content);
+                    std::string current_balise_name = balise_name(current_balise);
+
+                    if(current_balise_name == "content") break;
+                    else final_content += current_balise;
+                }
+                else {
+                    final_content += current_content;
+                }
+
+                i++;
+            }
+            set_text(final_content);
+        }
+        else if(xml_attribute_name == "font_size") {
+            // Load the font size of the text
+            Fraction final_font_size = Fraction(1);
+            for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
+                std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
+                std::string value = attribute_value(xml_attribute_value[j]);
+                if(value.size() > 0) {
+                    // Remove the "
+                    if(value[0] == '\"') value = value.substr(1, value.size() - 1);
+                    if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
+                }
+
+                if(current_attribute_name == "value") {
+                    // Value of the height
+                    final_font_size = Fraction::from_std_string(value);
+                }
+            }
+            // Set the font size
+            set_font_size(final_font_size.to_double());
+        }
+        else {
+            // Load a lowest level attribute
+            __GUI_Text_Metadatas::set_xml_attribute(xml_attribute_name, xml_attribute_value, cutted, i);
+        }
+    }
+
+    //*********
+    //
     // GUI_Text_Input main functions
     //
     //*********
 
     // Most basic GUI_Text constructor
-    GUI_Text_Input::GUI_Text_Input(Window& window, std::string name, GUI_Object* parent) : __GUI_Text_Metadatas(window, name, parent) {
+    GUI_Text_Input::GUI_Text_Input(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent) : __GUI_Text_Metadatas(window, name, parent) {
         set_text_image_type(Block_Type::BT_Keep_Block_And_Line_In_Memory);
         // set_use_cursor(true);
     }
@@ -1134,7 +1437,7 @@ namespace scls {
     //*********
 
     // Most parent GUI_File_Explorer constructor used for displaying
-    GUI_File_Explorer::GUI_File_Explorer(Window& window, std::string name, GUI_Object* parent) : GUI_Object(window, name, parent) { load(); }
+    GUI_File_Explorer::GUI_File_Explorer(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent) : GUI_Object(window, name, parent) { load(); }
 
     // Function called after that the window is resized
     void GUI_File_Explorer::after_resizing() {
@@ -1439,7 +1742,14 @@ namespace scls {
     //*********
 
     // GUI_Page most basic constructor
-    GUI_Page::GUI_Page(_Window_Advanced_Struct* window_struct, std::string name) : Object(window_struct, name) { a_parent_object = std::make_shared<GUI_Main_Object>((*reinterpret_cast<Window*>(window_struct)), "main"); }
+    GUI_Page::GUI_Page(_Window_Advanced_Struct* window_struct, std::string name) : Object(window_struct, name) {
+        set_scale(glm::vec3(2, 2, 1));
+
+        a_parent_object = std::make_shared<GUI_Main_Object>((*reinterpret_cast<_Window_Advanced_Struct*>(window_struct)), "main");
+        a_parent_object.get()->set_position_in_pixel(0, 0);
+        a_parent_object.get()->set_height_in_scale(scls::Fraction(1));
+        a_parent_object.get()->set_width_in_scale(scls::Fraction(1));
+    }
 
     // Render the page
     void GUI_Page::render(){
@@ -1455,9 +1765,167 @@ namespace scls {
         // std::this_thread::sleep_for(10ms);
     };
 
+    // Handle an attribute from XML
+    void GUI_Page::set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, __XML_Loader& loader, const std::vector<_Text_Balise_Part>& cutted, int& i) {
+        if(xml_attribute_name == "content") {
+            // Load the content of the page
+            std::string src = "";
+            for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
+                std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
+                std::string value = attribute_value(xml_attribute_value[j]);
+                if(value.size() > 0) {
+                    // Remove the "
+                    if(value[0] == '\"') value = value.substr(1, value.size() - 1);
+                    if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
+                }
+
+                if(current_attribute_name == "src") {
+                    // Source of the content
+                    src = value;
+                }
+            }
+            // Get the content
+            std::string final_path = path_parent(loader.window_file_path) + "/" + src;
+            std::cout << "P " << loader.window_file_path << " " << final_path << std::endl;
+            load_objects_from_xml(read_file(final_path));
+        }
+        else {
+            Object::set_xml_attribute(xml_attribute_name, xml_attribute_value, loader, cutted, i);
+        }
+    }
+
     // Update the event of the page
     void GUI_Page::update_event() {
         Object::update_event();
         parent_object()->update_event();
+    }
+
+    //*********
+    //
+    // Load the page
+    //
+    //*********
+
+    // Create an object from a type
+    std::shared_ptr<GUI_Object> GUI_Page::__create_loaded_object_from_type(std::string object_name, std::string object_type, GUI_Object* parent) {
+        if(object_type == "text") {
+            std::shared_ptr<GUI_Object> to_return = *parent->new_object<GUI_Text>(object_name);
+            return to_return;
+        }
+        else if(object_type == "scroller") {
+            std::shared_ptr<GUI_Object> to_return = *parent->new_object<GUI_Scroller>(object_name);
+            return to_return;
+        }
+        return *parent->new_object<GUI_Object>(object_name);
+    };
+
+    // Load an object in a page from XML
+    void GUI_Page::__load_object_from_xml(std::string object_name, std::string object_type, const std::string& content, std::map<std::string, std::shared_ptr<GUI_Object>>& created_objects) {
+        // Parse the content
+        std::vector<_Text_Balise_Part> cutted = cut_string_by_balise_out_of(content, "\"", true);
+        // Search the parent
+        GUI_Object* current_parent = parent_object();
+        for(int i = 0;i<static_cast<int>(cutted.size());i++) {
+            std::string content = formatted_balise(cutted[i].content); if(content == "") continue;
+            std::string current_balise_name = balise_name(content);
+
+            if(current_balise_name == "parent") {
+                // Load the parent
+                std::vector<std::string> attributes = cut_balise_by_attributes_out_of(content, "\"");
+                for(int j = 0;j<static_cast<int>(attributes.size());j++) {
+                    std::string current_attribute_name = attribute_name(attributes[j]);
+                    std::string value = attribute_value(attributes[j]);
+                    if(value.size() > 0) {
+                        // Remove the "
+                        if(value[0] == '\"') value = value.substr(1, value.size() - 1);
+                        if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
+                    }
+
+                    if(current_attribute_name == "name") { current_parent = created_objects[value].get(); }
+                }
+                break;
+            }
+        }
+        if(current_parent == 0) current_parent = parent_object();
+
+        // Create the object
+        std::shared_ptr<GUI_Object> object = __create_loaded_object_from_type(object_name, object_type, current_parent);
+        created_objects[object_name] = object;
+
+        // Parse the content
+        for(int i = 0;i<static_cast<int>(cutted.size());i++) {
+            std::string content = formatted_balise(cutted[i].content); if(content == "") continue;
+            std::string current_balise_name = balise_name(content);
+
+            // Ignore the parent
+            if(current_balise_name != "parent") {
+                std::vector<std::string> attributes = cut_balise_by_attributes_out_of(content, "\"");
+                object.get()->set_xml_attribute(current_balise_name, attributes, cutted, i);
+            }
+        }
+    }
+
+    // Load objects in a page from XML
+    void GUI_Page::load_objects_from_xml(const std::string& content_to_parse) {
+        const std::string content = format_for_xml(content_to_parse);
+        std::vector<_Text_Balise_Part> cutted = cut_string_by_balise(content, true);
+
+        // Check each balises
+        std::map<std::string, std::shared_ptr<GUI_Object>> created_objects = std::map<std::string, std::shared_ptr<GUI_Object>>();
+        for(int i = 0;i<static_cast<int>(cutted.size());i++) {
+            std::string content = formatted_balise(cutted[i].content); if(content == "") continue;
+            std::string current_balise_name = balise_name(content);
+
+            // Get the content of the object
+            std::string object_content = "";
+            if(current_balise_name == "gui_object") {
+                i++;
+                while(i < static_cast<int>(cutted.size())) {
+                    std::string current_content = cutted[i].content;
+                    if(current_content[0] == '<') {
+                        std::string parsed_content = formatted_balise(current_content); if(parsed_content == "") { i++;continue; }
+                        std::string parsed_balise_name = balise_name(parsed_content);
+                        if(parsed_balise_name == current_balise_name) break;
+                        object_content += parsed_content;
+                    }
+                    else {
+                        object_content += current_content;
+                    }
+                    i++;
+                }
+            }
+
+            // Add a 3D object
+            if(current_balise_name == "gui_object") {
+                std::string object_name = "";
+                std::string object_type = "";
+                std::vector<std::string> attributes = cut_balise_by_attributes(content);
+                for(int j = 0;j<static_cast<int>(attributes.size());j++) {
+                    std::string current_attribute_name = attribute_name(attributes[j]);
+                    if(current_attribute_name == "name") {
+                        // Get the name of the object
+                        object_name = attribute_value(attributes[j]);
+                        if(object_name.size() > 0) {
+                            // Remove the "
+                            if(object_name[0] == '\"') object_name = object_name.substr(1, object_name.size() - 1);
+                            if(object_name.size() > 0 && object_name[object_name.size() - 1] == '\"') object_name = object_name.substr(0, object_name.size() - 1);
+                        }
+                    }
+                    else if(current_attribute_name == "type") {
+                        // Get the type of the object
+                        object_type = attribute_value(attributes[j]);
+                        if(object_type.size() > 0) {
+                            // Remove the "
+                            if(object_type[0] == '\"') object_type = object_type.substr(1, object_type.size() - 1);
+                            if(object_type.size() > 0 && object_type[object_type.size() - 1] == '\"') object_type = object_type.substr(0, object_type.size() - 1);
+                        }
+                    }
+                }
+
+                if(object_name != "") {
+                    __load_object_from_xml(object_name, object_type, object_content, created_objects);
+                }
+            }
+        }
     }
 }

@@ -1,0 +1,32 @@
+<gui_object name="b" type="gui">
+	<background_color red=0 green=0 blue=255>
+	<height value=1 type=scale>
+	<width value=1/3 type=scale>
+	<x value=0 type=scale>
+	<y value=1/2 type=object_scale>
+</gui_object>
+<gui_object name="w" type="gui">
+	<background_color red=255 green=255 blue=255>
+	<height value=1 type=scale>
+	<texture alignment=fit name="scls_documentalist_logo">
+	<width value=1/3 type=scale>
+	<x value=1/3 type=scale>
+	<y value=1/2 type=object_scale>
+</gui_object>
+<gui_object name="r" type="gui">
+	<background_color red=255 green=0 blue=0>
+	<height value=1 type=scale>
+	<width value=1/3 type=scale>
+	<x value=2/3 type=scale>
+	<y value=1/2 type=object_scale>
+</gui_object>
+<gui_object name="name" type="text">
+	<background_color red=200 green=200 blue=200>
+	<border top=2>
+	<content font_size=50>France</br>Best country</content>
+	<height value=1/5 type=scale>
+	<parent name="w">
+	<width value=1 type=scale>
+	<x value=0 type=scale>
+	<y value=4/5 type=scale>
+</gui_object>

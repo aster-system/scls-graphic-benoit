@@ -68,7 +68,7 @@ namespace scls {
             char* size_chunk_input = new char[2];
             scls::read_file_binary(path, size_chunk_input, 2, 8);
             unsigned int size_chunk = 0;
-            size_chunk = scls::extract_2bytes_from_char_array(size_chunk_input, 0, true);
+            size_chunk = scls::__extract_2bytes_from_char_array(size_chunk_input, 0, true);
             delete[] size_chunk_input; size_chunk_input = 0;
 
             // Analyze each chunks
@@ -125,7 +125,7 @@ namespace scls {
                     // Read the number of datas
                     char* include_size_input = new char[2];
                     scls::read_file_binary(path, include_size_input, 2, current_pos);
-                    unsigned short include_size = scls::extract_2bytes_from_char_array(include_size_input, 0, true);
+                    unsigned short include_size = scls::__extract_2bytes_from_char_array(include_size_input, 0, true);
                     delete[] include_size_input; include_size_input = 0;
                     current_pos += 2;
 
@@ -135,7 +135,7 @@ namespace scls {
                         // Read the number of the data
                         char* data_number_input = new char[2];
                         scls::read_file_binary(path, data_number_input, 2, current_pos);
-                        unsigned short data_number = scls::extract_2bytes_from_char_array(data_number_input, 0, true);
+                        unsigned short data_number = scls::__extract_2bytes_from_char_array(data_number_input, 0, true);
                         delete[] data_number_input; data_number_input = 0;
                         current_pos += 2;
 
@@ -163,7 +163,7 @@ namespace scls {
                     // Read the number of datas
                     char* include_size_input = new char[2];
                     scls::read_file_binary(path, include_size_input, 2, current_pos);
-                    unsigned short include_size = scls::extract_2bytes_from_char_array(include_size_input, 0, true);
+                    unsigned short include_size = scls::__extract_2bytes_from_char_array(include_size_input, 0, true);
                     delete[] include_size_input; include_size_input = 0;
                     current_pos += 2;
 
@@ -173,7 +173,7 @@ namespace scls {
                         // Read the number of the data
                         char* data_number_input = new char[2];
                         scls::read_file_binary(path, data_number_input, 2, current_pos);
-                        unsigned short data_number = scls::extract_2bytes_from_char_array(data_number_input, 0, true);
+                        unsigned short data_number = scls::__extract_2bytes_from_char_array(data_number_input, 0, true);
                         delete[] data_number_input; data_number_input = 0;
                         current_pos += 2;
 
@@ -218,7 +218,7 @@ namespace scls {
                     // Get the size of the object
                     char* size_input = new char[4];
                     scls::read_file_binary(path, size_input, 4, current_pos);
-                    unsigned int size = scls::extract_4bytes_from_char_array(size_input, 0, true);
+                    unsigned int size = scls::__extract_4bytes_from_char_array(size_input, 0, true);
                     delete[] size_input; size_input = 0;
                     current_pos += 4;
 

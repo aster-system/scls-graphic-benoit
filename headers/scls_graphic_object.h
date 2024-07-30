@@ -14,10 +14,40 @@
 // This file contains the features allowing to handle the displayed things on the screen.
 //
 
+#ifndef SCLS_GRAPHIC_OBJECT
+#define SCLS_GRAPHIC_OBJECT
+
 #include "scls_graphic_window_advanced_struct.h"
 
 // The namespace "scls" is used to simplify the all.
 namespace scls {
+
+    //*********
+    //
+    // The __XML_Loader struct
+    //
+    //*********
+
+    struct __XML_Loader {
+        // Struct containing a lot of informations about an XML loading
+
+        // __XML_Loader constructor
+        __XML_Loader(const std::string& file_content) : content(file_content) {};
+
+        // Content of the main file
+        const std::string content;
+        // Cutted parts by balise of the text
+        std::vector<_Text_Balise_Part> cutted = std::vector<_Text_Balise_Part>();
+        // Path of the window file
+        std::string window_file_path = "";
+    };
+
+    //*********
+    //
+    // The Object class
+    //
+    //*********
+
     class Object {
         // Class representing an object displayed into the window
     public:
@@ -50,6 +80,9 @@ namespace scls {
         // Creates an object into the page and returns it
         template <typename O>
         O* new_object(std::string object_name, std::string object_texture = "");
+
+        // Returns a child by its name
+        inline Object* child_by_name(std::string child) { for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i]->name() == child) {return children()[i];}}return 0;};
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         inline bool contains_child(Object* child) { for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] == child) {return true;}}return false;};
@@ -151,6 +184,9 @@ namespace scls {
         void set_scale(glm::vec3 new_scale) {transform()->set_scale(new_scale);};
         inline glm::vec3 scale() {return transform()->get_scale();};
         Transform_Object* transform_parent() {if(transform() == 0)return 0;return transform()->get_parent();};
+
+        // Handle an attribute from XML
+        virtual void set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, __XML_Loader& loader, const std::vector<_Text_Balise_Part>& cutted, int& i);
     protected:
         // Basic object descriptor
         // Pointer to the Texture used to render the object
@@ -215,3 +251,5 @@ namespace scls {
         return object;
     }
 }
+
+#endif // SCLS_GRAPHIC_OBJECT

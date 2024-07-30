@@ -869,6 +869,7 @@ namespace scls {
         inline scls::Image* get_image() { return a_image.get(); };
         inline glm::vec2 get_texture_size() { return glm::vec2(width, height); };
         inline std::string get_texture_path() { return texture_path; };
+        inline std::shared_ptr<scls::Image>& image_shared_ptr() { return a_image; };
         inline bool loaded() {return a_loaded;};
         inline void set_image(scls::Image* new_image) {
             if(new_image == 0 && get_image() != 0) {

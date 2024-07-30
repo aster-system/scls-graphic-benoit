@@ -153,4 +153,41 @@ namespace scls {
 
         return to_return;
     }
+
+    //*********
+    //
+    // Loading handler
+    //
+    //*********
+
+    // Handle an attribute from XML
+    void Object::set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, __XML_Loader& loader, const std::vector<_Text_Balise_Part>& cutted, int& i) {
+        /*if(xml_attribute_name == "background_color") {
+            // Load the background color
+            Color background_color(0, 0, 0, 255);
+            for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
+                std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
+                std::string value = attribute_value(xml_attribute_value[j]);
+                if(value.size() > 0) {
+                    // Remove the "
+                    if(value[0] == '\"') value = value.substr(1, value.size() - 1);
+                    if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
+                }
+
+                if(current_attribute_name == "red") {
+                    // Red part of the color
+                    background_color.set_red(std::stoi(value));
+                }
+                else if(current_attribute_name == "green") {
+                    // Red part of the color
+                    background_color.set_green(std::stoi(value));
+                }
+                else if(current_attribute_name == "blue") {
+                    // Red part of the color
+                    background_color.set_blue(std::stoi(value));
+                }
+            }
+            set_background_color(background_color);
+        } //*/
+    }
 }

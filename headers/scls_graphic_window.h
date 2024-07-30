@@ -17,10 +17,7 @@
 #ifndef SCLS_WINDOW
 #define SCLS_WINDOW
 
-#include "scls_graphic_window_advanced_struct.h"
-#include "scls_graphic_window_base_struct.h"
-#include "scls_graphic_gl_part.h"
-#include "scls_graphic_object.h"
+#include "scls_graphic_gui_object.h"
 
 // The namespace "scls" is used to simplify the all.
 namespace scls {
@@ -190,6 +187,19 @@ namespace scls {
         virtual void update();
         // Update the event of the game during this frame
         virtual void update_event();
+
+        //*********
+        //
+        // Load the window
+        //
+        //*********
+
+        // Create an object from a type
+        virtual std::shared_ptr<Object> __create_loaded_object_from_type(std::string object_name, std::string object_type);
+        // Load the page from XML
+        void load_from_xml(std::string window_path);
+        // Load an object in a page from XML
+        void __load_object_from_xml(std::string object_name, std::string object_type, std::string object_content, __XML_Loader& loader, std::map<std::string, std::shared_ptr<Object>>& created_objects);
 
     private:
 

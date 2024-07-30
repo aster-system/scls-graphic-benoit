@@ -17,7 +17,8 @@
 #ifndef SCLS_GRAPHIC_GUI_OBJECT
 #define SCLS_GRAPHIC_GUI_OBJECT
 
-#include "scls_graphic_window.h"
+#include "scls_graphic_object.h"
+#include "scls_graphic_window_advanced_struct.h"
 
 #ifndef SCLS_GRAPHIC_GUI_OBJECT_TYPE_NAME
 #define SCLS_GRAPHIC_GUI_OBJECT_TYPE_NAME "GUI_object"
@@ -288,7 +289,7 @@ namespace scls {
         //*********
 
         // Most basic __GUI_Object_Core constructor
-        __GUI_Object_Core(Window& window, __GUI_Object_Core* parent);
+        __GUI_Object_Core(_Window_Advanced_Struct& window, __GUI_Object_Core* parent);
         // __GUI_Object_Core destructor
         virtual ~__GUI_Object_Core(){};
 
@@ -312,7 +313,7 @@ namespace scls {
         inline void set_focusing_state(bool new_focusing_state) {a_focusing_state = new_focusing_state;};
         inline void set_overflighted_cursor(unsigned long new_overflighted_cursor) {a_overflighted_cursor = new_overflighted_cursor;};
         inline void set_overflighting_state(short new_overflighting_state) {a_overflighting_state = new_overflighting_state;};
-        inline Window& window_struct() const {return a_window;};
+        inline _Window_Advanced_Struct& window_struct() const {return a_window;};
 
         //*********
         //
@@ -472,7 +473,7 @@ namespace scls {
         // Transformation of the object
         std::shared_ptr<__GUI_Transformation> a_transformation;
         // Pointer to the main window
-        Window& a_window;
+        _Window_Advanced_Struct& a_window;
 
         //*********
         //
@@ -538,10 +539,14 @@ namespace scls {
         //*********
 
         // Most basic GUI_Object constructor
-        GUI_Object(Window& window, std::string name, GUI_Object* parent);
+        GUI_Object(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent);
         // GUI_Object destructor
         virtual ~GUI_Object();
 
+        // Returns a child by its name
+        inline GUI_Object* child_by_name(std::string child_name) const {for(int i = 0;i<static_cast<int>(a_children.size());i++) {if(a_children[i] != 0 && a_children[i].get()->name() == child_name) return a_children[i].get();}return 0;};
+        // Returns a child shared pointer by its name
+        inline std::shared_ptr<GUI_Object>* child_by_name_shared_ptr(std::string child_name) {for(int i = 0;i<static_cast<int>(a_children.size());i++) {if(a_children[i] != 0 && a_children[i].get()->name() == child_name) return &a_children[i];}return 0;};
         // Function called when a child is deleted
         virtual void child_deleted(GUI_Object* child) { if(parent() != 0) parent()->child_deleted(child); };
         // Delete a child of the object
@@ -580,6 +585,15 @@ namespace scls {
         inline void set_border_color(Color new_color) {a_border_color = new_color;};
         inline void set_visible(bool new_visible) {a_visible = new_visible;};
         inline bool visible() {return a_visible;};
+
+        //*********
+        //
+        // Loading handler
+        //
+        //*********
+
+        // Handle an attribute from XML
+        virtual void set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, const std::vector<_Text_Balise_Part>& cutted, int& i);
 
         //*********
         //
@@ -631,6 +645,13 @@ namespace scls {
 
         // Getters and setters
         inline Image* image() const {return texture()->get_image();};
+        inline void set_texture(std::shared_ptr<Texture> new_texture, bool remove_last_texture = true) {
+            if(remove_last_texture) window_struct().remove_texture(texture());
+            a_texture = new_texture;
+        };
+        inline void set_texture(std::string texture_name, bool remove_last_texture = true) {
+            set_texture(window_struct().texture_shared_ptr(texture_name), remove_last_texture);
+        };
         inline void set_texture_alignment(Alignment_Texture new_texture_alignment) {a_texture_alignment = new_texture_alignment;};
         inline void set_texture_alignment_horizontal(Alignment_Horizontal new_texture_alignment_horizontal) {a_texture_alignment_horizontal = new_texture_alignment_horizontal;};
         inline void set_texture_alignment_vertical(Alignment_Vertical new_texture_alignment_vertical) {a_texture_alignment_vertical = new_texture_alignment_vertical;};;
@@ -710,7 +731,7 @@ namespace scls {
         //*********
 
         // Most basic GUI_Main_Object constructor
-        GUI_Main_Object(Window& window, std::string name) : GUI_Object(window, name, 0) {};
+        GUI_Main_Object(_Window_Advanced_Struct& window, std::string name) : GUI_Object(window, name, 0) {};
         // GUI_Main_Object destructor
         virtual ~GUI_Main_Object() {};
 
@@ -740,7 +761,7 @@ namespace scls {
         //*********
 
         // Most basic GUI_Scroller constructor
-        GUI_Scroller(Window& window, std::string name, GUI_Object* parent);
+        GUI_Scroller(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent);
         // GUI_Scroller destructor
         virtual ~GUI_Scroller();
 
@@ -789,7 +810,7 @@ namespace scls {
         //*********
 
         // __GUI_Text_Metadatas constructor
-        __GUI_Text_Metadatas(Window& window, std::string name, GUI_Object* parent) : GUI_Object(window, name, parent) {};
+        __GUI_Text_Metadatas(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent) : GUI_Object(window, name, parent) {};
         // __GUI_Text_Metadatas destructor
         virtual ~__GUI_Text_Metadatas() {};
 
@@ -871,7 +892,7 @@ namespace scls {
         //*********
 
         // Most basic GUI_Object constructor
-        GUI_Text(Window& window, std::string name, GUI_Object* parent);
+        GUI_Text(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent);
         // GUI_Object destructor
         virtual ~GUI_Text();
 
@@ -885,6 +906,15 @@ namespace scls {
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline Text_Image_Multi_Block* attached_text_image() {return a_text_image;};
         inline bool text_modified_during_this_frame() {return a_text_modified_during_this_frame;};
+
+        //*********
+        //
+        // Loading handler
+        //
+        //*********
+
+        // Handle an attribute from XML
+        virtual void set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, const std::vector<_Text_Balise_Part>& cutted, int& i);
     private:
         //*********
         //
@@ -911,7 +941,7 @@ namespace scls {
         //*********
 
         // Most basic GUI_Text_Input constructor
-        GUI_Text_Input(Window& window, std::string name, GUI_Object* parent);
+        GUI_Text_Input(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent);
         // GUI_Text_Input destructor
         virtual ~GUI_Text_Input();
 
@@ -1010,7 +1040,7 @@ namespace scls {
         //*********
 
         // GUI_File_Explorer most basic constructor
-        GUI_File_Explorer(Window& window, std::string name, GUI_Object* parent);
+        GUI_File_Explorer(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent);
         // GUI_File_Explorer destructor
         virtual ~GUI_File_Explorer();
 
@@ -1122,6 +1152,24 @@ namespace scls {
         inline GUI_Object* focused_object() {return a_focused_object;};
         inline GUI_Object* overflighted_object() {return a_overflighted_object;};
         inline GUI_Main_Object* parent_object() {return a_parent_object.get();};
+        inline std::shared_ptr<GUI_Main_Object>& parent_object_shared_ptr() {return a_parent_object;};
+
+        //*********
+        //
+        // Load the page
+        //
+        //*********
+
+        // Create an object from a type
+        virtual std::shared_ptr<GUI_Object> __create_loaded_object_from_type(std::string object_name, std::string object_type, GUI_Object* parent);
+        // Load the page from XML
+        void load_from_xml(const std::string& content_to_parse) {load_objects_from_xml(content_to_parse);};
+        // Load an object in a page from XML
+        void __load_object_from_xml(std::string object_name, std::string object_type, const std::string& content, std::map<std::string, std::shared_ptr<GUI_Object>>& created_objects);
+        // Load objects in a page from XML
+        void load_objects_from_xml(const std::string& content_to_parse);
+        // Handle an attribute from XML
+        virtual void set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, __XML_Loader& loader, const std::vector<_Text_Balise_Part>& cutted, int& i);
     private:
         // Handle the focused object
         // Pointer to the focused object

@@ -12,8 +12,7 @@
 #include "scls_graphic_window.h"
 
 namespace scls {
-    namespace mob_loader
-    {
+    namespace mob_loader {
         // Returns the number of each chunks
         inline char get_data_number() { return 1; };
         inline char get_include_number() { return 0; };
@@ -42,8 +41,8 @@ namespace scls {
 
             for (int i = 0; i < static_cast<int>(variables.size()); i++)
             {
-                scls::put_2bytes_to_char_array(variables[i].type, result, current_pos, true); current_pos += 2;
-                scls::put_2bytes_to_char_array(variables[i].vector_size, result, current_pos, true); current_pos += 2;
+                scls::__put_2bytes_to_char_array(variables[i].type, result, current_pos, true); current_pos += 2;
+                scls::__put_2bytes_to_char_array(variables[i].vector_size, result, current_pos, true); current_pos += 2;
             }
 
             size = variables.size() * 4 + 1;
@@ -136,7 +135,7 @@ namespace scls {
 
                 if (version_array == 0) return -1;
 
-                return scls::extract_2bytes_from_char_array(version_array);
+                return scls::__extract_2bytes_from_char_array(version_array);
             };
             inline void set_data(unsigned short data_number, unsigned char size, char* data)
             {
