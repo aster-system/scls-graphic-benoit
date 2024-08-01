@@ -299,21 +299,21 @@ namespace scls {
     void __GUI_Object_Core::_apply_calculate_transformation(std::shared_ptr<__GUI_Transformation> current_transformation) {
         // Calculate the transformation
         // Pass the border
-        current_transformation.get()->set_border_width_in_pixel(a_border_width);
+        current_transformation.get()->set_border_width_in_pixel(current_style().border_width_to_apply());
         // Pass the height
-        if(a_last_height_definition == _Size_Definition::Scale_Size || a_last_height_definition == _Size_Definition::Object_Scale_Size) current_transformation.get()->set_height_in_scale(a_height);
-        else if(a_last_height_definition == _Size_Definition::Pixel_Size) current_transformation.get()->set_height_in_pixel(a_height);
+        if(current_style().height_definition_to_apply() == _Size_Definition::Scale_Size || current_style().height_definition_to_apply() == _Size_Definition::Object_Scale_Size) current_transformation.get()->set_height_in_scale(current_style().height_to_apply());
+        else if(current_style().height_definition_to_apply() == _Size_Definition::Pixel_Size) current_transformation.get()->set_height_in_pixel(current_style().height_to_apply());
         // Pass the width
-        if(a_last_width_definition == _Size_Definition::Scale_Size || a_last_width_definition == _Size_Definition::Object_Scale_Size) current_transformation.get()->set_width_in_scale(a_width);
-        else if(a_last_width_definition == _Size_Definition::Pixel_Size) current_transformation.get()->set_width_in_pixel(a_width);
+        if(current_style().width_definition_to_apply() == _Size_Definition::Scale_Size || current_style().width_definition_to_apply() == _Size_Definition::Object_Scale_Size) current_transformation.get()->set_width_in_scale(current_style().width_to_apply());
+        else if(current_style().width_definition_to_apply() == _Size_Definition::Pixel_Size) current_transformation.get()->set_width_in_pixel(current_style().width_to_apply());
         // Pass the X
-        if(a_last_x_definition == _Size_Definition::Scale_Size) current_transformation.get()->set_x_in_scale(a_x);
-        else if(a_last_x_definition == _Size_Definition::Object_Scale_Size) current_transformation.get()->set_x_in_object_scale(a_x);
-        else if(a_last_x_definition == _Size_Definition::Pixel_Size) current_transformation.get()->set_x_in_pixel(a_x);
+        if(current_style().x_definition_to_apply() == _Size_Definition::Scale_Size) current_transformation.get()->set_x_in_scale(current_style().x_to_apply());
+        else if(current_style().x_definition_to_apply() == _Size_Definition::Object_Scale_Size) current_transformation.get()->set_x_in_object_scale(current_style().x_to_apply());
+        else if(current_style().x_definition_to_apply() == _Size_Definition::Pixel_Size) current_transformation.get()->set_x_in_pixel(current_style().x_to_apply());
         // Pass the Y
-        if(a_last_y_definition == _Size_Definition::Scale_Size) current_transformation.get()->set_y_in_scale(a_y);
-        else if(a_last_y_definition == _Size_Definition::Object_Scale_Size) current_transformation.get()->set_y_in_object_scale(a_y);
-        else if(a_last_y_definition == _Size_Definition::Pixel_Size) current_transformation.get()->set_y_in_pixel(a_y);
+        if(current_style().y_definition_to_apply() == _Size_Definition::Scale_Size) current_transformation.get()->set_y_in_scale(current_style().y_to_apply());
+        else if(current_style().y_definition_to_apply() == _Size_Definition::Object_Scale_Size) current_transformation.get()->set_y_in_object_scale(current_style().y_to_apply());
+        else if(current_style().y_definition_to_apply() == _Size_Definition::Pixel_Size) current_transformation.get()->set_y_in_pixel(current_style().y_to_apply());
     }
 
     //*********
@@ -398,8 +398,69 @@ namespace scls {
     //
     //*********
 
+    // Loads the object from XML
+    void GUI_Object::__load_from_xml(std::vector<_Text_Balise_Part> &cutted, std::string event) {
+        // Parse the content
+        for(int i = 0;i<static_cast<int>(cutted.size());i++) {
+            std::string content = formatted_balise(cutted[i].content); if(content == "") continue;
+            std::string current_balise_name = balise_name(content);
+
+            // Apply the XML balise
+            std::vector<std::string> attributes = cut_balise_by_attributes_out_of(content, "\"");
+            if(current_balise_name == "when") {
+                // Load the object look at a certain even
+                std::vector<_Text_Balise_Part> final_content = std::vector<_Text_Balise_Part>();
+                std::string current_event = "";
+                // Get each attributes
+                for(int j = 0;j<static_cast<int>(attributes.size());j++) {
+                    std::string current_attribute_name = attribute_name(attributes[j]);
+                    std::string value = attribute_value(attributes[j]);
+                    if(value.size() > 0) {
+                        // Remove the "
+                        if(value[0] == '\"') value = value.substr(1, value.size() - 1);
+                        if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
+                    }
+
+                    if(current_attribute_name == "event") {
+                        // Value of the event
+                        current_event = value;
+                    }
+                }
+                // Get the content of the text
+                i++;
+                while(i < cutted.size()) {
+                    std::string current_content = cutted[i].content;
+                    if(current_content[0] == '<') {
+                        std::string next_balise = formatted_balise(current_content);
+                        std::string next_balise_name = balise_name(next_balise);
+
+                        if(next_balise_name == current_balise_name) break;
+                        else final_content.push_back(cutted[i]);
+                    }
+                    else {
+                        final_content.push_back(cutted[i]);
+                    }
+
+                    i++;
+                }
+
+                if(event == "") {
+                    // Apply the attribute for the event
+                    __load_from_xml(final_content, current_event);
+                    std::cout << "When " << current_event << " " << final_content.size() << std::endl;
+                }
+                else {
+                    print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Can't load an event inside an another event with XML.");
+                }
+            }
+            else if(current_balise_name != "parent") {
+                set_xml_attribute(current_balise_name, attributes, event, cutted, i);
+            }
+        }
+    }
+
     // Handle an attribute from XML
-    void GUI_Object::set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, const std::vector<_Text_Balise_Part>& cutted, int& i) {
+    void GUI_Object::set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, std::string event, const std::vector<_Text_Balise_Part>& cutted, int& i) {
         if(xml_attribute_name == "background_color") {
             // Load the background color
             Color background_color(0, 0, 0, 255);
@@ -478,6 +539,28 @@ namespace scls {
             }
             set_border_color(border_color);
             set_border_width_in_pixel(border_top.to_double());
+        }
+        else if(xml_attribute_name == "cursor") {
+            if(event == "overflighted") {
+                // Load the cursor of the object when overflighted
+                unsigned long cursor = GLFW_ARROW_CURSOR;
+                for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
+                    std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
+                    std::string value = attribute_value(xml_attribute_value[j]);
+                    if(value.size() > 0) {
+                        // Remove the "
+                        if(value[0] == '\"') value = value.substr(1, value.size() - 1);
+                        if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
+                    }
+
+                    if(current_attribute_name == "type") {
+                        // Value of the cursor
+                        if(value == "pointing_hand_cursor") { cursor = GLFW_HAND_CURSOR; }
+                    }
+                }
+                // Set the cursor
+                set_overflighted_cursor(cursor);
+            }
         }
         else if(xml_attribute_name == "height") {
             // Load the height of the object
@@ -917,7 +1000,7 @@ namespace scls {
     //*********
 
     // Handle an attribute from XML
-    void GUI_Text::set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, const std::vector<_Text_Balise_Part>& cutted, int& i) {
+    void GUI_Text::set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, std::string event, const std::vector<_Text_Balise_Part>& cutted, int& i) {
         if(xml_attribute_name == "content") {
             // Load the background color
             std::string final_content = "";
@@ -978,7 +1061,7 @@ namespace scls {
         }
         else {
             // Load a lowest level attribute
-            __GUI_Text_Metadatas::set_xml_attribute(xml_attribute_name, xml_attribute_value, cutted, i);
+            __GUI_Text_Metadatas::set_xml_attribute(xml_attribute_name, xml_attribute_value, event, cutted, i);
         }
     }
 
@@ -1786,7 +1869,6 @@ namespace scls {
             }
             // Get the content
             std::string final_path = path_parent(loader.window_file_path) + "/" + src;
-            std::cout << "P " << loader.window_file_path << " " << final_path << std::endl;
             load_objects_from_xml(read_file(final_path));
         }
         else {
@@ -1851,18 +1933,7 @@ namespace scls {
         // Create the object
         std::shared_ptr<GUI_Object> object = __create_loaded_object_from_type(object_name, object_type, current_parent);
         created_objects[object_name] = object;
-
-        // Parse the content
-        for(int i = 0;i<static_cast<int>(cutted.size());i++) {
-            std::string content = formatted_balise(cutted[i].content); if(content == "") continue;
-            std::string current_balise_name = balise_name(content);
-
-            // Ignore the parent
-            if(current_balise_name != "parent") {
-                std::vector<std::string> attributes = cut_balise_by_attributes_out_of(content, "\"");
-                object.get()->set_xml_attribute(current_balise_name, attributes, cutted, i);
-            }
-        }
+        object.get()->__load_from_xml(cutted);
     }
 
     // Load objects in a page from XML

@@ -50,6 +50,152 @@ namespace scls {
     //
     //*********
 
+    struct GUI_Style {
+        // Struct representating the style of a GUI object
+
+        // GUI_Style constructor without parent
+        GUI_Style(bool modified = false) {
+            height_modified = modified;
+            x_modified = modified;
+            y_modified = modified;
+            width_modified = modified;
+        };
+        // GUI_Style constructor with parent
+        GUI_Style(std::shared_ptr<GUI_Style> parent_style, bool modified = false) {
+            height_modified = modified;
+            parent = parent_style;
+            x_modified = modified;
+            y_modified = modified;
+            width_modified = modified;
+        };
+
+        //*********
+        //
+        // Border handling
+        //
+        //*********
+
+        // Width of the border
+        glm::vec4 border_width = glm::vec4(0, 0, 0, 0);
+
+        // Each modified attribute
+        bool border_width_modified = false;
+
+        //*********
+        //
+        // Transform handling
+        //
+        //*********
+
+        // Last transformations
+        // Last type of definition of the height
+        _Size_Definition height_definition = _Size_Definition::Pixel_Size;
+        // Last type of definition of the width
+        _Size_Definition width_definition = _Size_Definition::Pixel_Size;
+        // Last type of definition of the x
+        _Size_Definition x_definition = _Size_Definition::Scale_Size;
+        // Last type of definition of the y
+        _Size_Definition y_definition = _Size_Definition::Scale_Size;
+        // Height position of the object
+        Fraction height = Fraction(1);
+        // Width position of the object
+        Fraction width = Fraction(1);
+        // X position of the object
+        Fraction x = Fraction(0);
+        // Y position of the object
+        Fraction y = Fraction(0);
+
+        // Each modified attributes
+        bool height_modified = false;
+        bool x_modified = false;
+        bool y_modified = false;
+        bool width_modified = false;
+
+        //*********
+        //
+        // Other
+        //
+        //*********
+
+        // Id of the overflighted cursor
+        unsigned long cursor = GLFW_ARROW_CURSOR;
+
+        //*********
+        //
+        // Datas to apply
+        //
+        //*********
+
+        // Parent of the style
+        std::shared_ptr<GUI_Style> parent;
+        // Border
+        // Border width to apply
+        // Return the border width to apply
+        glm::vec4 border_width_to_apply() {
+            if(border_width_modified || parent.get() == 0) {
+                return border_width;
+            }
+            return parent.get()->border_width_to_apply();
+        };
+        // Transformation
+        // Return the height to apply
+        Fraction height_to_apply() {
+            if(height_modified || parent.get() == 0) {
+                return height;
+            }
+            return parent.get()->height_to_apply();
+        };
+        // Return the height definition to apply
+        _Size_Definition height_definition_to_apply() {
+            if(height_modified || parent.get() == 0) {
+                return height_definition;
+            }
+            return parent.get()->height_definition_to_apply();
+        };
+        // Return the width to apply
+        Fraction width_to_apply() {
+            if(width_modified || parent.get() == 0) {
+                return width;
+            }
+            return parent.get()->width_to_apply();
+        };
+        // Return the width definition to apply
+        _Size_Definition width_definition_to_apply() {
+            if(height_modified || parent.get() == 0) {
+                return width_definition;
+            }
+            return parent.get()->width_definition_to_apply();
+        };
+        // Return the X to apply
+        Fraction x_to_apply() {
+            if(x_modified || parent.get() == 0) {
+                return x;
+            }
+            return parent.get()->x_to_apply();
+        };
+        // Return the X definition to apply
+        _Size_Definition x_definition_to_apply() {
+            if(x_modified || parent.get() == 0) {
+                return x_definition;
+            }
+            return parent.get()->x_definition_to_apply();
+        };
+        // Return the Y to apply
+        Fraction y_to_apply() {
+            if(y_modified || parent.get() == 0) {
+                return y;
+            }
+            return parent.get()->y_to_apply();
+        };
+        // Return the Y definition to apply
+        _Size_Definition y_definition_to_apply() {
+            if(y_modified || parent.get() == 0) {
+                return y_definition;
+            }
+            return parent.get()->y_definition_to_apply();
+        };
+    };
+
     class __GUI_Transformation {
         // Class containing every needed thing to do a good transformation system for a GUI
     public:
@@ -308,12 +454,25 @@ namespace scls {
         inline bool is_clicked_during_this_frame(unsigned int button) { return is_overflighted() && window_struct().mouse_button_clicked_during_this_frame(button); };
         inline bool is_focused() const {return a_focusing_state == 0;};
         inline bool is_overflighted() const {return a_overflighting_state == 0;};
-        inline unsigned long overflighted_cursor() const {return a_overflighted_cursor;};
+        inline unsigned long overflighted_cursor() const {return a_overflighted_style.get()->cursor;};
         inline short overflighting_state() const {return a_overflighting_state;};
         inline void set_focusing_state(bool new_focusing_state) {a_focusing_state = new_focusing_state;};
-        inline void set_overflighted_cursor(unsigned long new_overflighted_cursor) {a_overflighted_cursor = new_overflighted_cursor;};
+        inline void set_overflighted_cursor(unsigned long new_overflighted_cursor) {a_overflighted_style.get()->cursor = new_overflighted_cursor;};
         inline void set_overflighting_state(short new_overflighting_state) {a_overflighting_state = new_overflighting_state;};
         inline _Window_Advanced_Struct& window_struct() const {return a_window;};
+
+        //*********
+        //
+        // Style handling
+        //
+        //*********
+
+        // Returns the current style of the GUI
+        inline GUI_Style& current_style() {return *a_current_style.get(); };
+        // Set the current style as the main style
+        inline void set_main_style() {a_current_style = a_main_style;};
+        // Set the current style as the overflighted style
+        inline void set_overflighted_style() {a_current_style = a_overflighted_style;};
 
         //*********
         //
@@ -368,8 +527,20 @@ namespace scls {
 
         // Object scale plan
         // Setters
-        inline void set_x_in_object_scale(Fraction new_x) {if(a_x == new_x && a_last_x_definition == _Size_Definition::Object_Scale_Size)return;a_x=new_x;a_last_x_definition=_Size_Definition::Object_Scale_Size;a_transformation_updated=true;};
-        inline void set_y_in_object_scale(Fraction new_y) {if(a_y == new_y && a_last_y_definition == _Size_Definition::Object_Scale_Size)return;a_y=new_y;a_last_y_definition=_Size_Definition::Object_Scale_Size;a_transformation_updated=true;};
+        inline void set_x_in_object_scale(Fraction new_x) {
+            if(current_style().x_to_apply() == new_x && current_style().x_definition_to_apply() == _Size_Definition::Object_Scale_Size) return;
+            current_style().x = new_x;
+            current_style().x_definition = _Size_Definition::Object_Scale_Size;
+            current_style().x_modified = true;
+            a_transformation_updated=true;
+        };
+        inline void set_y_in_object_scale(Fraction new_y) {
+            if(current_style().y_to_apply() == new_y && current_style().y_definition_to_apply() == _Size_Definition::Object_Scale_Size) return;
+            current_style().y = new_y;
+            current_style().y_definition = _Size_Definition::Object_Scale_Size;
+            current_style().y_modified = true;
+            a_transformation_updated=true;
+        };
 
         // Pixel plan
         // Returns the height of the object in pixel plan
@@ -387,13 +558,41 @@ namespace scls {
         // Returns the y of the object in pixel plan
         int y_in_pixel() {if(a_transformation_updated)calculate_transformation();return a_transformation.get()->y_in_pixel();};
         // Setters
-        inline void set_border_width_in_pixel(int new_width) {a_border_width=glm::vec4(new_width);a_transformation_updated = true;};
-        inline void set_height_in_pixel(unsigned int new_height) {if(a_height == new_height && a_last_height_definition == _Size_Definition::Pixel_Size)return;a_height=new_height;a_last_height_definition=_Size_Definition::Pixel_Size;a_transformation_updated=true;};
+        inline void set_border_width_in_pixel(int new_width) {
+            current_style().border_width = glm::vec4(new_width);
+            current_style().border_width_modified = true;
+            a_transformation_updated = true;
+        };
+        inline void set_height_in_pixel(unsigned int new_height) {
+            if(current_style().height_to_apply() == new_height && current_style().height_definition_to_apply() == _Size_Definition::Pixel_Size) return;
+            current_style().height = new_height;
+            current_style().height_definition = _Size_Definition::Pixel_Size;
+            current_style().height_modified = true;
+            a_transformation_updated=true;
+        };
         inline void set_position_in_pixel(int new_x, int new_y) {set_x_in_pixel(new_x);set_y_in_pixel(new_y);};
-        inline void set_width_in_pixel(unsigned int new_width) {if(a_width == new_width && a_last_width_definition == _Size_Definition::Pixel_Size)return;a_width=new_width;a_last_width_definition=_Size_Definition::Pixel_Size;a_transformation_updated=true;};
-        inline void set_x_in_pixel(Fraction new_x) {if(a_x == new_x && a_last_x_definition == _Size_Definition::Pixel_Size)return;a_x=new_x;a_last_x_definition=_Size_Definition::Pixel_Size;a_transformation_updated=true;};
+        inline void set_width_in_pixel(unsigned int new_width) {
+            if(current_style().width_to_apply() == new_width && current_style().width_definition_to_apply() == _Size_Definition::Pixel_Size) return;
+            current_style().width = new_width;
+            current_style().width_definition = _Size_Definition::Pixel_Size;
+            current_style().width_modified = true;
+            a_transformation_updated=true;
+        };
+        inline void set_x_in_pixel(Fraction new_x) {
+            if(current_style().x_to_apply() == new_x && current_style().x_definition_to_apply() == _Size_Definition::Pixel_Size) return;
+            current_style().x = new_x;
+            current_style().x_definition = _Size_Definition::Pixel_Size;
+            current_style().x_modified = true;
+            a_transformation_updated = true;
+        };
         inline void set_x_in_pixel(int x) {set_x_in_pixel(Fraction(x));};
-        inline void set_y_in_pixel(Fraction new_y) {if(a_y == new_y && a_last_y_definition == _Size_Definition::Pixel_Size)return;a_y=new_y;a_last_y_definition=_Size_Definition::Pixel_Size;a_transformation_updated=true;};
+        inline void set_y_in_pixel(Fraction new_y) {
+            if(current_style().y_to_apply() == new_y && current_style().y_definition_to_apply() == _Size_Definition::Pixel_Size) return;
+            current_style().y = new_y;
+            current_style().y_definition = _Size_Definition::Pixel_Size;
+            current_style().y_modified = true;
+            a_transformation_updated = true;
+        };
         inline void set_y_in_pixel(int new_y) {set_y_in_pixel(Fraction(new_y));};
 
         // Scale plan
@@ -412,11 +611,35 @@ namespace scls {
         // Returns the y of the object in scale
         Fraction y_in_scale() {if(a_transformation_updated)calculate_transformation();return a_transformation.get()->y_in_scale();};
         // Setters
-        inline void set_height_in_scale(Fraction new_height) {if(a_height == new_height && a_last_height_definition == _Size_Definition::Scale_Size)return;a_height=new_height;a_last_height_definition=_Size_Definition::Scale_Size;a_transformation_updated=true;};
+        inline void set_height_in_scale(Fraction new_height) {
+            if(current_style().height_to_apply() == new_height && current_style().height_definition_to_apply() == _Size_Definition::Scale_Size) return;
+            current_style().height = new_height;
+            current_style().height_definition = _Size_Definition::Scale_Size;
+            current_style().height_modified = true;
+            a_transformation_updated=true;
+        };
         inline void set_position_in_scale(Fraction new_x, Fraction new_y) {set_x_in_scale(new_x);set_y_in_scale(new_y);};
-        inline void set_width_in_scale(Fraction new_width) {if(a_width == new_width && a_last_width_definition == _Size_Definition::Scale_Size)return;a_width=new_width;a_last_width_definition=_Size_Definition::Scale_Size;a_transformation_updated=true;};
-        inline void set_x_in_scale(Fraction new_x) {if(a_x == new_x && a_last_x_definition == _Size_Definition::Scale_Size)return;a_x=new_x;a_last_x_definition=_Size_Definition::Scale_Size;a_transformation_updated=true;};
-        inline void set_y_in_scale(Fraction new_y) {if(a_y == new_y && a_last_y_definition == _Size_Definition::Scale_Size)return;a_y=new_y;a_last_y_definition=_Size_Definition::Scale_Size;a_transformation_updated=true;};
+        inline void set_width_in_scale(Fraction new_width) {
+            if(current_style().width_to_apply() == new_width && current_style().width_definition_to_apply() == _Size_Definition::Scale_Size) return;
+            current_style().width = new_width;
+            current_style().width_definition = _Size_Definition::Scale_Size;
+            current_style().width_modified = true;
+            a_transformation_updated = true;
+        };
+        inline void set_x_in_scale(Fraction new_x) {
+            if(current_style().x_to_apply() == new_x && current_style().x_definition_to_apply() == _Size_Definition::Scale_Size) return;
+            current_style().x = new_x;
+            current_style().x_definition = _Size_Definition::Scale_Size;
+            current_style().x_modified = true;
+            a_transformation_updated=true;
+        };
+        inline void set_y_in_scale(Fraction new_y) {
+            if(current_style().y_to_apply() == new_y && current_style().y_definition_to_apply() == _Size_Definition::Scale_Size) return;
+            current_style().y = new_y;
+            current_style().y_definition = _Size_Definition::Scale_Size;
+            current_style().y_modified = true;
+            a_transformation_updated=true;
+        };
 
         // Move precisely the object
         // Move the object at the bottom of its parent
@@ -451,6 +674,20 @@ namespace scls {
 
         //*********
         //
+        // Style handling
+        //
+        //*********
+
+        // Main style of the object
+        std::shared_ptr<GUI_Style> a_main_style = std::make_shared<GUI_Style>();
+        // Overflighted style of the object
+        std::shared_ptr<GUI_Style> a_overflighted_style = std::make_shared<GUI_Style>(a_main_style, false);
+
+        // Current applied style
+        std::shared_ptr<GUI_Style> a_current_style = a_main_style;
+
+        //*********
+        //
         // Transform handling
         //
         //*********
@@ -477,49 +714,14 @@ namespace scls {
 
         //*********
         //
-        // Border handling
-        //
-        //*********
-
-        // Width of the border
-        glm::vec4 a_border_width = glm::vec4(0, 0, 0, 0);
-
-        //*********
-        //
         // Input handling
         //
         //*********
 
         // The state of focusing of the object (0 == focused, > 0 == child focused)
         short a_focusing_state = -1;
-        // Id of the overflighted cursor
-        unsigned long a_overflighted_cursor = GLFW_ARROW_CURSOR;
         // The state of overflighting of the object (0 == overflighted, > 0 == child overflighted)
         short a_overflighting_state = -1;
-
-        //*********
-        //
-        // Transform handling
-        //
-        //*********
-
-        // Last transformations
-        // Last type of definition of the height
-        _Size_Definition a_last_height_definition = _Size_Definition::Pixel_Size;
-        // Last type of definition of the width
-        _Size_Definition a_last_width_definition = _Size_Definition::Pixel_Size;
-        // Last type of definition of the x
-        _Size_Definition a_last_x_definition = _Size_Definition::Scale_Size;
-        // Last type of definition of the y
-        _Size_Definition a_last_y_definition = _Size_Definition::Scale_Size;
-        // Height position of the object
-        Fraction a_height = Fraction(1);
-        // Width position of the object
-        Fraction a_width = Fraction(1);
-        // X position of the object
-        Fraction a_x = Fraction(0);
-        // Y position of the object
-        Fraction a_y = Fraction(0);
     };
 
     //*********
@@ -592,8 +794,10 @@ namespace scls {
         //
         //*********
 
+        // Loads the object from XML
+        void __load_from_xml(std::vector<_Text_Balise_Part> &cutted, std::string event = "");
         // Handle an attribute from XML
-        virtual void set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, const std::vector<_Text_Balise_Part>& cutted, int& i);
+        virtual void set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, std::string event, const std::vector<_Text_Balise_Part>& cutted, int& i);
 
         //*********
         //
@@ -914,7 +1118,7 @@ namespace scls {
         //*********
 
         // Handle an attribute from XML
-        virtual void set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, const std::vector<_Text_Balise_Part>& cutted, int& i);
+        virtual void set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, std::string event, const std::vector<_Text_Balise_Part>& cutted, int& i);
     private:
         //*********
         //
