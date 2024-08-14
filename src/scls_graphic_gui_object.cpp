@@ -28,22 +28,10 @@ namespace scls {
     // Most basic __GUI_Transformation constructor
     __GUI_Transformation::__GUI_Transformation(unsigned int window_height, unsigned int window_width, std::shared_ptr<__GUI_Transformation> parent) : a_window_height(window_height), a_window_width(window_width), a_parent(parent) {}
 
-    // Calculate the transformation
-    void __GUI_Transformation::calculate_transformation() {
+    // Calculate the position of the transformation
+    void __GUI_Transformation::calculate_position() {
         Fraction divisor_x = Fraction(1, window_width());
         Fraction divisor_y = Fraction(1, window_height());
-
-        // Calculate the real height with the pixel perfect system
-        a_height_in_adapted_absolute_scale = divisor_y * height_in_pixel();
-        a_height_in_adapted_scale = a_height_in_adapted_absolute_scale;
-        if(parent() != 0) a_height_in_adapted_scale /= parent()->height_in_adapted_absolute_scale();
-        a_height_in_adapted_scale -= divisor_y / 2;
-
-        // Calculate the real width with the pixel perfect system
-        a_width_in_adapted_absolute_scale = divisor_x * width_in_pixel();
-        a_width_in_adapted_scale = a_width_in_adapted_absolute_scale;
-        if(parent() != 0) a_width_in_adapted_scale /= parent()->width_in_adapted_absolute_scale();
-        a_width_in_adapted_scale -= divisor_x / 2;
 
         a_x_in_adapted_absolute_scale = divisor_x * x_in_absolute_pixel() * 2 + divisor_x / 4;
         a_y_in_adapted_absolute_scale = divisor_y * y_in_absolute_pixel() * 2 + divisor_y / 4;
@@ -60,6 +48,43 @@ namespace scls {
         // Apply the local transformations
         a_object_y_maximum *= one_pixel_height_in_scale();
         a_object_y_minimum *= one_pixel_height_in_scale();
+    }
+
+    // Calculate the size of the transformation
+    void __GUI_Transformation::calculate_size() {
+        Fraction divisor_x = Fraction(1, window_width());
+        Fraction divisor_y = Fraction(1, window_height());
+
+        // Calculate the real height with the pixel perfect system
+        a_height_in_adapted_absolute_scale = divisor_y * height_in_pixel();
+        a_height_in_adapted_scale = a_height_in_adapted_absolute_scale;
+        if(parent() != 0) a_height_in_adapted_scale /= parent()->height_in_adapted_absolute_scale();
+        a_height_in_adapted_scale -= divisor_y / 2;
+
+        // Calculate the real width with the pixel perfect system
+        a_width_in_adapted_absolute_scale = divisor_x * width_in_pixel();
+        a_width_in_adapted_scale = a_width_in_adapted_absolute_scale;
+        if(parent() != 0) a_width_in_adapted_scale /= parent()->width_in_adapted_absolute_scale();
+        a_width_in_adapted_scale -= divisor_x / 2;
+
+        // Calculate the y minimum and maximum scale
+        a_object_y_maximum = object_absolute_y_last_extremum();
+        a_object_y_minimum = object_absolute_y_first_extremum();
+        if(parent() != 0) {
+            a_object_y_maximum -= y_in_absolute_pixel();
+            a_object_y_minimum -= y_in_absolute_pixel();
+        }
+        // Apply the local transformations
+        a_object_y_maximum *= one_pixel_height_in_scale();
+        a_object_y_minimum *= one_pixel_height_in_scale();
+    }
+
+    // Calculate the transformation
+    void __GUI_Transformation::calculate_transformation() {
+        // Calculate the size
+        calculate_size();
+        // Calculate the position
+        calculate_position();
     }
 
     //*********
@@ -399,95 +424,69 @@ namespace scls {
     //*********
 
     // Loads the object from XML
-    void GUI_Object::__load_from_xml(std::vector<_Text_Balise_Part> &cutted, std::string event) {
+    void GUI_Object::__load_from_xml(XML_Text& text, std::shared_ptr<__GUI_Page_Loader> loader, std::string event) {
         // Parse the content
-        for(int i = 0;i<static_cast<int>(cutted.size());i++) {
-            std::string content = formatted_balise(cutted[i].content); if(content == "") continue;
-            std::string current_balise_name = balise_name(content);
+        for(int i = 0;i<static_cast<int>(text.sub_texts().size());i++) {
+            XML_Text& current_text = text.sub_texts()[i];
+            std::string current_balise_name = current_text.xml_balise_name();
 
             // Apply the XML balise
-            std::vector<std::string> attributes = cut_balise_by_attributes_out_of(content, "\"");
             if(current_balise_name == "when") {
                 // Load the object look at a certain even
                 std::vector<_Text_Balise_Part> final_content = std::vector<_Text_Balise_Part>();
                 std::string current_event = "";
                 // Get each attributes
-                for(int j = 0;j<static_cast<int>(attributes.size());j++) {
-                    std::string current_attribute_name = attribute_name(attributes[j]);
-                    std::string value = attribute_value(attributes[j]);
-                    if(value.size() > 0) {
-                        // Remove the "
-                        if(value[0] == '\"') value = value.substr(1, value.size() - 1);
-                        if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
-                    }
+                for(int j = 0;j<static_cast<int>(current_text.xml_balise_attributes().size());j++) {
+                    XML_Attribute& current_attribute = current_text.xml_balise_attributes()[j];
+                    std::string& current_attribute_name = current_attribute.name;
+                    std::string& current_attribute_value = current_attribute.value;
 
                     if(current_attribute_name == "event") {
                         // Value of the event
-                        current_event = value;
+                        current_event = current_attribute_value;
                     }
-                }
-                // Get the content of the text
-                i++;
-                while(i < cutted.size()) {
-                    std::string current_content = cutted[i].content;
-                    if(current_content[0] == '<') {
-                        std::string next_balise = formatted_balise(current_content);
-                        std::string next_balise_name = balise_name(next_balise);
-
-                        if(next_balise_name == current_balise_name) break;
-                        else final_content.push_back(cutted[i]);
-                    }
-                    else {
-                        final_content.push_back(cutted[i]);
-                    }
-
-                    i++;
                 }
 
                 if(event == "") {
                     // Apply the attribute for the event
-                    __load_from_xml(final_content, current_event);
-                    std::cout << "When " << current_event << " " << final_content.size() << std::endl;
+                    __load_from_xml(current_text, loader, current_event);
                 }
                 else {
                     print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Can't load an event inside an another event with XML.");
                 }
             }
             else if(current_balise_name != "parent") {
-                set_xml_attribute(current_balise_name, attributes, event, cutted, i);
+                set_xml_attribute(current_text, event, loader, i);
             }
         }
     }
 
     // Handle an attribute from XML
-    void GUI_Object::set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, std::string event, const std::vector<_Text_Balise_Part>& cutted, int& i) {
+    void GUI_Object::set_xml_attribute(XML_Text& text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i) {
+        std::string xml_attribute_name = text.xml_balise_name();
         if(xml_attribute_name == "background_color") {
             // Load the background color
             Color background_color(0, 0, 0, 255);
-            for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
-                std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
-                std::string value = attribute_value(xml_attribute_value[j]);
-                if(value.size() > 0) {
-                    // Remove the "
-                    if(value[0] == '\"') value = value.substr(1, value.size() - 1);
-                    if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
-                }
+            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+                std::string current_attribute_name = current_attribute.name;
+                std::string current_attribute_value = current_attribute.value;
 
                 if(current_attribute_name == "red") {
                     // Red part of the color
-                    background_color.set_red(std::stoi(value));
+                    background_color.set_red(std::stoi(current_attribute_value));
                 }
                 else if(current_attribute_name == "green") {
                     // Red part of the color
-                    background_color.set_green(std::stoi(value));
+                    background_color.set_green(std::stoi(current_attribute_value));
                 }
                 else if(current_attribute_name == "blue") {
                     // Red part of the color
-                    background_color.set_blue(std::stoi(value));
+                    background_color.set_blue(std::stoi(current_attribute_value));
                 }
                 else if(current_attribute_name == "alpha") {
                     // Alpha part of the color
-                    background_color.set_alpha(std::stoi(value));
+                    background_color.set_alpha(std::stoi(current_attribute_value));
                 }
             }
             set_background_color(background_color);
@@ -499,42 +498,38 @@ namespace scls {
             Fraction border_left = Fraction(0);
             Fraction border_right = Fraction(0);
             Fraction border_top = Fraction(0);
-            for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
-                std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
-                std::string value = attribute_value(xml_attribute_value[j]);
-                if(value.size() > 0) {
-                    // Remove the "
-                    if(value[0] == '\"') value = value.substr(1, value.size() - 1);
-                    if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
-                }
+            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+                std::string current_attribute_name = current_attribute.name;
+                std::string current_attribute_value = current_attribute.value;
 
                 if(current_attribute_name == "red") {
                     // Red part of the color
-                    border_color.set_red(std::stoi(value));
+                    border_color.set_red(std::stoi(current_attribute_value));
                 }
                 else if(current_attribute_name == "green") {
                     // Red part of the color
-                    border_color.set_green(std::stoi(value));
+                    border_color.set_green(std::stoi(current_attribute_value));
                 }
                 else if(current_attribute_name == "blue") {
                     // Red part of the color
-                    border_color.set_blue(std::stoi(value));
+                    border_color.set_blue(std::stoi(current_attribute_value));
                 }
                 else if(current_attribute_name == "bottom") {
                     // Bottom width of the border
-                    border_bottom = Fraction::from_std_string(value);
+                    border_bottom = Fraction::from_std_string(current_attribute_value);
                 }
                 else if(current_attribute_name == "left") {
                     // Left width of the border
-                    border_left = Fraction::from_std_string(value);
+                    border_left = Fraction::from_std_string(current_attribute_value);
                 }
                 else if(current_attribute_name == "right") {
                     // Right width of the border
-                    border_right = Fraction::from_std_string(value);
+                    border_right = Fraction::from_std_string(current_attribute_value);
                 }
                 else if(current_attribute_name == "top") {
                     // Top width of the border
-                    border_top = Fraction::from_std_string(value);
+                    border_top = Fraction::from_std_string(current_attribute_value);
                 }
             }
             set_border_color(border_color);
@@ -544,18 +539,14 @@ namespace scls {
             if(event == "overflighted") {
                 // Load the cursor of the object when overflighted
                 unsigned long cursor = GLFW_ARROW_CURSOR;
-                for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
-                    std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
-                    std::string value = attribute_value(xml_attribute_value[j]);
-                    if(value.size() > 0) {
-                        // Remove the "
-                        if(value[0] == '\"') value = value.substr(1, value.size() - 1);
-                        if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
-                    }
+                for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
+                    XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+                    std::string current_attribute_name = current_attribute.name;
+                    std::string current_attribute_value = current_attribute.value;
 
                     if(current_attribute_name == "type") {
                         // Value of the cursor
-                        if(value == "pointing_hand_cursor") { cursor = GLFW_HAND_CURSOR; }
+                        if(current_attribute_value == "pointing_hand_cursor") { cursor = GLFW_HAND_CURSOR; }
                     }
                 }
                 // Set the cursor
@@ -566,23 +557,19 @@ namespace scls {
             // Load the height of the object
             Fraction height = Fraction(1);
             _Size_Definition height_type = _Size_Definition::Scale_Size;
-            for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
-                std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
-                std::string value = attribute_value(xml_attribute_value[j]);
-                if(value.size() > 0) {
-                    // Remove the "
-                    if(value[0] == '\"') value = value.substr(1, value.size() - 1);
-                    if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
-                }
+            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+                std::string current_attribute_name = current_attribute.name;
+                std::string current_attribute_value = current_attribute.value;
 
                 if(current_attribute_name == "value") {
                     // Value of the height
-                    height = Fraction::from_std_string(value);
+                    height = Fraction::from_std_string(current_attribute_value);
                 }
                 else if(current_attribute_name == "type") {
                     //Type of the height
-                    if(value == "scale") height_type = _Size_Definition::Scale_Size;
-                    else if(value == "pixel") height_type = _Size_Definition::Pixel_Size;
+                    if(current_attribute_value == "scale") height_type = _Size_Definition::Scale_Size;
+                    else if(current_attribute_value == "pixel") height_type = _Size_Definition::Pixel_Size;
                 }
             }
             // Set the height
@@ -593,26 +580,22 @@ namespace scls {
             // Load the texture position
             Alignment_Texture texture_alignment = Alignment_Texture::T_Fill;
             std::string texture_name = "";
-            for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
-                std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
-                std::string value = attribute_value(xml_attribute_value[j]);
-                if(value.size() > 0) {
-                    // Remove the "
-                    if(value[0] == '\"') value = value.substr(1, value.size() - 1);
-                    if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
-                }
+            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+                std::string current_attribute_name = current_attribute.name;
+                std::string current_attribute_value = current_attribute.value;
 
                 if(current_attribute_name == "name") {
                     // Value of the name
-                    texture_name = value;
+                    texture_name = current_attribute_value;
                 }
                 else if(current_attribute_name == "alignment") {
                     // Alignment of the texture
-                    if(value == "fill") texture_alignment = Alignment_Texture::T_Fill;
-                    else if(value == "fit") texture_alignment = Alignment_Texture::T_Fit;
-                    else if(value == "fit_horizontally") texture_alignment = Alignment_Texture::T_Fit_Horizontally;
-                    else if(value == "fit_vertically") texture_alignment = Alignment_Texture::T_Fit_Vertically;
-                    else if(value == "user_defined") texture_alignment = Alignment_Texture::T_User_Defined;
+                    if(current_attribute_value == "fill") texture_alignment = Alignment_Texture::T_Fill;
+                    else if(current_attribute_value == "fit") texture_alignment = Alignment_Texture::T_Fit;
+                    else if(current_attribute_value == "fit_horizontally") texture_alignment = Alignment_Texture::T_Fit_Horizontally;
+                    else if(current_attribute_value == "fit_vertically") texture_alignment = Alignment_Texture::T_Fit_Vertically;
+                    else if(current_attribute_value == "user_defined") texture_alignment = Alignment_Texture::T_User_Defined;
                 }
             }
             // Set the goot texture
@@ -623,23 +606,19 @@ namespace scls {
             // Load the width of the object
             Fraction width = Fraction(1);
             _Size_Definition width_type = _Size_Definition::Scale_Size;
-            for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
-                std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
-                std::string value = attribute_value(xml_attribute_value[j]);
-                if(value.size() > 0) {
-                    // Remove the "
-                    if(value[0] == '\"') value = value.substr(1, value.size() - 1);
-                    if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
-                }
+            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+                std::string current_attribute_name = current_attribute.name;
+                std::string current_attribute_value = current_attribute.value;
 
                 if(current_attribute_name == "value") {
                     // Value of the width
-                    width = Fraction::from_std_string(value);
+                    width = Fraction::from_std_string(current_attribute_value);
                 }
                 else if(current_attribute_name == "type") {
                     //Type of the width
-                    if(value == "scale") width_type = _Size_Definition::Scale_Size;
-                    else if(value == "pixel") width_type = _Size_Definition::Pixel_Size;
+                    if(current_attribute_value == "scale") width_type = _Size_Definition::Scale_Size;
+                    else if(current_attribute_value == "pixel") width_type = _Size_Definition::Pixel_Size;
                 }
             }
             // Set the width
@@ -648,61 +627,110 @@ namespace scls {
         }
         else if(xml_attribute_name == "x") {
             // Load the X position
+            unsigned char attachment_horizontal = 0;
+            Fraction attachment_horizontal_offset = Fraction(0);
+            std::string attached_object = "";
             Fraction x = Fraction(1);
             _Size_Definition x_type = _Size_Definition::Scale_Size;
-            for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
-                std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
-                std::string value = attribute_value(xml_attribute_value[j]);
-                if(value.size() > 0) {
-                    // Remove the "
-                    if(value[0] == '\"') value = value.substr(1, value.size() - 1);
-                    if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
-                }
+            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+                std::string current_attribute_name = current_attribute.name;
+                std::string current_attribute_value = current_attribute.value;
 
                 if(current_attribute_name == "value") {
                     // Value of the width
-                    x = Fraction::from_std_string(value);
+                    x = Fraction::from_std_string(current_attribute_value);
                 }
                 else if(current_attribute_name == "type") {
                     //Type of the width
-                    if(value == "scale") x_type = _Size_Definition::Scale_Size;
-                    else if(value == "pixel") x_type = _Size_Definition::Pixel_Size;
-                    else if(value == "object_scale") x_type = _Size_Definition::Object_Scale_Size;
+                    if(current_attribute_value == "scale") x_type = _Size_Definition::Scale_Size;
+                    else if(current_attribute_value == "pixel") x_type = _Size_Definition::Pixel_Size;
+                    else if(current_attribute_value == "object_scale") x_type = _Size_Definition::Object_Scale_Size;
+                }
+                else if(current_attribute_name == "attachment" || current_attribute_name == "attach") {
+                    // Use the attachment
+                    if(current_attribute_value == "left") attachment_horizontal = 1;
+                    else if(current_attribute_value == "right") attachment_horizontal = 2;
+                }
+                else if(current_attribute_name == "offset") {
+                    // Add an attachment offset
+                    attachment_horizontal_offset = Fraction::from_std_string(current_attribute_value);
                 }
             }
-            // Set the x
-            if(x_type == _Size_Definition::Object_Scale_Size) set_x_in_object_scale(x);
-            else if(x_type == _Size_Definition::Pixel_Size) set_x_in_pixel(x.to_double());
-            else set_x_in_scale(x);
+            if(attachment_horizontal == 0) {
+                // Set the x
+                if(x_type == _Size_Definition::Object_Scale_Size) set_x_in_object_scale(x);
+                else if(x_type == _Size_Definition::Pixel_Size) set_x_in_pixel(x.to_double());
+                else set_x_in_scale(x);
+            }
+            else {
+                // Attach the object
+                std::shared_ptr<__GUI_Object_Core> other_object;
+                if(attached_object != "") other_object = loader.get()->created_objects[attached_object];
+                if(attachment_horizontal == 1) {
+                    if(other_object.get() == 0) attach_left_in_parent(attachment_horizontal_offset.to_double());
+                    // else attach_bottom_of_object_in_parent(other_object, attachment_horizontal_offset);
+                }
+                else if(attachment_horizontal == 2) {
+                    if(other_object.get() == 0) attach_right_in_parent(attachment_horizontal_offset.to_double());
+                    // else attach_bottom_of_object_in_parent(other_object, attachment_horizontal_offset);
+                } //*/
+            }
         }
         else if(xml_attribute_name == "y") {
             // Load the Y position
+            unsigned char attachment_vertical = 0;
+            Fraction attachment_vertical_offset = Fraction(0);
+            std::string attached_object = "";
             Fraction y = Fraction(1);
             _Size_Definition y_type = _Size_Definition::Scale_Size;
-            for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
-                std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
-                std::string value = attribute_value(xml_attribute_value[j]);
-                if(value.size() > 0) {
-                    // Remove the "
-                    if(value[0] == '\"') value = value.substr(1, value.size() - 1);
-                    if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
-                }
+            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+                std::string current_attribute_name = current_attribute.name;
+                std::string current_attribute_value = current_attribute.value;
 
                 if(current_attribute_name == "value") {
                     // Value of the width
-                    y = Fraction::from_std_string(value);
+                    y = Fraction::from_std_string(current_attribute_value);
                 }
                 else if(current_attribute_name == "type") {
-                    //Type of the width
-                    if(value == "scale") y_type = _Size_Definition::Scale_Size;
-                    else if(value == "pixel") y_type = _Size_Definition::Pixel_Size;
-                    else if(value == "object_scale") y_type = _Size_Definition::Object_Scale_Size;
+                    // Type of the width
+                    if(current_attribute_value == "scale") y_type = _Size_Definition::Scale_Size;
+                    else if(current_attribute_value == "pixel") y_type = _Size_Definition::Pixel_Size;
+                    else if(current_attribute_value == "object_scale") y_type = _Size_Definition::Object_Scale_Size;
+                }
+                else if(current_attribute_name == "attachment" || current_attribute_name == "attach") {
+                    // Use the attachment
+                    if(current_attribute_value == "top") attachment_vertical = 1;
+                    else if(current_attribute_value == "bottom")attachment_vertical = 2;
+                }
+                else if(current_attribute_name == "offset") {
+                    // Add an attachment offset
+                    attachment_vertical_offset = Fraction::from_std_string(current_attribute_value);
+                }
+                else if(current_attribute_name == "attached_object" || current_attribute_name == "attached_object_name") {
+                    // Add an attachment object
+                    attached_object = current_attribute_value;
                 }
             }
-            // Set the y
-            if(y_type == _Size_Definition::Object_Scale_Size) set_y_in_object_scale(y);
-            else if(y_type == _Size_Definition::Pixel_Size) set_y_in_pixel(y.to_double());
-            else set_y_in_scale(y);
+            if(attachment_vertical == 0) {
+                // Set the y
+                if(y_type == _Size_Definition::Object_Scale_Size) set_y_in_object_scale(y);
+                else if(y_type == _Size_Definition::Pixel_Size) set_y_in_pixel(y.to_double());
+                else set_y_in_scale(y);
+            }
+            else {
+                // Attach the object
+                std::shared_ptr<__GUI_Object_Core> other_object;
+                if(attached_object != "") other_object = loader.get()->created_objects[attached_object];
+                if(attachment_vertical == 1) {
+                    if(other_object.get() == 0) attach_top_in_parent(attachment_vertical_offset);
+                }
+                else if(attachment_vertical == 2) {
+                    if(other_object.get() == 0) attach_bottom_in_parent(attachment_vertical_offset);
+                    else attach_bottom_of_object_in_parent(other_object, attachment_vertical_offset);
+                }
+            }
         }
     }
 
@@ -718,6 +746,54 @@ namespace scls {
 
         // Create the new transformation
         last_transformation_shared_ptr() = transformation_shared_ptr();
+        __create_new_transformation(last_transformation_shared_ptr());
+
+        // Calculate the transformation
+        _apply_calculate_transformation(transformation_shared_ptr());
+
+        a_transformation_updated = false;
+        transformation()->calculate_transformation();
+
+        // Check for the attachment horizontal
+        if(a_transform_attachment.attachment_horizontal_type == 1) {
+            __move_left_in_parent(a_transform_attachment.attachment_horizontal_offset.to_double());
+            _apply_calculate_transformation(transformation_shared_ptr());
+            transformation()->calculate_position();
+        }
+        else if(a_transform_attachment.attachment_horizontal_type == 2) {
+            __move_right_in_parent(a_transform_attachment.attachment_horizontal_offset.to_double());
+            _apply_calculate_transformation(transformation_shared_ptr());
+            transformation()->calculate_position();
+        }
+
+        // Check for the attachment vertical
+        if(a_transform_attachment.attachment_vertical_type == 1) {
+            __move_top_in_parent(a_transform_attachment.attachment_vertical_offset.to_double());
+            _apply_calculate_transformation(transformation_shared_ptr());
+            transformation()->calculate_position();
+        }
+        else if(a_transform_attachment.attachment_vertical_type == 2) {
+            __move_bottom_in_parent(a_transform_attachment.attachment_vertical_offset.to_double());
+            _apply_calculate_transformation(transformation_shared_ptr());
+            transformation()->calculate_position();
+        }
+        else if(a_transform_attachment.attachment_vertical_type == 3) {
+            __move_top_of_object_in_parent(a_transform_attachment.attached_object, a_transform_attachment.attachment_vertical_offset.to_double());
+            _apply_calculate_transformation(transformation_shared_ptr());
+            transformation()->calculate_position();
+        }
+        else if(a_transform_attachment.attachment_vertical_type == 4) {
+            __move_bottom_of_object_in_parent(a_transform_attachment.attached_object, a_transform_attachment.attachment_vertical_offset.to_double());
+            _apply_calculate_transformation(transformation_shared_ptr());
+            transformation()->calculate_position();
+        }
+
+        // Apply to children
+        if(with_children) {for(int i = 0;i<static_cast<int>(a_children.size());i++) a_children[i].get()->after_resizing();}
+    }
+
+    // Create the new transformation
+    void GUI_Object::__create_new_transformation(std::shared_ptr<__GUI_Transformation> last_transformation_to_use) {
         std::shared_ptr<__GUI_Transformation> parent_transformation;
         if(parent() != 0) {
             parent()->calculate_transformation(false, false);
@@ -728,16 +804,7 @@ namespace scls {
         transformation()->parent_shared_ptr() = parent_transformation;
         transformation()->set_window_height(window_struct().window_height());
         transformation()->set_window_width(window_struct().window_width());
-
-        // Calculate the transformation
-        _apply_calculate_transformation(transformation_shared_ptr());
-
-        a_transformation_updated = false;
-        transformation()->calculate_transformation();
-
-        // Apply to children
-        if(with_children) {for(int i = 0;i<static_cast<int>(a_children.size());i++) a_children[i].get()->after_resizing();}
-    }
+    };
 
     // Delete the children of an object
     void GUI_Object::delete_children() { children().clear(); }
@@ -860,6 +927,7 @@ namespace scls {
         a_scroller_children.get()->set_width_in_scale(Fraction(1));
         a_scroller_children.get()->move_left_in_parent(1);
         a_scroller_children.get()->move_top_in_parent(1);
+        a_created_objects_parent = a_scroller_children;
     }
 
     // GUI_Scroller destructor
@@ -879,7 +947,7 @@ namespace scls {
 
     // Check the browser scroller
     void GUI_Scroller::check_scroller(bool reset) {
-        int last_y_position = (a_scroller_children->y_in_pixel() + a_scroller_children->height_in_pixel()) - a_scroller_children->transformation()->parent()->height_in_pixel();
+        int last_y_position = (a_scroller_children.get()->last_transformation()->y_in_pixel() + a_scroller_children.get()->last_transformation()->height_in_pixel()) - (a_scroller_children.get()->last_transformation()->parent()->height_in_pixel());
         GUI_Object::after_resizing();
         Fraction tallest_point = Fraction(0);
         for(int i = 0;i<static_cast<int>(a_scroller_children->children().size());i++) {
@@ -892,9 +960,11 @@ namespace scls {
         a_scroller_children->move_top_in_parent(1);
 
         // Calculate according to the last position
+        int children_height = static_cast<int>(a_scroller_children->height_in_pixel());
+        int height = static_cast<int>(height_in_pixel());
         if(!reset) {
-            if(last_y_position >= 0) {
-                if(last_y_position < static_cast<int>(a_scroller_children->height_in_pixel()) - static_cast<int>(height_in_pixel())) {
+            if(last_y_position >= 1) {
+                if(height >= children_height || last_y_position < children_height - height) {
                     a_scroller_children->move_top_in_parent(-last_y_position);
                 }
                 else {
@@ -902,6 +972,8 @@ namespace scls {
                 }
             }
         }
+        calculate_transformation(true, true);
+
         GUI_Object::after_resizing();
     }
 
@@ -915,14 +987,16 @@ namespace scls {
     void GUI_Scroller::scroll_y(Fraction movement) {
         if(a_scroller_children->height_in_scale() > 1) {
             movement *= Fraction(1, 30);
-            Fraction final_pos = a_scroller_children->y_in_scale() - movement;
-            if(final_pos > 0) final_pos = Fraction(0);
+            Fraction final_pos = (a_scroller_children->y_in_scale()) - movement;
+            Fraction max_pos = a_scroller_children.get()->one_pixel_height_in_scale() * -1;
+            if(final_pos > max_pos) final_pos = max_pos;
             if(final_pos < a_scroller_children->height_in_scale() * Fraction(-1) + Fraction(1)) final_pos = a_scroller_children->height_in_scale() * Fraction(-1) + Fraction(1);
             a_scroller_children->set_y_in_scale(final_pos);
         }
         else {
-            a_scroller_children->move_top_in_parent();
+            a_scroller_children->move_top_in_parent(1);
         }
+        calculate_transformation(true, true);
         GUI_Object::after_resizing();
     }
 
@@ -1000,60 +1074,35 @@ namespace scls {
     //*********
 
     // Handle an attribute from XML
-    void GUI_Text::set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, std::string event, const std::vector<_Text_Balise_Part>& cutted, int& i) {
+    void GUI_Text::set_xml_attribute(XML_Text& text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i) {
+        std::string xml_attribute_name = text.xml_balise_name();
         if(xml_attribute_name == "content") {
-            // Load the background color
-            std::string final_content = "";
             // Get each attributes
-            for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
-                std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
-                std::string value = attribute_value(xml_attribute_value[j]);
-                if(value.size() > 0) {
-                    // Remove the "
-                    if(value[0] == '\"') value = value.substr(1, value.size() - 1);
-                    if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
-                }
+            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+                std::string current_attribute_name = current_attribute.name;
+                std::string current_attribute_value = current_attribute.value;
 
                 // Load the font size of the text
                 if(current_attribute_name == "font_size") {
                     // Value of the font size
-                    set_font_size(Fraction::from_std_string(value).to_double());
+                    set_font_size(Fraction::from_std_string(current_attribute_value).to_double());
                 }
             }
             // Get the content of the text
-            i++;
-            while(i < cutted.size()) {
-                std::string current_content = cutted[i].content;
-                if(current_content[0] == '<') {
-                    std::string current_balise = formatted_balise(current_content);
-                    std::string current_balise_name = balise_name(current_balise);
-
-                    if(current_balise_name == "content") break;
-                    else final_content += current_balise;
-                }
-                else {
-                    final_content += current_content;
-                }
-
-                i++;
-            }
-            set_text(final_content);
+            set_text(to_utf_8_code_point(text.text()));
         }
         else if(xml_attribute_name == "font_size") {
             // Load the font size of the text
             Fraction final_font_size = Fraction(1);
-            for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
-                std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
-                std::string value = attribute_value(xml_attribute_value[j]);
-                if(value.size() > 0) {
-                    // Remove the "
-                    if(value[0] == '\"') value = value.substr(1, value.size() - 1);
-                    if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
-                }
+            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+                std::string current_attribute_name = current_attribute.name;
+                std::string current_attribute_value = current_attribute.value;
 
                 if(current_attribute_name == "value") {
                     // Value of the height
-                    final_font_size = Fraction::from_std_string(value);
+                    final_font_size = Fraction::from_std_string(current_attribute_value);
                 }
             }
             // Set the font size
@@ -1061,7 +1110,7 @@ namespace scls {
         }
         else {
             // Load a lowest level attribute
-            __GUI_Text_Metadatas::set_xml_attribute(xml_attribute_name, xml_attribute_value, event, cutted, i);
+            __GUI_Text_Metadatas::set_xml_attribute(text, event, loader, i);
         }
     }
 
@@ -1814,9 +1863,7 @@ namespace scls {
     }
 
     // GUI_File_Explorer destructor
-    GUI_File_Explorer::~GUI_File_Explorer() {
-
-    }
+    GUI_File_Explorer::~GUI_File_Explorer() {}
 
     //*********
     //
@@ -1828,7 +1875,7 @@ namespace scls {
     GUI_Page::GUI_Page(_Window_Advanced_Struct* window_struct, std::string name) : Object(window_struct, name) {
         set_scale(glm::vec3(2, 2, 1));
 
-        a_parent_object = std::make_shared<GUI_Main_Object>((*reinterpret_cast<_Window_Advanced_Struct*>(window_struct)), "main");
+        a_parent_object = std::make_shared<GUI_Main_Object>((*reinterpret_cast<_Window_Advanced_Struct*>(window_struct)), "main_" + name);
         a_parent_object.get()->set_position_in_pixel(0, 0);
         a_parent_object.get()->set_height_in_scale(scls::Fraction(1));
         a_parent_object.get()->set_width_in_scale(scls::Fraction(1));
@@ -1849,30 +1896,31 @@ namespace scls {
     };
 
     // Handle an attribute from XML
-    void GUI_Page::set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, __XML_Loader& loader, const std::vector<_Text_Balise_Part>& cutted, int& i) {
-        if(xml_attribute_name == "content") {
+    void GUI_Page::set_xml_attribute(XML_Text& text, std::shared_ptr<__XML_Loader> loader_shared_ptr, int& i) {
+        __XML_Loader& loader = *loader_shared_ptr.get();
+        if(text.xml_balise_name() == "content") {
             // Load the content of the page
             std::string src = "";
-            for(int j = 0;j<static_cast<int>(xml_attribute_value.size());j++) {
-                std::string current_attribute_name = attribute_name(xml_attribute_value[j]);
-                std::string value = attribute_value(xml_attribute_value[j]);
-                if(value.size() > 0) {
-                    // Remove the "
-                    if(value[0] == '\"') value = value.substr(1, value.size() - 1);
-                    if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
-                }
+            bool sub_paged = false;
+            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
+                std::string current_attribute_name = text.xml_balise_attributes()[j].name;
+                std::string current_attribute_value = text.xml_balise_attributes()[j].value;
 
                 if(current_attribute_name == "src") {
                     // Source of the content
-                    src = value;
+                    src = current_attribute_value;
+                }
+                else if(current_attribute_name == "paged" || current_attribute_name == "sub_paged") {
+                    // Set the page as sub-paged
+                    sub_paged = true;
                 }
             }
             // Get the content
             std::string final_path = path_parent(loader.window_file_path) + "/" + src;
-            load_objects_from_xml(read_file(final_path));
+            load_objects_from_xml(format_for_xml(remove_comment_out_of(read_file(final_path), "\"")), sub_paged);
         }
         else {
-            Object::set_xml_attribute(xml_attribute_name, xml_attribute_value, loader, cutted, i);
+            Object::set_xml_attribute(text, loader_shared_ptr, i);
         }
     }
 
@@ -1894,36 +1942,35 @@ namespace scls {
             std::shared_ptr<GUI_Object> to_return = *parent->new_object<GUI_Text>(object_name);
             return to_return;
         }
+        else if(object_type == "text_input") {
+            std::shared_ptr<GUI_Text_Input> to_return = *parent->new_object<GUI_Text_Input>(object_name);
+            return to_return;
+        }
         else if(object_type == "scroller") {
             std::shared_ptr<GUI_Object> to_return = *parent->new_object<GUI_Scroller>(object_name);
+            return to_return;
+        }
+        else if(object_type == "file_explorer") {
+            std::shared_ptr<GUI_Object> to_return = *parent->new_object<GUI_File_Explorer>(object_name);
             return to_return;
         }
         return *parent->new_object<GUI_Object>(object_name);
     };
 
-    // Load an object in a page from XML
-    void GUI_Page::__load_object_from_xml(std::string object_name, std::string object_type, const std::string& content, std::map<std::string, std::shared_ptr<GUI_Object>>& created_objects) {
-        // Parse the content
-        std::vector<_Text_Balise_Part> cutted = cut_string_by_balise_out_of(content, "\"", true);
+    // Loads an object in a page from XML and returns it
+    std::shared_ptr<GUI_Object> GUI_Page::__load_object_from_xml(std::string object_name, std::string object_type, XML_Text& content, std::shared_ptr<__GUI_Page_Loader>& loader) {
         // Search the parent
         GUI_Object* current_parent = parent_object();
-        for(int i = 0;i<static_cast<int>(cutted.size());i++) {
-            std::string content = formatted_balise(cutted[i].content); if(content == "") continue;
-            std::string current_balise_name = balise_name(content);
+        for(int i = 0;i<static_cast<int>(content.sub_texts().size());i++) {
+            XML_Text& current_text = content.sub_texts()[i];
 
-            if(current_balise_name == "parent") {
+            if(current_text.xml_balise_name() == "parent") {
                 // Load the parent
-                std::vector<std::string> attributes = cut_balise_by_attributes_out_of(content, "\"");
-                for(int j = 0;j<static_cast<int>(attributes.size());j++) {
-                    std::string current_attribute_name = attribute_name(attributes[j]);
-                    std::string value = attribute_value(attributes[j]);
-                    if(value.size() > 0) {
-                        // Remove the "
-                        if(value[0] == '\"') value = value.substr(1, value.size() - 1);
-                        if(value.size() > 0 && value[value.size() - 1] == '\"') value = value.substr(0, value.size() - 1);
-                    }
+                for(int j = 0;j<static_cast<int>(current_text.xml_balise_attributes().size());j++) {
+                    XML_Attribute& current_attribute = current_text.xml_balise_attributes()[j];
+                    std::string current_attribute_name = current_attribute.name;
 
-                    if(current_attribute_name == "name") { current_parent = created_objects[value].get(); }
+                    if(current_attribute_name == "name") { current_parent = reinterpret_cast<GUI_Object*>(loader.get()->created_objects[current_attribute.value].get()); }
                 }
                 break;
             }
@@ -1932,69 +1979,49 @@ namespace scls {
 
         // Create the object
         std::shared_ptr<GUI_Object> object = __create_loaded_object_from_type(object_name, object_type, current_parent);
-        created_objects[object_name] = object;
-        object.get()->__load_from_xml(cutted);
+        loader.get()->created_objects[object_name] = object;
+        object.get()->__load_from_xml(content, loader);
+        return object;
     }
 
     // Load objects in a page from XML
-    void GUI_Page::load_objects_from_xml(const std::string& content_to_parse) {
-        const std::string content = format_for_xml(content_to_parse);
-        std::vector<_Text_Balise_Part> cutted = cut_string_by_balise(content, true);
+    void GUI_Page::load_objects_from_xml(const std::string& content_to_parse, bool sub_paged) {
+        XML_Text content = XML_Text(content_to_parse);
 
         // Check each balises
-        std::map<std::string, std::shared_ptr<GUI_Object>> created_objects = std::map<std::string, std::shared_ptr<GUI_Object>>();
-        for(int i = 0;i<static_cast<int>(cutted.size());i++) {
-            std::string content = formatted_balise(cutted[i].content); if(content == "") continue;
-            std::string current_balise_name = balise_name(content);
+        std::shared_ptr<__GUI_Page_Loader> loader = std::make_shared<__GUI_Page_Loader>();
+        for(int i = 0;i<static_cast<int>(content.sub_texts().size());i++) {
+            XML_Text& current_text = content.sub_texts()[i];
+            std::string current_balise_name = current_text.xml_balise_name();
 
-            // Get the content of the object
-            std::string object_content = "";
+            // Add a GUI object
             if(current_balise_name == "gui_object") {
-                i++;
-                while(i < static_cast<int>(cutted.size())) {
-                    std::string current_content = cutted[i].content;
-                    if(current_content[0] == '<') {
-                        std::string parsed_content = formatted_balise(current_content); if(parsed_content == "") { i++;continue; }
-                        std::string parsed_balise_name = balise_name(parsed_content);
-                        if(parsed_balise_name == current_balise_name) break;
-                        object_content += parsed_content;
-                    }
-                    else {
-                        object_content += current_content;
-                    }
-                    i++;
-                }
-            }
-
-            // Add a 3D object
-            if(current_balise_name == "gui_object") {
+                bool must_be_visible = false;
                 std::string object_name = "";
                 std::string object_type = "";
-                std::vector<std::string> attributes = cut_balise_by_attributes(content);
-                for(int j = 0;j<static_cast<int>(attributes.size());j++) {
-                    std::string current_attribute_name = attribute_name(attributes[j]);
+                for(int j = 0;j<static_cast<int>(current_text.xml_balise_attributes().size());j++) {
+                    XML_Attribute& current_attribute = current_text.xml_balise_attributes()[j];
+                    std::string current_attribute_name = current_attribute.name;
                     if(current_attribute_name == "name") {
                         // Get the name of the object
-                        object_name = attribute_value(attributes[j]);
-                        if(object_name.size() > 0) {
-                            // Remove the "
-                            if(object_name[0] == '\"') object_name = object_name.substr(1, object_name.size() - 1);
-                            if(object_name.size() > 0 && object_name[object_name.size() - 1] == '\"') object_name = object_name.substr(0, object_name.size() - 1);
-                        }
+                        object_name = current_attribute.value;
                     }
                     else if(current_attribute_name == "type") {
                         // Get the type of the object
-                        object_type = attribute_value(attributes[j]);
-                        if(object_type.size() > 0) {
-                            // Remove the "
-                            if(object_type[0] == '\"') object_type = object_type.substr(1, object_type.size() - 1);
-                            if(object_type.size() > 0 && object_type[object_type.size() - 1] == '\"') object_type = object_type.substr(0, object_type.size() - 1);
-                        }
+                        object_type = current_attribute.value;
+                    }
+                    else if(current_attribute_name == "visible") {
+                        // Get that the object MUST be visible
+                        must_be_visible = true;
                     }
                 }
 
+                // Create the object
                 if(object_name != "") {
-                    __load_object_from_xml(object_name, object_type, object_content, created_objects);
+                    std::shared_ptr<GUI_Object> object = __load_object_from_xml(object_name, object_type, current_text, loader);
+                    if(sub_paged && !must_be_visible) {
+                        object.get()->set_visible(object.get()->visible() && object.get()->parent() != parent_object());
+                    }
                 }
             }
         }

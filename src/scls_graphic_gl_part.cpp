@@ -221,7 +221,7 @@ namespace scls {
 
         // Bind the data into the GPU memory
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * datas.size(), arr, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * datas.size(), arr, GL_DYNAMIC_DRAW);
 
         if(a_use_ebo) // Bind the EBO if the VBO use them
         {
@@ -442,8 +442,7 @@ namespace scls {
         {
             glDrawElements(GL_TRIANGLES, get_vbo()->get_indices().size(), GL_UNSIGNED_INT, 0);
         }
-        else
-        {
+        else {
             glDrawArrays(GL_TRIANGLES, 0, triangle_number() * 3.0);
         }
     }
@@ -524,8 +523,8 @@ namespace scls {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, color_format, GL_UNSIGNED_BYTE, texture);
         glGenerateMipmap(GL_TEXTURE_2D);
         // glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Good
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Far of the texture
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Near of the texture
         // glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Good
     }
 

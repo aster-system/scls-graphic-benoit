@@ -281,6 +281,15 @@ namespace scls {
         // Return if a file formatted with the window context
         std::string file_formatted(std::string path);
 
+        // Loads a variable
+        inline void load_variable(std::string variable_name, std::string variable_value) {a_loaded_variables[variable_name] = variable_value; }
+        // Returns a loaded variable
+        inline std::string loaded_variable(std::string variable_name) const {
+            try { return a_loaded_variables.at(variable_name); }
+            catch (std::out_of_range) {return "";}
+            return "";
+        };
+
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline std::string assets_directory_path() { return a_assets_directory_path; };
         inline Camera* camera() { return &a_camera; };
@@ -471,6 +480,8 @@ namespace scls {
         Camera a_camera = Camera();
         // Path of the window executable
         const std::string a_exec_path = "";
+        // Loaded variables
+        std::map<std::string, std::string> a_loaded_variables = std::map<std::string, std::string>();
 
         //*********
         //

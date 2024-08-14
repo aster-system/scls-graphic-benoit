@@ -158,6 +158,8 @@ namespace scls {
 
         // Function called after loading
         virtual void after_loading() {};
+        // Function called after an XML loading
+        virtual void after_xml_loading() {};
         // Function called when a child is deleted
         virtual void child_deleted(Object* child) { parent()->child_deleted(child); };
         // Clone the object
@@ -186,7 +188,7 @@ namespace scls {
         Transform_Object* transform_parent() {if(transform() == 0)return 0;return transform()->get_parent();};
 
         // Handle an attribute from XML
-        virtual void set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, __XML_Loader& loader, const std::vector<_Text_Balise_Part>& cutted, int& i);
+        virtual void set_xml_attribute(XML_Text& text, std::shared_ptr<__XML_Loader> loader_shared_ptr, int& i);
     protected:
         // Basic object descriptor
         // Pointer to the Texture used to render the object

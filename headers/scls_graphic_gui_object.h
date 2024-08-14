@@ -211,6 +211,10 @@ namespace scls {
         // __GUI_Transformation destructor
         virtual ~__GUI_Transformation(){};
 
+        // Calculate the position of the transformation
+        void calculate_position();
+        // Calculate the size of the transformation
+        void calculate_size();
         // Calculate the transformations
         void calculate_transformation();
 
@@ -279,6 +283,10 @@ namespace scls {
         //
         //*********
 
+        // Returns the x in object scale
+        inline Fraction x_in_object_scale() { return x_in_scale() - (width_in_scale() * Fraction(1, 2)); }
+        // Returns the y in object scale
+        inline Fraction y_in_object_scale() { return y_in_scale() - (height_in_scale() * Fraction(1, 2)); }
         // Setters
         inline void set_x_in_object_scale(Fraction new_x) {a_x=new_x;a_last_x_definition=_Size_Definition::Object_Scale_Size;};
         inline void set_y_in_object_scale(Fraction new_y) {a_y=new_y;a_last_y_definition=_Size_Definition::Object_Scale_Size;};
@@ -526,6 +534,16 @@ namespace scls {
         inline Fraction y_in_adapted_absolute_scale() {if(a_transformation_updated)calculate_transformation();return a_transformation.get()->y_in_adapted_absolute_scale();};
 
         // Object scale plan
+        // Returns the x in object scale
+        inline Fraction x_in_object_scale() {
+            if(a_transformation_updated)calculate_transformation();
+            return a_transformation.get()->x_in_object_scale();
+        }
+        // Returns the y in object scale
+        inline Fraction y_in_object_scale() {
+            if(a_transformation_updated)calculate_transformation();
+            return a_transformation.get()->y_in_object_scale();
+        }
         // Setters
         inline void set_x_in_object_scale(Fraction new_x) {
             if(current_style().x_to_apply() == new_x && current_style().x_definition_to_apply() == _Size_Definition::Object_Scale_Size) return;
@@ -641,34 +659,119 @@ namespace scls {
             a_transformation_updated=true;
         };
 
-        // Move precisely the object
-        // Move the object at the bottom of its parent
-        inline void move_bottom_in_parent(int offset = 0) { set_y_in_pixel(Fraction(offset)); };
-        // Move the object bottom of another in the parent
-        inline void move_bottom_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) { set_y_in_pixel(Fraction(another_object->y_in_pixel()) - (Fraction(height_in_pixel()) + offset)); };
-        inline void move_bottom_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, Fraction offset = Fraction(0)) { move_bottom_of_object_in_parent(another_object.get(), offset); };
-        // Move the object at the left of its parent
-        inline void move_left_in_parent(int offset = 0) { set_x_in_pixel(Fraction(offset)); };
-        // Move the object at the right of its parent
-        inline void move_right_in_parent(int offset = 0) {
-            Fraction width = window_struct().window_width();
-            if(transformation_parent()!= 0) width = transformation_parent()->width_in_pixel();
-            set_x_in_pixel(width - (Fraction(width_in_pixel()) + Fraction(offset)));
+        // Attach the object
+        // Attach the object at the bottom of its parent
+        inline void attach_bottom_in_parent(Fraction offset = Fraction(0)) {
+            a_transform_attachment.attachment_vertical_offset = offset;
+            a_transform_attachment.attachment_vertical_type = 2;
+            __move_bottom_in_parent(offset.to_double());
+            a_transformation_updated = true;
         };
+        // Attach the object bottom of another in the parent
+        inline void attach_bottom_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) {
+            a_transform_attachment.attached_object = another_object;
+            a_transform_attachment.attachment_vertical_offset = offset;
+            a_transform_attachment.attachment_vertical_type = 4;
+            __move_bottom_of_object_in_parent(another_object, offset);
+            a_transformation_updated = true;
+        };
+        inline void attach_bottom_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, Fraction offset = Fraction(0)) {
+            attach_bottom_of_object_in_parent(another_object.get(), offset);
+        };
+        // Attach the object at the left of its parent
+        inline void attach_left_in_parent(int offset = 0) {
+            a_transform_attachment.attachment_horizontal_offset = offset;
+            a_transform_attachment.attachment_horizontal_type = 1;
+            __move_left_in_parent(offset);
+            a_transformation_updated = true;
+        };
+        // Attach the object at the right of its parent
+        inline void attach_right_in_parent(int offset = 0) {
+            a_transform_attachment.attachment_horizontal_offset = offset;
+            a_transform_attachment.attachment_horizontal_type = 2;
+            __move_right_in_parent(offset);
+            a_transformation_updated = true;
+        };
+        // Attach the object at the top of its parent
+        inline void attach_top_in_parent(Fraction offset = Fraction(0)) {
+            a_transform_attachment.attachment_vertical_offset = offset;
+            a_transform_attachment.attachment_vertical_type = 1;
+            __move_top_in_parent(offset.to_double());
+            a_transformation_updated = true;
+        };
+        // Attach the object top of another in the parent
+        inline void attach_top_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) {
+            a_transform_attachment.attached_object = another_object;
+            a_transform_attachment.attachment_vertical_offset = offset;
+            a_transform_attachment.attachment_vertical_type = 3;
+            __move_top_of_object_in_parent(another_object, offset);
+            a_transformation_updated = true;
+        };
+        inline void attach_top_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, Fraction offset = Fraction(0)) {
+            attach_top_of_object_in_parent(another_object.get(), offset);
+        };
+
+        // Move the object
+        // Move the object at the bottom of its parent
+        inline void move_bottom_in_parent(int offset = 0) {
+            a_transform_attachment.attachment_vertical_type = 0;
+            __move_bottom_in_parent(offset);
+            a_transformation_updated = true;
+        };
+        // Move the object bottom of another in the parent
+        inline void move_bottom_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) {
+            a_transform_attachment.attachment_vertical_type = 0;
+            __move_bottom_of_object_in_parent(another_object, offset);
+            a_transformation_updated = true;
+        };
+        inline void move_bottom_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, Fraction offset = Fraction(0)) { move_bottom_of_object_in_parent(another_object.get(), offset);};
+        // Move the object at the left of its parent
+        inline void move_left_in_parent(int offset = 0) { a_transform_attachment.attachment_horizontal_type = 0; __move_left_in_parent(offset); a_transformation_updated = true; };
+        // Move the object at the right of its parent
+        inline void move_right_in_parent(int offset = 0) { a_transform_attachment.attachment_horizontal_type = 0; __move_right_in_parent(offset); a_transformation_updated = true; };
         // Move the object at the right of another of its parent
         inline void move_right_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) { set_x_in_pixel(Fraction(another_object->x_in_pixel() + another_object->width_in_pixel()) + offset); };
         inline void move_right_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, Fraction offset = Fraction(0)) { move_right_of_object_in_parent(another_object.get(), offset); };
         // Move the object at the top of its parent
         inline void move_top_in_parent(int offset = 0) {
-            Fraction height = window_struct().window_height();
-            if(transformation_parent().get()!= 0) height = transformation_parent().get()->height_in_pixel();
-            set_y_in_pixel(height - (Fraction(height_in_pixel()) + Fraction(offset)));
+            a_transform_attachment.attachment_vertical_type = 0;
+            __move_top_in_parent(offset);
+            a_transformation_updated = true;
         };
         // Move the object top of another in the parent
         inline void move_top_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) {
-            set_y_in_pixel(Fraction(another_object->y_in_pixel() + another_object->height_in_pixel()) + offset);
+            a_transform_attachment.attachment_vertical_type = 0;
+            __move_top_of_object_in_parent(another_object, offset);
+            a_transformation_updated = true;
         };
         inline void move_top_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, Fraction offset = Fraction(0)) { move_top_of_object_in_parent(another_object.get(), offset); };
+
+        // Move the object without modifications
+        // Move the object at the bottom of its parent without influencing attachment
+        inline void __move_bottom_in_parent(int offset = 0) {
+            set_y_in_pixel(Fraction(offset));
+            a_transformation_updated = false;
+        };
+        // Move the object bottom of another in the parent without influencing attachment
+        inline void __move_bottom_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) { set_y_in_pixel(Fraction(another_object->y_in_pixel()) - (Fraction(height_in_pixel()) + offset)); a_transformation_updated = false; };
+        // Move the object at the left of its parent without influencing attachment
+        inline void __move_left_in_parent(int offset = 0) { set_x_in_pixel(Fraction(offset)); a_transformation_updated = false; };
+        // Move the object at the right of its parent without influencing attachment
+        inline void __move_right_in_parent(int offset = 0) {
+            Fraction width = window_struct().window_width();
+            if(transformation_parent()!= 0) width = transformation_parent()->width_in_pixel();
+            set_x_in_pixel(width - (Fraction(width_in_pixel()) + Fraction(offset)));
+            a_transformation_updated = false;
+        };
+        // Move the object at the top of its parent without influencing attachment
+        inline void __move_top_in_parent(int offset = 0) {
+            Fraction height = window_struct().window_height();
+            if(transformation_parent().get()!= 0) height = transformation_parent().get()->height_in_pixel();
+            set_y_in_pixel(height - (Fraction(height_in_pixel()) + Fraction(offset)));
+            a_transformation_updated = false;
+        };
+        // Move the object top of another in the parent
+        inline void __move_top_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) { set_y_in_pixel(Fraction(another_object->y_in_pixel() + another_object->height_in_pixel()) + offset); a_transformation_updated = false; };
 
     protected:
 
@@ -694,6 +797,28 @@ namespace scls {
 
         // If the adapted scale is updated or not
         bool a_transformation_updated = true;
+
+        //*********
+        //
+        // Transform attachment struct
+        //
+        //*********
+
+        struct {
+            // Horizontal attachment
+            // Offset of the horizontal attachment
+            Fraction attachment_horizontal_offset = Fraction(0);
+            // Type of the horizontal attachment (0 = no attachment, 1 = left, 2 = right)
+            char attachment_horizontal_type = 0;
+
+            // Vertical attachment
+            // Object attached to this one
+            __GUI_Object_Core* attached_object = 0;
+            // Offset of the vertical attachment
+            Fraction attachment_vertical_offset = Fraction(0);
+            // Type of the vertical attachment (0 = no attachment, 1 = top, 2 = bottom)
+            char attachment_vertical_type = 0;
+        } a_transform_attachment;
 
     private:
 
@@ -729,6 +854,13 @@ namespace scls {
     // Mains GUI classes
     //
     //*********
+
+    struct __GUI_Page_Loader {
+        // Class containing datas about a loaded GUI page
+
+        // Created objects by name
+        std::map<std::string, std::shared_ptr<__GUI_Object_Core>> created_objects = std::map<std::string, std::shared_ptr<__GUI_Object_Core>>();
+    };
 
     class GUI_Object : public __GUI_Object_Core {
         // Class representing an GUI object displayed into the window
@@ -769,6 +901,8 @@ namespace scls {
         // Hierarchy functions
         // Function called after that the window is resized
         virtual void after_resizing();
+        // Function called after an XML loading
+        virtual void after_xml_loading() {for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i].get()!=0)children()[i].get()->after_xml_loading();}};
         // Reset the object without changing it
         virtual void soft_reset() {set_focusing_state(-1);set_overflighting_state(-1);for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i] != 0){children()[i]->soft_reset();}}};
         // Update the object
@@ -795,9 +929,9 @@ namespace scls {
         //*********
 
         // Loads the object from XML
-        void __load_from_xml(std::vector<_Text_Balise_Part> &cutted, std::string event = "");
+        void __load_from_xml(XML_Text& text, std::shared_ptr<__GUI_Page_Loader> loader, std::string event = "");
         // Handle an attribute from XML
-        virtual void set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, std::string event, const std::vector<_Text_Balise_Part>& cutted, int& i);
+        virtual void set_xml_attribute(XML_Text& text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i);
 
         //*********
         //
@@ -807,6 +941,8 @@ namespace scls {
 
         // Calculate the transformations
         void calculate_transformation(bool force = true, bool with_children = true);
+        // Create the new transformation
+        void __create_new_transformation(std::shared_ptr<__GUI_Transformation> last_transformation_to_use);
 
         // Returns the position of the mouse in scale
         glm::vec2 mouse_position_in_scale();
@@ -874,6 +1010,8 @@ namespace scls {
         //
         //*********
 
+        // Parent of the futures created objects
+        std::shared_ptr<GUI_Object> a_created_objects_parent;
         // Parent of the object
         GUI_Object* a_parent = 0;
         // Parent shared pointer to the object
@@ -971,6 +1109,8 @@ namespace scls {
 
         // Function called after that the window is resized
         virtual void after_resizing() {check_scroller();};
+        // Function called after an XML loading
+        virtual void after_xml_loading() {check_scroller();GUI_Object::after_xml_loading();};
         // Check if a scroll should occurs
         void check_scroll();
         // Check the scroller object
@@ -1118,7 +1258,7 @@ namespace scls {
         //*********
 
         // Handle an attribute from XML
-        virtual void set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, std::string event, const std::vector<_Text_Balise_Part>& cutted, int& i);
+        virtual void set_xml_attribute(XML_Text& text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i);
     private:
         //*********
         //
@@ -1250,6 +1390,8 @@ namespace scls {
 
         // Function called after that the window is resized
         virtual void after_resizing();
+        // Function called after an XML loading
+        virtual void after_xml_loading() {place_all();GUI_Object::after_xml_loading();};
         // Returns if the choose button is clicked during this frame
         bool choose_clicked() const {return a_choose_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT);};
         // Returns if the explorer contains a selected file
@@ -1341,10 +1483,9 @@ namespace scls {
         virtual ~GUI_Page() {};
 
         // Function called after that the window is resized
-        virtual void after_window_resizing(glm::vec2 last_scale){
-            Object::after_window_resizing(last_scale);
-            parent_object()->after_resizing();
-        };
+        virtual void after_window_resizing(glm::vec2 last_scale){Object::after_window_resizing(last_scale);parent_object()->after_resizing();};
+        // Function called after an XML loading
+        virtual void after_xml_loading() {a_parent_object.get()->after_xml_loading();Object::after_xml_loading();};
         // Render the page
         virtual void render();
         // Update the event of the page
@@ -1367,13 +1508,13 @@ namespace scls {
         // Create an object from a type
         virtual std::shared_ptr<GUI_Object> __create_loaded_object_from_type(std::string object_name, std::string object_type, GUI_Object* parent);
         // Load the page from XML
-        void load_from_xml(const std::string& content_to_parse) {load_objects_from_xml(content_to_parse);};
+        void load_from_xml(const std::string& content_to_parse, bool sup_paged = false) {load_objects_from_xml(content_to_parse, sup_paged);};
         // Load an object in a page from XML
-        void __load_object_from_xml(std::string object_name, std::string object_type, const std::string& content, std::map<std::string, std::shared_ptr<GUI_Object>>& created_objects);
+        std::shared_ptr<GUI_Object> __load_object_from_xml(std::string object_name, std::string object_type, XML_Text& content, std::shared_ptr<__GUI_Page_Loader>& loader);
         // Load objects in a page from XML
-        void load_objects_from_xml(const std::string& content_to_parse);
+        void load_objects_from_xml(const std::string& content_to_parse, bool sub_paged);
         // Handle an attribute from XML
-        virtual void set_xml_attribute(std::string xml_attribute_name, std::vector<std::string> xml_attribute_value, __XML_Loader& loader, const std::vector<_Text_Balise_Part>& cutted, int& i);
+        virtual void set_xml_attribute(XML_Text& text, std::shared_ptr<__XML_Loader> loader_shared_ptr, int& i);
     private:
         // Handle the focused object
         // Pointer to the focused object
@@ -1395,9 +1536,18 @@ namespace scls {
     template<typename O>
     std::shared_ptr<O>* GUI_Object::new_object(std::string name, unsigned int x, unsigned int y) {
         // Create the child
-        std::shared_ptr<O> new_ptr; children().push_back(new_ptr);
-        std::shared_ptr<O>* to_return = reinterpret_cast<std::shared_ptr<O>*>(&children()[children().size() - 1]);
-        *to_return = std::make_shared<O>(window_struct(), name, this);
+        std::shared_ptr<O> new_ptr;
+        std::shared_ptr<O>* to_return = 0;
+        if(a_created_objects_parent.get() == 0) {
+             children().push_back(new_ptr);
+             to_return = reinterpret_cast<std::shared_ptr<O>*>(&children()[children().size() - 1]);
+             *to_return = std::make_shared<O>(window_struct(), name, this);
+        }
+        else {
+            a_created_objects_parent.get()->children().push_back(new_ptr);
+            to_return = reinterpret_cast<std::shared_ptr<O>*>(&a_created_objects_parent.get()->children()[a_created_objects_parent.get()->children().size() - 1]);
+            *to_return = std::make_shared<O>(window_struct(), name, a_created_objects_parent.get());
+        }
         O* new_object = to_return->get();
 
         // Configurate the child

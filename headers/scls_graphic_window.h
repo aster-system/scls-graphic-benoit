@@ -18,6 +18,7 @@
 #define SCLS_WINDOW
 
 #include "scls_graphic_gui_object.h"
+#include <stack>
 
 // The namespace "scls" is used to simplify the all.
 namespace scls {
@@ -45,6 +46,18 @@ namespace scls {
     // Window class
     //
     //*********
+
+    struct Window_Loader : public __XML_Loader {
+        // Class containing datas about a loaded window
+
+        // Window_Loader constructor
+        Window_Loader(const std::string& file_content) : __XML_Loader(file_content) {};
+
+        // Created objects by name
+        std::map<std::string, std::shared_ptr<Object>> created_objects = std::map<std::string, std::shared_ptr<Object>>();
+        // Created objects in a stack
+        std::stack<std::shared_ptr<Object>> created_objects_stack = std::stack<std::shared_ptr<Object>>();
+    };
 
     class Window: public _Window_Advanced_Struct {
         // Class representing the window
@@ -196,10 +209,14 @@ namespace scls {
 
         // Create an object from a type
         virtual std::shared_ptr<Object> __create_loaded_object_from_type(std::string object_name, std::string object_type);
+        // Create an page 3D from a type
+        virtual std::shared_ptr<Object> __create_loaded_page_3d_from_type(std::string object_name, std::string object_type);
         // Load the page from XML
-        void load_from_xml(std::string window_path);
+        std::shared_ptr<Window_Loader> load_from_xml(std::string window_path);
         // Load an object in a page from XML
-        void __load_object_from_xml(std::string object_name, std::string object_type, std::string object_content, __XML_Loader& loader, std::map<std::string, std::shared_ptr<Object>>& created_objects);
+        void __load_object_from_xml(std::string object_name, std::string object_type, XML_Text& object_content, std::shared_ptr<Window_Loader> loader);
+        // Load a 3D page from XML
+        void __load_page_3d_from_xml(std::string object_name, std::string object_type, XML_Text& object_content, std::shared_ptr<Window_Loader> loader);
 
     private:
 
