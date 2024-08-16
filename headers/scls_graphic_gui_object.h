@@ -464,7 +464,7 @@ namespace scls {
         inline bool is_overflighted() const {return a_overflighting_state == 0;};
         inline unsigned long overflighted_cursor() const {return a_overflighted_style.get()->cursor;};
         inline short overflighting_state() const {return a_overflighting_state;};
-        inline void set_focusing_state(bool new_focusing_state) {a_focusing_state = new_focusing_state;};
+        inline void set_focusing_state(short new_focusing_state) {a_focusing_state = new_focusing_state;};
         inline void set_overflighted_cursor(unsigned long new_overflighted_cursor) {a_overflighted_style.get()->cursor = new_overflighted_cursor;};
         inline void set_overflighting_state(short new_overflighting_state) {a_overflighting_state = new_overflighting_state;};
         inline _Window_Advanced_Struct& window_struct() const {return a_window;};
