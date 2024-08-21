@@ -1129,6 +1129,17 @@ namespace scls {
         // Update the object for the events
         virtual void update_event() {GUI_Object::update_event();check_scroll();};
 
+    protected:
+
+        //*********
+        //
+        // GUI_Scroller main attributes
+        //
+        //*********
+
+        // Returns the children scroller of the object
+        inline GUI_Object* scroller_children() const {return a_scroller_children.get();};
+
     private:
 
         //*********
@@ -1141,6 +1152,58 @@ namespace scls {
         std::shared_ptr<GUI_Object>* _create_scroller_children();
         // Scroller children which contains each elements
         std::shared_ptr<GUI_Object> a_scroller_children;
+    };
+
+    class GUI_Scroller_Choice : public GUI_Scroller {
+        // Class representing a simple GUI scroller displayed into the window, which propose choices to use
+    public:
+
+        //*********
+        //
+        // GUI_Scroller_Choice main functions
+        //
+        //*********
+
+        // Most basic GUI_Scroller_Choice constructor
+        GUI_Scroller_Choice(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent);
+        // GUI_Scroller_Choice destructor
+        virtual ~GUI_Scroller_Choice();
+
+        // Checks the number of selected objects
+        inline void check_number_selected_object() {while(static_cast<int>(a_currently_selected_objects.size())>max_number_selected_object())a_currently_selected_objects.erase(a_currently_selected_objects.begin(),a_currently_selected_objects.begin()+1);};
+        // Returns if an object is in the scroller
+        inline bool contains_object(std::string object_name) {for(int i = 0;i<static_cast<int>(scroller_children()->children().size());i++){if(scroller_children()->children()[i].get()->name()==object_name)return true; } return false;};
+        // Returns if an object is selected
+        inline bool contains_selected_object(std::string object_name) {for(int i = 0;i<static_cast<int>(a_currently_selected_objects.size());i++){if(a_currently_selected_objects[i]==object_name)return true; } return false;};
+        // Select an object
+        inline void select_object(std::string object_name) {if(contains_object(object_name)){a_choice_modified = true;if(contains_selected_object(object_name))unselect_object(object_name); a_currently_selected_objects.push_back(object_name);}};
+        // Unselect an object
+        inline void unselect_object(std::string object_name){for(int i = 0;i<static_cast<int>(currently_selected_objects().size());i++){if(currently_selected_objects()[i]==object_name){currently_selected_objects().erase(currently_selected_objects().begin()+i,currently_selected_objects().begin()+i+1);return;} }};
+
+        // Reset the object
+        virtual void soft_reset() {GUI_Scroller::soft_reset();a_choice_modified = false;};
+        // Update the even in the scroller
+        virtual void update_event();
+
+        // Getters and setters
+        inline bool choice_modified() const {return a_choice_modified;};
+        inline std::vector<std::string>& currently_selected_objects() {return a_currently_selected_objects;};
+        inline unsigned int max_number_selected_object() const {return a_max_number_selected_object;};
+
+    private:
+
+        //*********
+        //
+        // GUI_Scroller_Choice main attributes
+        //
+        //*********
+
+        // If the coice as been modified during this frame
+        bool a_choice_modified = false;
+        // Currently selected objects
+        std::vector<std::string> a_currently_selected_objects = std::vector<std::string>();
+        // Maximum number of selected object
+        unsigned int a_max_number_selected_object = 1;
     };
 
     class __GUI_Text_Metadatas : public GUI_Object {

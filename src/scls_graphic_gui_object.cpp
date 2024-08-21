@@ -1002,6 +1002,33 @@ namespace scls {
 
     //*********
     //
+    // GUI_Scroller_Choice main functions
+    //
+    //*********
+
+    // Most basic GUI_Scroller_Choice constructor
+    GUI_Scroller_Choice::GUI_Scroller_Choice(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent) : GUI_Scroller(window, name, parent) {}
+
+    // GUI_Scroller_Choice destructor
+    GUI_Scroller_Choice::~GUI_Scroller_Choice() {}
+
+    // Update the even in the scroller
+    void GUI_Scroller_Choice::update_event() {
+        GUI_Scroller::update_event();
+
+        // Check each buttons
+        for(int i = 0;i<static_cast<int>(scroller_children()->children().size());i++) {
+            if(scroller_children()->children()[i].get()->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                // If the button is clicked
+                std::string object_name = scroller_children()->children()[i].get()->name();
+                select_object(object_name);
+            }
+        }
+        check_number_selected_object();
+    }
+
+    //*********
+    //
     // __GUI_Text_Metadatas main functions
     //
     //*********

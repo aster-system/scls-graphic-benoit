@@ -221,7 +221,7 @@ namespace scls {
 
         // Bind the data into the GPU memory
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * datas.size(), arr, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * datas.size(), arr, GL_STATIC_DRAW);
 
         if(a_use_ebo) // Bind the EBO if the VBO use them
         {
@@ -260,6 +260,7 @@ namespace scls {
         }
 
         // Get each datas
+        a_datas.clear();
         unsigned int datas_number = scls::__extract_4bytes_from_char_array(binary, cursor_pos, true); cursor_pos += 4;
         for (unsigned int i = 0; i < datas_number * attribute_size; i++) {
             double data = scls::__extract_double_from_char_array(binary, cursor_pos); cursor_pos += 8;
@@ -504,9 +505,7 @@ namespace scls {
     }
 
     // Bind the texture into the GPU memory
-    void Texture::bind() {
-        glBindTexture(GL_TEXTURE_2D, texture_id);
-    }
+    void Texture::bind() { glBindTexture(GL_TEXTURE_2D, texture_id); }
 
     // Change the texture of the texture according to image
     void Texture::change_texture() {
@@ -523,8 +522,8 @@ namespace scls {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, color_format, GL_UNSIGNED_BYTE, texture);
         glGenerateMipmap(GL_TEXTURE_2D);
         // glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Good
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Far of the texture
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Near of the texture
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // Far of the texture
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // Near of the texture
         // glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Good
     }
 

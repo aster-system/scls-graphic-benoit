@@ -54,10 +54,8 @@ namespace scls {
         // One faced cube VAO
         std::shared_ptr<VBO> one_faced_cube_vbo = std::make_shared<VBO>();
         one_faced_cube_vbo.get()->load_from_binary(model_maker::regular_polygon_3d(4).get()->binary_vbo_complete().get()->datas());
-        add_vbo("one_faced_cube", cube_vbo);
-        vaos()["one_faced_cube"] = std::make_shared<VAO>(a_shaders_programs["default"], object_3d_attributes, one_faced_cube_vbo);
-        vaos()["one_faced_cube"].get()->load_vao();
-        // int* a = 0; *a += 5;
+        add_vbo("one_faced_cube", one_faced_cube_vbo); new_vao("one_faced_cube", "one_faced_cube", "default");
+        //int* a = 0; *a += 5;
     }
 
     // Returns a texture in the struct
