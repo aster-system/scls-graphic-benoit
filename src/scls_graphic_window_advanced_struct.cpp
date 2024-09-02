@@ -30,7 +30,7 @@ namespace scls {
     // Loads the VAOs in the advanced struct
     void _Window_Advanced_Struct::load_VAOs() {
         // Create the base shaders
-        a_shaders_programs["default"] = Shader_Program();
+        Shader_Program shader_to_add = Shader_Program(); add_shader_program("default", shader_to_add);
         a_shaders_programs["gui_default"] = Shader_Program(Shader_Program::HUD_Default);
 
         // Create a base texture
@@ -48,13 +48,14 @@ namespace scls {
         vaos()["gui_default"] = std::make_shared<VAO>(a_shaders_programs["gui_default"], gui_attributes, gui_vbo);
         vaos()["gui_default"].get()->load_vao();
         // Cube VAO
-        std::shared_ptr<VBO> cube_vbo = std::make_shared<VBO>(object_3d_attributes, VBO::cube_vbo(), false); add_vbo("cube", cube_vbo);
-        vaos()["cube"] = std::make_shared<VAO>(a_shaders_programs["default"], object_3d_attributes, cube_vbo);
-        vaos()["cube"].get()->load_vao();
+        //std::shared_ptr<VBO> cube_vbo = std::make_shared<VBO>(object_3d_attributes, VBO::cube_vbo(), false); add_vbo("cube", cube_vbo);
+        //vaos()["cube"] = std::make_shared<VAO>(a_shaders_programs["default"], object_3d_attributes, cube_vbo);
+        //vaos()["cube"].get()->load_vao();
         // One faced cube VAO
         std::shared_ptr<VBO> one_faced_cube_vbo = std::make_shared<VBO>();
         one_faced_cube_vbo.get()->load_from_binary(model_maker::regular_polygon_3d(4).get()->binary_vbo_complete().get()->datas());
         add_vbo("one_faced_cube", one_faced_cube_vbo); new_vao("one_faced_cube", "one_faced_cube", "default");
+        vaos()["cube"] = vaos()["one_faced_cube"];
         //int* a = 0; *a += 5;
     }
 
@@ -160,19 +161,17 @@ namespace scls {
 
     // Create a new VAO into the game
     VAO* _Window_Advanced_Struct::new_vao(std::string name, std::string vbo, std::string shader) {
-        if (!contains_vao(name))
-        {
-            if (!contains_vbo(vbo))
-            {
-                print("Warning", "SCLS Window", "Matrix game : error ! The \"" + name + "\" VAO use the \"" + vbo + "\" VBO, which does not exist.");
+        if (!contains_vao(name)) {
+            if (!contains_vbo(vbo)) {
+                print("Warning", "SCLS Window", "The \"" + name + "\" VAO use the \"" + vbo + "\" VBO, which does not exist.");
                 return 0;
             }
 
-            vaos()[name] = std::make_shared<VAO>(&a_shaders_programs[shader], vbos()[vbo]);
+            vaos()[name] = std::make_shared<VAO>(&a_shaders_programs[shader], _base_3d_shader_program_variables(), vbos()[vbo]);
             vaos()[name].get()->load_vao();
             return vaos()[name].get();
         }
-        print("Warning", "SCLS Window", "Matrix game : error ! The \"" + name + "\" VAO already exists.");
+        print("Warning", "SCLS Window", "The \"" + name + "\" VAO already exists.");
         return 0;
     }
 

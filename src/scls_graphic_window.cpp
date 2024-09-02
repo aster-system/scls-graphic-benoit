@@ -288,18 +288,16 @@ namespace scls {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Update the cursor texture
-        if(cursor_changed() && cursor() != 0)
-        {
+        if(cursor_changed() && cursor() != 0) {
             glfwSetCursor(window(), cursor());
         }
-        else if(cursor() == 0)
-        {
+        else if(cursor() == 0) {
             set_cursor(glfwCreateStandardCursor(GLFW_ARROW_CURSOR));
             glfwSetCursor(window(), cursor());
         }
         a_cursor_changed = false;
 
-        // Render 2D pages
+        // Render 3D pages
         glDepthFunc(GL_LESS);
         if (displayed_pages_3d_names().size() > 0) {
             std::vector<std::shared_ptr<Object>> to_display = displayed_pages_3d();

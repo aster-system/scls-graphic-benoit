@@ -23,6 +23,22 @@ namespace scls {
     //
     //*********
 
+    // Predefined functions for the shaders
+    namespace shader_content {
+        std::string lighting_function() {
+            std::string to_return = "";
+            to_return += "vec4 apply_lighting(vec4 base_color) {";
+            to_return += "vec3 norm = normalize(normal);\n";
+            to_return += "vec3 lightDir = normalize(vec3(1000, 1000, 0) - frag_pos);\n";
+            to_return += "float diff = max(dot(norm, lightDir), 0.0) / 1.5;\n";
+            to_return += "vec4 diffuse = vec4(diff, diff, diff, 1.0);\n";
+            to_return += "base_color *= diffuse + vec4(0.5, 0.5, 0.5, 0.0);\n";
+            to_return += "return base_color;\n";
+            to_return += "}\n";
+            return to_return;
+        }
+    }
+
     // Shader_Program constructor
     Shader_Program::Shader_Program(Built_In_Shader shader_type) : Shader_Program(Shader_Program::get_built_in_vertex_shader(shader_type), Shader_Program::get_built_in_fragment_shader(shader_type)) {
 

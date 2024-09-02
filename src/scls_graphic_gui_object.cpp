@@ -1162,6 +1162,8 @@ namespace scls {
         std::string text_to_modify = text();
         std::string final_text = text_to_modify.substr(0, cursor_position) + text_to_add + text_to_modify.substr(cursor_position, text_to_modify.size() - cursor_position);
         if(final_text != text()) {
+            a_input_during_this_frame = true;
+
             std::vector<std::string> cutted = cut_string(text_to_add, "</br>", false, false);
             if(a_text_image != 0 && cutted.size() > 1) {
                 for(int i = 0;i<cutted.size() - 1;i++) {
@@ -1469,6 +1471,7 @@ namespace scls {
         unsigned int size_to_delete = (cursor_position - position_to_delete) + 1;
         set_cursor_position_in_formatted_text(cursor_position_in_formatted_text() - 1);
 
+        a_input_during_this_frame = true;
         std::string text_to_modify = text();
         std::string final_text = text_to_modify.substr(0, position_to_delete) + text_to_modify.substr(position_to_delete + size_to_delete, text_to_modify.size() - (position_to_delete + size_to_delete));
         if(a_text_image != 0) {

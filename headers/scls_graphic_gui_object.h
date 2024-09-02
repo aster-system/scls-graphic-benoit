@@ -1359,6 +1359,8 @@ namespace scls {
 
         // Function called after that the window is resized
         virtual void after_resizing();
+        // Soft reset the input
+        virtual void soft_reset() {GUI_Object::soft_reset();a_input_during_this_frame = false;};
         // Update the texture when needed
         virtual void update_texture() {GUI_Object::update_texture();update_text_texture();};
         // Update the texture of the text
@@ -1385,6 +1387,7 @@ namespace scls {
 
         // Getters and setters
         inline Text_Image_Block* attached_text_image() {return a_text_image.get();};
+        inline bool input_during_this_frame() const {return a_input_during_this_frame;};
         inline unsigned short line_offset() const {return a_line_offset;};
         virtual void set_text(std::string new_text, bool should_move_cursor = true) {if(new_text == text())return;reset();a_text_modified = true;__GUI_Text_Metadatas::set_text(new_text, should_move_cursor);};
         virtual void set_text_image_type(Block_Type new_text_image_type) {__GUI_Text_Metadatas::set_text_image_type(new_text_image_type);reset();};
@@ -1427,6 +1430,8 @@ namespace scls {
 
         // Number of the generation
         unsigned int a_generation = 0;
+        // If an input occurred during this frame
+        bool a_input_during_this_frame = false;
         // Last outputted descriptive character (^, ¨...)
         std::string a_last_descriptive_character = "";
         // Offset of the first line

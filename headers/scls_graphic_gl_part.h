@@ -27,6 +27,12 @@ namespace scls {
     //
     //*********
 
+    // Predefined functions for the shaders
+    namespace shader_content {
+        // Base lighting function for a shader
+        extern std::string lighting_function();
+    }
+
     struct Shader_Program_Variable {
         // Struct representing the values for a "in" variable in the shader program
         // Type of the shader program
@@ -70,21 +76,21 @@ namespace scls {
 
         // Return the default shaders
         static std::string get_built_in_fragment_shader(Built_In_Shader shader_type) {
-            if (shader_type == Default)
-            {
+            if (shader_type == Default) {
                 return get_default_fragment_shader();
             }
             return get_default_hud_fragment_shader();
         };
         static std::string get_built_in_vertex_shader(Built_In_Shader shader_type) {
-            if (shader_type == Default)
-            {
+            if (shader_type == Default){
                 return get_default_vertex_shader();
             }
             return get_default_hud_vertex_shader();
         };
         static std::string get_default_fragment_shader() {
             std::string to_return = "#version 330 core\n";
+            to_return += "in vec3 frag_pos;\n";
+            to_return += "in vec3 normal;\n";
             to_return += "in vec3 tex_multiplier;\n";
             to_return += "in vec2 tex_pos;\n";
             to_return += "in vec4 tex_rect;\n";
@@ -92,7 +98,13 @@ namespace scls {
             to_return += "uniform vec3 scale;\n";
             to_return += "uniform sampler2D texture_0;\n";
             to_return += "uniform bool texture_binded;\n";
+
+            // Use the lighting function
+            to_return += shader_content::lighting_function();
+
+            // Get the good position of the object
             to_return += "void main(){\n";
+            to_return += "vec4 final_color = vec4(0, 0, 0, 0);\n";
             to_return += "if(texture_binded){";
             to_return += "  vec2 final_tex_pos = tex_pos * tex_rect.zw;";
             to_return += "  if (tex_multiplier.x == 0) final_tex_pos.x = final_tex_pos.x * scale.x;";
@@ -103,10 +115,14 @@ namespace scls {
             to_return += "  else if (tex_multiplier.z == 1)final_tex_pos.y = final_tex_pos.y * scale.z;\n";
             to_return += "  while(final_tex_pos.x > tex_rect[2])final_tex_pos.x -= tex_rect[2];\n";
             to_return += "  while(final_tex_pos.y > tex_rect[3])final_tex_pos.y -= tex_rect[3];\n";
-            to_return += "  FragColor = texture(texture_0, tex_rect.xy + final_tex_pos);\n";
+            to_return += "  final_color = texture(texture_0, tex_rect.xy + final_tex_pos);\n";
             to_return += "} else {";
-            to_return += "  FragColor = vec4(1, 1, 1, 1);";
+            to_return += "final_color = vec4(1, 1, 1, 1);";
             to_return += "}";
+
+            // Edit the color as necesary with lighting
+            to_return += "final_color = apply_lighting(final_color);\n";
+            to_return += "FragColor = final_color;\n";
             to_return += "}";
             return to_return;
         };
@@ -141,16 +157,21 @@ namespace scls {
         };
         static std::string get_default_vertex_shader() {
             std::string to_return = "#version 330 core\n";
+            to_return += "layout(location = 1) in vec3 in_normal;\n";
             to_return += "layout(location = 0) in vec3 in_pos;\n";
-            to_return += "layout(location = 1) in vec2 in_tex_pos;\n";
-            to_return += "layout(location = 2) in vec4 in_tex_rect;\n";
-            to_return += "layout(location = 3) in vec3 in_tex_multiplier;\n";
+            to_return += "layout(location = 2) in vec2 in_tex_pos;\n";
+            to_return += "layout(location = 3) in vec4 in_tex_rect;\n";
+            to_return += "layout(location = 4) in vec3 in_tex_multiplier;\n";
+            to_return += "out vec3 frag_pos;\n";
+            to_return += "out vec3 normal;\n";
             to_return += "out vec3 tex_multiplier;\n";
             to_return += "out vec2 tex_pos;out vec4 tex_rect;\n";
             to_return += "uniform mat4 model;\n";
             to_return += "uniform mat4 projection;\n";
             to_return += "uniform mat4 view;\n";
             to_return += "void main(){\n";
+            to_return += "frag_pos = vec3(model * vec4(in_pos, 1.0));\n";
+            to_return += "normal = mat3(transpose(inverse(model))) * in_normal;;\n";
             to_return += "tex_multiplier = in_tex_multiplier;\n";
             to_return += "tex_pos = in_tex_pos;\n";
             to_return += "tex_rect = in_tex_rect;\n";

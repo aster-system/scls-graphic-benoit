@@ -34,14 +34,17 @@ namespace scls {
         Shader_Program_Variable v2 = Shader_Program_Variable();
         Shader_Program_Variable v3 = Shader_Program_Variable();
         Shader_Program_Variable v4 = Shader_Program_Variable();
+        Shader_Program_Variable v5 = Shader_Program_Variable();
         v1.vector_size = 3;
-        v2.vector_size = 2;
-        v3.vector_size = 4;
-        v4.vector_size = 3;
+        v2.vector_size = 3;
+        v3.vector_size = 2;
+        v4.vector_size = 4;
+        v5.vector_size = 3;
         base_3d_attributes.push_back(v1);
         base_3d_attributes.push_back(v2);
         base_3d_attributes.push_back(v3);
         base_3d_attributes.push_back(v4);
+        base_3d_attributes.push_back(v5);
 
         return base_3d_attributes;
     };
