@@ -916,9 +916,11 @@ namespace scls {
         inline Color background_color() {return a_background_color;};
         inline Color border_color() {return a_border_color;};
         inline std::vector<std::shared_ptr<GUI_Object>>& children() {return a_children;};
+        inline bool ignore_click() const {return a_ignore_click;};
         inline std::string name() const {return a_name;};
         inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
         inline void set_border_color(Color new_color) {a_border_color = new_color;};
+        inline void set_ignore_click(bool new_ignore_click) {a_ignore_click = new_ignore_click;};
         inline void set_visible(bool new_visible) {a_visible = new_visible;};
         inline bool visible() {return a_visible;};
 
@@ -1028,6 +1030,8 @@ namespace scls {
         Color a_background_color = Color(0, 0, 0, 0);
         // Children of this object
         std::vector<std::shared_ptr<GUI_Object>> a_children = std::vector<std::shared_ptr<GUI_Object>>();
+        // If the object ignore focus or not
+        bool a_ignore_click = false;
         // Name of this object
         std::string a_name = "";
         // If the object is visible

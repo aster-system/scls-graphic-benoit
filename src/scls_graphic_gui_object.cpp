@@ -870,7 +870,7 @@ namespace scls {
         GUI_Object* current_overflighted_object = this;
         for(int i = 0;i<static_cast<int>(current_overflighted_object->children().size());i++) {
             GUI_Object* current_object = current_overflighted_object->children()[i].get();
-            if(current_object->visible() && current_object->is_in_rect_in_pixel(window_struct().mouse_x(), window_struct().window_height() - window_struct().mouse_y())) {
+            if(current_object->visible() && !current_object->ignore_click() && current_object->is_in_rect_in_pixel(window_struct().mouse_x(), window_struct().window_height() - window_struct().mouse_y())) {
                 current_overflighted_object = current_object;
                 i = -1;
             }
@@ -1560,6 +1560,7 @@ namespace scls {
                         // Generate the object for the line
                         std::string final_name = name() + "_gen_" + std::to_string(a_generation) + "_line_" + std::to_string(i);
                         std::shared_ptr<GUI_Object> new_line = *new_object<GUI_Object>(final_name, 0, i * 60);
+                        new_line.get()->set_ignore_click(true);
                         new_line.get()->set_width_in_scale(Fraction(1)); new_line.get()->set_height_in_pixel(image_to_apply->height());
                         new_line.get()->set_texture_alignment_horizontal(Alignment_Horizontal::H_Left);
                         new_line.get()->texture()->set_image(line_to_apply->shared_image());
