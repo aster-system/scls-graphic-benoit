@@ -77,10 +77,10 @@ namespace scls {
     }
 
     // Returns a texture shared pointer in the struct
-    std::shared_ptr<Texture>& _Window_Advanced_Struct::texture_shared_ptr(std::string texture_name) {
-        if (contains_texture(texture_name)) { return textures()[texture_name]; }
+    std::shared_ptr<Texture>* _Window_Advanced_Struct::texture_shared_ptr(std::string texture_name) {
+        if (contains_texture(texture_name)) { return &textures()[texture_name]; }
         scls::print("Warning", "SCLS Window", "The \"" + texture_name + "\" texture you want to use does not exists.");
-        std::shared_ptr<Texture> empty_shared_ptr; return empty_shared_ptr;
+        return 0;
     }
 
     // Unload all the textures

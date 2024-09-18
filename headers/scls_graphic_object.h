@@ -138,7 +138,7 @@ namespace scls {
                 print("Warning", "SCLS Graphic Object \"" + name() + "\"", "The texture \"" + new_texture + "\" you want to set as the new texture of the object does not exist.");
                 return;
             }
-            a_texture = window_struct()->texture_shared_ptr(new_texture);
+            a_texture = *window_struct()->texture_shared_ptr(new_texture);
         };
         inline void set_vao(std::string new_vao) {
             if(!window_struct()->contains_vao(new_vao)) {

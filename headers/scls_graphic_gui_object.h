@@ -669,15 +669,13 @@ namespace scls {
         };
         // Attach the object bottom of another in the parent
         inline void attach_bottom_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) {
-            a_transform_attachment.attached_object = another_object;
+            a_transform_attachment.attached_object_vertical = another_object;
             a_transform_attachment.attachment_vertical_offset = offset;
             a_transform_attachment.attachment_vertical_type = 4;
             __move_bottom_of_object_in_parent(another_object, offset);
             a_transformation_updated = true;
         };
-        inline void attach_bottom_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, Fraction offset = Fraction(0)) {
-            attach_bottom_of_object_in_parent(another_object.get(), offset);
-        };
+        inline void attach_bottom_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, Fraction offset = Fraction(0)) {attach_bottom_of_object_in_parent(another_object.get(), offset);};
         // Attach the object at the left of its parent
         inline void attach_left_in_parent(int offset = 0) {
             a_transform_attachment.attachment_horizontal_offset = offset;
@@ -692,6 +690,16 @@ namespace scls {
             __move_right_in_parent(offset);
             a_transformation_updated = true;
         };
+        // Attach the object at the right of an object in its parent
+        inline void attach_right_of_object_in_parent(__GUI_Object_Core* another_object, int offset = 0) {
+            a_transform_attachment.attached_object_horizontal = another_object;
+            a_transform_attachment.attachment_horizontal_offset = offset;
+            a_transform_attachment.attachment_horizontal_type = 4;
+            __move_right_of_object_in_parent(another_object, offset);
+            a_transformation_updated = true;
+        };
+        // Attach the object at the right of an object in its parent
+        inline void attach_right_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, int offset = 0) {attach_right_of_object_in_parent(another_object.get(), offset);};
         // Attach the object at the top of its parent
         inline void attach_top_in_parent(Fraction offset = Fraction(0)) {
             a_transform_attachment.attachment_vertical_offset = offset;
@@ -701,7 +709,7 @@ namespace scls {
         };
         // Attach the object top of another in the parent
         inline void attach_top_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) {
-            a_transform_attachment.attached_object = another_object;
+            a_transform_attachment.attached_object_vertical = another_object;
             a_transform_attachment.attachment_vertical_offset = offset;
             a_transform_attachment.attachment_vertical_type = 3;
             __move_top_of_object_in_parent(another_object, offset);
@@ -730,7 +738,7 @@ namespace scls {
         // Move the object at the right of its parent
         inline void move_right_in_parent(int offset = 0) { a_transform_attachment.attachment_horizontal_type = 0; __move_right_in_parent(offset); a_transformation_updated = true; };
         // Move the object at the right of another of its parent
-        inline void move_right_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) { set_x_in_pixel(Fraction(another_object->x_in_pixel() + another_object->width_in_pixel()) + offset); };
+        inline void move_right_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) { __move_right_of_object_in_parent(another_object, offset); };
         inline void move_right_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, Fraction offset = Fraction(0)) { move_right_of_object_in_parent(another_object.get(), offset); };
         // Move the object at the top of its parent
         inline void move_top_in_parent(int offset = 0) {
@@ -761,6 +769,13 @@ namespace scls {
             Fraction width = window_struct().window_width();
             if(transformation_parent()!= 0) width = transformation_parent()->width_in_pixel();
             set_x_in_pixel(width - (Fraction(width_in_pixel()) + Fraction(offset)));
+            a_transformation_updated = false;
+        };
+        // Move the object at the right of an object in its parent without influencing attachment
+        inline void __move_right_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = 0) {
+            Fraction width = window_struct().window_width();
+            if(transformation_parent()!= 0) width = transformation_parent()->width_in_pixel();
+            set_x_in_pixel(Fraction(another_object->x_in_pixel() + another_object->width_in_pixel()) + offset);
             a_transformation_updated = false;
         };
         // Move the object at the top of its parent without influencing attachment
@@ -806,6 +821,8 @@ namespace scls {
 
         struct {
             // Horizontal attachment
+            // Object attached to this one
+            __GUI_Object_Core* attached_object_horizontal = 0;
             // Offset of the horizontal attachment
             Fraction attachment_horizontal_offset = Fraction(0);
             // Type of the horizontal attachment (0 = no attachment, 1 = left, 2 = right)
@@ -813,7 +830,7 @@ namespace scls {
 
             // Vertical attachment
             // Object attached to this one
-            __GUI_Object_Core* attached_object = 0;
+            __GUI_Object_Core* attached_object_vertical = 0;
             // Offset of the vertical attachment
             Fraction attachment_vertical_offset = Fraction(0);
             // Type of the vertical attachment (0 = no attachment, 1 = top, 2 = bottom)
@@ -992,7 +1009,9 @@ namespace scls {
             a_texture = new_texture;
         };
         inline void set_texture(std::string texture_name, bool remove_last_texture = true) {
-            set_texture(window_struct().texture_shared_ptr(texture_name), remove_last_texture);
+            std::shared_ptr<Texture>* new_texture = window_struct().texture_shared_ptr(texture_name);
+            if(new_texture != 0) set_texture(*new_texture, remove_last_texture);
+            else print("Warning", "SCLS GUI Object \"" + name() + "\"", "The texture \"" + texture_name + "\" you want to set as the object texture does not exist.");
         };
         inline void set_texture_alignment(Alignment_Texture new_texture_alignment) {a_texture_alignment = new_texture_alignment;};
         inline void set_texture_alignment_horizontal(Alignment_Horizontal new_texture_alignment_horizontal) {a_texture_alignment_horizontal = new_texture_alignment_horizontal;};

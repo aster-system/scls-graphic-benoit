@@ -145,7 +145,7 @@ namespace scls {
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         Texture* texture(std::string texture_name, bool copy_texture = false);
-        std::shared_ptr<Texture>& texture_shared_ptr(std::string texture_name);
+        std::shared_ptr<Texture>* texture_shared_ptr(std::string texture_name);
         inline VAO* vao(std::string vao_name) { if(contains_vao(vao_name)) return vaos()[vao_name].get(); return 0; };
         inline std::shared_ptr<VAO>* vao_shared_ptr(std::string vao_name) { if(contains_vao(vao_name)) return &vaos()[vao_name]; return 0; };
 

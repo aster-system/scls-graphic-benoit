@@ -47,14 +47,14 @@ namespace scls {
 
     // Most parent Object constructor used for displaying
     Object::Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : Object(window_struct, transform_parent, name) {
-        if(texture_name != "")a_texture = window_struct->texture_shared_ptr(texture_name);
+        if(texture_name != "")a_texture = *window_struct->texture_shared_ptr(texture_name);
         a_vao = window_struct->vao(vao_name);
     }
 
     // Object constructor used for displaying
     Object::Object(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name) : Object(window_struct, parent->transform(), name) {
         a_name = name;
-        if(texture_name != "")a_texture = window_struct->texture_shared_ptr(texture_name);
+        if(texture_name != "")a_texture = *window_struct->texture_shared_ptr(texture_name);
         a_vao = window_struct->vao(vao_name);
 
         set_parent(parent);

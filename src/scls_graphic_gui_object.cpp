@@ -579,6 +579,7 @@ namespace scls {
         else if(xml_attribute_name == "texture") {
             // Load the texture position
             Alignment_Texture texture_alignment = Alignment_Texture::T_Fill;
+            Alignment_Vertical texture_alignment_vertical = Alignment_Vertical::V_Center;
             std::string texture_name = "";
             for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
                 XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
@@ -597,10 +598,15 @@ namespace scls {
                     else if(current_attribute_value == "fit_vertically") texture_alignment = Alignment_Texture::T_Fit_Vertically;
                     else if(current_attribute_value == "user_defined") texture_alignment = Alignment_Texture::T_User_Defined;
                 }
+                else if(current_attribute_name == "alignment_vertical" || current_attribute_name == "alignment_v") {
+                    // Vertical alignment of the texture
+                    if(current_attribute_value == "bottom") texture_alignment_vertical = Alignment_Vertical::V_Bottom;
+                }
             }
             // Set the goot texture
             if(texture_name != "") set_texture(texture_name);
             set_texture_alignment(texture_alignment);
+            set_texture_alignment_vertical(texture_alignment_vertical);
         }
         else if(xml_attribute_name == "width") {
             // Load the width of the object
@@ -629,7 +635,7 @@ namespace scls {
             // Load the X position
             unsigned char attachment_horizontal = 0;
             Fraction attachment_horizontal_offset = Fraction(0);
-            std::string attached_object = "";
+            std::string attached_object_vertical = "";
             Fraction x = Fraction(1);
             _Size_Definition x_type = _Size_Definition::Scale_Size;
             for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
@@ -666,7 +672,7 @@ namespace scls {
             else {
                 // Attach the object
                 std::shared_ptr<__GUI_Object_Core> other_object;
-                if(attached_object != "") other_object = loader.get()->created_objects[attached_object];
+                if(attached_object_vertical != "") other_object = loader.get()->created_objects[attached_object_vertical];
                 if(attachment_horizontal == 1) {
                     if(other_object.get() == 0) attach_left_in_parent(attachment_horizontal_offset.to_double());
                     // else attach_bottom_of_object_in_parent(other_object, attachment_horizontal_offset);
@@ -681,7 +687,7 @@ namespace scls {
             // Load the Y position
             unsigned char attachment_vertical = 0;
             Fraction attachment_vertical_offset = Fraction(0);
-            std::string attached_object = "";
+            std::string attached_object_vertical = "";
             Fraction y = Fraction(1);
             _Size_Definition y_type = _Size_Definition::Scale_Size;
             for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
@@ -691,7 +697,11 @@ namespace scls {
 
                 if(current_attribute_name == "value") {
                     // Value of the width
-                    y = Fraction::from_std_string(current_attribute_value);
+                    try {y = Fraction::from_std_string(current_attribute_value);}
+                    catch(std::invalid_argument) {
+                        y = Fraction(0); set_can_print(true);
+                        print("Warning", "SCLS GUI Object \"" + name() + "\"", "Unvalid Y value \"" + current_attribute_value + "\".");
+                    }
                 }
                 else if(current_attribute_name == "type") {
                     // Type of the width
@@ -710,7 +720,7 @@ namespace scls {
                 }
                 else if(current_attribute_name == "attached_object" || current_attribute_name == "attached_object_name") {
                     // Add an attachment object
-                    attached_object = current_attribute_value;
+                    attached_object_vertical = current_attribute_value;
                 }
             }
             if(attachment_vertical == 0) {
@@ -722,7 +732,7 @@ namespace scls {
             else {
                 // Attach the object
                 std::shared_ptr<__GUI_Object_Core> other_object;
-                if(attached_object != "") other_object = loader.get()->created_objects[attached_object];
+                if(attached_object_vertical != "") other_object = loader.get()->created_objects[attached_object_vertical];
                 if(attachment_vertical == 1) {
                     if(other_object.get() == 0) attach_top_in_parent(attachment_vertical_offset);
                 }
@@ -765,6 +775,11 @@ namespace scls {
             _apply_calculate_transformation(transformation_shared_ptr());
             transformation()->calculate_position();
         }
+        else if(a_transform_attachment.attachment_horizontal_type == 4) {
+            __move_right_of_object_in_parent(a_transform_attachment.attached_object_horizontal, a_transform_attachment.attachment_horizontal_offset.to_double());
+            _apply_calculate_transformation(transformation_shared_ptr());
+            transformation()->calculate_position();
+        }
 
         // Check for the attachment vertical
         if(a_transform_attachment.attachment_vertical_type == 1) {
@@ -778,12 +793,12 @@ namespace scls {
             transformation()->calculate_position();
         }
         else if(a_transform_attachment.attachment_vertical_type == 3) {
-            __move_top_of_object_in_parent(a_transform_attachment.attached_object, a_transform_attachment.attachment_vertical_offset.to_double());
+            __move_top_of_object_in_parent(a_transform_attachment.attached_object_vertical, a_transform_attachment.attachment_vertical_offset.to_double());
             _apply_calculate_transformation(transformation_shared_ptr());
             transformation()->calculate_position();
         }
         else if(a_transform_attachment.attachment_vertical_type == 4) {
-            __move_bottom_of_object_in_parent(a_transform_attachment.attached_object, a_transform_attachment.attachment_vertical_offset.to_double());
+            __move_bottom_of_object_in_parent(a_transform_attachment.attached_object_vertical, a_transform_attachment.attachment_vertical_offset.to_double());
             _apply_calculate_transformation(transformation_shared_ptr());
             transformation()->calculate_position();
         }
@@ -819,10 +834,14 @@ namespace scls {
 
     // Returns the rect of the horizontally fitted texture
     glm::vec4 GUI_Object::fitted_horizontally_texture_rect() {
+        // Get the good size and X position
         Fraction height_texture = (width_in_absolute_scale() / height_in_absolute_scale_and_window()) / texture()->image_ratio();
         Fraction width_texture = Fraction(1);
         Fraction x_texture = Fraction(1, 2) - width_texture / Fraction(2);
-        Fraction y_texture = Fraction(1, 2) - height_texture / Fraction(2);
+        // Get the good Y position
+        Fraction y_texture = Fraction(0);
+        if(texture_alignment_vertical() == Alignment_Vertical::V_Center) y_texture = Fraction(1, 2) - height_texture / 2.0;
+        else if(texture_alignment_vertical() == Alignment_Vertical::V_Top) y_texture = Fraction(1) - height_texture;
         return glm::vec4(x_texture.to_double(), y_texture.to_double(), width_texture.to_double(), height_texture.to_double());
     }
 
@@ -1317,8 +1336,6 @@ namespace scls {
 
     // Input the inputed text
     void GUI_Text_Input::input_text() {
-        if(!(visible() && (is_focused() || has_child_focused()))) return;
-
         std::string final_text = text();
         std::string to_add = "";
 
@@ -1487,8 +1504,10 @@ namespace scls {
     // Update the text
     void GUI_Text_Input::update_event() {
         GUI_Object::update_event();
-        input_text();
-        update_cursor();
+        if(visible() && (is_focused() || has_child_focused())) {
+            input_text();
+            update_cursor();
+        }
     }
 
     // Update the cursor behavior
@@ -2044,6 +2063,15 @@ namespace scls {
                     else if(current_attribute_name == "visible") {
                         // Get that the object MUST be visible
                         must_be_visible = true;
+                    }
+                }
+
+                // Check if the object already exists
+                for(std::map<std::string, std::shared_ptr<__GUI_Object_Core>>::iterator it = loader.get()->created_objects.begin();it!=loader.get()->created_objects.end();it++) {
+                    if(it->first == object_name) {
+                        set_can_print(true);
+                        print("Warning", "SCLS GUI Page \"" + name() + "\"", "The \"" + object_name + "\" name does not exist.");
+                        continue;
                     }
                 }
 

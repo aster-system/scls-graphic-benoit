@@ -491,6 +491,7 @@ namespace scls {
         // Get the XML analyser
         XML_Text xml_text = XML_Text(remove_comment_out_of(read_file(window_path), "\""));
         std::vector<XML_Text>& cutted = xml_text.sub_texts();
+        window_path = path_parent(window_path);
 
         // Check each balises
         for(int i = 0;i<static_cast<int>(cutted.size());i++) {
@@ -565,8 +566,18 @@ namespace scls {
                         src = current_attribute_value;
                     }
                 }
-                // Add the texture
-                new_texture(name, src);
+
+                // Format the path if necessary
+                std::string final_src = src;
+                if(!std::filesystem::exists(final_src)) final_src = window_path + "/" + final_src;
+
+                if(!std::filesystem::exists(final_src)) {
+                    print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to load, uses the \"" + src + "\" path, which does not exist.");
+                }
+                else {
+                    // Add the texture
+                    new_texture(name, final_src);
+                }
             }
             else if(cutted[i].xml_balise_name() == "variable") {
                 // Add a variable
