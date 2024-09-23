@@ -275,11 +275,15 @@ namespace scls {
                     else if(current_attribute_value == "fit_horizontally") texture_alignment = Alignment_Texture::T_Fit_Horizontally;
                     else if(current_attribute_value == "fit_vertically") texture_alignment = Alignment_Texture::T_Fit_Vertically;
                     else if(current_attribute_value == "user_defined") texture_alignment = Alignment_Texture::T_User_Defined;
+                    else print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Can't set the value of the texture alignment to \"" + current_attribute_value + "\".");
                 }
                 else if(current_attribute_name == "alignment_vertical" || current_attribute_name == "alignment_v") {
                     // Vertical alignment of the texture
                     if(current_attribute_value == "bottom") texture_alignment_vertical = Alignment_Vertical::V_Bottom;
+                    else if(current_attribute_value == "top") texture_alignment_vertical = Alignment_Vertical::V_Top;
+                    else print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Can't set the value of the texture vertical alignment to \"" + current_attribute_value + "\".");
                 }
+                else print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Can't find the attribute \"" + current_attribute_value + "\" of the texture.");
             }
             // Set the goot texture
             if(texture_name != "") set_texture(texture_name);
@@ -340,6 +344,10 @@ namespace scls {
                     // Add an attachment offset
                     attachment_horizontal_offset = Fraction::from_std_string(current_attribute_value);
                 }
+                else if(current_attribute_name == "attached_object" || current_attribute_name == "attached_object_name") {
+                    // Add an attachment object
+                    attached_object_vertical = current_attribute_value;
+                }
             }
             if(attachment_horizontal == 0) {
                 // Set the x
@@ -353,11 +361,11 @@ namespace scls {
                 if(attached_object_vertical != "") other_object = loader.get()->created_objects[attached_object_vertical];
                 if(attachment_horizontal == 1) {
                     if(other_object.get() == 0) attach_left_in_parent(attachment_horizontal_offset.to_double());
-                    // else attach_bottom_of_object_in_parent(other_object, attachment_horizontal_offset);
+                    //else attach_bottom_of_object_in_parent(other_object, attachment_horizontal_offset);
                 }
                 else if(attachment_horizontal == 2) {
                     if(other_object.get() == 0) attach_right_in_parent(attachment_horizontal_offset.to_double());
-                    // else attach_bottom_of_object_in_parent(other_object, attachment_horizontal_offset);
+                    else attach_right_of_object_in_parent(other_object, attachment_horizontal_offset.to_double());
                 } //*/
             }
         }
@@ -511,26 +519,31 @@ namespace scls {
     }
 
     // Returns the rect of the horizontally fitted texture
+    // PROBLEMATIC WITH PRIME NUMBER SIZED TEXTURES
     glm::vec4 GUI_Object::fitted_horizontally_texture_rect() {
         // Get the good size and X position
-        Fraction height_texture = (width_in_absolute_scale() / height_in_absolute_scale_and_window()) / texture()->image_ratio();
+        Fraction height_texture = Fraction((floor((Fraction(width_in_pixel()) / texture()->image_ratio()).to_double()) - 0.5) * 2.0) / Fraction(height_in_pixel() * 2.0);
         Fraction width_texture = Fraction(1);
-        Fraction x_texture = Fraction(1, 2) - width_texture / Fraction(2);
+        Fraction x_texture = Fraction(0);
         // Get the good Y position
         Fraction y_texture = Fraction(0);
         if(texture_alignment_vertical() == Alignment_Vertical::V_Center) y_texture = Fraction(1, 2) - height_texture / 2.0;
         else if(texture_alignment_vertical() == Alignment_Vertical::V_Top) y_texture = Fraction(1) - height_texture;
+
         return glm::vec4(x_texture.to_double(), y_texture.to_double(), width_texture.to_double(), height_texture.to_double());
     }
 
     // Returns the rect of the vertically fitted texture
+    // PROBLEMATIC WITH PRIME NUMBER SIZED TEXTURES
     glm::vec4 GUI_Object::fitted_vertically_texture_rect() {
-        Fraction height_texture = Fraction(1);
-        Fraction width_texture = texture()->image_ratio() / (width_in_absolute_scale() / height_in_absolute_scale_and_window());
+        Fraction height_texture = Fraction((static_cast<double>(height_in_pixel()) - 0.5) * 2.0) / Fraction(height_in_pixel() * 2.0);
+        Fraction width_texture = Fraction((floor((Fraction(height_in_pixel()) * texture()->image_ratio()).to_double()) - 0.5) * 2.0) / Fraction(width_in_pixel() * 2.0);
+        Fraction y_texture = Fraction(0);
+        // Get the good Y position
         Fraction x_texture = Fraction(0);
-        Fraction y_texture = Fraction(1, 2) - height_texture / 2.0;
         if(texture_alignment_horizontal() == Alignment_Horizontal::H_Center) x_texture = Fraction(1, 2) - width_texture / 2.0;
         else if(texture_alignment_horizontal() == Alignment_Horizontal::H_Right) x_texture = Fraction(1) - width_texture;
+
         return glm::vec4(x_texture.to_double(), y_texture.to_double(), width_texture.to_double(), height_texture.to_double());
     }
 

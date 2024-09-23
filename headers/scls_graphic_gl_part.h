@@ -138,11 +138,14 @@ namespace scls {
             to_return += "uniform sampler2D texture_0;";
             to_return += "uniform bool texture_binded;";
             to_return += "uniform vec4 texture_rect;";
+
             to_return += "vec4 blend_colors(vec4 color_1, vec4 color_2){"; // Blend function
-            to_return += "vec4 final_color = vec4(vec3(color_2.xyz), 1.0) * vec4(1.0 - color_1.w);";
+            to_return += "if(color_1.w == 0 && color_2.w == 0) return vec4(0, 0, 0, 0);\n";
+            to_return += "vec4 final_color = vec4(vec3(color_2.xyz), 1.0) * vec4(1.0 - (color_1.w));";
             to_return += "final_color += vec4(vec3(color_1.xyz), 1.0) * vec4(color_1.w);";
             to_return += "final_color.w = max(color_1.w, color_2.w);";
             to_return += "return final_color;}";
+
             to_return += "void main(){"; // Main function
             to_return += "if(tex_pos.y > object_extremum.w || tex_pos.y < object_extremum.y)discard;"; // Check if the object should be displayed
             to_return += "vec4 color = background_color;";
@@ -151,7 +154,7 @@ namespace scls {
             to_return += "else if(texture_binded && tex_pos[0] >= texture_rect[0] && tex_pos[1] >= texture_rect[1] && tex_pos[0] < texture_rect[0] + texture_rect[2] && tex_pos[1] < texture_rect[1] + texture_rect[3]){";
             to_return += "vec2 real_tex_pos = tex_pos - texture_rect.xy;";
             to_return += "real_tex_pos /= texture_rect.zw;";
-            to_return += "color = blend_colors(texture(texture_0, real_tex_pos), color);}";
+            to_return += "color = blend_colors(texture(texture_0, real_tex_pos), color);}"; //*/
             to_return += "FragColor = color;}";
             return to_return;
         };
