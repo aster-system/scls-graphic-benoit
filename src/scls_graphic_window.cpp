@@ -218,6 +218,11 @@ namespace scls {
         a_keys["7"] = GLFW_KEY_KP_7;
         a_keys["8"] = GLFW_KEY_KP_8;
         a_keys["9"] = GLFW_KEY_KP_9;
+        a_keys["+"] = GLFW_KEY_KP_ADD;
+        a_keys["-k"] = GLFW_KEY_KP_SUBTRACT;
+        a_keys["*k"] = GLFW_KEY_KP_MULTIPLY;
+        a_keys["/"] = GLFW_KEY_KP_DIVIDE;
+        a_keys["."] = GLFW_KEY_KP_DECIMAL;
         a_keys[")"] = GLFW_KEY_MINUS;
         a_keys["^"] = GLFW_KEY_LEFT_BRACKET;
         a_keys["$"] = GLFW_KEY_RIGHT_BRACKET;
@@ -236,6 +241,7 @@ namespace scls {
         a_keys["<"] = GLFW_KEY_WORLD_2;
 
         // Other
+        a_keys["alt gr"] = GLFW_KEY_RIGHT_ALT;
         a_keys["backspace"] = GLFW_KEY_BACKSPACE;
         a_keys["down arrow"] = GLFW_KEY_DOWN;
         a_keys["enter"] = GLFW_KEY_ENTER;
@@ -394,31 +400,25 @@ namespace scls {
         // Update the keys
         pressed_keys().clear();
         pressed_keys_frame().clear();
-        for (std::map<std::string, Key_State>::iterator it = keys_state().begin(); it != keys_state().end(); it++)
-        {
+        for (std::map<std::string, Key_State>::iterator it = keys_state().begin(); it != keys_state().end(); it++) {
             it->second = Key_State::Nothing; // Reset keys
         }
-        for (std::map<std::string, double>::iterator it = keys_state_time().begin(); it != keys_state_time().end(); it++)
-        {
+        for (std::map<std::string, double>::iterator it = keys_state_time().begin(); it != keys_state_time().end(); it++) {
             // Update the time
             it->second += delta_time();
         }
 
-        for (std::map<std::string, unsigned int>::iterator it = a_keys.begin(); it != a_keys.end(); it++)
-        {
-            if (glfwGetKey(window(), it->second) == GLFW_PRESS)
-            {
+        for (std::map<std::string, unsigned int>::iterator it = a_keys.begin(); it != a_keys.end(); it++) {
+            if (glfwGetKey(window(), it->second) == GLFW_PRESS) {
                 keys_state()[it->first] = Key_State::Pressed;
                 pressed_keys().push_back(it->first);
             }
         }
 
         // Update key frame
-        for (std::map<std::string, Key_State>::iterator it = keys_state().begin(); it != keys_state().end(); it++)
-        {
+        for (std::map<std::string, Key_State>::iterator it = keys_state().begin(); it != keys_state().end(); it++) {
             Key_State state = it->second;
-            if (state != Key_State::Nothing)
-            {
+            if (state != Key_State::Nothing) {
                 if (keys_state_frame()[it->first] != state && keys_state_frame()[it->first] != Key_State::Already_Pressed && keys_state_frame()[it->first] != Key_State::Pressed_Repeated)
                 {
                     keys_state_frame()[it->first] = Key_State::Pressed;

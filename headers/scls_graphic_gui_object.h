@@ -69,8 +69,8 @@ namespace scls {
         inline std::shared_ptr<GUI_Object>* child_by_name_shared_ptr(std::string child_name) {for(int i = 0;i<static_cast<int>(a_children.size());i++) {if(a_children[i] != 0 && a_children[i].get()->name() == child_name) return &a_children[i];}return 0;};
         // Function called when a child is deleted
         virtual void child_deleted(GUI_Object* child) { if(parent() != 0) parent()->child_deleted(child); };
-        // Delete a child of the object
-        void delete_child(GUI_Object* object);
+        // Deletes a child of the object and returns if the child has been correctly deleted
+        bool delete_child(GUI_Object* object);
         // Delete the children of an object
         void delete_children();
         // Hide all the children in the object
@@ -340,6 +340,9 @@ namespace scls {
         // Update the object for the events
         virtual void update_event() {GUI_Object::update_event();check_scroll();};
 
+        // Getters and setters
+        inline Alignment_Vertical scroller_vertical_alignment() const {return a_scroller_vertical_alignment;};
+
     protected:
 
         //*********
@@ -363,6 +366,9 @@ namespace scls {
         std::shared_ptr<GUI_Object>* _create_scroller_children();
         // Scroller children which contains each elements
         std::shared_ptr<GUI_Object> a_scroller_children;
+
+        // Vertical alignment of the scroller
+        Alignment_Vertical a_scroller_vertical_alignment = Alignment_Vertical::V_Top;
     };
 
     class GUI_Scroller_Choice : public GUI_Scroller {
@@ -445,11 +451,12 @@ namespace scls {
         inline void set_font_color(Color new_font_color) {a_global_style.color = new_font_color;};
         inline void set_font_family(std::string new_font_family) {a_global_style.font = get_system_font(new_font_family);};
         inline void set_font_size(unsigned short new_font_size) {a_global_style.font_size = new_font_size;};
-        virtual void set_text(std::string new_text, bool should_move_cursor = true) {if(new_text == a_text)return;a_text = new_text;if(should_move_cursor)set_cursor_position_in_formatted_text(plain_text_size());update_texture();};
+        virtual void set_text(std::string new_text, bool should_move_cursor = true) {new_text=to_utf_8_code_point(new_text);if(new_text == a_text)return;a_text = new_text;if(should_move_cursor)set_cursor_position_in_formatted_text(plain_text_size());update_texture();};
         inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {a_global_style.alignment_horizontal = new_text_alignment_horizontal;};
         virtual void set_text_image_type(Block_Type new_text_image_type) {a_text_image_type = new_text_image_type;};
         inline void set_text_offset(double new_text_offset) {a_global_style.text_offset_x = new_text_offset;a_global_style.text_offset_y = new_text_offset;a_global_style.text_offset_width = new_text_offset;a_global_style.text_offset_height = new_text_offset;};
-        inline std::string text() const {return a_text;};
+        inline std::string text() const {return to_utf_8(a_text);};
+        inline std::string text_code_point() const {return a_text;};
         inline Block_Type text_image_type() const {return a_text_image_type;};
         inline glm::vec4 text_offset() const {return glm::vec4(a_global_style.text_offset_x, a_global_style.text_offset_y, a_global_style.text_offset_width, a_global_style.text_offset_height);};
 
@@ -460,7 +467,7 @@ namespace scls {
         //*********
 
         // Returns the position of the cursor in unformatted text
-        inline unsigned int cursor_position_in_unformatted_text() const { return window_struct().text_image_generator()->plain_text_position_to_unformatted_text_position(text(), cursor_position_in_formatted_text()); };
+        inline unsigned int cursor_position_in_unformatted_text() const { return window_struct().text_image_generator()->plain_text_position_to_unformatted_text_position(text_code_point(), cursor_position_in_formatted_text()); };
         // Moves the cursor in the text
         void move_cursor(int movement);
 
@@ -469,6 +476,15 @@ namespace scls {
         virtual void set_cursor_position_in_formatted_text(unsigned int new_cursor_position_in_formatted_text) {a_cursor_position_in_formatted_text = new_cursor_position_in_formatted_text;};
         inline void set_use_cursor(bool new_use_cursor) {a_use_cursor = new_use_cursor;};
         inline bool use_cursor() const {return a_use_cursor;};
+
+        //*********
+        //
+        // Loading handler
+        //
+        //*********
+
+        // Handle an attribute from XML
+        virtual void set_xml_attribute(XML_Text& text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i);
 
     private:
 
@@ -524,15 +540,6 @@ namespace scls {
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline Text_Image_Multi_Block* attached_text_image() {return a_text_image;};
         inline bool text_modified_during_this_frame() {return a_text_modified_during_this_frame;};
-
-        //*********
-        //
-        // Loading handler
-        //
-        //*********
-
-        // Handle an attribute from XML
-        virtual void set_xml_attribute(XML_Text& text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i);
     private:
         //*********
         //
@@ -565,6 +572,7 @@ namespace scls {
 
         // Return the plain text in the object
         inline std::string plain_text(){return window_struct().text_image_generator()->plain_text(text());};
+        inline std::string plain_text_code_point(){return window_struct().text_image_generator()->plain_text(text_code_point());};
         // Return the size of the plain text in the object
         inline unsigned int plain_text_size() {return plain_text().size();};
 
@@ -578,11 +586,11 @@ namespace scls {
         void update_text_texture();
 
         // Add a text to the input at the cursor position
-        void add_text(const std::string& text_to_add);
+        void add_text(std::string text_to_add);
         // Format a std::string
-        std::string _format(std::string letter, bool apply_capitalisation = true);
+        std::string _format(std::string letter, bool apply_alt = false, bool apply_capitalisation = true);
         // Format an only letter
-        std::string _format_one_letter(std::string letter, bool apply_capitalisation = true);
+        std::string _format_one_letter(std::string letter, bool apply_alt = false, bool apply_capitalisation = true);
         // Input the inputed text
         void input_text();
         // Place the lines in the text
@@ -667,6 +675,8 @@ namespace scls {
         // GUI_File_Explorer destructor
         virtual ~GUI_File_Explorer();
 
+        // Add an extension to the authorized extensions
+        inline void add_authorized_extension(std::string extension){if(a_authorized_file_extension.size() <= 0 || !is_file_authorized(extension))a_authorized_file_extension.push_back(extension);};
         // Function called after that the window is resized
         virtual void after_resizing();
         // Function called after an XML loading
@@ -680,6 +690,13 @@ namespace scls {
         };
         // Returns if a file is chosen during this frame
         bool file_chosen();
+        // Returns if a file is authorized or not
+        inline bool is_file_authorized(std::string tested_file) const {
+            if(a_authorized_file_extension.size() <= 0 || std::filesystem::is_directory(tested_file)) return true;
+            std::string extension=file_extension(tested_file); std::string extension_wp=file_extension(tested_file,true);
+            for(int i=0;i<static_cast<int>(a_authorized_file_extension.size());i++){if(a_authorized_file_extension.at(i)==extension||a_authorized_file_extension.at(i)==extension_wp){return true;}}
+            return false;
+        };
         // Load the explorer
         void load();
         // Place all the elements in the file explorer
@@ -711,6 +728,8 @@ namespace scls {
         inline void set_choose_button_text(std::string new_choose_button_text) {a_choose_button_text = new_choose_button_text;};
         inline void set_final_path_text(std::string new_final_path_text) {a_final_path_text = new_final_path_text;};
     private:
+        // List of each authorised files extension
+        std::vector<std::string> a_authorized_file_extension;
         // Current path of the file explorer
         std::string a_current_path = "";
         // Currently selected file in the current path

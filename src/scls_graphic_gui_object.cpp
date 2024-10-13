@@ -34,8 +34,17 @@ namespace scls {
     // Function called after that the window is resized
     void GUI_Object::after_resizing(){ calculate_transformation(true); }
 
-    // Delete a child of the object
-    void GUI_Object::delete_child(GUI_Object* object) { for(int i = 0;i<static_cast<int>(children().size());i++) { if(children()[i].get() == object) { children().erase(children().begin() + i); return; } } }
+    // Deletes a child of the object and returns if the child has been correctly deleted
+    bool GUI_Object::delete_child(GUI_Object* object) {
+        // Check if the child is here
+        for(int i = 0;i<static_cast<int>(children().size());i++) { if(children()[i].get() == object) { children().erase(children().begin() + i); return true; } }
+
+        // Check if the child is the child of a child
+        for(int i = 0;i<static_cast<int>(children().size());i++) {
+            if(children()[i].get()->delete_child(object)) return true;
+        }
+        return false;
+    }
 
     // Render the object
     void GUI_Object::render(glm::vec3 scale_multiplier) {
@@ -257,6 +266,7 @@ namespace scls {
         else if(xml_attribute_name == "texture") {
             // Load the texture position
             Alignment_Texture texture_alignment = Alignment_Texture::T_Fill;
+            Alignment_Horizontal texture_alignment_horizontal = Alignment_Horizontal::H_Center;
             Alignment_Vertical texture_alignment_vertical = Alignment_Vertical::V_Center;
             std::string texture_name = "";
             for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
@@ -283,11 +293,18 @@ namespace scls {
                     else if(current_attribute_value == "top") texture_alignment_vertical = Alignment_Vertical::V_Top;
                     else print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Can't set the value of the texture vertical alignment to \"" + current_attribute_value + "\".");
                 }
+                else if(current_attribute_name == "alignment_horizontal" || current_attribute_name == "alignment_h") {
+                    // Horizontal alignment of the texture
+                    if(current_attribute_value == "left") texture_alignment_horizontal = Alignment_Horizontal::H_Left;
+                    else if(current_attribute_value == "right") texture_alignment_horizontal = Alignment_Horizontal::H_Right;
+                    else print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Can't set the value of the texture vertical alignment to \"" + current_attribute_value + "\".");
+                }
                 else print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Can't find the attribute \"" + current_attribute_value + "\" of the texture.");
             }
             // Set the goot texture
             if(texture_name != "") set_texture(texture_name);
             set_texture_alignment(texture_alignment);
+            set_texture_alignment_horizontal(texture_alignment_horizontal);
             set_texture_alignment_vertical(texture_alignment_vertical);
         }
         else if(xml_attribute_name == "width") {
@@ -667,9 +684,14 @@ namespace scls {
             }
         }
         a_scroller_children->set_height_in_pixel(static_cast<unsigned int>(tallest_point.to_double()));
-        a_scroller_children->move_top_in_parent(1);
+        if(scroller_vertical_alignment() == Alignment_Vertical::V_Top) {
+            a_scroller_children->move_top_in_parent(1);
+        }
+        else if(scroller_vertical_alignment() == Alignment_Vertical::V_Bottom) {
+            a_scroller_children->move_bottom_in_parent(1);
+        }
 
-        // Calculate according to the last position
+        /*// Calculate according to the last position
         int children_height = static_cast<int>(a_scroller_children->height_in_pixel());
         int height = static_cast<int>(height_in_pixel());
         if(!reset) {
@@ -681,7 +703,7 @@ namespace scls {
                     a_scroller_children->move_bottom_in_parent(1);
                 }
             }
-        }
+        } //*/
         calculate_transformation(true, true);
 
         // Resize the children
@@ -698,19 +720,21 @@ namespace scls {
 
     // Scroll the scroller
     void GUI_Scroller::scroll_y(Fraction movement) {
-        if(a_scroller_children->height_in_scale() > 1) {
-            movement *= Fraction(1, 30);
-            Fraction final_pos = (a_scroller_children->y_in_scale()) - movement;
-            Fraction max_pos = a_scroller_children.get()->one_pixel_height_in_scale() * -1;
-            if(final_pos > max_pos) final_pos = max_pos;
-            if(final_pos < a_scroller_children->height_in_scale() * Fraction(-1) + Fraction(1)) final_pos = a_scroller_children->height_in_scale() * Fraction(-1) + Fraction(1);
-            a_scroller_children->set_y_in_scale(final_pos);
+        if(scroller_vertical_alignment() == Alignment_Vertical::V_Top) {
+            if(a_scroller_children->height_in_scale() > 1) {
+                movement *= Fraction(1, 30);
+                Fraction final_pos = (a_scroller_children->y_in_scale()) - movement;
+                Fraction max_pos = a_scroller_children.get()->one_pixel_height_in_scale() * -1;
+                if(final_pos > max_pos) final_pos = max_pos;
+                if(final_pos < a_scroller_children->height_in_scale() * Fraction(-1) + Fraction(1)) final_pos = a_scroller_children->height_in_scale() * Fraction(-1) + Fraction(1);
+                a_scroller_children->set_y_in_scale(final_pos);
+            }
+            else {
+                a_scroller_children->move_top_in_parent(1);
+            }
+            calculate_transformation(true, true);
+            GUI_Object::after_resizing();
         }
-        else {
-            a_scroller_children->move_top_in_parent(1);
-        }
-        calculate_transformation(true, true);
-        GUI_Object::after_resizing();
     }
 
     //*********
@@ -765,6 +789,69 @@ namespace scls {
         update_texture();
     }
 
+    // Handle an attribute from XML
+    void __GUI_Text_Metadatas::set_xml_attribute(XML_Text& text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i) {
+        std::string xml_attribute_name = text.xml_balise_name();
+        if(xml_attribute_name == "content") {
+            // Get each attributes
+            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+                std::string current_attribute_name = current_attribute.name;
+                std::string current_attribute_value = current_attribute.value;
+
+                // Load the font size of the text
+                if(current_attribute_name == "font_size") {
+                    // Value of the font size
+                    set_font_size(Fraction::from_std_string(current_attribute_value).to_double());
+                }
+            }
+            // Get the content of the text
+            set_text(text.text());
+        }
+        else if(xml_attribute_name == "font_size") {
+            // Load the font size of the text
+            Fraction final_font_size = Fraction(1);
+            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+                std::string current_attribute_name = current_attribute.name;
+                std::string current_attribute_value = current_attribute.value;
+
+                if(current_attribute_name == "value") {
+                    // Value of the height
+                    final_font_size = Fraction::from_std_string(current_attribute_value);
+                }
+            }
+            // Set the font size
+            set_font_size(final_font_size.to_double());
+        }
+        else if(xml_attribute_name == "text_style") {
+            // Load datas about the text
+            Color final_color = font_color();
+            Fraction final_font_size = Fraction(font_size());
+            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+                std::string current_attribute_name = current_attribute.name;
+                std::string current_attribute_value = current_attribute.value;
+
+                if(current_attribute_name == "color") {
+                    // Value of the color
+                    final_color = Color::from_std_string(current_attribute_value);
+                }
+                else if(current_attribute_name == "font_size") {
+                    // Value of the font size
+                    final_font_size = Fraction::from_std_string(current_attribute_value);
+                }
+            }
+            // Set the datas
+            set_font_color(final_color);
+            set_font_size(final_font_size.to_double());
+        }
+        else {
+            // Load a lowest level attribute
+            GUI_Object::set_xml_attribute(text, event, loader, i);
+        }
+    }
+
     //*********
     //
     // GUI Text main functions
@@ -783,7 +870,7 @@ namespace scls {
 
             // Create the text
             glm::vec2 position_to_apply = glm::vec2(x_in_pixel(), y_in_pixel());
-            a_text_image->set_text(text());
+            a_text_image->set_text(text_code_point());
             a_text_image->global_style().background_color = background_color();
             a_text_image->global_style().color = font_color();
             a_text_image->global_style().font_size = font_size();
@@ -809,53 +896,6 @@ namespace scls {
 
     //*********
     //
-    // Loading handler
-    //
-    //*********
-
-    // Handle an attribute from XML
-    void GUI_Text::set_xml_attribute(XML_Text& text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i) {
-        std::string xml_attribute_name = text.xml_balise_name();
-        if(xml_attribute_name == "content") {
-            // Get each attributes
-            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
-                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
-                std::string current_attribute_name = current_attribute.name;
-                std::string current_attribute_value = current_attribute.value;
-
-                // Load the font size of the text
-                if(current_attribute_name == "font_size") {
-                    // Value of the font size
-                    set_font_size(Fraction::from_std_string(current_attribute_value).to_double());
-                }
-            }
-            // Get the content of the text
-            set_text(to_utf_8_code_point(text.text()));
-        }
-        else if(xml_attribute_name == "font_size") {
-            // Load the font size of the text
-            Fraction final_font_size = Fraction(1);
-            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
-                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
-                std::string current_attribute_name = current_attribute.name;
-                std::string current_attribute_value = current_attribute.value;
-
-                if(current_attribute_name == "value") {
-                    // Value of the height
-                    final_font_size = Fraction::from_std_string(current_attribute_value);
-                }
-            }
-            // Set the font size
-            set_font_size(final_font_size.to_double());
-        }
-        else {
-            // Load a lowest level attribute
-            __GUI_Text_Metadatas::set_xml_attribute(text, event, loader, i);
-        }
-    }
-
-    //*********
-    //
     // GUI_Text_Input main functions
     //
     //*********
@@ -870,11 +910,11 @@ namespace scls {
     GUI_Text_Input::~GUI_Text_Input() {}
 
     // Add a text to the input at the cursor position
-    void GUI_Text_Input::add_text(const std::string& text_to_add) {
+    void GUI_Text_Input::add_text(std::string text_to_add) {
         unsigned int cursor_position = cursor_position_in_unformatted_text();
         std::string text_to_modify = text();
         std::string final_text = text_to_modify.substr(0, cursor_position) + text_to_add + text_to_modify.substr(cursor_position, text_to_modify.size() - cursor_position);
-        if(final_text != text()) {
+        if(final_text != text_to_modify) {
             a_input_during_this_frame = true;
 
             std::vector<std::string> cutted = cut_string(text_to_add, "</br>", false, false);
@@ -887,13 +927,13 @@ namespace scls {
                         children().push_back(0);
                     }
                 }
-            }
+            } cutted = cut_string(to_utf_8_code_point(text_to_add), "</br>", false, false);
 
             if(a_text_image != 0) {
-                a_text_image->add_text(cutted, final_text, text_to_add, cursor_position);
+                a_text_image->add_text(cutted, to_utf_8_code_point(final_text), to_utf_8_code_point(text_to_add), cursor_position);
             }
             set_cursor_position_in_formatted_text(cursor_position_in_formatted_text() + window_struct().text_image_generator()->plain_text_size(text_to_add));
-            __GUI_Text_Metadatas::set_text(final_text, false);
+            a_text_modified = true;__GUI_Text_Metadatas::set_text(final_text, false);
             if(a_text_image != 0) a_text_image->set_cursor_position_in_plain_text(cursor_position_in_formatted_text());
         }
     };
@@ -905,19 +945,32 @@ namespace scls {
     }
 
     // Format a char
-    std::string GUI_Text_Input::_format(std::string letter, bool apply_capitalisation) {
+    std::string GUI_Text_Input::_format(std::string letter, bool apply_alt, bool apply_capitalisation) {
         std::string result = "";
 
         for(int i = 0;i<static_cast<int>(letter.size());i++) {
             std::string to_analyse = ""; to_analyse += letter[i];
-            result += _format_one_letter(to_analyse, apply_capitalisation);
+            result += _format_one_letter(to_analyse, apply_alt, apply_capitalisation);
         }
 
         return result;
     }
 
     // Capitalize a std::string
-    std::string GUI_Text_Input::_format_one_letter(std::string letter, bool apply_capitalisation) {
+    std::string GUI_Text_Input::_format_one_letter(std::string letter, bool apply_alt, bool apply_capitalisation) {
+        if(apply_alt) {
+            // Top bar
+            if(letter == "é") letter = "~";
+            if(letter == "\"") letter = "#";
+            if(letter == "'") letter = "{";
+            if(letter == "(") letter = "[";
+            if(letter == "-") letter = "|";
+            if(letter == "è") letter = "`";
+            if(letter == "_") letter = "\\";
+            if(letter == "ç") letter = "^";
+            if(letter == "à") letter = "@";
+            if(letter == ")") letter = "]";
+        }
         if(apply_capitalisation) {
             // Alphabet letter
             if(letter == "a") letter = "A";
@@ -1035,6 +1088,7 @@ namespace scls {
 
         // Handle letters
         bool should_control = (window_struct().key_state("left control") == Key_State::Pressed || window_struct().key_state("right control") == Key_State::Pressed);
+        bool should_alt = (window_struct().key_state("alt gr") == Key_State::Pressed);
         bool should_capitalise = (window_struct().key_state("left shift") == Key_State::Pressed || window_struct().key_state("right shift") == Key_State::Pressed);
         if(window_struct().key_pressed_or_repeated_pressed("a")) { to_add += "a";  }
         if(window_struct().key_pressed_or_repeated_pressed("b")) { to_add += "b";  }
@@ -1084,6 +1138,9 @@ namespace scls {
         if(window_struct().key_pressed_or_repeated_pressed("8")) { to_add += "8";  }
         if(window_struct().key_pressed_or_repeated_pressed("9")) { to_add += "9";  }
         if(window_struct().key_pressed_or_repeated_pressed("=")) { to_add += "=";  }
+        if(window_struct().key_pressed_or_repeated_pressed("+")) { to_add += "+";  }
+        if(window_struct().key_pressed_or_repeated_pressed("/")) { to_add += "/";  }
+        if(window_struct().key_pressed_or_repeated_pressed(".")) { to_add += ".";  }
 
         // Handle numbers / special characters
         if(window_struct().key_pressed_or_repeated_pressed("&")) { to_add += "&";  }
@@ -1114,12 +1171,13 @@ namespace scls {
         if(window_struct().key_pressed_or_repeated_pressed("tab")) { to_add += "    ";  }
         if(window_struct().key_pressed_or_repeated_pressed(")")) { to_add += ")";  }
         if(window_struct().key_pressed_or_repeated_pressed("$")) { to_add += "$";  }
-        to_add = _format(to_add, should_capitalise);
+        to_add = _format(to_add, should_alt, should_capitalise);
         to_add = format_string_from_plain_text(to_add);
 
+        if(window_struct().key_pressed_or_repeated_pressed("-k")) { to_add += "-";  }
+        if(window_struct().key_pressed_or_repeated_pressed("*k")) { to_add += "*";  }
         if(window_struct().key_pressed_or_repeated_pressed("enter") == Key_State::Pressed) { to_add += "</br>";  }
 
-        to_add = to_utf_8_code_point(to_add);
         add_text(to_add);
     }
 
@@ -1239,8 +1297,9 @@ namespace scls {
             attached_text_image()->free_memory();
             delete_children();
         }
+        attached_text_image()->global_style().color = font_color();
         attached_text_image()->global_style().font = font();
-        if(a_text_modified) attached_text_image()->set_text(text()); a_text_modified = false;
+        if(a_text_modified) attached_text_image()->set_text(text_code_point()); a_text_modified = false;
         attached_text_image()->set_cursor_position_in_plain_text(cursor_position_in_formatted_text());
 
         // Configure the needed creation settings
@@ -1461,10 +1520,10 @@ namespace scls {
             a_browser_buttons.clear();
             from_scratch = true;
             for(unsigned int i = 0;i<static_cast<unsigned int>(paths.size());i++) {
-                if(!std::filesystem::exists(paths[i])) continue;
+                if(!std::filesystem::exists(paths[i]) || !is_file_authorized(paths[i])) continue;
 
                 // Create the button
-                paths[i] = to_utf_8_code_point(file_name(paths[i], true));
+                paths[i] = file_name(paths[i], true);
                 std::shared_ptr<GUI_Text> new_button = *a_browser.get()->new_object_in_scroller<GUI_Text>("browser_button_" + std::to_string(i));
                 new_button.get()->set_background_color(scls::white);
                 new_button.get()->set_font_color(scls::black);
