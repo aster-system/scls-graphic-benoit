@@ -770,25 +770,6 @@ namespace scls {
     //
     //*********
 
-    // Move the cursor in the text
-    void __GUI_Text_Metadatas::move_cursor(int movement) {
-        int final_cursor_position = cursor_position_in_formatted_text() + movement;
-        if(movement < 0) {
-            if(final_cursor_position < 0) {
-                final_cursor_position = 0;
-            }
-        }
-        else if(movement > 0) {
-            if(final_cursor_position > static_cast<int>(plain_text_size())) {
-                final_cursor_position = plain_text_size();
-            }
-        }
-        else if(final_cursor_position == static_cast<int>(cursor_position_in_formatted_text())) return;
-        set_cursor_position_in_formatted_text(final_cursor_position);
-
-        update_texture();
-    }
-
     // Handle an attribute from XML
     void __GUI_Text_Metadatas::set_xml_attribute(XML_Text& text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i) {
         std::string xml_attribute_name = text.xml_balise_name();
@@ -863,36 +844,24 @@ namespace scls {
 
     // Update the texture of the text
     void GUI_Text::update_text_texture() {
-        if(text() != "" || use_cursor()) {
-            if(a_text_image == 0) {
-                a_text_image = window_struct().text_image_generator()->new_text_image_multi_block("");
-            }
-
+        if(text() != "") {
             // Create the text
             glm::vec2 position_to_apply = glm::vec2(x_in_pixel(), y_in_pixel());
-            a_text_image->set_text(text_code_point());
-            a_text_image->global_style().background_color = background_color();
-            a_text_image->global_style().color = font_color();
-            a_text_image->global_style().font_size = font_size();
+            attached_text_image_block()->set_text(text());
+            attached_text_image_block()->global_style().background_color = background_color();
+            attached_text_image_block()->global_style().color = font_color();
+            attached_text_image_block()->global_style().font_size = font_size();
             // a_text_image->set_cursor_position(cursor_position_in_formatted_text());
             // a_text_image->set_use_cursor(use_cursor());
 
             // Apply the text
-            std::shared_ptr<Image> image_to_paste = a_text_image->image_shared_pointer();
+            std::shared_ptr<Image> image_to_paste = attached_text_image_block()->image_shared_pointer();
             texture()->set_image(image_to_paste);
         }
         else {
             texture()->set_image(0);
         }
     };
-
-    // GUI_Text destructor
-    GUI_Text::~GUI_Text() {
-        if(a_text_image != 0) {
-            delete a_text_image;
-            a_text_image = 0;
-        }
-    }
 
     //*********
     //
@@ -903,38 +872,28 @@ namespace scls {
     // Most basic GUI_Text constructor
     GUI_Text_Input::GUI_Text_Input(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent) : __GUI_Text_Metadatas(window, name, parent) {
         set_text_image_type(Block_Type::BT_Keep_Block_And_Line_In_Memory);
-        // set_use_cursor(true);
     }
-
-    // GUI_Text_Input destructor
-    GUI_Text_Input::~GUI_Text_Input() {}
 
     // Add a text to the input at the cursor position
     void GUI_Text_Input::add_text(std::string text_to_add) {
-        unsigned int cursor_position = cursor_position_in_unformatted_text();
-        std::string text_to_modify = text();
-        std::string final_text = text_to_modify.substr(0, cursor_position) + text_to_add + text_to_modify.substr(cursor_position, text_to_modify.size() - cursor_position);
-        if(final_text != text_to_modify) {
-            a_input_during_this_frame = true;
-
-            std::vector<std::string> cutted = cut_string(text_to_add, "</br>", false, false);
-            if(a_text_image != 0 && cutted.size() > 1) {
-                for(int i = 0;i<cutted.size() - 1;i++) {
-                    if((a_text_image->line_number_at_position(cursor_position) - line_offset()) + i < children().size()) {
-                        children().insert(children().begin() + (a_text_image->line_number_at_position(cursor_position) - line_offset()) + i, 0);
-                    }
-                    else {
-                        children().push_back(0);
-                    }
+        // Prepare the needed datas to add (the text is treated as unformatted here)
+        if(text_to_add != "" && attached_text_image() != 0) {
+            // Add the lines if needed
+            unsigned int cursor_position = attached_text_image()->cursor_position_in_full_text();
+            int new_line = count_string(text_to_add, "</br>") - 1;
+            for(int i = 0;i<new_line;i++) {
+                if((attached_text_image()->line_number_at_position(cursor_position) - line_offset()) + i < children().size()) {
+                    children().insert(children().begin() + (attached_text_image()->line_number_at_position(cursor_position) - line_offset()) + i, 0);
                 }
-            } cutted = cut_string(to_utf_8_code_point(text_to_add), "</br>", false, false);
-
-            if(a_text_image != 0) {
-                a_text_image->add_text(cutted, to_utf_8_code_point(final_text), to_utf_8_code_point(text_to_add), cursor_position);
+                else {
+                    children().push_back(0);
+                }
             }
-            set_cursor_position_in_formatted_text(cursor_position_in_formatted_text() + window_struct().text_image_generator()->plain_text_size(text_to_add));
-            a_text_modified = true;__GUI_Text_Metadatas::set_text(final_text, false);
-            if(a_text_image != 0) a_text_image->set_cursor_position_in_plain_text(cursor_position_in_formatted_text());
+            // Update the text
+            attached_text_image()->add_text(text_to_add);
+            a_input_during_this_frame = true;
+            a_text_modified = true;
+            update_texture();
         }
     };
 
@@ -1181,6 +1140,25 @@ namespace scls {
         add_text(to_add);
     }
 
+    // Move the cursor in the text
+    void GUI_Text_Input::move_cursor(int movement) {
+        int final_cursor_position = cursor_position_in_formatted_text() + movement;
+        if(movement < 0) {
+            if(final_cursor_position < 0) {
+                final_cursor_position = 0;
+            }
+        }
+        else if(movement > 0) {
+            if(final_cursor_position > static_cast<int>(plain_text_size())) {
+                final_cursor_position = plain_text_size();
+            }
+        }
+        else if(final_cursor_position == static_cast<int>(cursor_position_in_formatted_text())) return;
+        set_cursor_position_in_formatted_text(final_cursor_position);
+
+        update_texture();
+    }
+
     // Moves the cursor at a pixel position
     void GUI_Text_Input::move_cursor_at_position_in_scale(glm::vec2 position) {
         if(children().size() <= 0) return;
@@ -1196,24 +1174,24 @@ namespace scls {
             current_object = children()[children().size() - 1].get();
         }
 
-        move_cursor(a_text_image->cursor_position_in_plain_text_at_line_and_x(i + line_offset(), position[0] * width_in_pixel()) - cursor_position_in_formatted_text());
+        move_cursor(attached_text_image()->cursor_position_in_plain_text_at_line_and_x(i + line_offset(), position[0] * width_in_pixel()) - cursor_position_in_formatted_text());
     }
 
     // Moves the cursor in the Y axis
     void GUI_Text_Input::move_cursor_y(int movement) {
-        if(a_text_image == 0) return;
+        if(attached_text_image() == 0) return;
 
-        Text_Image_Line* cursor_line = a_text_image->cursor_line();
+        Text_Image_Line* cursor_line = attached_text_image()->cursor_line();
         if(cursor_line != 0) {
             int cursor_number = (cursor_line->datas().line_number) + movement;
             if(cursor_number < 0) {
                 move_cursor(-cursor_position_in_formatted_text());
             }
-            else if(cursor_number >= a_text_image->lines().size()) {
+            else if(cursor_number >= attached_text_image()->lines().size()) {
                 move_cursor(plain_text_size() - cursor_position_in_formatted_text());
             }
             else {
-                move_cursor(a_text_image->cursor_position_in_plain_text_at_line_and_x(cursor_number, cursor_line->cursor_x()) - cursor_position_in_formatted_text());
+                move_cursor(attached_text_image()->cursor_position_in_plain_text_at_line_and_x(cursor_number, cursor_line->cursor_x()) - cursor_position_in_formatted_text());
             }
         }
     }
@@ -1234,32 +1212,26 @@ namespace scls {
     }
 
     // Remove a text to the input at the cursor position
-    void GUI_Text_Input::remove_text(unsigned int size_to_delete_in_plain_text) {
+    void GUI_Text_Input::remove_text(unsigned int size_to_delete) {
+        // Preparate the needed datas
+        // Remove the text
+        attached_text_image()->remove_text(size_to_delete);
+        update_text_texture();
+        /*std::string text_to_modify = text();
         unsigned int cursor_position = cursor_position_in_unformatted_text() - 1;
         unsigned int position_to_delete = window_struct().text_image_generator()->first_plain_text_character_before_position_in_informatted_text(text(), cursor_position);
         unsigned int size_to_delete = (cursor_position - position_to_delete) + 1;
         set_cursor_position_in_formatted_text(cursor_position_in_formatted_text() - 1);
 
         a_input_during_this_frame = true;
-        std::string text_to_modify = text();
         std::string final_text = text_to_modify.substr(0, position_to_delete) + text_to_modify.substr(position_to_delete + size_to_delete, text_to_modify.size() - (position_to_delete + size_to_delete));
-        if(a_text_image != 0) {
-            unsigned int line_to_delete = a_text_image->line_number_at_position(cursor_position + 1) - line_offset();
-            unsigned int lines_deleted = a_text_image->remove_text(final_text, size_to_delete, size_to_delete_in_plain_text, cursor_position + 1);
+        if(attached_text_image() != 0) {
+            unsigned int line_to_delete = attached_text_image()->line_number_at_position(cursor_position + 1) - line_offset();
+            unsigned int lines_deleted = attached_text_image()->remove_text(final_text, size_to_delete, size_to_delete_in_plain_text, cursor_position + 1);
 
             // Delete the children to delete
             for(int i = 0;i<lines_deleted;i++) { children().erase(children().begin() + line_to_delete - i); }
-        }
-        __GUI_Text_Metadatas::set_text(final_text, false);
-    }
-
-    // Update the text
-    void GUI_Text_Input::update_event() {
-        GUI_Object::update_event();
-        if(visible() && (is_focused() || has_child_focused())) {
-            input_text();
-            update_cursor();
-        }
+        } __GUI_Text_Metadatas::set_text(final_text, false); //*/
     }
 
     // Update the cursor behavior
@@ -1288,19 +1260,23 @@ namespace scls {
         }
     }
 
+    // Update the text
+    void GUI_Text_Input::update_event() {
+        GUI_Object::update_event();
+        if(visible() && (is_focused() || has_child_focused())) {
+            input_text();
+            update_cursor();
+        }
+    }
+
     // Update the texture of the text
     void GUI_Text_Input::update_text_texture() {
         // Configure the text image
-        if(attached_text_image() == 0) {
-            a_text_image.reset(window_struct().text_image_generator()->new_text_image_block("", text_image_type()));
-            attached_text_image()->set_use_cursor(true);
-            attached_text_image()->free_memory();
-            delete_children();
-        }
+        if(attached_text_image() == 0) attached_text_image_block()->generate_blocks();
         attached_text_image()->global_style().color = font_color();
         attached_text_image()->global_style().font = font();
-        if(a_text_modified) attached_text_image()->set_text(text_code_point()); a_text_modified = false;
         attached_text_image()->set_cursor_position_in_plain_text(cursor_position_in_formatted_text());
+        attached_text_image()->set_use_cursor(true);
 
         // Configure the needed creation settings
         attached_text_image()->reset_line_generation();
@@ -1547,13 +1523,12 @@ namespace scls {
                         } threads.clear();
                     }
                     std::string& button_text_reference = paths[i];
-                    bool move_cursor = false;
-                    std::thread* current_thread = new std::thread(&GUI_Text::set_text, new_button.get(), button_text_reference, &move_cursor);
+                    std::thread* current_thread = new std::thread(&GUI_Text::set_text, new_button.get(), button_text_reference);
                     threads.push_back(current_thread);
                     current_thread_number++;
                 }
                 else {
-                    new_button.get()->set_text(paths[i], false);
+                    new_button.get()->set_text(paths[i]);
                 }
             }
 
@@ -1589,8 +1564,7 @@ namespace scls {
 
                 // Create the thread
                 std::string& button_text_reference = button_text;
-                bool move_cursor = false;
-                std::thread* current_thread = new std::thread(&GUI_Text::set_text, new_button.get(), button_text_reference, &move_cursor);
+                std::thread* current_thread = new std::thread(&GUI_Text::set_text, new_button.get(), button_text_reference);
                 threads.push_back(current_thread);
             }
             a_browser_buttons_to_modify.clear();
