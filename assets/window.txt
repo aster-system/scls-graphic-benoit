@@ -1,0 +1,9 @@
+// Load the needed pages
+// Hub page
+<page_2d name="hub" type="gui">
+	<content src="pages/hub_content.txt" sub_paged>
+</page_2d>
+// Text editor
+<page_2d name="text_editor_page" type="gui" displayed>
+	<content src="pages/text_editor_content.txt" sub_paged>
+</page_2d>

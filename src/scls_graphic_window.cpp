@@ -120,32 +120,6 @@ namespace scls {
         load_VAOs();
     }
 
-    // Load the game from a config file
-    void Window::load_from_config_file(std::string path) {
-        if (path != config_file_path() && std::filesystem::exists(path)) // If the path is correct
-        {
-            a_config_file_path = path;
-            std::vector<std::string> content = scls::cut_string(scls::read_file(config_file_path()), "\n");
-
-            for (int i = 0; i < static_cast<int>(content.size()); i++) // Analyze each lines
-            {
-                std::vector<std::string> line = scls::cut_string(content[i], ":");
-                std::string all_variables = "";
-                for (int j = 1; j < static_cast<int>(line.size()); j++) { all_variables += line[j]; }
-
-                if (line[0] == "screen_size") // If the line represents the size of the screen
-                {
-                    std::vector<std::string> variables = scls::cut_string(all_variables, ";");
-                    resize_window(std::stoi(variables[0]), std::stoi(variables[1]));
-                    }
-                else if (line[0] == "assets_path_directory") // If the line represents the assets path
-                {
-                    set_assets_directory_path(all_variables);
-                }
-            }
-        }
-    }
-
     // Return if the window is running or not
     bool Window::run() {
         bool to_return = glfwWindowShouldClose(a_window);
@@ -475,6 +449,8 @@ namespace scls {
             std::shared_ptr<Object> to_return = *new_page_2d<GUI_Page>(object_name);
             return to_return;
         }
+        if(object_type == "") print("Warning", "SCLS Graphic Benoit", "Unspecified type for object \"" + object_name + "\".");
+        else print("Warning", "SCLS Graphic Benoit", "Unrecognized type \"" + object_type + "\" for object \"" + object_name + "\".");
         return *new_page_2d<Object>(object_name);
     }
 
@@ -483,6 +459,12 @@ namespace scls {
 
     // Load the page from XML
     std::shared_ptr<Window_Loader> Window::load_from_xml(std::string window_path) {
+        // Check if tthe path works
+        if(!std::filesystem::exists(window_path)) {
+            print("Warning", "SCLS Graphic Benoit", "The path \"" + window_path + "\n you want to load does not exist.");
+            return std::shared_ptr<Window_Loader>();
+        }
+
         // Create the loader
         std::shared_ptr<Window_Loader> loader = std::make_shared<Window_Loader>(format_for_xml(remove_comment_out_of(read_file(window_path), "\"")));
         loader.get()->cutted = cut_string_by_balise(loader.get()->content, true);

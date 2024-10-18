@@ -1,0 +1,7 @@
+<gui_object name="hub_navigation" type="scroller" visible>
+	<border bottom=1 left=1 right=1 top=1>
+	<height value=1 type=scale>
+	<width value=1/4 type=scale>
+	<x attach=left>
+	<y value=0 type=scale>
+</gui_object>

@@ -507,7 +507,7 @@ namespace scls {
         }
 
         // Apply to children
-        if(with_children) {for(int i = 0;i<static_cast<int>(a_children.size());i++) a_children[i].get()->after_resizing();}
+        if(with_children) {for(int i = 0;i<static_cast<int>(a_children.size());i++) {if(a_children[i].get() != 0) {a_children[i].get()->after_resizing();}}}
     }
 
     // Create the new transformation
@@ -877,23 +877,28 @@ namespace scls {
     // Add a text to the input at the cursor position
     void GUI_Text_Input::add_text(std::string text_to_add) {
         // Prepare the needed datas to add (the text is treated as unformatted here)
-        if(text_to_add != "" && attached_text_image() != 0) {
-            // Add the lines if needed
-            unsigned int cursor_position = attached_text_image()->cursor_position_in_full_text();
-            int new_line = count_string(text_to_add, "</br>") - 1;
-            for(int i = 0;i<new_line;i++) {
-                if((attached_text_image()->line_number_at_position(cursor_position) - line_offset()) + i < children().size()) {
-                    children().insert(children().begin() + (attached_text_image()->line_number_at_position(cursor_position) - line_offset()) + i, 0);
+        if(text_to_add != "") {
+            if(attached_text_image() == 0) {
+                set_text(text_to_add);
+                set_cursor_position_in_formatted_text(text_to_add.size());
+            } else {
+                // Add the lines if needed
+                unsigned int cursor_position = attached_text_image()->cursor_position_in_full_text();
+                int new_line = count_string(text_to_add, "</br>") - 1;
+                for(int i = 0;i<new_line;i++) {
+                    if((attached_text_image()->line_number_at_position(cursor_position) - line_offset()) + i < children().size()) {
+                        children().insert(children().begin() + (attached_text_image()->line_number_at_position(cursor_position) - line_offset()) + i, 0);
+                    }
+                    else {
+                        children().push_back(0);
+                    }
                 }
-                else {
-                    children().push_back(0);
-                }
+                // Update the text
+                attached_text_image()->add_text(text_to_add);
+                a_input_during_this_frame = true;
+                a_text_modified = true;
+                update_texture();
             }
-            // Update the text
-            attached_text_image()->add_text(text_to_add);
-            a_input_during_this_frame = true;
-            a_text_modified = true;
-            update_texture();
         }
     };
 
@@ -1289,6 +1294,11 @@ namespace scls {
             else if(children()[i] != 0 && (i + line_offset() < attached_text_image()->lines().size() && attached_text_image()->lines()[i + line_offset()] == 0 || attached_text_image()->lines()[i + line_offset()]->has_been_modified())) {
                 children()[i].reset();
             }
+        }
+
+        // Add lines if needed
+        while(children().size() < static_cast<int>(attached_text_image()->lines_datas().size() - line_offset())) {
+            children().push_back(0);
         }
 
         unsigned short line_max_number = 0;
@@ -1694,7 +1704,11 @@ namespace scls {
             }
             // Get the content
             std::string final_path = path_parent(loader.window_file_path) + "/" + src;
-            load_objects_from_xml(format_for_xml(remove_comment_out_of(read_file(final_path), "\"")), sub_paged);
+            if(std::filesystem::exists(final_path)) {
+                load_objects_from_xml(format_for_xml(remove_comment_out_of(read_file(final_path), "\"")), sub_paged);
+            } else {
+                print("Warning", "SCLS Graphic Benoit page \"" + name() + "\"", "The path \"" + final_path + "\" you want to load as the content of this page does not exist.");
+            }
         }
         else {
             Object::set_xml_attribute(text, loader_shared_ptr, i);

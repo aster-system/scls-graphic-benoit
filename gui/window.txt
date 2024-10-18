@@ -1,4 +1,0 @@
-<texture name="maroc" src="C:/Users/daisy/Pictures/maroc.png">
-<page_2d name="main_page" type="gui" displayed>
-	<content src="page_editing_2d.txt">
-</page_2d>

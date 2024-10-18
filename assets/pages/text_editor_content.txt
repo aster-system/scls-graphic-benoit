@@ -1,0 +1,7 @@
+<gui_object name="text_editor_content" type="text_input" visible>
+	<border bottom=1 left=1 right=1 top=1>
+	<height value=1 type=scale>
+	<width value=1 type=scale>
+	<x value=0>
+	<y value=0>
+</gui_object>

@@ -14,10 +14,24 @@
 // This file contains allows to test the library.
 //
 
-#include "mods_hidden/scls_model_maker/scls_model_maker.h"
+#include "scls_graphic.h"
+
+SCLS_FOUNDATION_INIT
+SCLS_MATH_INIT
 
 // Main function in the program
 int main(int argc, char* argv[]) {
-    run_model_maker(argv[0]);
+    // Create a test window
+    std::shared_ptr<scls::Window> window = std::make_shared<scls::Window>(500, 500, argv[0]);
+    window.get()->load_from_xml("./assets/window.txt");
+
+    // Main loop
+    while(window.get()->run()) {
+        window.get()->update_event();
+        window.get()->update();
+
+        window.get()->render();
+    }
+
     return 0;
 }
