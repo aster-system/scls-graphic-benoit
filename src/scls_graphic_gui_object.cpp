@@ -1220,23 +1220,11 @@ namespace scls {
     void GUI_Text_Input::remove_text(unsigned int size_to_delete) {
         // Preparate the needed datas
         // Remove the text
-        attached_text_image()->remove_text(size_to_delete);
+        unsigned int line_to_delete = attached_text_image()->line_number_at_position(cursor_position_in_unformatted_text());
+        unsigned int removed_lines = attached_text_image()->remove_text(size_to_delete);
+        // Remove the needed children
+        for(int i = 0;i<removed_lines;i++) { children().erase(children().begin() + line_to_delete); }
         update_text_texture();
-        /*std::string text_to_modify = text();
-        unsigned int cursor_position = cursor_position_in_unformatted_text() - 1;
-        unsigned int position_to_delete = window_struct().text_image_generator()->first_plain_text_character_before_position_in_informatted_text(text(), cursor_position);
-        unsigned int size_to_delete = (cursor_position - position_to_delete) + 1;
-        set_cursor_position_in_formatted_text(cursor_position_in_formatted_text() - 1);
-
-        a_input_during_this_frame = true;
-        std::string final_text = text_to_modify.substr(0, position_to_delete) + text_to_modify.substr(position_to_delete + size_to_delete, text_to_modify.size() - (position_to_delete + size_to_delete));
-        if(attached_text_image() != 0) {
-            unsigned int line_to_delete = attached_text_image()->line_number_at_position(cursor_position + 1) - line_offset();
-            unsigned int lines_deleted = attached_text_image()->remove_text(final_text, size_to_delete, size_to_delete_in_plain_text, cursor_position + 1);
-
-            // Delete the children to delete
-            for(int i = 0;i<lines_deleted;i++) { children().erase(children().begin() + line_to_delete - i); }
-        } __GUI_Text_Metadatas::set_text(final_text, false); //*/
     }
 
     // Update the cursor behavior
