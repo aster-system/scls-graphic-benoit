@@ -228,7 +228,7 @@ namespace scls {
 
         // Basics Window descriptors
         // Background color of the window
-        Color a_background_color = white;
+        Color a_background_color = Color(255, 255, 255);
         // Pointer to the GLFW window
         GLFWwindow* a_window = 0;
         // Title of the window

@@ -512,11 +512,11 @@ namespace scls {
     }
 
     // Most basic texture constructor
-    Texture::Texture() : Texture(1, 1, scls::white, false) {}
+    Texture::Texture() : Texture(1, 1, scls::Color(255, 0, 0), false) {}
 
     // Texture copy constructor
     Texture::Texture(Texture& texture_to_copy) : Texture(texture_to_copy.width, texture_to_copy.height, glm::vec4(0, 0, 0, 0), texture_to_copy.use_resize()) {
-        get_image()->paste(texture_to_copy.get_image(), 0, 0, 1.0, true); change_texture();
+        get_image()->paste(texture_to_copy.get_image(), 0, 0, 1.0); change_texture();
         texture_to_copy.a_copy_count++;
     }
 

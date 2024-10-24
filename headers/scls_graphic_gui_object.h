@@ -454,7 +454,7 @@ namespace scls {
         inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {a_global_style.alignment_horizontal = new_text_alignment_horizontal;};
         virtual void set_text_image_type(Block_Type new_text_image_type) {a_text_image_type = new_text_image_type;};
         inline void set_text_offset(double new_text_offset) {a_global_style.text_offset_x = new_text_offset;a_global_style.text_offset_y = new_text_offset;a_global_style.text_offset_width = new_text_offset;a_global_style.text_offset_height = new_text_offset;};
-        inline std::string text() const {if(attached_text_image_block()==0)return"";return attached_text_image_block()->text();};
+        inline String text() const {if(attached_text_image_block()==0)return"";return attached_text_image_block()->text();};
         inline Block_Type text_image_type() const {return a_text_image_type;};
         inline glm::vec4 text_offset() const {return glm::vec4(a_global_style.text_offset_x, a_global_style.text_offset_y, a_global_style.text_offset_width, a_global_style.text_offset_height);};
 
@@ -552,7 +552,7 @@ namespace scls {
         // Soft reset the input
         virtual void soft_reset() {GUI_Object::soft_reset();a_input_during_this_frame = false;};
         // Update the texture when needed
-        virtual void update_texture() {GUI_Object::update_texture();update_text_texture();};
+        virtual void update_texture() {GUI_Object::update_texture();attached_text_image_block()->generate_blocks();update_text_texture();};
         // Update the texture of the text
         void update_text_texture();
 
@@ -569,7 +569,7 @@ namespace scls {
         // Remove a text to the input at the cursor position
         void remove_text(unsigned int size_to_delete_in_plain_text);
         // Reset the text and the text image
-        void reset() {set_text("");a_line_offset = 0;};
+        void reset() {delete_children();a_line_offset = 0;};
         // Update the text
         virtual void update_event();
         // Update the cursor behavior

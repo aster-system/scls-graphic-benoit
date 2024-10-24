@@ -897,7 +897,7 @@ namespace scls {
                 attached_text_image()->add_text(text_to_add);
                 a_input_during_this_frame = true;
                 a_text_modified = true;
-                update_texture();
+                update_text_texture();
             }
         }
     };
@@ -1161,7 +1161,7 @@ namespace scls {
         else if(final_cursor_position == static_cast<int>(cursor_position_in_formatted_text())) return;
         set_cursor_position_in_formatted_text(final_cursor_position);
 
-        update_texture();
+        update_text_texture();
     }
 
     // Moves the cursor at a pixel position
@@ -1248,7 +1248,7 @@ namespace scls {
             if(final_movement != 0) {
                 a_line_offset += final_movement;
                 delete_children();
-                update_texture();
+                update_text_texture();
             }
         }
     }
@@ -1363,7 +1363,7 @@ namespace scls {
     void GUI_File_Explorer::load() {
         // Browser of the file explorer
         a_browser = *new_object<GUI_Scroller>("browser");
-        a_browser.get()->set_background_color(scls::white);
+        a_browser.get()->set_background_color(scls::Color(255, 255, 255));
         a_browser.get()->set_border_width_in_pixel(1);
         a_browser.get()->set_height_in_scale(Fraction(4, 5));
         a_browser.get()->set_width_in_scale(Fraction(4, 5));
@@ -1499,8 +1499,8 @@ namespace scls {
                 // Create the button
                 paths[i] = file_name(paths[i], true);
                 std::shared_ptr<GUI_Text> new_button = *a_browser.get()->new_object_in_scroller<GUI_Text>("browser_button_" + std::to_string(i));
-                new_button.get()->set_background_color(scls::white);
-                new_button.get()->set_font_color(scls::black);
+                new_button.get()->set_background_color(scls::Color(255, 255, 255));
+                new_button.get()->set_font_color(scls::Color(0, 0, 0));
                 new_button.get()->set_font_size(50);
                 new_button.get()->set_overflighted_cursor(GLFW_HAND_CURSOR);
                 new_button.get()->set_height_in_pixel(30);
@@ -1552,12 +1552,12 @@ namespace scls {
 
                 // Change the specification of the button
                 if(contains_selected_file(button_text)) {
-                    new_button.get()->set_background_color(scls::blue);
-                    new_button.get()->set_font_color(scls::white);
+                    new_button.get()->set_background_color(scls::Color(0, 0, 255));
+                    new_button.get()->set_font_color(scls::Color(255, 255, 255));
                 }
                 else {
-                    new_button.get()->set_background_color(scls::white);
-                    new_button.get()->set_font_color(scls::black);
+                    new_button.get()->set_background_color(scls::Color(255, 255, 255));
+                    new_button.get()->set_font_color(scls::Color(0, 0, 0));
                 }
 
                 // Create the thread
