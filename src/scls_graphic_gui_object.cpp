@@ -508,6 +508,9 @@ namespace scls {
 
         // Apply to children
         if(with_children) {for(int i = 0;i<static_cast<int>(a_children.size());i++) {if(a_children[i].get() != 0) {a_children[i].get()->after_resizing();}}}
+
+        // Call the virtual function
+        __GUI_Object_Core::calculate_transformation(true, true);
     }
 
     // Create the new transformation
@@ -884,10 +887,10 @@ namespace scls {
             } else {
                 // Add the lines if needed
                 unsigned int cursor_position = attached_text_image()->cursor_position_in_full_text();
-                int new_line = count_string(text_to_add, "</br>") - 1;
+                int new_line = count_string(text_to_add, "</br>");
                 for(int i = 0;i<new_line;i++) {
-                    if((attached_text_image()->line_number_at_position(cursor_position) - line_offset()) + i < children().size()) {
-                        children().insert(children().begin() + (attached_text_image()->line_number_at_position(cursor_position) - line_offset()) + i, 0);
+                    if((attached_text_image()->line_number_at_position(cursor_position) - line_offset()) < children().size()) {
+                        children().insert(children().begin() + (attached_text_image()->line_number_at_position(cursor_position) - line_offset()) + 1, 0);
                     }
                     else {
                         children().push_back(0);
@@ -1223,7 +1226,8 @@ namespace scls {
         unsigned int line_to_delete = attached_text_image()->line_number_at_position(cursor_position_in_unformatted_text());
         unsigned int removed_lines = attached_text_image()->remove_text(size_to_delete);
         // Remove the needed children
-        for(int i = 0;i<removed_lines;i++) { children().erase(children().begin() + line_to_delete); }
+        int final_size = static_cast<int>(children().size()) + line_offset();
+        if(removed_lines > 0) {for(int i = line_to_delete;i<final_size;i++) { children().erase(children().begin() + line_to_delete);}}
         update_text_texture();
     }
 
@@ -1279,7 +1283,7 @@ namespace scls {
             if(i >= static_cast<int>(attached_text_image()->lines_datas().size())) {
                  children().erase(children().begin() + i); i--;
             }
-            else if(children()[i] != 0 && (i + line_offset() < attached_text_image()->lines().size() && attached_text_image()->lines()[i + line_offset()] == 0 || attached_text_image()->lines()[i + line_offset()]->has_been_modified())) {
+            else if(children()[i] != 0 && (i + line_offset() < attached_text_image()->lines().size() && (attached_text_image()->lines()[i + line_offset()] == 0 || attached_text_image()->lines()[i + line_offset()]->has_been_modified()))) {
                 children()[i].reset();
             }
         }
@@ -1327,14 +1331,10 @@ namespace scls {
         attached_text_image()->delete_useless_generated_lines();
 
         // Delete the useless children in more
-        for(int i = 0;i<static_cast<int>(children().size()) - static_cast<int>(attached_text_image()->lines_datas().size());i++) {
-            children().pop_back();
-        }
+        for(int i = 0;i<static_cast<int>(children().size()) - static_cast<int>(attached_text_image()->lines_datas().size());i++) {children().pop_back();}
 
         // Delete empty children
-        for(int i = 0;i<static_cast<int>(children().size());i++) {
-            if(children()[i].get() == 0) {children().erase(children().begin() + i); i--;}
-        }
+        for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i].get() == 0) {children().erase(children().begin() + i); i--;}}
 
         place_lines(); a_generation++;
     };

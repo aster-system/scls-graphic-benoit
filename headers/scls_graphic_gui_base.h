@@ -485,11 +485,13 @@ namespace scls {
         // Calculate the transformation of the object
         void _apply_calculate_transformation(std::shared_ptr<__GUI_Transformation> current_transformation);
         // Calculate the transformation of the object
-        virtual void calculate_transformation(bool force = false, bool with_children = true) {};
+        void __allow_calculate_transformation_attached_objects() {for(int i = 0;i<static_cast<int>(a_attached_object.size());i++) {a_attached_object[i]->a_transformation_updated = true;}};
+        void __calculate_transformation_attached_objects() {for(int i = 0;i<static_cast<int>(a_attached_object.size());i++) {a_attached_object[i]->calculate_transformation();}};
+        virtual void calculate_transformation(bool force = false, bool with_children = true) {__allow_calculate_transformation_attached_objects();__calculate_transformation_attached_objects();};
 
         // Getters
         inline __GUI_Transformation* last_transformation() {return a_last_transformation.get();};
-        inline  std::shared_ptr<__GUI_Transformation>& last_transformation_shared_ptr() {return a_last_transformation;};
+        inline std::shared_ptr<__GUI_Transformation>& last_transformation_shared_ptr() {return a_last_transformation;};
         inline __GUI_Transformation* transformation() {return a_transformation.get();};
         inline std::shared_ptr<__GUI_Transformation>& transformation_shared_ptr() {return a_transformation;};
         inline std::shared_ptr<__GUI_Transformation>& transformation_parent() {return transformation()->parent_shared_ptr();};
@@ -654,6 +656,19 @@ namespace scls {
         };
 
         // Attach the object
+        inline bool __contains_attached_object(__GUI_Object_Core* another_object) {for(int i = 0;i<static_cast<int>(a_attached_object.size());i++){if(a_attached_object[i]==another_object)return true;} return false;};
+        inline void __delete_attached_object(__GUI_Object_Core* another_object) {for(int i = 0;i<static_cast<int>(a_attached_object.size());i++){if(a_attached_object[i]==another_object){a_attached_object.erase(a_attached_object.begin()+i);return;}}};
+        inline void __attach_object_in_parent(__GUI_Object_Core* another_object, bool is_vertical = true){
+            if(is_vertical) {
+                if(a_transform_attachment.attached_object_vertical != 0) {
+                    a_transform_attachment.attached_object_vertical->__delete_attached_object(this);
+                } a_transform_attachment.attached_object_vertical = another_object;
+            } else {
+                if(a_transform_attachment.attached_object_horizontal != 0) {
+                    a_transform_attachment.attached_object_horizontal->__delete_attached_object(this);
+                } a_transform_attachment.attached_object_horizontal = another_object;
+            } if(another_object != 0 && !another_object->__contains_attached_object(this))another_object->a_attached_object.push_back(this);
+        };
         // Attach the object at the bottom of its parent
         inline void attach_bottom_in_parent(Fraction offset = Fraction(0)) {
             a_transform_attachment.attachment_vertical_offset = offset;
@@ -663,7 +678,7 @@ namespace scls {
         };
         // Attach the object bottom of another in the parent
         inline void attach_bottom_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) {
-            a_transform_attachment.attached_object_vertical = another_object;
+            __attach_object_in_parent(another_object);
             a_transform_attachment.attachment_vertical_offset = offset;
             a_transform_attachment.attachment_vertical_type = 4;
             __move_bottom_of_object_in_parent(another_object, offset);
@@ -703,15 +718,13 @@ namespace scls {
         };
         // Attach the object top of another in the parent
         inline void attach_top_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) {
-            a_transform_attachment.attached_object_vertical = another_object;
+            __attach_object_in_parent(another_object);
             a_transform_attachment.attachment_vertical_offset = offset;
             a_transform_attachment.attachment_vertical_type = 3;
             __move_top_of_object_in_parent(another_object, offset);
             a_transformation_updated = true;
         };
-        inline void attach_top_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, Fraction offset = Fraction(0)) {
-            attach_top_of_object_in_parent(another_object.get(), offset);
-        };
+        inline void attach_top_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, Fraction offset = Fraction(0)) {attach_top_of_object_in_parent(another_object.get(), offset);};
 
         // Move the object
         // Move the object at the bottom of its parent
@@ -755,7 +768,10 @@ namespace scls {
             a_transformation_updated = false;
         };
         // Move the object bottom of another in the parent without influencing attachment
-        inline void __move_bottom_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) { set_y_in_pixel(Fraction(another_object->y_in_pixel()) - (Fraction(height_in_pixel()) + offset)); a_transformation_updated = false; };
+        inline void __move_bottom_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) {
+            set_y_in_pixel(Fraction(another_object->y_in_pixel()) - (Fraction(height_in_pixel()) + offset));
+            a_transformation_updated = false;
+        };
         // Move the object at the left of its parent without influencing attachment
         inline void __move_left_in_parent(int offset = 0) { set_x_in_pixel(Fraction(offset)); a_transformation_updated = false; };
         // Move the object at the right of its parent without influencing attachment
@@ -816,6 +832,8 @@ namespace scls {
             // Type of the vertical attachment (0 = no attachment, 1 = top, 2 = bottom)
             char attachment_vertical_type = 0;
         } a_transform_attachment;
+        // Each object attached to this one
+        std::vector<__GUI_Object_Core*> a_attached_object = std::vector<__GUI_Object_Core*>();
 
     private:
 
