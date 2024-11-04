@@ -914,11 +914,17 @@ namespace scls {
     // Format a char
     std::string GUI_Text_Input::_format(std::string letter, bool apply_alt, bool apply_capitalisation) {
         std::string result = "";
+        std::string to_analyse = "";
 
         for(int i = 0;i<static_cast<int>(letter.size());i++) {
-            std::string to_analyse = ""; to_analyse += letter[i];
-            result += _format_one_letter(to_analyse, apply_alt, apply_capitalisation);
+            to_analyse += letter[i];
+            if(!is_character_utf_8(letter[i])) {
+                result += _format_one_letter(to_analyse, apply_alt, apply_capitalisation);
+                to_analyse = "";
+            }
         }
+        // Last analyse
+        if(to_analyse != "") result += _format_one_letter(to_analyse, apply_alt, apply_capitalisation);
 
         return result;
     }
