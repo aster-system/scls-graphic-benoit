@@ -388,17 +388,21 @@ namespace scls {
 
         // Checks the number of selected objects
         inline void check_number_selected_object() {while(static_cast<int>(a_currently_selected_objects.size())>max_number_selected_object())a_currently_selected_objects.erase(a_currently_selected_objects.begin(),a_currently_selected_objects.begin()+1);};
+        // Returns if an object is confirmed
+        inline bool contains_confirmed_object(std::string object_name) {for(int i = 0;i<static_cast<int>(a_currently_confirmed_objects.size());i++){if(a_currently_confirmed_objects[i]==object_name)return true; } return false;};
         // Returns if an object is in the scroller
         inline bool contains_object(std::string object_name) {for(int i = 0;i<static_cast<int>(scroller_children()->children().size());i++){if(scroller_children()->children()[i].get()->name()==object_name)return true; } return false;};
         // Returns if an object is selected
         inline bool contains_selected_object(std::string object_name) {for(int i = 0;i<static_cast<int>(a_currently_selected_objects.size());i++){if(a_currently_selected_objects[i]==object_name)return true; } return false;};
         // Select an object
-        inline void select_object(std::string object_name) {if(contains_object(object_name)){a_choice_modified = true;if(contains_selected_object(object_name))unselect_object(object_name); a_currently_selected_objects.push_back(object_name);}};
+        void select_object(std::string object_name);
         // Unselect an object
-        inline void unselect_object(std::string object_name){for(int i = 0;i<static_cast<int>(currently_selected_objects().size());i++){if(currently_selected_objects()[i]==object_name){currently_selected_objects().erase(currently_selected_objects().begin()+i,currently_selected_objects().begin()+i+1);return;} }};
+        void unselect_object(std::string object_name);
 
         // Reset the object
-        virtual void soft_reset() {GUI_Scroller::soft_reset();a_choice_modified = false;};
+        void reset_objects() {a_currently_confirmed_objects.clear();while(static_cast<int>(a_currently_selected_objects.size() > 0)){unselect_object(a_currently_selected_objects[0]);}};
+        // Soft reset the object
+        virtual void soft_reset() {GUI_Scroller::soft_reset();a_choice_modified = false;a_currently_confirmed_objects.clear();};
         // Update the even in the scroller
         virtual void update_event();
 
@@ -406,6 +410,8 @@ namespace scls {
         inline bool choice_modified() const {return a_choice_modified;};
         inline std::vector<std::string>& currently_selected_objects() {return a_currently_selected_objects;};
         inline unsigned int max_number_selected_object() const {return a_max_number_selected_object;};
+        inline GUI_Style& selected_objects_style() {return a_selected_objects_style;};
+        inline GUI_Style& unselected_objects_style() {return a_unselected_objects_style;};
 
     private:
 
@@ -417,10 +423,23 @@ namespace scls {
 
         // If the coice as been modified during this frame
         bool a_choice_modified = false;
+        // Currently confirmed objects
+        std::vector<std::string> a_currently_confirmed_objects = std::vector<std::string>();
         // Currently selected objects
         std::vector<std::string> a_currently_selected_objects = std::vector<std::string>();
         // Maximum number of selected object
         unsigned int a_max_number_selected_object = 1;
+
+        //*********
+        //
+        // GUI_Scroller_Choice elements handling
+        //
+        //*********
+
+        // Selected objects style
+        GUI_Style a_selected_objects_style;
+        // Unelected objects style
+        GUI_Style a_unselected_objects_style;
     };
 
     class __GUI_Text_Metadatas : public GUI_Object {
@@ -447,9 +466,11 @@ namespace scls {
         inline Color font_color() const {return a_global_style.color;};
         inline std::string font_family() const {return a_global_style.font.font_family;};
         inline unsigned short font_size() const {return a_global_style.font_size;};
+        inline int max_width() const {return a_global_style.max_width;};
         inline void set_font_color(Color new_font_color) {a_global_style.color = new_font_color;};
         inline void set_font_family(std::string new_font_family) {a_global_style.font = get_system_font(new_font_family);};
         inline void set_font_size(unsigned short new_font_size) {a_global_style.font_size = new_font_size;};
+        inline void set_max_width(int new_max_width) {a_global_style.max_width = new_max_width;};
         virtual void set_text(std::string new_text) {if(new_text == text())return;attached_text_image_block()->set_text(new_text);update_texture();};
         inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {a_global_style.alignment_horizontal = new_text_alignment_horizontal;};
         virtual void set_text_image_type(Block_Type new_text_image_type) {a_text_image_type = new_text_image_type;};
@@ -507,12 +528,15 @@ namespace scls {
         // Most basic GUI_Object constructor
         GUI_Text(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent);
 
+        // Function called after that the window is resized
+        virtual void after_resizing();
         // Soft reset the text
         virtual void soft_reset() {GUI_Object::soft_reset();a_text_modified_during_this_frame = false;};
         // Update the texture when needed
         virtual void update_texture() {GUI_Object::update_texture();update_text_texture();};
         // Update the texture of the text
-        void update_text_texture();
+        void update_text_texture(scls::Image_Generation_Type generation_type);
+        void update_text_texture(){update_text_texture(scls::Image_Generation_Type::IGT_Full);};
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline bool text_modified_during_this_frame() {return a_text_modified_during_this_frame;};

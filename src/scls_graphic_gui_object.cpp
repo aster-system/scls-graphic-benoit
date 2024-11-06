@@ -752,6 +752,42 @@ namespace scls {
     // GUI_Scroller_Choice destructor
     GUI_Scroller_Choice::~GUI_Scroller_Choice() {}
 
+    // Select an object
+    void GUI_Scroller_Choice::select_object(std::string object_name) {
+        GUI_Object* object = scroller_children()->child_by_name(object_name);
+        if(object != 0) {
+            // Add the contained object
+            a_choice_modified = true;
+            if(contains_selected_object(object_name)) {
+                unselect_object(object_name);
+                a_currently_confirmed_objects.push_back(object_name);
+            }
+            else {
+                a_currently_selected_objects.push_back(object_name);
+
+                // Remove the too much objects
+                while(a_currently_selected_objects.size() > max_number_selected_object()) {
+                    unselect_object(a_currently_selected_objects[0]);
+                }
+            }
+
+            // Apply the graphic modification
+            object->set_background_color(selected_objects_style().a_background_color);
+        }
+    };
+
+    // Unselect an object
+    void GUI_Scroller_Choice::unselect_object(std::string object_name) {
+        GUI_Object* object = scroller_children()->child_by_name(object_name);
+        for(int i = 0;i<static_cast<int>(currently_selected_objects().size());i++) {
+            if(currently_selected_objects()[i]==object_name) {
+                currently_selected_objects().erase(currently_selected_objects().begin()+i,currently_selected_objects().begin()+i+1);
+                if(object != 0) object->set_background_color(unselected_objects_style().a_background_color);
+                return;
+            }
+        }
+    }
+
     // Update the even in the scroller
     void GUI_Scroller_Choice::update_event() {
         GUI_Scroller::update_event();
@@ -845,8 +881,14 @@ namespace scls {
     // Most basic GUI_Text constructor
     GUI_Text::GUI_Text(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent) : __GUI_Text_Metadatas(window, name, parent) {}
 
+    // Function called after that the window is resized
+    void GUI_Text::after_resizing(){
+        __GUI_Text_Metadatas::after_resizing();
+        if(max_width() != -1) {set_max_width(width_in_pixel());update_text_texture(scls::Image_Generation_Type::IGT_Size);}
+    }
+
     // Update the texture of the text
-    void GUI_Text::update_text_texture() {
+    void GUI_Text::update_text_texture(scls::Image_Generation_Type generation_type) {
         if(text() != "") {
             // Create the text
             glm::vec2 position_to_apply = glm::vec2(x_in_pixel(), y_in_pixel());
@@ -854,11 +896,12 @@ namespace scls {
             attached_text_image_block()->global_style().background_color = background_color();
             attached_text_image_block()->global_style().color = font_color();
             attached_text_image_block()->global_style().font_size = font_size();
+            attached_text_image_block()->global_style().max_width = max_width();
             // a_text_image->set_cursor_position(cursor_position_in_formatted_text());
             // a_text_image->set_use_cursor(use_cursor());
 
             // Apply the text
-            std::shared_ptr<Image> image_to_paste = attached_text_image_block()->image_shared_pointer();
+            std::shared_ptr<Image> image_to_paste = attached_text_image_block()->image_shared_pointer(generation_type);
             texture()->set_image(image_to_paste);
         }
         else {
@@ -1723,7 +1766,10 @@ namespace scls {
 
     // Create an object from a type
     std::shared_ptr<GUI_Object> GUI_Page::__create_loaded_object_from_type(std::string object_name, std::string object_type, GUI_Object* parent) {
-        if(object_type == "text") {
+        if(object_type == "choice") {
+            std::shared_ptr<GUI_Object> to_return = *parent->new_object<GUI_Scroller_Choice>(object_name);
+            return to_return;
+        } else if(object_type == "text") {
             std::shared_ptr<GUI_Object> to_return = *parent->new_object<GUI_Text>(object_name);
             return to_return;
         }
