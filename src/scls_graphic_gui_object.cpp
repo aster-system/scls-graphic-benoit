@@ -510,7 +510,7 @@ namespace scls {
         if(with_children) {for(int i = 0;i<static_cast<int>(a_children.size());i++) {if(a_children[i].get() != 0) {a_children[i].get()->after_resizing();}}}
 
         // Call the virtual function
-        __GUI_Object_Core::calculate_transformation(true, true);
+        __GUI_Object_Core::calculate_transformation();
     }
 
     // Create the new transformation
@@ -694,6 +694,9 @@ namespace scls {
             a_scroller_children->move_bottom_in_parent(1);
         }
 
+        // Resize the children
+        if(a_scroller_children.get()->width_in_pixel() != width_in_pixel() - 2) a_scroller_children->set_width_in_pixel(width_in_pixel() - 2);
+
         /*// Calculate according to the last position
         int children_height = static_cast<int>(a_scroller_children->height_in_pixel());
         int height = static_cast<int>(height_in_pixel());
@@ -707,36 +710,25 @@ namespace scls {
                 }
             }
         } //*/
-        calculate_transformation(true, true);
-
-        // Resize the children
-        a_scroller_children->set_width_in_pixel(width_in_pixel() - 2);
-
-        GUI_Object::after_resizing();
+        //calculate_transformation(true, true);
     }
 
     // Private function to create the children scroller
-    std::shared_ptr<GUI_Object>* GUI_Scroller::_create_scroller_children() {
-        std::shared_ptr<GUI_Object>* to_return = GUI_Object::new_object<GUI_Object>(name() + "_children_scroller");
-        return to_return;
-    }
+    std::shared_ptr<GUI_Object>* GUI_Scroller::_create_scroller_children() {std::shared_ptr<GUI_Object>* to_return = GUI_Object::new_object<GUI_Object>(name() + "_children_scroller");return to_return;}
 
     // Scroll the scroller
     void GUI_Scroller::scroll_y(Fraction movement) {
         if(scroller_vertical_alignment() == Alignment_Vertical::V_Top) {
             if(a_scroller_children->height_in_scale() > 1) {
-                movement *= Fraction(1, 30);
-                Fraction final_pos = (a_scroller_children->y_in_scale()) - movement;
-                Fraction max_pos = a_scroller_children.get()->one_pixel_height_in_scale() * -1;
-                if(final_pos > max_pos) final_pos = max_pos;
-                if(final_pos < a_scroller_children->height_in_scale() * Fraction(-1) + Fraction(1)) final_pos = a_scroller_children->height_in_scale() * Fraction(-1) + Fraction(1);
-                a_scroller_children->set_y_in_scale(final_pos);
+                movement *= Fraction(15);
+                Fraction final_pos = (a_scroller_children->y_in_pixel()) - movement;
+                a_scroller_children->set_y_in_pixel(final_pos);
             }
             else {
                 a_scroller_children->move_top_in_parent(1);
             }
-            calculate_transformation(true, true);
-            GUI_Object::after_resizing();
+            a_scroller_children.get()->calculate_transformation(true, false);
+            if(a_scroller_children.get()->children().size() > 0) a_scroller_children.get()->children()[a_scroller_children.get()->children().size()-1].get()->calculate_transformation(true, true);
         }
     }
 
@@ -799,8 +791,7 @@ namespace scls {
                 std::string object_name = scroller_children()->children()[i].get()->name();
                 select_object(object_name);
             }
-        }
-        check_number_selected_object();
+        } check_number_selected_object();
     }
 
     //*********
@@ -884,7 +875,7 @@ namespace scls {
     // Function called after that the window is resized
     void GUI_Text::after_resizing(){
         __GUI_Text_Metadatas::after_resizing();
-        if(max_width() != -1) {set_max_width(width_in_pixel());update_text_texture(scls::Image_Generation_Type::IGT_Size);}
+        if(max_width() != -1) {std::cout << "T" << std::endl; set_max_width(width_in_pixel());update_text_texture(scls::Image_Generation_Type::IGT_Size);}
     }
 
     // Update the texture of the text

@@ -408,6 +408,7 @@ namespace scls {
 
         // Getters and setters
         inline bool choice_modified() const {return a_choice_modified;};
+        inline bool choice_modified_during_this_frame() const {return a_choice_modified;};
         inline std::vector<std::string>& currently_selected_objects() {return a_currently_selected_objects;};
         inline unsigned int max_number_selected_object() const {return a_max_number_selected_object;};
         inline GUI_Style& selected_objects_style() {return a_selected_objects_style;};

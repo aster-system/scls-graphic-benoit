@@ -485,9 +485,8 @@ namespace scls {
         // Calculate the transformation of the object
         void _apply_calculate_transformation(std::shared_ptr<__GUI_Transformation> current_transformation);
         // Calculate the transformation of the object
-        void __allow_calculate_transformation_attached_objects() {for(int i = 0;i<static_cast<int>(a_attached_object.size());i++) {a_attached_object[i]->a_transformation_updated = true;}};
-        void __calculate_transformation_attached_objects() {for(int i = 0;i<static_cast<int>(a_attached_object.size());i++) {a_attached_object[i]->calculate_transformation();}};
-        virtual void calculate_transformation(bool force = false, bool with_children = true) {__allow_calculate_transformation_attached_objects();__calculate_transformation_attached_objects();};
+        void __calculate_transformation_attached_objects() {for(int i = 0;i<static_cast<int>(a_attached_object.size());i++) {a_attached_object[i]->calculate_transformation(true);}};
+        virtual void calculate_transformation(bool force = false, bool with_children = true) {__calculate_transformation_attached_objects();};
 
         // Getters
         inline __GUI_Transformation* last_transformation() {return a_last_transformation.get();};
