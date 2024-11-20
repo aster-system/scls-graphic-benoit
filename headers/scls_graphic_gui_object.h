@@ -412,6 +412,7 @@ namespace scls {
         inline std::vector<std::string>& currently_selected_objects() {return a_currently_selected_objects;};
         inline unsigned int max_number_selected_object() const {return a_max_number_selected_object;};
         inline GUI_Style& selected_objects_style() {return a_selected_objects_style;};
+        inline void set_unselect_object_on_confirmation(bool new_unselect_object_on_confirmation) {a_unselect_object_on_confirmation=new_unselect_object_on_confirmation;};
         inline GUI_Style& unselected_objects_style() {return a_unselected_objects_style;};
 
     private:
@@ -430,6 +431,8 @@ namespace scls {
         std::vector<std::string> a_currently_selected_objects = std::vector<std::string>();
         // Maximum number of selected object
         unsigned int a_max_number_selected_object = 1;
+        // If the object muse be unselected after confirmation
+        bool a_unselect_object_on_confirmation = false;
 
         //*********
         //
@@ -476,7 +479,7 @@ namespace scls {
         inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {a_global_style.alignment_horizontal = new_text_alignment_horizontal;};
         virtual void set_text_image_type(Block_Type new_text_image_type) {a_text_image_type = new_text_image_type;};
         inline void set_text_offset(double new_text_offset) {a_global_style.text_offset_x = new_text_offset;a_global_style.text_offset_y = new_text_offset;a_global_style.text_offset_width = new_text_offset;a_global_style.text_offset_height = new_text_offset;};
-        inline String text() const {if(attached_text_image_block()==0)return"";return attached_text_image_block()->text();};
+        inline String text() const {if(attached_text_image_block()==0)return String();return attached_text_image_block()->text();};
         inline Block_Type text_image_type() const {return a_text_image_type;};
         inline glm::vec4 text_offset() const {return glm::vec4(a_global_style.text_offset_x, a_global_style.text_offset_y, a_global_style.text_offset_width, a_global_style.text_offset_height);};
 

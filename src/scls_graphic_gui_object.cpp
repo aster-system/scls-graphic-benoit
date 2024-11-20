@@ -751,7 +751,7 @@ namespace scls {
             // Add the contained object
             a_choice_modified = true;
             if(contains_selected_object(object_name)) {
-                unselect_object(object_name);
+                if(a_unselect_object_on_confirmation) unselect_object(object_name);
                 a_currently_confirmed_objects.push_back(object_name);
             }
             else {
@@ -1310,6 +1310,7 @@ namespace scls {
     void GUI_Text_Input::update_text_texture() {
         // Configure the text image
         if(attached_text_image() == 0) attached_text_image_block()->generate_blocks();
+        if(attached_text_image() == 0) return;
         attached_text_image()->global_style().color = font_color();
         attached_text_image()->global_style().font = font();
         attached_text_image()->set_cursor_position_in_plain_text(cursor_position_in_formatted_text());
