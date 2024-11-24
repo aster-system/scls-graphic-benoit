@@ -689,7 +689,9 @@ namespace scls {
         // Returns if the explorer contains a selected file
         inline bool contains_selected_file(std::string file) {
             std::vector<std::string> selected_files = cut_string(a_currently_selected_files, ";");
-            return contains<std::string>(selected_files, file);
+            for(int i = 0;i<static_cast<int>(selected_files.size());i++) {
+                if(selected_files[i] == file) return true;
+            } return false;
         };
         // Returns if a file is chosen during this frame
         bool file_chosen();

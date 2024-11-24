@@ -1033,14 +1033,8 @@ namespace scls {
             if(letter == "=") letter = "+";
             if(letter == "$") letter = "£";
             if(letter == "*") letter = "µ";
-            if(letter == "<") letter = "&gt;";
+            if(letter == "<") letter = ">";
         }
-        else {
-            if(letter == "<") letter = "&lt;";
-        }
-
-        // Check the letter after capitalization (copy pasted)
-        if(letter == ">") letter = "&gt;";
 
         // Set the last descriptive character
         if(a_last_descriptive_character == ""){
@@ -1584,7 +1578,9 @@ namespace scls {
             // Modify some buttons
             std::vector<std::shared_ptr<GUI_Text>> buttons_to_modify = std::vector<std::shared_ptr<GUI_Text>>();
             for(unsigned int i = 0;i<static_cast<unsigned int>(paths.size());i++) {
-                if(!std::filesystem::exists(paths[i]) || !contains<unsigned int>(a_browser_buttons_to_modify, i)) continue;
+                bool contains = false;
+                for(int j = 0;j<static_cast<int>(a_browser_buttons_to_modify.size());j++) {if(a_browser_buttons_to_modify[j] == i){contains = true;break;}}
+                if(!std::filesystem::exists(paths[i]) || !contains) continue;
 
                 // Get the button
                 std::shared_ptr<GUI_Text> new_button = a_browser_buttons[i];
