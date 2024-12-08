@@ -817,7 +817,7 @@ namespace scls {
                 }
             }
             // Get the content of the text
-            set_text(text.text());
+            set_text(scls::format_string_tabulations(scls::format_string_break_line(text.text(), " "), ""));
         }
         else if(xml_attribute_name == "font_size") {
             // Load the font size of the text
@@ -875,7 +875,7 @@ namespace scls {
     // Function called after that the window is resized
     void GUI_Text::after_resizing(){
         __GUI_Text_Metadatas::after_resizing();
-        if(max_width() != -1) {std::cout << "T" << std::endl; set_max_width(width_in_pixel());update_text_texture(scls::Image_Generation_Type::IGT_Size);}
+        if(max_width() != -1) {set_max_width(width_in_pixel());update_text_texture(scls::Image_Generation_Type::IGT_Size);}
     }
 
     // Update the texture of the text
