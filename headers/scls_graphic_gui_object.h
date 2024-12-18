@@ -189,10 +189,8 @@ namespace scls {
 
         // Getters and setters
         inline Image* image() const {return texture()->get_image();};
-        inline void set_texture(std::shared_ptr<Texture> new_texture, bool remove_last_texture = true) {
-            if(remove_last_texture) window_struct().remove_texture(texture());
-            a_texture = new_texture;
-        };
+        inline void set_texture(std::shared_ptr<Image> new_texture, bool remove_last_texture = true) {std::shared_ptr<Texture> needed_texture = std::make_shared<Texture>();needed_texture.get()->set_image(new_texture);set_texture(needed_texture, remove_last_texture);};
+        inline void set_texture(std::shared_ptr<Texture> new_texture, bool remove_last_texture = true) {if(remove_last_texture) {window_struct().remove_texture(texture());}a_texture = new_texture;};
         inline void set_texture(std::string texture_name, bool remove_last_texture = true) {
             std::shared_ptr<Texture>* new_texture = window_struct().texture_shared_ptr(texture_name);
             if(new_texture != 0) set_texture(*new_texture, remove_last_texture);
