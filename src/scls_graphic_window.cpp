@@ -72,6 +72,9 @@ namespace scls {
     //
     //*********
 
+    // Balises for a Window loading
+    std::shared_ptr<__Balise_Container> window_loading_balises;
+
     // Window base constructor
     Window::Window(int a_window_width, int a_window_height, std::string a_exec_path): _Window_Advanced_Struct(cursor_on_window, global_mouse_x, global_mouse_y, _global_screen_width, _global_screen_height, a_exec_path) {
 
@@ -322,11 +325,12 @@ namespace scls {
     // Update the event of the game during this frame
     void Window::update_event() {
         // Calculate delta time
-        set_delta_time(glfwGetTime() - a_last_frame_time);
-        a_last_frame_time = glfwGetTime();
+        double current_time = scls::time_ns() / 1000000000.0;
+        set_delta_time(current_time - a_last_frame_time);
+        a_last_frame_time = current_time;
         a_execution_time += delta_time();
 
-        if (delta_time() > 0.1) set_delta_time(0);
+        if (delta_time() > 1.0) set_delta_time(0);
 
         // FPS calculation
         a_time_since_last_fps_calculation += delta_time();
@@ -336,8 +340,7 @@ namespace scls {
             a_frame_count = 0;
             a_time_since_last_fps_calculation = 0;
         }
-        else
-        {
+        else {
             a_frame_count++;
         }
 
@@ -471,20 +474,21 @@ namespace scls {
         loader.get()->window_file_path = window_path;
 
         // Get the XML analyser
-        XML_Text xml_text = XML_Text(remove_comment_out_of(read_file(window_path), "\""));
-        std::vector<XML_Text>& cutted = xml_text.sub_texts();
+        if(window_loading_balises.get() == 0){window_loading_balises = std::make_shared<__Balise_Container>();window_loading_balises.get()->__load_built_in_balises_window();}
+        XML_Text xml_text = XML_Text(window_loading_balises, remove_comment_out_of(read_file(window_path), "\""));
+        std::vector<std::shared_ptr<XML_Text>>& cutted = xml_text.sub_texts();
         window_path = path_parent(window_path);
 
         // Check each balises
         for(int i = 0;i<static_cast<int>(cutted.size());i++) {
             // Add a 2D page
-            if(cutted[i].xml_balise_name() == "page_2d") {
+            if(cutted[i].get()->xml_balise_name() == "page_2d") {
                 bool display_page = false;
                 std::string page_name = "";
                 std::string page_type = "";
-                for(int j = 0;j<static_cast<int>(cutted[i].xml_balise_attributes().size());j++) {
-                    std::string current_attribute_name = cutted[i].xml_balise_attributes()[j].name;
-                    std::string current_attribute_value = cutted[i].xml_balise_attributes()[j].value;
+                for(int j = 0;j<static_cast<int>(cutted[i].get()->xml_balise_attributes().size());j++) {
+                    std::string current_attribute_name = cutted[i].get()->xml_balise_attributes()[j].name;
+                    std::string current_attribute_value = cutted[i].get()->xml_balise_attributes()[j].value;
                     if(current_attribute_name == "name") {
                         // Get the name of the object
                         page_name = current_attribute_value;
@@ -505,14 +509,14 @@ namespace scls {
                     if(display_page) display_page_2d(page_name);
                 }
             }
-            else if(cutted[i].xml_balise_name() == "page_3d") {
+            else if(cutted[i].get()->xml_balise_name() == "page_3d") {
                 // Add a 3D page
                 bool display_page = false;
                 std::string page_name = "";
                 std::string page_type = "";
-                for(int j = 0;j<static_cast<int>(cutted[i].xml_balise_attributes().size());j++) {
-                    std::string current_attribute_name = cutted[i].xml_balise_attributes()[j].name;
-                    std::string current_attribute_value = cutted[i].xml_balise_attributes()[j].value;
+                for(int j = 0;j<static_cast<int>(cutted[i].get()->xml_balise_attributes().size());j++) {
+                    std::string current_attribute_name = cutted[i].get()->xml_balise_attributes()[j].name;
+                    std::string current_attribute_value = cutted[i].get()->xml_balise_attributes()[j].value;
                     if(current_attribute_name == "name") {
                         // Get the name of the object
                         page_name = current_attribute_value;
@@ -530,14 +534,14 @@ namespace scls {
                 // Add the page
                 if(page_name != "") { __load_page_3d_from_xml(page_name, page_type, cutted[i], loader); }
             }
-            else if(cutted[i].xml_balise_name() == "texture") {
+            else if(cutted[i].get()->xml_balise_name() == "texture") {
                 // Add a texture
                 std::string name = "";
                 std::string src = "";
-                for(int j = 0;j<static_cast<int>(cutted[i].xml_balise_attributes().size());j++) {
+                for(int j = 0;j<static_cast<int>(cutted[i].get()->xml_balise_attributes().size());j++) {
                     // Get the datas about the attributes
-                    std::string current_attribute_name = cutted[i].xml_balise_attributes()[j].name;
-                    std::string current_attribute_value = cutted[i].xml_balise_attributes()[j].value;
+                    std::string current_attribute_name = cutted[i].get()->xml_balise_attributes()[j].name;
+                    std::string current_attribute_value = cutted[i].get()->xml_balise_attributes()[j].value;
 
                     if(current_attribute_name == "name") {
                         // Get the name of the object
@@ -561,13 +565,13 @@ namespace scls {
                     new_texture(name, final_src);
                 }
             }
-            else if(cutted[i].xml_balise_name() == "variable") {
+            else if(cutted[i].get()->xml_balise_name() == "variable") {
                 // Add a variable
                 std::string name = "";
-                for(int j = 0;j<static_cast<int>(cutted[i].xml_balise_attributes().size());j++) {
+                for(int j = 0;j<static_cast<int>(cutted[i].get()->xml_balise_attributes().size());j++) {
                     // Get the datas about the attributes
-                    std::string current_attribute_name = cutted[i].xml_balise_attributes()[j].name;
-                    std::string current_attribute_value = cutted[i].xml_balise_attributes()[j].value;
+                    std::string current_attribute_name = cutted[i].get()->xml_balise_attributes()[j].name;
+                    std::string current_attribute_value = cutted[i].get()->xml_balise_attributes()[j].value;
 
                     if(current_attribute_name == "name") {
                         // Get the value of the object
@@ -575,7 +579,7 @@ namespace scls {
                     }
                 }
                 // Add the variable
-                if(name != "")load_variable(name, cutted[i].text());
+                if(name != "")load_variable(name, cutted[i].get()-> text());
             }
         }
 
@@ -596,37 +600,37 @@ namespace scls {
     }
 
     // Load an object in a page from XML
-    void Window::__load_object_from_xml(std::string object_name, std::string object_type, XML_Text& object_content, std::shared_ptr<Window_Loader> loader) {
+    void Window::__load_object_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text> object_content, std::shared_ptr<Window_Loader> loader) {
         // Create the object
         std::shared_ptr<Object> object = __create_loaded_object_from_type(object_name, object_type);
         loader.get()->created_objects[object_name] = object;
         loader.get()->created_objects_stack.push(object);
 
         // Parse the content
-        for(int i = 0;i<static_cast<int>(object_content.sub_texts().size());i++) {
+        for(int i = 0;i<static_cast<int>(object_content.get()->sub_texts().size());i++) {
             // Display the page if necessary
-            object.get()->set_xml_attribute(object_content.sub_texts()[i], loader, i);
+            object.get()->set_xml_attribute(object_content.get()->sub_texts()[i], loader, i);
         }
     }
 
     // Load a 3D page from XML
-    void Window::__load_page_3d_from_xml(std::string object_name, std::string object_type, XML_Text& object_content, std::shared_ptr<Window_Loader> loader) {
+    void Window::__load_page_3d_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text> object_content, std::shared_ptr<Window_Loader> loader) {
         // Create the 3D page
         std::shared_ptr<Object> object = __create_loaded_page_3d_from_type(object_name, object_type);
         loader.get()->created_objects[object_name] = object;
         loader.get()->created_objects_stack.push(object);
 
         // Parse each attributes
-        for(int i = 0;i<static_cast<int>(object_content.xml_balise_attributes().size());i++) {
-            if(object_content.xml_balise_attributes()[i].name == "displayed" || object_content.xml_balise_attributes()[i].name == "display") {
+        for(int i = 0;i<static_cast<int>(object_content.get()->xml_balise_attributes().size());i++) {
+            if(object_content.get()->xml_balise_attributes()[i].name == "displayed" || object_content.get()->xml_balise_attributes()[i].name == "display") {
                 display_page_3d(object_name);
             }
         }
 
         // Parse the content
-        for(int i = 0;i<static_cast<int>(object_content.sub_texts().size());i++) {
+        for(int i = 0;i<static_cast<int>(object_content.get()->sub_texts().size());i++) {
             // Display the page if necessary
-            object.get()->set_xml_attribute(object_content.sub_texts()[i], loader, i);
+            object.get()->set_xml_attribute(object_content.get()->sub_texts()[i], loader, i);
         }
     }
 }

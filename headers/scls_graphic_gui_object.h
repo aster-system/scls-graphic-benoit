@@ -32,6 +32,9 @@ namespace scls {
     //
     //*********
 
+    // Balises for a GUI loading
+    extern std::shared_ptr<__Balise_Container> gui_loading_balises;
+
     struct __GUI_Page_Loader {
         // Class containing datas about a loaded GUI page
 
@@ -133,9 +136,9 @@ namespace scls {
         //*********
 
         // Loads the object from XML
-        void __load_from_xml(XML_Text& text, std::shared_ptr<__GUI_Page_Loader> loader, std::string event = "");
+        void __load_from_xml(std::shared_ptr<XML_Text> text, std::shared_ptr<__GUI_Page_Loader> loader, std::string event = "");
         // Handle an attribute from XML
-        virtual void set_xml_attribute(XML_Text& text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i);
+        virtual void set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i);
 
         //*********
         //
@@ -473,7 +476,7 @@ namespace scls {
         inline void set_font_family(std::string new_font_family) {a_global_style.font = get_system_font(new_font_family);};
         inline void set_font_size(unsigned short new_font_size) {a_global_style.font_size = new_font_size;};
         inline void set_max_width(int new_max_width) {a_global_style.max_width = new_max_width;};
-        virtual void set_text(std::string new_text) {if(new_text == text())return;attached_text_image_block()->set_text(new_text);update_texture();};
+        virtual void set_text(std::string new_text) {if(new_text == text()){return;}attached_text_image_block()->set_text(new_text);update_texture();};
         inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {a_global_style.alignment_horizontal = new_text_alignment_horizontal;};
         virtual void set_text_image_type(Block_Type new_text_image_type) {a_text_image_type = new_text_image_type;};
         inline void set_text_offset(double new_text_offset) {a_global_style.text_offset_x = new_text_offset;a_global_style.text_offset_y = new_text_offset;a_global_style.text_offset_width = new_text_offset;a_global_style.text_offset_height = new_text_offset;};
@@ -488,7 +491,7 @@ namespace scls {
         //*********
 
         // Handle an attribute from XML
-        virtual void set_xml_attribute(XML_Text& text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i);
+        virtual void set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i);
 
     protected:
 
@@ -781,7 +784,7 @@ namespace scls {
         // GUI_Page most basic constructor
         GUI_Page(_Window_Advanced_Struct* window_struct, std::string name);
         // GUI_Page destructor
-        virtual ~GUI_Page() {};
+        virtual ~GUI_Page() {a_loader.reset();};
 
         // Function called after that the window is resized
         virtual void after_window_resizing(glm::vec2 last_scale){Object::after_window_resizing(last_scale);parent_object()->after_resizing();};
@@ -811,12 +814,15 @@ namespace scls {
         // Load the page from XML
         void load_from_xml(const std::string& content_to_parse, bool sup_paged = false) {load_objects_from_xml(content_to_parse, sup_paged);};
         // Load an object in a page from XML
-        std::shared_ptr<GUI_Object> __load_object_from_xml(std::string object_name, std::string object_type, XML_Text& content, std::shared_ptr<__GUI_Page_Loader>& loader);
+        std::shared_ptr<GUI_Object> __load_object_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text> content);
         // Load objects in a page from XML
         void load_objects_from_xml(const std::string& content_to_parse, bool sub_paged);
         // Handle an attribute from XML
-        virtual void set_xml_attribute(XML_Text& text, std::shared_ptr<__XML_Loader> loader_shared_ptr, int& i);
+        virtual void set_xml_attribute(std::shared_ptr<XML_Text> text, std::shared_ptr<__XML_Loader> loader_shared_ptr, int& i);
     private:
+        // Loader of the page
+        std::shared_ptr<__GUI_Page_Loader> a_loader;
+
         // Handle the focused object
         // Pointer to the focused object
         GUI_Object* a_focused_object = 0;

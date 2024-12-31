@@ -161,5 +161,5 @@ namespace scls {
     //*********
 
     // Handle an attribute from XML
-    void Object::set_xml_attribute(XML_Text& text, std::shared_ptr<__XML_Loader> loader_shared_ptr, int& i) {}
+    void Object::set_xml_attribute(std::shared_ptr<XML_Text> text, std::shared_ptr<__XML_Loader> loader_shared_ptr, int& i) {}
 }

@@ -47,6 +47,9 @@ namespace scls {
     //
     //*********
 
+    // Balises for a Window loading
+    extern std::shared_ptr<__Balise_Container> window_loading_balises;
+
     struct Window_Loader : public __XML_Loader {
         // Class containing datas about a loaded window
 
@@ -214,9 +217,9 @@ namespace scls {
         // Load the page from XML
         std::shared_ptr<Window_Loader> load_from_xml(std::string window_path);
         // Load an object in a page from XML
-        void __load_object_from_xml(std::string object_name, std::string object_type, XML_Text& object_content, std::shared_ptr<Window_Loader> loader);
+        void __load_object_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text> object_content, std::shared_ptr<Window_Loader> loader);
         // Load a 3D page from XML
-        void __load_page_3d_from_xml(std::string object_name, std::string object_type, XML_Text& object_content, std::shared_ptr<Window_Loader> loader);
+        void __load_page_3d_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text> object_content, std::shared_ptr<Window_Loader> loader);
 
     private:
 
@@ -268,7 +271,7 @@ namespace scls {
         //
         //*********
 
-        float a_last_frame_time = 0; // Time when the last frame occurs, for calculating delta_time and FPS
+        double a_last_frame_time = 0; // Time when the last frame occurs, for calculating delta_time and FPS
         // Last height of the window
         unsigned short a_last_window_height = 0;
         // Last width of the window

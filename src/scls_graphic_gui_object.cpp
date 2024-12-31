@@ -111,11 +111,11 @@ namespace scls {
     //*********
 
     // Loads the object from XML
-    void GUI_Object::__load_from_xml(XML_Text& text, std::shared_ptr<__GUI_Page_Loader> loader, std::string event) {
+    void GUI_Object::__load_from_xml(std::shared_ptr<XML_Text> text, std::shared_ptr<__GUI_Page_Loader> loader, std::string event) {
         // Parse the content
-        for(int i = 0;i<static_cast<int>(text.sub_texts().size());i++) {
-            XML_Text& current_text = text.sub_texts()[i];
-            std::string current_balise_name = current_text.xml_balise_name();
+        for(int i = 0;i<static_cast<int>(text.get()->sub_texts().size());i++) {
+            std::shared_ptr<XML_Text> current_text = text.get()->sub_texts()[i];
+            std::string current_balise_name = current_text.get()->xml_balise_name();
 
             // Apply the XML balise
             if(current_balise_name == "when") {
@@ -123,8 +123,8 @@ namespace scls {
                 std::vector<_Text_Balise_Part> final_content = std::vector<_Text_Balise_Part>();
                 std::string current_event = "";
                 // Get each attributes
-                for(int j = 0;j<static_cast<int>(current_text.xml_balise_attributes().size());j++) {
-                    XML_Attribute& current_attribute = current_text.xml_balise_attributes()[j];
+                for(int j = 0;j<static_cast<int>(current_text.get()->xml_balise_attributes().size());j++) {
+                    XML_Attribute& current_attribute = current_text.get()->xml_balise_attributes()[j];
                     std::string& current_attribute_name = current_attribute.name;
                     std::string& current_attribute_value = current_attribute.value;
 
@@ -149,13 +149,13 @@ namespace scls {
     }
 
     // Handle an attribute from XML
-    void GUI_Object::set_xml_attribute(XML_Text& text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i) {
-        std::string xml_attribute_name = text.xml_balise_name();
+    void GUI_Object::set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i) {
+        std::string xml_attribute_name = text.get()->xml_balise_name();
         if(xml_attribute_name == "background_color") {
             // Load the background color
             Color background_color(0, 0, 0, 255);
-            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
-                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+            for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
                 std::string current_attribute_name = current_attribute.name;
                 std::string current_attribute_value = current_attribute.value;
 
@@ -185,8 +185,8 @@ namespace scls {
             Fraction border_left = Fraction(0);
             Fraction border_right = Fraction(0);
             Fraction border_top = Fraction(0);
-            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
-                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+            for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
                 std::string current_attribute_name = current_attribute.name;
                 std::string current_attribute_value = current_attribute.value;
 
@@ -226,8 +226,8 @@ namespace scls {
             if(event == "overflighted") {
                 // Load the cursor of the object when overflighted
                 unsigned long cursor = GLFW_ARROW_CURSOR;
-                for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
-                    XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+                for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
+                    XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
                     std::string current_attribute_name = current_attribute.name;
                     std::string current_attribute_value = current_attribute.value;
 
@@ -244,8 +244,8 @@ namespace scls {
             // Load the height of the object
             Fraction height = Fraction(1);
             _Size_Definition height_type = _Size_Definition::Scale_Size;
-            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
-                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+            for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
                 std::string current_attribute_name = current_attribute.name;
                 std::string current_attribute_value = current_attribute.value;
 
@@ -269,8 +269,8 @@ namespace scls {
             Alignment_Horizontal texture_alignment_horizontal = Alignment_Horizontal::H_Center;
             Alignment_Vertical texture_alignment_vertical = Alignment_Vertical::V_Center;
             std::string texture_name = "";
-            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
-                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+            for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
                 std::string current_attribute_name = current_attribute.name;
                 std::string current_attribute_value = current_attribute.value;
 
@@ -285,13 +285,13 @@ namespace scls {
                     else if(current_attribute_value == "fit_horizontally") texture_alignment = Alignment_Texture::T_Fit_Horizontally;
                     else if(current_attribute_value == "fit_vertically") texture_alignment = Alignment_Texture::T_Fit_Vertically;
                     else if(current_attribute_value == "user_defined") texture_alignment = Alignment_Texture::T_User_Defined;
-                    else print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Can't set the value of the texture alignment to \"" + current_attribute_value + "\".");
+                    else{print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Can't set the value of the texture alignment to \"" + current_attribute_value + "\".");}
                 }
                 else if(current_attribute_name == "alignment_vertical" || current_attribute_name == "alignment_v") {
                     // Vertical alignment of the texture
                     if(current_attribute_value == "bottom") texture_alignment_vertical = Alignment_Vertical::V_Bottom;
                     else if(current_attribute_value == "top") texture_alignment_vertical = Alignment_Vertical::V_Top;
-                    else print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Can't set the value of the texture vertical alignment to \"" + current_attribute_value + "\".");
+                    else{print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Can't set the value of the texture vertical alignment to \"" + current_attribute_value + "\".");}
                 }
                 else if(current_attribute_name == "alignment_horizontal" || current_attribute_name == "alignment_h") {
                     // Horizontal alignment of the texture
@@ -299,7 +299,7 @@ namespace scls {
                     else if(current_attribute_value == "right") texture_alignment_horizontal = Alignment_Horizontal::H_Right;
                     else print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Can't set the value of the texture vertical alignment to \"" + current_attribute_value + "\".");
                 }
-                else print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Can't find the attribute \"" + current_attribute_value + "\" of the texture.");
+                else{print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Can't find the attribute \"" + current_attribute_value + "\" of the texture.");}
             }
             // Set the goot texture
             if(texture_name != "") set_texture(texture_name);
@@ -311,8 +311,8 @@ namespace scls {
             // Load the width of the object
             Fraction width = Fraction(1);
             _Size_Definition width_type = _Size_Definition::Scale_Size;
-            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
-                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+            for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
                 std::string current_attribute_name = current_attribute.name;
                 std::string current_attribute_value = current_attribute.value;
 
@@ -337,8 +337,8 @@ namespace scls {
             std::string attached_object_vertical = "";
             Fraction x = Fraction(1);
             _Size_Definition x_type = _Size_Definition::Scale_Size;
-            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
-                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+            for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
                 std::string current_attribute_name = current_attribute.name;
                 std::string current_attribute_value = current_attribute.value;
 
@@ -393,8 +393,8 @@ namespace scls {
             std::string attached_object_vertical = "";
             Fraction y = Fraction(1);
             _Size_Definition y_type = _Size_Definition::Scale_Size;
-            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
-                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+            for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
                 std::string current_attribute_name = current_attribute.name;
                 std::string current_attribute_value = current_attribute.value;
 
@@ -801,12 +801,13 @@ namespace scls {
     //*********
 
     // Handle an attribute from XML
-    void __GUI_Text_Metadatas::set_xml_attribute(XML_Text& text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i) {
-        std::string xml_attribute_name = text.xml_balise_name();
+    void __GUI_Text_Metadatas::set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i) {
+        std::string xml_attribute_name = text.get()->xml_balise_name();
         if(xml_attribute_name == "content") {
             // Get each attributes
-            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
-                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+            std::string needed_text = text.get()->text();
+            for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
                 std::string current_attribute_name = current_attribute.name;
                 std::string current_attribute_value = current_attribute.value;
 
@@ -814,16 +815,29 @@ namespace scls {
                 if(current_attribute_name == "font_size") {
                     // Value of the font size
                     set_font_size(Fraction::from_std_string(current_attribute_value).to_double());
+                } else if(current_attribute_name == "max_width") {
+                    // Value of the max width
+                    set_max_width(Fraction::from_std_string(current_attribute_value).to_double());
+                } else if(current_attribute_name == "src") {
+                    // Loads the content of a balise from a file
+                    if(current_attribute_value[0] == '\"'){current_attribute_value = current_attribute_value.substr(1, current_attribute_value.size() - 1);}
+                    if(current_attribute_value[current_attribute_value.size()-1] == '\"'){current_attribute_value = current_attribute_value.substr(0, current_attribute_value.size() - 1);}
+                    if(std::filesystem::exists(current_attribute_value)) {
+                        needed_text = read_file(current_attribute_value);
+                    } else {
+                        print("Warning", "SCLS Graphic Benoit page \"" + name() + "\"", "The path \"" + current_attribute_value + "\" you want to load as the content of this text does not exist.");
+                    }
                 }
             }
             // Get the content of the text
-            set_text(scls::format_string_tabulations(scls::format_string_break_line(text.text(), " "), ""));
+            needed_text = scls::format_string_tabulations(scls::format_string_break_line(needed_text, " "), "");
+            set_text(needed_text);
         }
         else if(xml_attribute_name == "font_size") {
             // Load the font size of the text
             Fraction final_font_size = Fraction(1);
-            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
-                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+            for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
                 std::string current_attribute_name = current_attribute.name;
                 std::string current_attribute_value = current_attribute.value;
 
@@ -839,8 +853,8 @@ namespace scls {
             // Load datas about the text
             Color final_color = font_color();
             Fraction final_font_size = Fraction(font_size());
-            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
-                XML_Attribute& current_attribute = text.xml_balise_attributes()[j];
+            for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
                 std::string current_attribute_name = current_attribute.name;
                 std::string current_attribute_value = current_attribute.value;
 
@@ -883,7 +897,6 @@ namespace scls {
         if(text() != "") {
             // Create the text
             glm::vec2 position_to_apply = glm::vec2(x_in_pixel(), y_in_pixel());
-            attached_text_image_block()->set_text(text());
             attached_text_image_block()->global_style().background_color = background_color();
             attached_text_image_block()->global_style().color = font_color();
             attached_text_image_block()->global_style().font_size = font_size();
@@ -1683,6 +1696,9 @@ namespace scls {
     //
     //*********
 
+    // Balises for a Window loading
+    std::shared_ptr<__Balise_Container> gui_loading_balises;
+
     // GUI_Page most basic constructor
     GUI_Page::GUI_Page(_Window_Advanced_Struct* window_struct, std::string name) : Object(window_struct, name) {
         set_scale(glm::vec3(2, 2, 1));
@@ -1708,15 +1724,15 @@ namespace scls {
     };
 
     // Handle an attribute from XML
-    void GUI_Page::set_xml_attribute(XML_Text& text, std::shared_ptr<__XML_Loader> loader_shared_ptr, int& i) {
+    void GUI_Page::set_xml_attribute(std::shared_ptr<XML_Text> text, std::shared_ptr<__XML_Loader> loader_shared_ptr, int& i) {
         __XML_Loader& loader = *loader_shared_ptr.get();
-        if(text.xml_balise_name() == "content") {
+        if(text.get()->xml_balise_name() == "content") {
             // Load the content of the page
             std::string src = "";
             bool sub_paged = false;
-            for(int j = 0;j<static_cast<int>(text.xml_balise_attributes().size());j++) {
-                std::string current_attribute_name = text.xml_balise_attributes()[j].name;
-                std::string current_attribute_value = text.xml_balise_attributes()[j].value;
+            for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
+                std::string current_attribute_name = text.get()->xml_balise_attributes()[j].name;
+                std::string current_attribute_value = text.get()->xml_balise_attributes()[j].value;
 
                 if(current_attribute_name == "src") {
                     // Source of the content
@@ -1730,7 +1746,11 @@ namespace scls {
             // Get the content
             std::string final_path = path_parent(loader.window_file_path) + "/" + src;
             if(std::filesystem::exists(final_path)) {
-                load_objects_from_xml(format_for_xml(remove_comment_out_of(read_file(final_path), "\"")), sub_paged);
+                if(std::filesystem::is_directory(final_path)) {
+                    print("Warning", "SCLS Graphic Benoit page \"" + name() + "\"", "The path \"" + final_path + "\" you want to load as the content of this page is a directory.");
+                } else {
+                    load_objects_from_xml(format_for_xml(remove_comment_out_of(read_file(final_path), "\"")), sub_paged);
+                }
             } else {
                 print("Warning", "SCLS Graphic Benoit page \"" + name() + "\"", "The path \"" + final_path + "\" you want to load as the content of this page does not exist.");
             }
@@ -1777,19 +1797,19 @@ namespace scls {
     };
 
     // Loads an object in a page from XML and returns it
-    std::shared_ptr<GUI_Object> GUI_Page::__load_object_from_xml(std::string object_name, std::string object_type, XML_Text& content, std::shared_ptr<__GUI_Page_Loader>& loader) {
+    std::shared_ptr<GUI_Object> GUI_Page::__load_object_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text> content) {
         // Search the parent
         GUI_Object* current_parent = parent_object();
-        for(int i = 0;i<static_cast<int>(content.sub_texts().size());i++) {
-            XML_Text& current_text = content.sub_texts()[i];
+        for(int i = 0;i<static_cast<int>(content.get()->sub_texts().size());i++) {
+            std::shared_ptr<XML_Text> current_text = content.get()->sub_texts()[i];
 
-            if(current_text.xml_balise_name() == "parent") {
+            if(current_text.get()->xml_balise_name() == "parent") {
                 // Load the parent
-                for(int j = 0;j<static_cast<int>(current_text.xml_balise_attributes().size());j++) {
-                    XML_Attribute& current_attribute = current_text.xml_balise_attributes()[j];
+                for(int j = 0;j<static_cast<int>(current_text.get()->xml_balise_attributes().size());j++) {
+                    XML_Attribute& current_attribute = current_text.get()->xml_balise_attributes()[j];
                     std::string current_attribute_name = current_attribute.name;
 
-                    if(current_attribute_name == "name") { current_parent = reinterpret_cast<GUI_Object*>(loader.get()->created_objects[current_attribute.value].get()); }
+                    if(current_attribute_name == "name") { current_parent = reinterpret_cast<GUI_Object*>(a_loader.get()->created_objects[current_attribute.value].get()); }
                 }
                 break;
             }
@@ -1798,28 +1818,30 @@ namespace scls {
 
         // Create the object
         std::shared_ptr<GUI_Object> object = __create_loaded_object_from_type(object_name, object_type, current_parent);
-        loader.get()->created_objects[object_name] = object;
-        object.get()->__load_from_xml(content, loader);
+        a_loader.get()->created_objects[object_name] = object;
+        object.get()->__load_from_xml(content, a_loader);
         return object;
     }
 
     // Load objects in a page from XML
     void GUI_Page::load_objects_from_xml(const std::string& content_to_parse, bool sub_paged) {
-        XML_Text content = XML_Text(content_to_parse);
+        // Load the needed balises
+        if(gui_loading_balises.get() == 0) {gui_loading_balises = std::make_shared<__Balise_Container>();gui_loading_balises.get()->__load_built_in_balises_gui();}
+        std::shared_ptr<XML_Text> content = std::make_shared<XML_Text>(gui_loading_balises, content_to_parse);
 
         // Check each balises
-        std::shared_ptr<__GUI_Page_Loader> loader = std::make_shared<__GUI_Page_Loader>();
-        for(int i = 0;i<static_cast<int>(content.sub_texts().size());i++) {
-            XML_Text& current_text = content.sub_texts()[i];
-            std::string current_balise_name = current_text.xml_balise_name();
+        a_loader = std::make_shared<__GUI_Page_Loader>();
+        for(int i = 0;i<static_cast<int>(content.get()->sub_texts().size());i++) {
+            std::shared_ptr<XML_Text> current_text = content.get()->sub_texts()[i];
+            std::string current_balise_name = current_text.get()->xml_balise_name();
 
             // Add a GUI object
             if(current_balise_name == "gui_object") {
                 bool must_be_visible = false;
                 std::string object_name = "";
                 std::string object_type = "";
-                for(int j = 0;j<static_cast<int>(current_text.xml_balise_attributes().size());j++) {
-                    XML_Attribute& current_attribute = current_text.xml_balise_attributes()[j];
+                for(int j = 0;j<static_cast<int>(current_text.get()->xml_balise_attributes().size());j++) {
+                    XML_Attribute& current_attribute = current_text.get()->xml_balise_attributes()[j];
                     std::string current_attribute_name = current_attribute.name;
                     if(current_attribute_name == "name") {
                         // Get the name of the object
@@ -1836,17 +1858,17 @@ namespace scls {
                 }
 
                 // Check if the object already exists
-                for(std::map<std::string, std::shared_ptr<__GUI_Object_Core>>::iterator it = loader.get()->created_objects.begin();it!=loader.get()->created_objects.end();it++) {
+                for(std::map<std::string, std::shared_ptr<__GUI_Object_Core>>::iterator it = a_loader.get()->created_objects.begin();it!=a_loader.get()->created_objects.end();it++) {
                     if(it->first == object_name) {
                         set_can_print(true);
-                        print("Warning", "SCLS GUI Page \"" + name() + "\"", "The \"" + object_name + "\" name does not exist.");
+                        print("Warning", "SCLS GUI Page \"" + name() + "\"", "The \"" + object_name + "\" name does already exist.");
                         continue;
                     }
                 }
 
                 // Create the object
                 if(object_name != "") {
-                    std::shared_ptr<GUI_Object> object = __load_object_from_xml(object_name, object_type, current_text, loader);
+                    std::shared_ptr<GUI_Object> object = __load_object_from_xml(object_name, object_type, current_text);
                     if(sub_paged && !must_be_visible) {
                         object.get()->set_visible(object.get()->visible() && object.get()->parent() != parent_object());
                     }
