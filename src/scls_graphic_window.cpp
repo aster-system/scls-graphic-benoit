@@ -37,15 +37,10 @@ namespace scls {
     }
 
     // Callback function for mouse moving
-    void _mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-        global_mouse_x = xpos;
-        global_mouse_y = ypos;
-    }
+    void _mouse_callback(GLFWwindow* window, double xpos, double ypos) {global_mouse_x = xpos;global_mouse_y = ypos;}
 
     // Callback function for mouse wheel scrolling
-    void _mouse_wheel_scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
-        wheel_y += yoffset;
-    }
+    void _mouse_wheel_scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {wheel_y += yoffset;}
 
     //*********
     //
@@ -59,12 +54,7 @@ namespace scls {
     bool _screen_resized = false;
 
     // Callback function for window resizing
-    void _framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-        _global_screen_height = height;
-        _global_screen_width = width;
-        _screen_resized = true;
-        glViewport(0, 0, width, height);
-    }
+    void _framebuffer_size_callback(GLFWwindow* window, int width, int height) {_global_screen_height = height;_global_screen_width = width;_screen_resized = true;glViewport(0, 0, width, height);}
 
     //*********
     //

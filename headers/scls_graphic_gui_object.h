@@ -40,6 +40,8 @@ namespace scls {
 
         // Created objects by name
         std::map<std::string, std::shared_ptr<__GUI_Object_Core>> created_objects = std::map<std::string, std::shared_ptr<__GUI_Object_Core>>();
+        // Path of the loaded file
+        std::string path = std::string("");
     };
 
     struct GUI_Style : public __GUI_Style_Transformation {
@@ -62,12 +64,13 @@ namespace scls {
         //*********
 
         // Most basic GUI_Object constructor
-        GUI_Object(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent);
+        GUI_Object(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent);
         // GUI_Object destructor
         virtual ~GUI_Object();
 
         // Returns a child by its name
-        inline GUI_Object* child_by_name(std::string child_name) const {for(int i = 0;i<static_cast<int>(a_children.size());i++) {if(a_children[i] != 0 && a_children[i].get()->name() == child_name) return a_children[i].get();}return 0;};
+        template <typename T = GUI_Object>
+        inline T* child_by_name(std::string child_name) const {for(int i = 0;i<static_cast<int>(a_children.size());i++) {if(a_children[i] != 0 && a_children[i].get()->name() == child_name) return reinterpret_cast<T*>(a_children[i].get());}return 0;};
         // Returns a child shared pointer by its name
         inline std::shared_ptr<GUI_Object>* child_by_name_shared_ptr(std::string child_name) {for(int i = 0;i<static_cast<int>(a_children.size());i++) {if(a_children[i] != 0 && a_children[i].get()->name() == child_name) return &a_children[i];}return 0;};
         // Function called when a child is deleted
@@ -88,6 +91,8 @@ namespace scls {
         virtual void render(glm::vec3 scale_multiplier = glm::vec3(1, 1, 1));
 
         // Hierarchy functions
+        // Function called after the creation of the object
+        virtual void after_creation(){};
         // Function called after that the window is resized
         virtual void after_resizing();
         // Function called after an XML loading
@@ -142,6 +147,20 @@ namespace scls {
 
         //*********
         //
+        // Sub-page handling
+        //
+        //*********
+
+        // Hides all a sub-pages
+        inline void hide_sub_pages(bool child){std::vector<std::shared_ptr<GUI_Object>>& needed_sub_pages = sub_pages();for(int i = 0;i<static_cast<int>(needed_sub_pages.size());i++){needed_sub_pages[i].get()->set_visible(false);if(child){needed_sub_pages[i].get()->hide_sub_pages(true);}}};
+        inline void hide_sub_pages(){hide_sub_pages(false);};
+        // Shows all a page from a sub-pages
+        inline void show_page(std::string page){std::vector<std::shared_ptr<GUI_Object>>& needed_sub_pages = sub_pages();for(int i = 0;i<static_cast<int>(needed_sub_pages.size());i++){if(needed_sub_pages[i].get()->name()==page){needed_sub_pages[i].get()->set_visible(true);}}};
+        // Returns a precise sub-page
+        inline GUI_Object* sub_page(std::string page){std::vector<std::shared_ptr<GUI_Object>>& needed_sub_pages = sub_pages();for(int i = 0;i<static_cast<int>(needed_sub_pages.size());i++){if(needed_sub_pages[i].get()->name()==page){return needed_sub_pages[i].get();}}return 0;};
+
+        //*********
+        //
         // Transform handling
         //
         //*********
@@ -155,7 +174,7 @@ namespace scls {
         glm::vec2 mouse_position_in_scale();
 
         // Getters
-        inline GUI_Object* parent() const {return a_parent;};
+        inline GUI_Object* parent() const {return a_parent.lock().get();};
 
         //*********
         //
@@ -202,6 +221,7 @@ namespace scls {
         inline void set_texture_alignment(Alignment_Texture new_texture_alignment) {a_texture_alignment = new_texture_alignment;};
         inline void set_texture_alignment_horizontal(Alignment_Horizontal new_texture_alignment_horizontal) {a_texture_alignment_horizontal = new_texture_alignment_horizontal;};
         inline void set_texture_alignment_vertical(Alignment_Vertical new_texture_alignment_vertical) {a_texture_alignment_vertical = new_texture_alignment_vertical;};;
+        inline std::vector<std::shared_ptr<GUI_Object>>& sub_pages() {if(a_sub_page.size() <= 0){a_sub_page.push_back(std::vector<std::shared_ptr<GUI_Object>>());}return a_sub_page[0];};
         inline Texture* texture() const {return a_texture.get();};
         inline Alignment_Texture texture_alignment() const {return a_texture_alignment;};
         inline Alignment_Horizontal texture_alignment_horizontal() const {return a_texture_alignment_horizontal;};
@@ -220,9 +240,9 @@ namespace scls {
         // Parent of the futures created objects
         std::shared_ptr<GUI_Object> a_created_objects_parent;
         // Parent of the object
-        GUI_Object* a_parent = 0;
-        // Parent shared pointer to the object
-        std::shared_ptr<GUI_Object>* a_shared_ptr = 0;
+        std::weak_ptr<GUI_Object> a_parent;
+        // Weak pointer to this object
+        std::weak_ptr<GUI_Object> a_this_object;
 
     private:
         //*********
@@ -256,6 +276,15 @@ namespace scls {
 
         //*********
         //
+        // Sub-page handling
+        //
+        //*********
+
+        // Each sub-page
+        std::vector<std::vector<std::shared_ptr<GUI_Object>>> a_sub_page;
+
+        //*********
+        //
         // Texture handling
         //
         //*********
@@ -285,13 +314,15 @@ namespace scls {
         //*********
 
         // Most basic GUI_Main_Object constructor
-        GUI_Main_Object(_Window_Advanced_Struct& window, std::string name) : GUI_Object(window, name, 0) {};
+        GUI_Main_Object(_Window_Advanced_Struct& window, std::string name) : GUI_Object(window, name, std::shared_ptr<GUI_Object>()) {};
         // GUI_Main_Object destructor
         virtual ~GUI_Main_Object() {};
 
         // Function called when a child is deleted
         virtual void child_deleted(GUI_Object* child) { if(a_focused_object == child) a_focused_object = 0; GUI_Object::child_deleted(child); };
-        // Update the object for the events
+        // Sets this object
+        inline void set_this_object(std::weak_ptr<scls::GUI_Object> this_object){a_this_object = this_object;};
+        // Updates the object for the events
         virtual void update_event();
 
     private:
@@ -315,10 +346,12 @@ namespace scls {
         //*********
 
         // Most basic GUI_Scroller constructor
-        GUI_Scroller(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent);
+        GUI_Scroller(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent):GUI_Object(window, name, parent) {};
         // GUI_Scroller destructor
-        virtual ~GUI_Scroller();
+        virtual ~GUI_Scroller(){a_scroller_children.reset();};
 
+        // Function called after the creation of the object
+        virtual void after_creation(){a_scroller_children=*_create_scroller_children();};
         // Function called after that the window is resized
         virtual void after_resizing() {check_scroller();};
         // Function called after an XML loading
@@ -327,8 +360,8 @@ namespace scls {
         void check_scroll();
         // Check the scroller object
         void check_scroller(bool reset = false);
-        // Reset the scroller
-        void reset() {a_scroller_children.get()->delete_children();};
+        // Resets the scroller
+        virtual void reset() {a_scroller_children.get()->delete_children();};
         // Scroll the scroller on the Y axis
         void scroll_y(Fraction movement);
 
@@ -372,81 +405,6 @@ namespace scls {
         Alignment_Vertical a_scroller_vertical_alignment = Alignment_Vertical::V_Top;
     };
 
-    class GUI_Scroller_Choice : public GUI_Scroller {
-        // Class representing a simple GUI scroller displayed into the window, which propose choices to use
-    public:
-
-        //*********
-        //
-        // GUI_Scroller_Choice main functions
-        //
-        //*********
-
-        // Most basic GUI_Scroller_Choice constructor
-        GUI_Scroller_Choice(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent);
-        // GUI_Scroller_Choice destructor
-        virtual ~GUI_Scroller_Choice();
-
-        // Checks the number of selected objects
-        inline void check_number_selected_object() {while(static_cast<int>(a_currently_selected_objects.size())>max_number_selected_object())a_currently_selected_objects.erase(a_currently_selected_objects.begin(),a_currently_selected_objects.begin()+1);};
-        // Returns if an object is confirmed
-        inline bool contains_confirmed_object(std::string object_name) {for(int i = 0;i<static_cast<int>(a_currently_confirmed_objects.size());i++){if(a_currently_confirmed_objects[i]==object_name)return true; } return false;};
-        // Returns if an object is in the scroller
-        inline bool contains_object(std::string object_name) {for(int i = 0;i<static_cast<int>(scroller_children()->children().size());i++){if(scroller_children()->children()[i].get()->name()==object_name)return true; } return false;};
-        // Returns if an object is selected
-        inline bool contains_selected_object(std::string object_name) {for(int i = 0;i<static_cast<int>(a_currently_selected_objects.size());i++){if(a_currently_selected_objects[i]==object_name)return true; } return false;};
-        // Select an object
-        void select_object(std::string object_name);
-        // Unselect an object
-        void unselect_object(std::string object_name);
-
-        // Reset the object
-        void reset_objects() {a_currently_confirmed_objects.clear();while(static_cast<int>(a_currently_selected_objects.size() > 0)){unselect_object(a_currently_selected_objects[0]);}};
-        // Soft reset the object
-        virtual void soft_reset() {GUI_Scroller::soft_reset();a_choice_modified = false;a_currently_confirmed_objects.clear();};
-        // Update the even in the scroller
-        virtual void update_event();
-
-        // Getters and setters
-        inline bool choice_modified() const {return a_choice_modified;};
-        inline bool choice_modified_during_this_frame() const {return a_choice_modified;};
-        inline std::vector<std::string>& currently_selected_objects() {return a_currently_selected_objects;};
-        inline unsigned int max_number_selected_object() const {return a_max_number_selected_object;};
-        inline GUI_Style& selected_objects_style() {return a_selected_objects_style;};
-        inline void set_unselect_object_on_confirmation(bool new_unselect_object_on_confirmation) {a_unselect_object_on_confirmation=new_unselect_object_on_confirmation;};
-        inline GUI_Style& unselected_objects_style() {return a_unselected_objects_style;};
-
-    private:
-
-        //*********
-        //
-        // GUI_Scroller_Choice main attributes
-        //
-        //*********
-
-        // If the coice as been modified during this frame
-        bool a_choice_modified = false;
-        // Currently confirmed objects
-        std::vector<std::string> a_currently_confirmed_objects = std::vector<std::string>();
-        // Currently selected objects
-        std::vector<std::string> a_currently_selected_objects = std::vector<std::string>();
-        // Maximum number of selected object
-        unsigned int a_max_number_selected_object = 1;
-        // If the object muse be unselected after confirmation
-        bool a_unselect_object_on_confirmation = false;
-
-        //*********
-        //
-        // GUI_Scroller_Choice elements handling
-        //
-        //*********
-
-        // Selected objects style
-        GUI_Style a_selected_objects_style;
-        // Unelected objects style
-        GUI_Style a_unselected_objects_style;
-    };
-
     class __GUI_Text_Metadatas : public GUI_Object {
         // Class representing the metadatas of a graphic text
     public:
@@ -458,7 +416,7 @@ namespace scls {
         //*********
 
         // __GUI_Text_Metadatas constructor
-        __GUI_Text_Metadatas(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent) : GUI_Object(window, name, parent) {a_text_image.reset(window_struct().text_image_generator()->new_text_image_multi_block(""));};
+        __GUI_Text_Metadatas(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent) : GUI_Object(window, name, parent) {a_text_image.reset(window_struct().text_image_generator()->new_text_image_multi_block(""));};
 
         // Return the plain text in the object
         inline std::string plain_text(){return window_struct().text_image_generator()->plain_text(text());};
@@ -531,7 +489,7 @@ namespace scls {
         //*********
 
         // Most basic GUI_Object constructor
-        GUI_Text(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent);
+        GUI_Text(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent);
 
         // Function called after that the window is resized
         virtual void after_resizing();
@@ -569,7 +527,7 @@ namespace scls {
         //*********
 
         // Most basic GUI_Text_Input constructor
-        GUI_Text_Input(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent);
+        GUI_Text_Input(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent);
 
         // Return the plain text in the object
         inline std::string plain_text(){return window_struct().text_image_generator()->plain_text(text());};
@@ -665,6 +623,256 @@ namespace scls {
         bool a_text_modified = false;
     };
 
+    class GUI_Scroller_Choice : public GUI_Scroller {
+        // Class representing a simple GUI scroller displayed into the window, which propose choices to use
+    public:
+
+        //*********
+        //
+        // __GUI_Scroller_Single_Choice struct
+        //
+        //*********
+
+        struct __GUI_Scroller_Single_Choice {bool good=true;bool is_sub_section = false;int index = 0;std::shared_ptr<GUI_Object> object;std::string name;inline GUI_Scroller_Choice* sub_section()const{return reinterpret_cast<GUI_Scroller_Choice*>(object.get());};};
+        struct GUI_Scroller_Single_Choice {std::shared_ptr<__GUI_Scroller_Single_Choice> __choice;inline bool is_sub_section()const{return __choice.get()->is_sub_section;};inline std::string& name(){return __choice.get()->name;};inline GUI_Object* object()const{return __choice.get()->object.get();};inline std::shared_ptr<GUI_Object>object_shared_ptr()const{return __choice.get()->object;};inline GUI_Scroller_Choice* sub_section()const{return __choice.get()->sub_section();}};
+
+        //*********
+        //
+        // GUI_Scroller_Choice main functions
+        //
+        //*********
+
+        // Most basic GUI_Scroller_Choice constructor
+        GUI_Scroller_Choice(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent);
+        // GUI_Scroller_Choice destructor
+        virtual ~GUI_Scroller_Choice();
+
+        // Adds an object
+        template <typename T = GUI_Text>
+        std::shared_ptr<T>* __add_object(std::string object_name, std::string object_text){
+            // Create the object
+            std::shared_ptr<T>* current_object = new_object<T>(name() + "-" + object_name);
+            current_object->get()->set_text(object_text);
+            current_object->get()->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
+            if(a_displayer_object.get() != 0) {current_object->get()->attach_left_in_parent(20);}
+            else {current_object->get()->attach_left_in_parent(0);}
+            current_object->get()->set_height_in_pixel(current_object->get()->font_size() + 4);
+            current_object->get()->set_width_in_scale(1);
+
+            // Create the choice
+            __GUI_Scroller_Single_Choice choice;
+            choice.name = object_name;
+            choice.object = *current_object;
+            GUI_Scroller_Single_Choice to_add; to_add.__choice = std::make_shared<__GUI_Scroller_Single_Choice>(choice);
+            a_objects.push_back(to_add);
+
+            // Apply the needed style
+            current_object->get()->set_overflighted_cursor(a_unselected_objects_style.cursor);
+
+            // Place the object
+            place_objects();
+
+            // Returns the object
+            return current_object;
+        };
+        template <typename T = GUI_Text>
+        std::shared_ptr<T>* add_object(std::string object_name, std::string object_text, std::string sub_section){
+            // Asserts
+            GUI_Scroller_Choice* needed_parent = this;
+            if(contains_object(object_name)){return 0;}
+            if(sub_section != ""){for(int i=0;i<static_cast<int>(a_objects.size());i++){if(a_objects[i].name()==sub_section){needed_parent = reinterpret_cast<GUI_Scroller_Choice*>(a_objects[i].object());break;}}}
+
+            // Returns the object
+            return needed_parent->__add_object(object_name, object_text);
+        };
+        template <typename T = GUI_Text> inline std::shared_ptr<T>* add_object(std::string object_name, std::string object_text){return add_object(object_name, object_text, "");};
+        // Adds a sub-section for the object
+        template <typename T = GUI_Scroller_Choice>
+        std::shared_ptr<T>* add_sub_section(std::string object_name, std::string object_text){
+            // Asserts
+            if(contains_object(object_name)){return 0;}
+
+            // Create the object
+            std::shared_ptr<T>* current_object = new_object<T>(object_name);
+            current_object->get()->a_scroller_parent = a_this_object;
+            current_object->get()->set_x_in_object_scale(scls::Fraction(1, 2));
+            current_object->get()->set_height_in_pixel(50);
+            current_object->get()->set_width_in_scale(1);
+
+            // Create the choice
+            __GUI_Scroller_Single_Choice choice;
+            choice.is_sub_section = true;
+            choice.object = *current_object;
+            GUI_Scroller_Single_Choice to_add; to_add.__choice = std::make_shared<__GUI_Scroller_Single_Choice>(choice);
+            a_objects.push_back(to_add);
+
+            // Add the object
+            current_object->get()->set_displayer_object(object_name + std::string("-displayer"), object_text);
+
+            // Place the object
+            place_objects();
+
+            // Returns the object
+            return current_object;
+        };
+
+        // Adds an object (without text)
+        template <typename T = GUI_Object> std::shared_ptr<T>* __add_object(std::string object_name){
+            // Create the object
+            std::shared_ptr<T>* current_object = new_object<T>(name() + "-" + object_name);
+            current_object->get()->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
+            if(a_displayer_object.get() != 0) {current_object->get()->attach_left_in_parent(20);}
+            else {current_object->get()->attach_left_in_parent(0);}
+            current_object->get()->set_height_in_pixel(20);
+            current_object->get()->set_width_in_scale(1);
+
+            // Create the choice
+            __GUI_Scroller_Single_Choice choice;
+            choice.name = object_name;
+            choice.object = *current_object;
+            GUI_Scroller_Single_Choice to_add; to_add.__choice = std::make_shared<__GUI_Scroller_Single_Choice>(choice);
+            a_objects.push_back(to_add);
+
+            // Apply the needed style
+            current_object->get()->set_overflighted_cursor(a_unselected_objects_style.cursor);
+
+            // Place the object
+            place_objects();
+
+            // Returns the object
+            return current_object;
+        };
+        template <typename T = GUI_Object> std::shared_ptr<T>* add_object(std::string object_name){
+            // Asserts
+            GUI_Scroller_Choice* needed_parent = this;
+            if(contains_object(object_name)){return 0;}
+            //if(sub_section != ""){for(int i=0;i<static_cast<int>(a_objects.size());i++){if(a_objects[i].name()==sub_section){needed_parent = reinterpret_cast<GUI_Scroller_Choice*>(a_objects[i].object());break;}}}
+
+            // Returns the object
+            return needed_parent->__add_object(object_name);
+        };
+
+        // Checks the number of selected objects
+        inline void check_number_selected_object() {while(static_cast<int>(a_currently_selected_objects.size())>max_number_selected_object())a_currently_selected_objects.erase(a_currently_selected_objects.begin(),a_currently_selected_objects.begin()+1);};
+        // Returns if an object is confirmed
+        inline bool contains_confirmed_object(std::string object_name) {for(int i = 0;i<static_cast<int>(a_currently_confirmed_objects.size());i++){if(a_currently_confirmed_objects[i]==object_name)return true; } return false;};
+        // Returns if an object is in the scroller
+        inline bool contains_object(std::string object_name) {for(int i = 0;i<static_cast<int>(a_objects.size());i++){if(a_objects[i].name()==object_name)return true; } return false;};
+        // Returns if an object is selected
+        inline bool contains_selected_object(std::string object_name) {for(int i = 0;i<static_cast<int>(a_currently_selected_objects.size());i++){if(a_currently_selected_objects[i].name()==object_name)return true; } return false;};
+        inline bool contains_selected_object_during_this_frame(std::string object_name) {for(int i = 0;i<static_cast<int>(a_currently_selected_objects_during_this_frame.size());i++){if(a_currently_selected_objects_during_this_frame[i].name()==object_name)return true; } return false;};
+        // Returns an object by its name
+        inline GUI_Scroller_Single_Choice object_by_name(std::string object_name) {for(int i = 0;i<static_cast<int>(a_objects.size());i++){if(a_objects[i].name()==object_name)return a_objects[i]; } return GUI_Scroller_Single_Choice();};
+        // Resets the scroller
+        virtual void reset() {a_displayer_object.reset();a_objects.clear();GUI_Scroller::reset();};
+        // Select an object
+        void select_object(GUI_Scroller_Single_Choice needed_object);
+        void select_object(std::string object_name){select_object(object_by_name(object_name));};
+        // Unselect an object
+        void unselect_object(std::string object_name);
+        void unselect_object(GUI_Scroller_Single_Choice needed_object){unselect_object(needed_object.name());};
+
+        // Function called after an XML loading
+        virtual void after_xml_loading() {if(a_displayed){show_objects();}else{hide_objects();}GUI_Object::after_xml_loading();};
+        // Check the objects (place + size)
+        inline void check_objects() {place_objects();if(scroller_parent()!=0){if(a_displayed){set_height_in_pixel(needed_height());}else if(a_displayer_object.get()!=0){set_height_in_pixel(a_displayer_object.get()->height_in_pixel());}scroller_parent()->check_objects();}};
+        // Hides the object
+        void hide_objects(){a_displayed=false;for(int i = 0;i<static_cast<int>(a_objects.size());i++){a_objects[i].object()->set_visible(false);}check_objects();};
+        // Returns the parent scroller of the object
+        inline GUI_Scroller_Choice* scroller_parent() const {return reinterpret_cast<GUI_Scroller_Choice*>(a_scroller_parent.lock().get());};
+        // Places the objects
+        void place_objects();
+        // Returns the needed height
+        inline int needed_height() const {int to_return = 0;if(a_displayer_object.get()!=0){to_return+=a_displayer_object.get()->height_in_pixel();}for(int i = 0;i<static_cast<int>(a_objects.size());i++){to_return += a_objects[i].object()->height_in_pixel();}return to_return;};
+        // Resets the object
+        void reset_objects() {a_currently_confirmed_objects.clear();while(static_cast<int>(a_currently_selected_objects.size() > 0)){unselect_object(a_currently_selected_objects[0]);}};
+        // Shows the object
+        void show_objects(){a_displayed=true;for(int i = 0;i<static_cast<int>(a_objects.size());i++){a_objects[i].object()->set_visible(true);}check_objects();};
+        // Soft resets the object
+        virtual void soft_reset() {GUI_Scroller::soft_reset();a_choice_modified=false;a_selection_modified=false;a_currently_confirmed_objects.clear();a_currently_selected_objects_during_this_frame.clear();for(int i=0;i<static_cast<int>(a_currently_selected_objects.size());i++){if(!a_currently_selected_objects[i].__choice.get()->good){a_currently_selected_objects.erase(a_currently_selected_objects.begin() + i, a_currently_selected_objects.begin() + i + 1);i--;}}};
+        // Updates the even in the scroller
+        virtual void update_event();
+
+        // Getters and setters
+        inline bool choice_modified() const {return a_choice_modified;};
+        inline bool choice_modified_during_this_frame() const {return a_choice_modified;};
+        inline std::vector<GUI_Scroller_Single_Choice>& currently_selected_objects() {return a_currently_selected_objects;};
+        inline std::vector<GUI_Scroller_Single_Choice>& currently_selected_objects_during_this_frame() {return a_currently_selected_objects_during_this_frame;};
+        inline unsigned int max_number_selected_object() const {return a_max_number_selected_object;};
+        inline GUI_Style& selected_objects_style() {return a_selected_objects_style;};
+        inline bool selection_modified() const {return a_selection_modified;};
+        inline void set_unselect_object_on_confirmation(bool new_unselect_object_on_confirmation) {a_unselect_object_on_confirmation=new_unselect_object_on_confirmation;};
+        inline GUI_Style& unselected_objects_style() {return a_unselected_objects_style;};
+
+        //*********
+        //
+        // Loading handler
+        //
+        //*********
+
+        // Loads the choice from an XML test
+        void load_choices_from_xml(std::shared_ptr<XML_Text> text);
+        // Handle an attribute from XML
+        virtual void set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i);
+
+    private:
+
+        //*********
+        //
+        // GUI_Scroller_Choice main attributes
+        //
+        //*********
+
+        // If the coice as been modified during this frame
+        bool a_choice_modified = false;
+        // Currently confirmed objects
+        std::vector<std::string> a_currently_confirmed_objects = std::vector<std::string>();
+        // Currently selected objects
+        std::vector<GUI_Scroller_Single_Choice> a_currently_selected_objects = std::vector<GUI_Scroller_Single_Choice>();
+        std::vector<GUI_Scroller_Single_Choice> a_currently_selected_objects_during_this_frame = std::vector<GUI_Scroller_Single_Choice>();
+        // Maximum number of selected object
+        unsigned int a_max_number_selected_object = 1;
+        // Scroller parent of the object
+        std::weak_ptr<GUI_Object> a_scroller_parent;
+        // If the selection as been modified during this frame
+        bool a_selection_modified = false;
+        // If the object muse be unselected after confirmation
+        bool a_unselect_object_on_confirmation = false;
+
+        //*********
+        //
+        // GUI_Scroller_Choice elements handling
+        //
+        //*********
+
+        // Set the good displayer object
+        template <typename T = GUI_Text>
+        void set_displayer_object(std::string object_name, std::string object_text) {
+            // Create the object
+            std::shared_ptr<T>* current_object = new_object<T>(object_name);
+            current_object->get()->set_text(object_text);
+            current_object->get()->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
+            current_object->get()->set_x_in_object_scale(scls::Fraction(1, 2));
+            current_object->get()->set_height_in_pixel(current_object->get()->font_size() + 4);
+            current_object->get()->set_width_in_scale(1);
+            a_displayer_object = *current_object;
+
+            // Apply the needed style
+            current_object->get()->set_overflighted_cursor(a_unselected_objects_style.cursor);
+        };
+
+        // If the object is displayed or not
+        bool a_displayed = true;
+        // Displayer object
+        std::shared_ptr<GUI_Object> a_displayer_object;
+        // Objects
+        std::vector<GUI_Scroller_Single_Choice> a_objects = std::vector<GUI_Scroller_Single_Choice>();
+        // Selected objects style
+        GUI_Style a_selected_objects_style;
+        // Unelected objects style
+        GUI_Style a_unselected_objects_style;
+    };
+
     class GUI_File_Explorer : public GUI_Object {
         // Class representing an GUI object to explore files
     public :
@@ -675,7 +883,7 @@ namespace scls {
         //*********
 
         // GUI_File_Explorer most basic constructor
-        GUI_File_Explorer(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent);
+        GUI_File_Explorer(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent);
         // GUI_File_Explorer destructor
         virtual ~GUI_File_Explorer();
 
@@ -688,12 +896,7 @@ namespace scls {
         // Returns if the choose button is clicked during this frame
         bool choose_clicked() const {return a_choose_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT);};
         // Returns if the explorer contains a selected file
-        inline bool contains_selected_file(std::string file) {
-            std::vector<std::string> selected_files = cut_string(a_currently_selected_files, ";");
-            for(int i = 0;i<static_cast<int>(selected_files.size());i++) {
-                if(selected_files[i] == file) return true;
-            } return false;
-        };
+        inline bool contains_selected_file(std::string file) {std::vector<std::string> selected_files = cut_string(a_currently_selected_files, ";");for(int i = 0;i<static_cast<int>(selected_files.size());i++) {if(selected_files[i] == file) return true;} return false;};
         // Returns if a file is chosen during this frame
         bool file_chosen();
         // Returns if a file is authorized or not
@@ -812,13 +1015,25 @@ namespace scls {
         // Create an object from a type
         virtual std::shared_ptr<GUI_Object> __create_loaded_object_from_type(std::string object_name, std::string object_type, GUI_Object* parent);
         // Load the page from XML
-        void load_from_xml(const std::string& content_to_parse, bool sup_paged = false) {load_objects_from_xml(content_to_parse, sup_paged);};
+        void load_from_xml(const std::string& content_to_parse, bool sup_paged = false) {load_objects_from_xml(content_to_parse, "", sup_paged);};
         // Load an object in a page from XML
         std::shared_ptr<GUI_Object> __load_object_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text> content);
         // Load objects in a page from XML
-        void load_objects_from_xml(const std::string& content_to_parse, bool sub_paged);
+        void __load_objects_from_xml(std::shared_ptr<XML_Text> content, bool sub_paged);
+        void load_objects_from_xml(const std::string& content_to_parse, std::string path, bool sub_paged);
         // Handle an attribute from XML
         virtual void set_xml_attribute(std::shared_ptr<XML_Text> text, std::shared_ptr<__XML_Loader> loader_shared_ptr, int& i);
+
+        //*********
+        //
+        // Sub-page handling
+        //
+        //*********
+
+        // Hides all a sub-pages
+        inline void hide_sub_pages(bool child){parent_object()->hide_sub_pages(child);};
+        // Shows all a page from a sub-pages
+        inline void show_page(std::string page){parent_object()->show_page(page);};
     private:
         // Loader of the page
         std::shared_ptr<__GUI_Page_Loader> a_loader;
@@ -848,17 +1063,19 @@ namespace scls {
         if(a_created_objects_parent.get() == 0) {
              children().push_back(new_ptr);
              to_return = reinterpret_cast<std::shared_ptr<O>*>(&children()[children().size() - 1]);
-             *to_return = std::make_shared<O>(window_struct(), name, this);
+             *to_return = std::make_shared<O>(window_struct(), name, a_this_object);
         }
         else {
             a_created_objects_parent.get()->children().push_back(new_ptr);
             to_return = reinterpret_cast<std::shared_ptr<O>*>(&a_created_objects_parent.get()->children()[a_created_objects_parent.get()->children().size() - 1]);
-            *to_return = std::make_shared<O>(window_struct(), name, a_created_objects_parent.get());
+            *to_return = std::make_shared<O>(window_struct(), name, a_created_objects_parent);
         }
         O* new_object = to_return->get();
 
         // Configurate the child
         new_object->set_position_in_pixel(x, y);
+        new_object->a_this_object = *to_return;
+        new_object->after_creation();
 
         return to_return;
     }

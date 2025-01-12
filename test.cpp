@@ -16,14 +16,15 @@
 
 #include "scls_graphic.h"
 
-SCLS_FOUNDATION_INIT
-SCLS_MATH_INIT
+SCLS_INIT
 
 // Main function in the program
 int main(int argc, char* argv[]) {
     // Create a test window
-    std::shared_ptr<scls::Window> window = std::make_shared<scls::Window>(500, 500, argv[0]);
-    window.get()->load_from_xml("./assets/window.txt");
+    std::shared_ptr<scls::Window> window = std::make_shared<scls::Window>(800, 800, argv[0]);
+    std::shared_ptr<scls::GUI_Page> page = *window.get()->new_page_2d<scls::GUI_Page>("gui");
+    page.get()->load_objects_from_xml(scls::read_file("assets/choice.txt"), false); page.get()->after_xml_loading();
+    window.get()->display_page_2d("gui");
 
     // Main loop
     while(window.get()->run()) {

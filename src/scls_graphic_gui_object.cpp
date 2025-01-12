@@ -26,7 +26,7 @@ namespace scls {
     //*********
 
     // Most basic GUI_Object constructor
-    GUI_Object::GUI_Object(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent) : __GUI_Object_Core(window, parent), a_name(name), a_parent(parent) {
+    GUI_Object::GUI_Object(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent) : __GUI_Object_Core(window, parent.lock().get()), a_name(name), a_parent(parent) {
         a_texture = (*window.new_texture_shared_ptr(name, 1, 1, Color(255, 255, 255, 0)));
         a_vao = (*window.vao_shared_ptr("gui_default"));
     }
@@ -100,8 +100,6 @@ namespace scls {
         }
 
         window_struct().remove_texture(texture());
-
-        a_shared_ptr = 0;
     }
 
     //*********
@@ -265,7 +263,7 @@ namespace scls {
         }
         else if(xml_attribute_name == "texture") {
             // Load the texture position
-            Alignment_Texture texture_alignment = Alignment_Texture::T_Fill;
+            Alignment_Texture texture_alignment = Alignment_Texture::T_User_Defined;
             Alignment_Horizontal texture_alignment_horizontal = Alignment_Horizontal::H_Center;
             Alignment_Vertical texture_alignment_vertical = Alignment_Vertical::V_Center;
             std::string texture_name = "";
@@ -531,12 +529,7 @@ namespace scls {
     void GUI_Object::delete_children() { children().clear(); }
 
     // Returns the rect of the fitted texture
-    glm::vec4 GUI_Object::fitted_texture_rect() {
-        if(texture()->image_ratio() > (width_in_absolute_scale() / height_in_absolute_scale_and_window())) {
-            return fitted_horizontally_texture_rect();
-        }
-        return fitted_vertically_texture_rect();
-    }
+    glm::vec4 GUI_Object::fitted_texture_rect() {if(texture()->image_ratio() > (width_in_absolute_scale() / height_in_absolute_scale_and_window())) {return fitted_horizontally_texture_rect();}return fitted_vertically_texture_rect();}
 
     // Returns the rect of the horizontally fitted texture
     // PROBLEMATIC WITH PRIME NUMBER SIZED TEXTURES
@@ -650,21 +643,6 @@ namespace scls {
     //
     //*********
 
-    // Most basic GUI_Scroller constructor
-    GUI_Scroller::GUI_Scroller(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent) : GUI_Object(window, name, parent) {
-        a_scroller_children = *_create_scroller_children();
-        a_scroller_children.get()->set_height_in_scale(Fraction(1));
-        a_scroller_children.get()->set_width_in_scale(Fraction(1));
-        a_scroller_children.get()->move_left_in_parent(1);
-        a_scroller_children.get()->move_top_in_parent(1);
-        a_created_objects_parent = a_scroller_children;
-    }
-
-    // GUI_Scroller destructor
-    GUI_Scroller::~GUI_Scroller() {
-
-    }
-
     // Check if a scroll should occurs
     void GUI_Scroller::check_scroll() {
         if(has_child_overflighted() || is_overflighted()) {
@@ -714,7 +692,15 @@ namespace scls {
     }
 
     // Private function to create the children scroller
-    std::shared_ptr<GUI_Object>* GUI_Scroller::_create_scroller_children() {std::shared_ptr<GUI_Object>* to_return = GUI_Object::new_object<GUI_Object>(name() + "_children_scroller");return to_return;}
+    std::shared_ptr<GUI_Object>* GUI_Scroller::_create_scroller_children() {
+        std::shared_ptr<GUI_Object>* to_return = GUI_Object::new_object<GUI_Object>(name() + "_children_scroller");
+        to_return->get()->set_height_in_scale(Fraction(1));
+        to_return->get()->set_width_in_scale(Fraction(1));
+        to_return->get()->move_left_in_parent(1);
+        to_return->get()->move_top_in_parent(1);
+        a_created_objects_parent = *to_return;
+        return to_return;
+    }
 
     // Scroll the scroller
     void GUI_Scroller::scroll_y(Fraction movement) {
@@ -739,23 +725,47 @@ namespace scls {
     //*********
 
     // Most basic GUI_Scroller_Choice constructor
-    GUI_Scroller_Choice::GUI_Scroller_Choice(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent) : GUI_Scroller(window, name, parent) {}
+    GUI_Scroller_Choice::GUI_Scroller_Choice(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent) : GUI_Scroller(window, name, parent) {a_unselected_objects_style.cursor=GLFW_HAND_CURSOR;}
 
     // GUI_Scroller_Choice destructor
     GUI_Scroller_Choice::~GUI_Scroller_Choice() {}
 
+    // Loads the choice from an XML test
+    void GUI_Scroller_Choice::load_choices_from_xml(std::shared_ptr<XML_Text> text) {}
+
+    // Place the objects
+    void GUI_Scroller_Choice::place_objects() {
+        // Place the objects
+        std::shared_ptr<scls::GUI_Object> last_object;
+        for(int i = 0;i<static_cast<int>(a_objects.size());i++) {
+            GUI_Scroller_Single_Choice current_object = a_objects[(static_cast<int>(a_objects.size()) - 1) - i];
+            if(last_object.get() != 0) {current_object.object()->attach_top_of_object_in_parent(last_object);}
+            else {current_object.object()->attach_bottom_in_parent();}
+            current_object.object()->set_visible(true);
+            last_object = current_object.object_shared_ptr();
+        }
+
+        // Displayer object
+        if(a_displayer_object.get() != 0){if(last_object.get() != 0) {a_displayer_object.get()->attach_top_of_object_in_parent(last_object);}else{a_displayer_object.get()->attach_bottom_in_parent();}}
+
+        check_scroller();
+    }
+
     // Select an object
-    void GUI_Scroller_Choice::select_object(std::string object_name) {
-        GUI_Object* object = scroller_children()->child_by_name(object_name);
+    void GUI_Scroller_Choice::select_object(GUI_Scroller_Single_Choice needed_object) {
+        GUI_Object* object = needed_object.object();
         if(object != 0) {
             // Add the contained object
             a_choice_modified = true;
-            if(contains_selected_object(object_name)) {
-                if(a_unselect_object_on_confirmation) unselect_object(object_name);
-                a_currently_confirmed_objects.push_back(object_name);
+            if(contains_selected_object(needed_object.name())) {
+                if(a_unselect_object_on_confirmation) unselect_object(needed_object);
+                a_currently_confirmed_objects.push_back(needed_object.name());
             }
             else {
-                a_currently_selected_objects.push_back(object_name);
+                needed_object.__choice.get()->good = true;
+                a_currently_selected_objects.push_back(needed_object);
+                a_currently_selected_objects_during_this_frame.push_back(needed_object);
+                a_selection_modified = true;
 
                 // Remove the too much objects
                 while(a_currently_selected_objects.size() > max_number_selected_object()) {
@@ -770,10 +780,11 @@ namespace scls {
 
     // Unselect an object
     void GUI_Scroller_Choice::unselect_object(std::string object_name) {
-        GUI_Object* object = scroller_children()->child_by_name(object_name);
         for(int i = 0;i<static_cast<int>(currently_selected_objects().size());i++) {
-            if(currently_selected_objects()[i]==object_name) {
+            if(currently_selected_objects()[i].name()==object_name) {
+                currently_selected_objects()[i].__choice.get()->good = false;
                 currently_selected_objects().erase(currently_selected_objects().begin()+i,currently_selected_objects().begin()+i+1);
+                GUI_Object* object = currently_selected_objects()[i].object();
                 if(object != 0) object->set_background_color(unselected_objects_style().a_background_color);
                 return;
             }
@@ -785,13 +796,83 @@ namespace scls {
         GUI_Scroller::update_event();
 
         // Check each buttons
-        for(int i = 0;i<static_cast<int>(scroller_children()->children().size());i++) {
-            if(scroller_children()->children()[i].get()->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
-                // If the button is clicked
-                std::string object_name = scroller_children()->children()[i].get()->name();
-                select_object(object_name);
+        for(int i = 0;i<static_cast<int>(a_objects.size());i++) {
+            if(a_objects[i].is_sub_section()) {
+                // Check each sub-choices
+                for(int j = 0;j<static_cast<int>(a_objects[i].sub_section()->currently_selected_objects_during_this_frame().size());j++) {
+                    if(a_objects[i].__choice.get()->good){select_object(a_objects[i].sub_section()->currently_selected_objects_during_this_frame()[j]);}
+                }
             }
-        } check_number_selected_object();
+            else {if(a_objects[i].object()->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {select_object(a_objects[i]);}}
+        }
+        check_number_selected_object();
+
+        // Check the displayer
+        if(a_displayer_object.get() != 0) {
+            if(a_displayer_object.get()->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                if(a_displayed) {
+                    hide_objects();
+                } else {
+                    show_objects();
+                }
+            }
+        }
+    }
+
+    // Handle an attribute from XML
+    void GUI_Scroller_Choice::set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i) {
+        std::string xml_attribute_name = text.get()->xml_balise_name();
+        if(xml_attribute_name == "choice") {
+            // Get each attributes
+            std::string needed_name = std::string("");
+            std::string needed_text = text.get()->text();
+            for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
+                std::string current_attribute_name = current_attribute.name;
+                std::string current_attribute_value = current_attribute.value;
+
+                // Load the font size of the text
+                if(current_attribute_name == "name") {
+                    // Value of the font size
+                    needed_name = current_attribute_value;
+                    if(needed_name.size() > 0 && needed_name[0] == '\"'){needed_name = needed_name.substr(1, needed_name.size() - 1);}
+                    if(needed_name.size() > 0 && needed_name[needed_name.size() - 1] == '\"'){needed_name = needed_name.substr(0, needed_name.size() - 1);}
+                }
+            }
+            // Get the content of the choice
+            add_object(needed_name, needed_text);
+        }
+        else if(xml_attribute_name == "sub_choice" || xml_attribute_name == "sub_section") {
+            // Get each attributes
+            std::string needed_displayer = std::string("");
+            std::string needed_name = std::string("");
+            for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
+                std::string current_attribute_name = current_attribute.name;
+                std::string current_attribute_value = current_attribute.value;
+
+                // Load the font size of the text
+                if(current_attribute_name == "displayer") {
+                    // Value of the font size
+                    needed_displayer = current_attribute_value;
+                    if(needed_displayer.size() > 0 && needed_displayer[0] == '\"'){needed_displayer = needed_displayer.substr(1, needed_displayer.size() - 1);}
+                    if(needed_displayer.size() > 0 && needed_displayer[needed_displayer.size() - 1] == '\"'){needed_displayer = needed_displayer.substr(0, needed_displayer.size() - 1);}
+                }
+                else if(current_attribute_name == "name") {
+                    // Value of the font size
+                    needed_name = current_attribute_value;
+                    if(needed_name.size() > 0 && needed_name[0] == '\"'){needed_name = needed_name.substr(1, needed_name.size() - 1);}
+                    if(needed_name.size() > 0 && needed_name[needed_name.size() - 1] == '\"'){needed_name = needed_name.substr(0, needed_name.size() - 1);}
+                }
+            }
+
+            // Create the sub section
+            std::shared_ptr<scls::GUI_Scroller_Choice> current_section = *add_sub_section(needed_name, needed_displayer);
+            for(int i = 0;i<static_cast<int>(text.get()->sub_texts().size());i++) {
+                // Loads the sub-choices
+                current_section.get()->set_xml_attribute(text.get()->sub_texts()[i], event, loader, i);
+            }
+        } else {GUI_Object::set_xml_attribute(text, event, loader, i);}
     }
 
     //*********
@@ -822,10 +903,12 @@ namespace scls {
                     // Loads the content of a balise from a file
                     if(current_attribute_value[0] == '\"'){current_attribute_value = current_attribute_value.substr(1, current_attribute_value.size() - 1);}
                     if(current_attribute_value[current_attribute_value.size()-1] == '\"'){current_attribute_value = current_attribute_value.substr(0, current_attribute_value.size() - 1);}
+                    std::string base_attribute_value = current_attribute_value;
+                    if(!std::filesystem::exists(current_attribute_value)){current_attribute_value = path_parent(loader.get()->path) + "/" + current_attribute_value;}
                     if(std::filesystem::exists(current_attribute_value)) {
                         needed_text = read_file(current_attribute_value);
                     } else {
-                        print("Warning", "SCLS Graphic Benoit page \"" + name() + "\"", "The path \"" + current_attribute_value + "\" you want to load as the content of this text does not exist.");
+                        print("Warning", "SCLS Graphic Benoit page \"" + name() + "\"", "The path \"" + base_attribute_value + "\" you want to load as the content of this text does not exist.");
                     }
                 }
             }
@@ -884,7 +967,7 @@ namespace scls {
     //*********
 
     // Most basic GUI_Text constructor
-    GUI_Text::GUI_Text(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent) : __GUI_Text_Metadatas(window, name, parent) {}
+    GUI_Text::GUI_Text(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent) : __GUI_Text_Metadatas(window, name, parent) {}
 
     // Function called after that the window is resized
     void GUI_Text::after_resizing(){
@@ -920,7 +1003,7 @@ namespace scls {
     //*********
 
     // Most basic GUI_Text constructor
-    GUI_Text_Input::GUI_Text_Input(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent) : __GUI_Text_Metadatas(window, name, parent) {
+    GUI_Text_Input::GUI_Text_Input(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent) : __GUI_Text_Metadatas(window, name, parent) {
         set_text_image_type(Block_Type::BT_Keep_Block_And_Line_In_Memory);
     }
 
@@ -1394,7 +1477,7 @@ namespace scls {
     //*********
 
     // Most parent GUI_File_Explorer constructor used for displaying
-    GUI_File_Explorer::GUI_File_Explorer(_Window_Advanced_Struct& window, std::string name, GUI_Object* parent) : GUI_Object(window, name, parent) { load(); }
+    GUI_File_Explorer::GUI_File_Explorer(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent) : GUI_Object(window, name, parent) { load(); }
 
     // Function called after that the window is resized
     void GUI_File_Explorer::after_resizing() {
@@ -1706,6 +1789,7 @@ namespace scls {
         a_parent_object = std::make_shared<GUI_Main_Object>((*reinterpret_cast<_Window_Advanced_Struct*>(window_struct)), "main_" + name);
         a_parent_object.get()->set_position_in_pixel(0, 0);
         a_parent_object.get()->set_height_in_scale(scls::Fraction(1));
+        a_parent_object.get()->set_this_object(a_parent_object);
         a_parent_object.get()->set_width_in_scale(scls::Fraction(1));
     }
 
@@ -1749,7 +1833,7 @@ namespace scls {
                 if(std::filesystem::is_directory(final_path)) {
                     print("Warning", "SCLS Graphic Benoit page \"" + name() + "\"", "The path \"" + final_path + "\" you want to load as the content of this page is a directory.");
                 } else {
-                    load_objects_from_xml(format_for_xml(remove_comment_out_of(read_file(final_path), "\"")), sub_paged);
+                    load_objects_from_xml(format_for_xml(remove_comment_out_of(read_file(final_path), "\"")), final_path, sub_paged);
                 }
             } else {
                 print("Warning", "SCLS Graphic Benoit page \"" + name() + "\"", "The path \"" + final_path + "\" you want to load as the content of this page does not exist.");
@@ -1789,6 +1873,10 @@ namespace scls {
             std::shared_ptr<GUI_Object> to_return = *parent->new_object<GUI_Scroller>(object_name);
             return to_return;
         }
+        else if(object_type == "scroller_choice") {
+            std::shared_ptr<GUI_Object> to_return = *parent->new_object<GUI_Scroller_Choice>(object_name);
+            return to_return;
+        }
         else if(object_type == "file_explorer") {
             std::shared_ptr<GUI_Object> to_return = *parent->new_object<GUI_File_Explorer>(object_name);
             return to_return;
@@ -1818,19 +1906,19 @@ namespace scls {
 
         // Create the object
         std::shared_ptr<GUI_Object> object = __create_loaded_object_from_type(object_name, object_type, current_parent);
+        // Handle a possible error
         a_loader.get()->created_objects[object_name] = object;
-        object.get()->__load_from_xml(content, a_loader);
+        if(object.get() == 0) {
+            print("Warning", "SCLS Graphic Benoit page \"" + name() + "\"", "The object \"" + object_name + "\" you want to load with XML is not recognised by the GUI.");
+        } else {
+            object.get()->__load_from_xml(content, a_loader);
+        }
         return object;
     }
 
     // Load objects in a page from XML
-    void GUI_Page::load_objects_from_xml(const std::string& content_to_parse, bool sub_paged) {
-        // Load the needed balises
-        if(gui_loading_balises.get() == 0) {gui_loading_balises = std::make_shared<__Balise_Container>();gui_loading_balises.get()->__load_built_in_balises_gui();}
-        std::shared_ptr<XML_Text> content = std::make_shared<XML_Text>(gui_loading_balises, content_to_parse);
-
-        // Check each balises
-        a_loader = std::make_shared<__GUI_Page_Loader>();
+    void GUI_Page::__load_objects_from_xml(std::shared_ptr<XML_Text> content, bool sub_paged) {
+        // Analyse each balises
         for(int i = 0;i<static_cast<int>(content.get()->sub_texts().size());i++) {
             std::shared_ptr<XML_Text> current_text = content.get()->sub_texts()[i];
             std::string current_balise_name = current_text.get()->xml_balise_name();
@@ -1840,12 +1928,18 @@ namespace scls {
                 bool must_be_visible = false;
                 std::string object_name = "";
                 std::string object_type = "";
+                int sub_page = -1;
                 for(int j = 0;j<static_cast<int>(current_text.get()->xml_balise_attributes().size());j++) {
                     XML_Attribute& current_attribute = current_text.get()->xml_balise_attributes()[j];
                     std::string current_attribute_name = current_attribute.name;
                     if(current_attribute_name == "name") {
                         // Get the name of the object
                         object_name = current_attribute.value;
+                    }
+                    else if(current_attribute_name == "sub_page") {
+                        // Get the number of the sub-page of the object
+                        if(current_attribute.value == "") {sub_page = 0;}
+                        else {sub_page = std::stoi(current_attribute.value);}
                     }
                     else if(current_attribute_name == "type") {
                         // Get the type of the object
@@ -1860,7 +1954,6 @@ namespace scls {
                 // Check if the object already exists
                 for(std::map<std::string, std::shared_ptr<__GUI_Object_Core>>::iterator it = a_loader.get()->created_objects.begin();it!=a_loader.get()->created_objects.end();it++) {
                     if(it->first == object_name) {
-                        set_can_print(true);
                         print("Warning", "SCLS GUI Page \"" + name() + "\"", "The \"" + object_name + "\" name does already exist.");
                         continue;
                     }
@@ -1869,11 +1962,49 @@ namespace scls {
                 // Create the object
                 if(object_name != "") {
                     std::shared_ptr<GUI_Object> object = __load_object_from_xml(object_name, object_type, current_text);
-                    if(sub_paged && !must_be_visible) {
-                        object.get()->set_visible(object.get()->visible() && object.get()->parent() != parent_object());
+                    object.get()->set_visible(true);
+                    if(sub_page >= 0 && object.get()->parent() != 0){
+                        object.get()->parent()->sub_pages().push_back(object);
+                        if(!must_be_visible){object.get()->set_visible(false);}
                     }
                 }
             }
+            else if(current_balise_name == "include") {
+                // Include a part to the XML loading
+                std::string src = std::string("");
+                for(int j = 0;j<static_cast<int>(current_text.get()->xml_balise_attributes().size());j++) {
+                    std::string current_attribute_name = current_text.get()->xml_balise_attributes()[j].name;
+                    std::string current_attribute_value = current_text.get()->xml_balise_attributes()[j].value;
+                    if(current_attribute_value.size() > 0 && current_attribute_value[0] == '\"'){current_attribute_value = current_attribute_value.substr(1, current_attribute_value.size() - 1);}
+                    if(current_attribute_value.size() > 0 && current_attribute_value[current_attribute_value.size() - 1] == '\"'){current_attribute_value = current_attribute_value.substr(0, current_attribute_value.size() - 1);}
+                    if(current_attribute_name == "src") {
+                        // Get the src of the include
+                        src = current_attribute_value;
+                    }
+                }
+
+                // Include the part
+                std::string base_src = src;
+                if(!std::filesystem::exists(src)){src = scls::path_parent(a_loader.get()->path) + "/" + src;}
+                if(std::filesystem::exists(src)) {
+                    std::string content_to_parse = scls::read_file(src);
+                    std::shared_ptr<XML_Text> content = std::make_shared<XML_Text>(gui_loading_balises, content_to_parse);
+                    __load_objects_from_xml(content, sub_paged);
+                } else {
+                    print("Warning", "SCLS GUI Page \"" + name() + "\"", "The \"" + base_src + "\" path you want to include does not exist.");
+                }
+            }
         }
+    }
+    void GUI_Page::load_objects_from_xml(const std::string& content_to_parse, std::string path, bool sub_paged) {
+        // Load the needed balises
+        if(gui_loading_balises.get() == 0) {gui_loading_balises = std::make_shared<__Balise_Container>();gui_loading_balises.get()->__load_built_in_balises_gui();}
+
+        // Check each balises
+        a_loader = std::make_shared<__GUI_Page_Loader>(); a_loader.get()->path = path;
+
+        // Load the balises
+        std::shared_ptr<XML_Text> content = std::make_shared<XML_Text>(gui_loading_balises, content_to_parse);
+        __load_objects_from_xml(content, sub_paged);
     }
 }
