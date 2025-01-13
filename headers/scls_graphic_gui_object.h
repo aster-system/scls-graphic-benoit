@@ -758,6 +758,8 @@ namespace scls {
         inline bool contains_confirmed_object(std::string object_name) {for(int i = 0;i<static_cast<int>(a_currently_confirmed_objects.size());i++){if(a_currently_confirmed_objects[i]==object_name)return true; } return false;};
         // Returns if an object is in the scroller
         inline bool contains_object(std::string object_name) {for(int i = 0;i<static_cast<int>(a_objects.size());i++){if(a_objects[i].name()==object_name)return true; } return false;};
+        // Returns the number of similar object of a name, with the cutting part
+        inline int count_object_similar(std::string object_name, std::string cut) {int to_return=0;for(int i = 0;i<static_cast<int>(a_objects.size());i++){std::vector<std::string>splitted=cut_string(a_objects[i].name(), cut);if(splitted.size()>0&&splitted[0]==object_name){to_return++;}}return to_return;};
         // Returns if an object is selected
         inline bool contains_selected_object(std::string object_name) {for(int i = 0;i<static_cast<int>(a_currently_selected_objects.size());i++){if(a_currently_selected_objects[i].name()==object_name)return true; } return false;};
         inline bool contains_selected_object_during_this_frame(std::string object_name) {for(int i = 0;i<static_cast<int>(a_currently_selected_objects_during_this_frame.size());i++){if(a_currently_selected_objects_during_this_frame[i].name()==object_name)return true; } return false;};
@@ -799,6 +801,7 @@ namespace scls {
         inline std::vector<GUI_Scroller_Single_Choice>& currently_selected_objects() {return a_currently_selected_objects;};
         inline std::vector<GUI_Scroller_Single_Choice>& currently_selected_objects_during_this_frame() {return a_currently_selected_objects_during_this_frame;};
         inline unsigned int max_number_selected_object() const {return a_max_number_selected_object;};
+        inline std::vector<GUI_Scroller_Single_Choice>& objects() {return a_objects;};
         inline GUI_Style& selected_objects_style() {return a_selected_objects_style;};
         inline bool selection_modified() const {return a_selection_modified;};
         inline void set_unselect_object_on_confirmation(bool new_unselect_object_on_confirmation) {a_unselect_object_on_confirmation=new_unselect_object_on_confirmation;};
