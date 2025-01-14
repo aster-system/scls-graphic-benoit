@@ -139,7 +139,8 @@ namespace scls {
         // Create a new VAO into the window with the most basic constructor
         VAO* new_vao(std::string name, char* binary);
         // Create a new VAO into the window
-        VAO* new_vao(std::string name, std::string vbo, std::string shader = "default");
+        inline VAO* new_vao(std::string name, std::string vbo, std::string shader = "default"){return new_vao_shared_ptr(name, vbo, shader)->get();};
+        std::shared_ptr<VAO>* new_vao_shared_ptr(std::string name, std::string vbo, std::string shader = "default");
         // Create a new VBO into the game
         std::shared_ptr<VBO>* new_vbo(std::string name);
 

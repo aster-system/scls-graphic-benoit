@@ -160,7 +160,7 @@ namespace scls {
     }
 
     // Create a new VAO into the game
-    VAO* _Window_Advanced_Struct::new_vao(std::string name, std::string vbo, std::string shader) {
+    std::shared_ptr<VAO>* _Window_Advanced_Struct::new_vao_shared_ptr(std::string name, std::string vbo, std::string shader) {
         if (!contains_vao(name)) {
             if (!contains_vbo(vbo)) {
                 print("Warning", "SCLS Window", "The \"" + name + "\" VAO use the \"" + vbo + "\" VBO, which does not exist.");
@@ -169,7 +169,7 @@ namespace scls {
 
             vaos()[name] = std::make_shared<VAO>(&a_shaders_programs[shader], _base_3d_shader_program_variables(), vbos()[vbo]);
             vaos()[name].get()->load_vao();
-            return vaos()[name].get();
+            return &vaos()[name];
         }
         print("Warning", "SCLS Window", "The \"" + name + "\" VAO already exists.");
         return 0;
