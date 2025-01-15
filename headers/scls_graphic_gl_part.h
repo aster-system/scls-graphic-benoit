@@ -75,18 +75,11 @@ namespace scls {
         inline bool loaded() {return a_loaded;};
 
         // Return the default shaders
-        static std::string get_built_in_fragment_shader(Built_In_Shader shader_type) {
-            if (shader_type == Default) {
-                return get_default_fragment_shader();
-            }
-            return get_default_hud_fragment_shader();
-        };
-        static std::string get_built_in_vertex_shader(Built_In_Shader shader_type) {
-            if (shader_type == Default){
-                return get_default_vertex_shader();
-            }
-            return get_default_hud_vertex_shader();
-        };
+        static std::string default_gui_blend_colors();
+        static std::string default_gui_border_handling() {return std::string("if(tex_pos[0] < border_width.y || tex_pos[1] < border_width.z || tex_pos[0] > 1.0 - border_width.w || tex_pos[1] > 1.0 - border_width.x){final_color = blend_colors(border_color, final_color);}");};
+        static std::string default_gui_extremum_handling() {return std::string("if(tex_pos.y > object_extremum.w || tex_pos.y < object_extremum.y){discard;}");};
+        static std::string get_built_in_fragment_shader(Built_In_Shader shader_type) {if (shader_type == Default) {return get_default_fragment_shader();}return get_default_hud_fragment_shader();};
+        static std::string get_built_in_vertex_shader(Built_In_Shader shader_type) {if (shader_type == Default){return get_default_vertex_shader();}return get_default_hud_vertex_shader();};
         static std::string get_default_fragment_shader() {
             std::string to_return = "#version 330 core\n";
             to_return += "in vec3 frag_pos;\n";
@@ -139,23 +132,20 @@ namespace scls {
             to_return += "uniform bool texture_binded;";
             to_return += "uniform vec4 texture_rect;";
 
-            to_return += "vec4 blend_colors(vec4 color_1, vec4 color_2){"; // Blend function
-            to_return += "if(color_1.w == 0 && color_2.w == 0) return vec4(0, 0, 0, 0);\n";
-            to_return += "vec4 final_color = vec4(vec3(color_2.xyz), 1.0) * vec4(1.0 - (color_1.w));";
-            to_return += "final_color += vec4(vec3(color_1.xyz), 1.0) * vec4(color_1.w);";
-            to_return += "final_color.w = max(color_1.w, color_2.w);";
-            to_return += "return final_color;}";
+            // Blend function
+            to_return += default_gui_blend_colors();
 
-            to_return += "void main(){"; // Main function
-            to_return += "if(tex_pos.y > object_extremum.w || tex_pos.y < object_extremum.y)discard;"; // Check if the object should be displayed
-            to_return += "vec4 color = background_color;";
-            to_return += "if(tex_pos[0] < border_width.y || tex_pos[1] < border_width.z || tex_pos[0] > 1.0 - border_width.w || tex_pos[1] > 1.0 - border_width.x){";
-            to_return += "color = blend_colors(border_color, color);}";
+            // Main function
+            to_return += "void main(){";
+            // Check if the object should be displayed
+            to_return += default_gui_extremum_handling();
+            to_return += "vec4 final_color = background_color;";
+            to_return += default_gui_border_handling();
             to_return += "else if(texture_binded && tex_pos[0] >= texture_rect[0] && tex_pos[1] >= texture_rect[1] && tex_pos[0] < texture_rect[0] + texture_rect[2] && tex_pos[1] < texture_rect[1] + texture_rect[3]){";
             to_return += "vec2 real_tex_pos = tex_pos - texture_rect.xy;";
             to_return += "real_tex_pos /= texture_rect.zw;";
-            to_return += "color = blend_colors(texture(texture_0, real_tex_pos), color);}"; //*/
-            to_return += "FragColor = color;}";
+            to_return += "final_color = blend_colors(texture(texture_0, real_tex_pos), final_color);}"; //*/
+            to_return += "FragColor = final_color;}";
             return to_return;
         };
         static std::string get_default_vertex_shader() {
@@ -907,7 +897,7 @@ namespace scls {
             if(get_image() != 0 && get_image()->flip_x_number() % 2 == 0) get_image()->flip_x();
             change_texture();
         };
-        inline void set_image(const std::shared_ptr<scls::Image>& new_image) {
+        inline void set_image(std::shared_ptr<scls::Image> new_image) {
             if(new_image.get() == 0 && get_image() != 0) {
                 glDeleteTextures(1, &texture_id);
             }

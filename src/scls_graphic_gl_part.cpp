@@ -49,6 +49,17 @@ namespace scls {
 
     }
 
+    // Returns the "blend_colors" GLSL function
+    std::string Shader_Program::default_gui_blend_colors() {
+        std::string to_return = "vec4 blend_colors(vec4 color_1, vec4 color_2){";
+        to_return += "if(color_1.w == 0 && color_2.w == 0) return vec4(0, 0, 0, 0);\n";
+        to_return += "vec4 final_color = vec4(vec3(color_2.xyz), 1.0) * vec4(1.0 - (color_1.w));";
+        to_return += "final_color += vec4(vec3(color_1.xyz), 1.0) * vec4(color_1.w);";
+        to_return += "final_color.w = max(color_1.w, color_2.w);";
+        to_return += "return final_color;}";
+        return to_return;
+    }
+
     // Load the Shader
     void Shader_Program::load_shader() {
         // Convert the fragment and vertex shader (string) to an char*

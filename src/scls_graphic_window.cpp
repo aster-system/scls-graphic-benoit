@@ -102,6 +102,7 @@ namespace scls {
         // Texture setting
         glEnable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_STENCIL_TEST);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         // Callback functions
@@ -258,7 +259,7 @@ namespace scls {
     void Window::render() {
         // Clear OpenGL window
         glClearColor(background_color().red() / 255.0, background_color().green() / 255.0, background_color().blue() / 255.0, background_color().alpha() / 255.0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         // Update the cursor texture
         if(cursor_changed() && cursor() != 0) {
