@@ -92,26 +92,16 @@ namespace scls {
             return false;
         };
         // Returns if the struct contains a textures
-        inline bool contains_texture(std::string name) {
-            for (std::map<std::string, std::shared_ptr<Texture>>::iterator it = textures().begin(); it != textures().end(); it++) {
-                if (it->first == name) return true;
-            }
-            return false;
-        };
+        inline bool contains_texture(std::string name) {for (std::map<std::string, std::shared_ptr<Texture>>::iterator it = textures().begin(); it != textures().end(); it++) {if (it->first == name) return true;}return false;};
         // Returns if the struct contains a VAO
-        inline bool contains_vao(std::string name) {
-            for (std::map<std::string, std::shared_ptr<VAO>>::iterator it = vaos().begin(); it != vaos().end(); it++) {
-                if (it->first == name) return true;
-            }
-            return false;
-        };
+        inline bool contains_vao(std::string name) {for (std::map<std::string, std::shared_ptr<VAO>>::iterator it = vaos().begin(); it != vaos().end(); it++) {if (it->first == name) return true;}return false;};
         // Returns if the struct contains a VBO
-        inline bool contains_vbo(std::string name) {
-            for (std::map<std::string, std::shared_ptr<VBO>>::iterator it = vbos().begin(); it != vbos().end(); it++) {
-                if (it->first == name) return true;
-            }
-            return false;
-        };
+        inline bool contains_vbo(std::string name) {for (std::map<std::string, std::shared_ptr<VBO>>::iterator it = vbos().begin(); it != vbos().end(); it++) {if (it->first == name) return true;}return false;};
+
+        // Displays a page 2D
+        virtual void display_page_2d(std::string new_page_2d) = 0;
+        // Hides all page 2D
+        virtual void hide_all_pages_2d() = 0;
 
         // Loads the built-in VAOs in the _Window_Advanced_Struct
         void load_VAOs();

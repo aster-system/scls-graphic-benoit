@@ -224,6 +224,7 @@ namespace scls {
                     if(current_attribute_name == "type") {
                         // Value of the cursor
                         if(current_attribute_value == "pointing_hand_cursor") { cursor = GLFW_HAND_CURSOR; }
+                        else {print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Unknown value of cursor \"" + current_attribute_value + "\".");}
                     }
                 }
                 // Set the cursor
