@@ -49,8 +49,7 @@ namespace scls {
         return base_3d_attributes;
     };
 
-    class _Window_Advanced_Struct : public _Window_Base_Struct
-    {
+    class _Window_Advanced_Struct : public _Window_Base_Struct {
         // Class representing the advanced struct in the game
     public:
 
