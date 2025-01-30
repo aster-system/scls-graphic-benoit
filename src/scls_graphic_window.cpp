@@ -466,8 +466,8 @@ namespace scls {
 
         // Get the XML analyser
         if(window_loading_balises.get() == 0){window_loading_balises = std::make_shared<__Balise_Container>();window_loading_balises.get()->__load_built_in_balises_window();}
-        XML_Text xml_text = XML_Text(window_loading_balises, remove_comment_out_of(read_file(window_path), "\""));
-        std::vector<std::shared_ptr<XML_Text>>& cutted = xml_text.sub_texts();
+        std::shared_ptr<XML_Text> xml_text = xml(window_loading_balises, remove_comment_out_of(read_file(window_path), "\""));
+        std::vector<std::shared_ptr<XML_Text>>& cutted = xml_text.get()->sub_texts();
         window_path = path_parent(window_path);
 
         // Check each balises

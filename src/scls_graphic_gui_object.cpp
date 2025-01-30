@@ -996,9 +996,7 @@ namespace scls {
     //*********
 
     // Most basic GUI_Text constructor
-    GUI_Text_Input::GUI_Text_Input(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent) : __GUI_Text_Metadatas(window, name, parent) {
-        set_text_image_type(Block_Type::BT_Keep_Block_And_Line_In_Memory);
-    }
+    GUI_Text_Input::GUI_Text_Input(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent) : __GUI_Text_Metadatas(window, name, parent) {set_text_image_type(Block_Type::BT_Keep_Block_And_Line_In_Memory);}
 
     // Add a text to the input at the cursor position
     void GUI_Text_Input::add_text(std::string text_to_add) {
