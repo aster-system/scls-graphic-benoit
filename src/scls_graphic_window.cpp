@@ -25,16 +25,7 @@ namespace scls {
     double wheel_y = 0;
 
     // Callback function for cursor enter in the window
-    void _cursor_enter_callback(GLFWwindow* window, int entered) {
-        if (entered) {
-            // The cursor entered the content area of the window
-            cursor_on_window = true;
-        }
-        else {
-            // The cursor left the content area of the window
-            cursor_on_window = false;
-        }
-    }
+    void _cursor_enter_callback(GLFWwindow* window, int entered) {if (entered) {cursor_on_window = true;}else {cursor_on_window = false;}}
 
     // Callback function for mouse moving
     void _mouse_callback(GLFWwindow* window, double xpos, double ypos) {global_mouse_x = xpos;global_mouse_y = ypos;}
@@ -115,21 +106,10 @@ namespace scls {
     }
 
     // Return if the window is running or not
-    bool Window::run() {
-        bool to_return = glfwWindowShouldClose(a_window);
-        if (!is_running()) { to_return = true; }
-
-        if(to_return)
-            glfwTerminate();
-        return !to_return;
-    }
+    bool Window::run() {bool to_return = glfwWindowShouldClose(a_window);if (!is_running()) { to_return = true; }if(to_return){glfwTerminate();}return !to_return;}
 
     // Window destructor
-    Window::~Window() {
-        // Destroy the cursor
-        if(cursor() != 0) glfwDestroyCursor(cursor());
-        pages_2d().clear();
-    }
+    Window::~Window() {if(cursor() != 0){glfwDestroyCursor(cursor());}pages_2d().clear();}
 
     //*********
     //
