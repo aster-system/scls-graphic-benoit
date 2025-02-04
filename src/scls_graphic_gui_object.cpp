@@ -257,7 +257,7 @@ namespace scls {
         else if(xml_attribute_name == "texture") {
             // Load the texture position
             Alignment_Texture texture_alignment = Alignment_Texture::T_User_Defined;
-            Alignment_Horizontal texture_alignment_horizontal = Alignment_Horizontal::H_Center;
+            Alignment_Horizontal texture_alignment_horizontal = Alignment_Horizontal::H_Center; bool texture_alignment_horizontal_used = false;
             Alignment_Vertical texture_alignment_vertical = Alignment_Vertical::V_Center;
             std::string texture_name = "";
             for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
@@ -286,16 +286,17 @@ namespace scls {
                 }
                 else if(current_attribute_name == "alignment_horizontal" || current_attribute_name == "alignment_h") {
                     // Horizontal alignment of the texture
-                    if(current_attribute_value == "left") texture_alignment_horizontal = Alignment_Horizontal::H_Left;
-                    else if(current_attribute_value == "right") texture_alignment_horizontal = Alignment_Horizontal::H_Right;
-                    else print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Can't set the value of the texture vertical alignment to \"" + current_attribute_value + "\".");
+                    if(current_attribute_value == "left") {texture_alignment_horizontal = Alignment_Horizontal::H_Left;texture_alignment_horizontal_used = true;}
+                    else if(current_attribute_value == "right"){texture_alignment_horizontal = Alignment_Horizontal::H_Right;texture_alignment_horizontal_used = true;}
+                    else if(current_attribute_value == "center"){texture_alignment_horizontal = Alignment_Horizontal::H_Center;texture_alignment_horizontal_used = true;}
+                    else{print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Can't set the value of the texture vertical alignment to \"" + current_attribute_value + "\".");}
                 }
                 else{print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Can't find the attribute \"" + current_attribute_value + "\" of the texture.");}
             }
             // Set the goot texture
             if(texture_name != "") set_texture(texture_name);
             set_texture_alignment(texture_alignment);
-            set_texture_alignment_horizontal(texture_alignment_horizontal);
+            if(texture_alignment_horizontal_used){set_texture_alignment_horizontal(texture_alignment_horizontal);}
             set_texture_alignment_vertical(texture_alignment_vertical);
         }
         else if(xml_attribute_name == "width") {
@@ -963,30 +964,72 @@ namespace scls {
     GUI_Text::GUI_Text(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent) : __GUI_Text_Metadatas(window, name, parent) {}
 
     // Function called after that the window is resized
-    void GUI_Text::after_resizing(){
-        __GUI_Text_Metadatas::after_resizing();
-        if(max_width() != -1) {set_max_width(width_in_pixel());update_text_texture(scls::Image_Generation_Type::IGT_Size);}
+    void GUI_Text::after_resizing(){__GUI_Text_Metadatas::after_resizing();if(max_width() != -1) {set_max_width(width_in_pixel());update_text_texture(scls::Image_Generation_Type::IGT_Size);}}
+
+    // Places the blocks in the text
+    void GUI_Text::place_blocks() {
+        // Place each children
+        unsigned int total_height = 0;
+        for(int i = 0;i<static_cast<int>(children().size());i++) {
+            if(children()[i].get() != 0) {
+                // Place the children
+                // Place the X
+                if(texture_alignment_horizontal() == scls::Alignment_Horizontal::H_Left){children()[i].get()->set_x_in_pixel(0);}
+                else{children()[i].get()->set_x_in_object_scale(scls::Fraction(1, 2));}
+                // Place the Y
+                if(texture_alignment_vertical() == scls::Alignment_Vertical::V_Top){children()[i].get()->set_y_in_pixel(height_in_pixel() - (children()[i].get()->height_in_pixel() + total_height));}
+                else{children()[i].get()->set_y_in_object_scale(scls::Fraction(1, 2));}
+                total_height += children()[i].get()->height_in_pixel();
+            }
+        }
     }
 
     // Update the texture of the text
     void GUI_Text::update_text_texture(scls::Image_Generation_Type generation_type) {
         if(text() != "") {
-            // Create the text
-            glm::vec2 position_to_apply = glm::vec2(x_in_pixel(), y_in_pixel());
-            attached_text_image_block()->global_style().background_color = background_color();
-            attached_text_image_block()->global_style().color = font_color();
-            attached_text_image_block()->global_style().font_size = font_size();
-            attached_text_image_block()->global_style().max_width = max_width();
-            // a_text_image->set_cursor_position(cursor_position_in_formatted_text());
-            // a_text_image->set_use_cursor(use_cursor());
+            // Update the text
+            update_text_image_block_style();
 
-            // Apply the text
-            std::shared_ptr<Image> image_to_paste = attached_text_image_block()->image_shared_pointer(generation_type);
-            texture()->set_image(image_to_paste);
+            // Add lines if needed
+            int block_offset = 0;
+            int needed_offset = 0;
+            delete_children();
+
+            unsigned short line_max_number = 0;
+            unsigned int total_height = 0;
+            for(int i = 0;i + block_offset<static_cast<int>(attached_text_image_block()->blocks_datas().size());i++) {
+                // Create the configuration for the line
+                Text_Image_Block* block_to_apply = attached_text_image_block()->generate_next_block(i).get();
+                if(block_to_apply != 0) {
+                    // Check the total height
+                    if(total_height > height_in_pixel()) break;
+
+                    std::shared_ptr<Image> image_to_apply = block_to_apply->image_shared_pointer(generation_type);
+                    if(image_to_apply.get() != 0) {
+                        // Generate the object for the line
+                        std::string final_name = name() + "_gen_" + std::to_string(a_generation) + "_line_" + std::to_string(i);
+                        std::shared_ptr<GUI_Object> new_block = *new_object<GUI_Object>(final_name);
+                        new_block.get()->set_ignore_click(true);
+                        new_block.get()->set_height_in_pixel(image_to_apply.get()->height());
+                        new_block.get()->set_width_in_pixel(image_to_apply.get()->width());
+                        new_block.get()->texture()->set_image(image_to_apply);
+
+                        // Place the children
+                        total_height += image_to_apply.get()->height();
+                    }
+                }
+            }
+
+            // Delete the useless children in more
+            for(int i = 0;i<static_cast<int>(children().size()) - static_cast<int>(attached_text_image_block()->blocks_datas().size());i++) {children().pop_back();}
+
+            // Delete empty children
+            for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i].get() == 0) {children().erase(children().begin() + i); i--;}}
+
+            place_blocks();
+            a_generation++;
         }
-        else {
-            texture()->set_image(0);
-        }
+        else {delete_children();texture()->set_image(0);}
     };
 
     //*********

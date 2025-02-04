@@ -40,14 +40,40 @@ namespace scls {
     }
 
     // Shader_Program constructor
-    Shader_Program::Shader_Program(Built_In_Shader shader_type) : Shader_Program(Shader_Program::get_built_in_vertex_shader(shader_type), Shader_Program::get_built_in_fragment_shader(shader_type)) {
-
-    }
+    Shader_Program::Shader_Program(Built_In_Shader shader_type) : Shader_Program(Shader_Program::get_built_in_vertex_shader(shader_type), Shader_Program::get_built_in_fragment_shader(shader_type)) {}
 
     // Shader_Program constructor
-    Shader_Program::Shader_Program(std::string a_vertex_shader, std::string a_fragment_shader): fragment_shader(a_fragment_shader), vertex_shader(a_vertex_shader) {
+    Shader_Program::Shader_Program(std::string a_vertex_shader, std::string a_fragment_shader): fragment_shader(a_fragment_shader), vertex_shader(a_vertex_shader) {}
 
-    }
+    // Returns the vertex shader for a curve
+    std::string Shader_Program::curved_vertex_shader() {
+        std::string to_return = "#version 330 core\n";
+        to_return += "layout(location = 1) in vec3 in_normal;\n";
+        to_return += "layout(location = 0) in vec3 in_pos;\n";
+        to_return += "layout(location = 2) in vec2 in_tex_pos;\n";
+        to_return += "layout(location = 3) in vec4 in_tex_rect;\n";
+        to_return += "layout(location = 4) in vec3 in_tex_multiplier;\n";
+        to_return += "layout(location = 5) in float in_axis;\n";
+        to_return += "out vec3 frag_pos;\n";
+        to_return += "out vec3 normal;\n";
+        to_return += "out vec3 tex_multiplier;\n";
+        to_return += "out vec2 tex_pos;out vec4 tex_rect;\n";
+        to_return += "uniform float curve_difference;\n";
+        to_return += "uniform mat4 model;\n";
+        to_return += "uniform mat4 projection;\n";
+        to_return += "uniform mat4 view;\n";
+        to_return += "void main(){\n";
+        to_return += "frag_pos = vec3(model * vec4(in_pos, 1.0));\n";
+        to_return += "normal = mat3(transpose(inverse(model))) * in_normal;\n";
+        to_return += "tex_multiplier = in_tex_multiplier;\n";
+        to_return += "tex_pos = in_tex_pos;\n";
+        to_return += "tex_rect = in_tex_rect;\n";
+        to_return += "vec3 needed_pos = in_pos;\n";
+        to_return += "if(in_axis < 0){if(curve_difference > 0){needed_pos=vec3(needed_pos.x * curve_difference, needed_pos.y, needed_pos.z);}";
+        to_return += "else if(curve_difference < 0){needed_pos=vec3(needed_pos.x * -curve_difference, needed_pos.y, needed_pos.z);}}\n";
+        to_return += "gl_Position = projection * view * model * vec4(needed_pos.xyz, 1.0);\n}";
+        return to_return;
+    };
 
     // Returns the "blend_colors" GLSL function
     std::string Shader_Program::default_gui_blend_colors() {
@@ -135,17 +161,18 @@ namespace scls {
         for (std::vector<Shader_Program_Variable>::iterator it = variables->begin(); it != variables->end(); it++)
         {
             unsigned int type_size = 0;
-            if (it->type == GL_FLOAT) { type_size = sizeof(float); }
+            if (it->type == GL_FLOAT) {type_size = sizeof(float);}
+            else if(it->type == GL_INT){type_size = sizeof(int);}
             total_size += it->vector_size * type_size;
         }
         unsigned int current_size = 0;
         unsigned short variable_number = 0;
 
         use();
-        for (std::vector<Shader_Program_Variable>::iterator it = variables->begin(); it != variables->end(); it++)
-        {
+        for (std::vector<Shader_Program_Variable>::iterator it = variables->begin(); it != variables->end(); it++) {
             unsigned int type_size = 0;
             if (it->type == GL_FLOAT) { type_size = sizeof(float); }
+            else if(it->type == GL_INT){type_size = sizeof(int);}
 
             glVertexAttribPointer(variable_number, it->vector_size, GL_FLOAT, GL_FALSE, total_size, (void*)current_size);
             glEnableVertexAttribArray(variable_number); // Pass each variables to the shader
@@ -202,14 +229,10 @@ namespace scls {
     }
 
     // Start using the shader
-    void Shader_Program::use() {
-        glUseProgram(shader_program);
-    }
+    void Shader_Program::use() {glUseProgram(shader_program);}
 
     // Shader_Program destructor
-    Shader_Program::~Shader_Program() {
-        if(loaded()) glDeleteProgram(shader_program);
-    }
+    Shader_Program::~Shader_Program() {if(loaded()){glDeleteProgram(shader_program);} }
 
     //*********
     //
@@ -218,9 +241,7 @@ namespace scls {
     //*********
 
     // Most basic VBO constructor
-    VBO::VBO() {
-
-    }
+    VBO::VBO() {}
 
     // VBO complete constructor
     VBO::VBO(std::vector<Shader_Program_Variable> attributes, std::vector<double> datas, bool use_ebo): VBO() {
@@ -232,14 +253,10 @@ namespace scls {
     }
 
     // VBO constructor
-    VBO::VBO(std::vector<Shader_Program_Variable> attributes, bool fill_datas, bool use_ebo): VBO(attributes, gui_vbo(a_attributes), use_ebo) {
-
-    }
+    VBO::VBO(std::vector<Shader_Program_Variable> attributes, bool fill_datas, bool use_ebo): VBO(attributes, gui_vbo(a_attributes), use_ebo) {}
 
     // Bind the VBO into the GPU memory
-    void VBO::bind() {
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    }
+    void VBO::bind() {glBindBuffer(GL_ARRAY_BUFFER, vbo);}
 
     // Bind the buffer data of the VBO
     void VBO::bind_buffer() {
@@ -332,14 +349,7 @@ namespace scls {
     }
 
     // Load the VBO into the GPU memory
-    void VBO::load_vbo() {
-        // Generate the VBO into the GPU memory
-        glGenBuffers(1, &vbo);
-        if (a_use_ebo)
-        {
-            glGenBuffers(1, &ebo);
-        }
-    }
+    void VBO::load_vbo() {glGenBuffers(1, &vbo);if (a_use_ebo){glGenBuffers(1, &ebo);}}
 
     // Create a new VBO from this one
     VBO* VBO::new_copy() {
@@ -354,14 +364,10 @@ namespace scls {
     }
 
     // Unbind the VBO from the GPU memory
-    void VBO::unbind() {
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
+    void VBO::unbind() {glBindBuffer(GL_ARRAY_BUFFER, 0);}
 
     // VBO destructor
-    VBO::~VBO() {
-        glDeleteBuffers(1, &vbo);
-    }
+    VBO::~VBO() {glDeleteBuffers(1, &vbo);}
 
     //*********
     //
@@ -370,35 +376,19 @@ namespace scls {
     //*********
 
     // Most basic VAO constructor
-    VAO::VAO(const std::shared_ptr<VBO>& vbo) : a_vbo(vbo) {
-
-    }
+    VAO::VAO(const std::shared_ptr<VBO>& vbo) : a_vbo(vbo) {}
 
     // Most usefull VAO constructor
-    VAO::VAO(Shader_Program* shader_program, const std::shared_ptr<VBO>& vbo) : VAO(vbo) {
-        a_shader_program = shader_program->new_copy();
-    }
+    VAO::VAO(Shader_Program shader_program, const std::shared_ptr<VBO>& vbo) : VAO(vbo) {a_shader_program = shader_program.new_copy();}
 
     // VAO constructor
-    VAO::VAO(std::string shader_path, std::vector<Shader_Program_Variable> a_attributes, const std::shared_ptr<VBO>& vbo) : VAO(load_shader_program(shader_path), a_attributes, vbo) {
-
-    }
-
-    // VAO constructor
-    VAO::VAO(Shader_Program* shader_program, std::vector<Shader_Program_Variable> a_attributes, const std::shared_ptr<VBO>& vbo) : VAO(*shader_program, a_attributes, vbo) {
-
-    }
-
-    // VAO constructor
-    VAO::VAO(Shader_Program shader_program, std::vector<Shader_Program_Variable> a_attributes, const std::shared_ptr<VBO>& vbo) : VAO(vbo) {
-        a_shader_program = shader_program.new_copy();
-    }
+    VAO::VAO(std::string shader_path, const std::shared_ptr<VBO>& vbo) : VAO(load_shader_program(shader_path), vbo) {}
 
     // Bind the VAO into the GPU memory
     void VAO::bind(glm::vec3 scale) {
         a_shader_program->use();
-        a_shader_program->set_uniform3f_value("scale", scale.x, scale.y, scale.z);
         glBindVertexArray(vao);
+        a_shader_program->set_uniform3f_value("scale", scale.x, scale.y, scale.z);
     }
 
     // Load and return a shader
@@ -476,15 +466,10 @@ namespace scls {
     }
 
     // Returns the number of triangle to draw
-    unsigned int VAO::triangle_number() {
-        return get_vbo()->get_vertice_number() / 3.0;
-    }
+    unsigned int VAO::triangle_number() {return get_vbo()->get_vertice_number() / 3.0;}
 
     // VAO destructor
-    VAO::~VAO() {
-        delete get_shader_program(); a_shader_program = 0;
-        glDeleteVertexArrays(1, &vao);
-    }
+    VAO::~VAO() {delete get_shader_program(); a_shader_program = 0;glDeleteVertexArrays(1, &vao);}
 
     //*********
     //

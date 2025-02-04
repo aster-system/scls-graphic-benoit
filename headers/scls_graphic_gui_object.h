@@ -219,8 +219,8 @@ namespace scls {
             else print("Warning", "SCLS GUI Object \"" + name() + "\"", "The texture \"" + texture_name + "\" you want to set as the object texture does not exist.");
         };
         inline void set_texture_alignment(Alignment_Texture new_texture_alignment) {a_texture_alignment = new_texture_alignment;};
-        inline void set_texture_alignment_horizontal(Alignment_Horizontal new_texture_alignment_horizontal) {a_texture_alignment_horizontal = new_texture_alignment_horizontal;};
-        inline void set_texture_alignment_vertical(Alignment_Vertical new_texture_alignment_vertical) {a_texture_alignment_vertical = new_texture_alignment_vertical;};;
+        virtual void set_texture_alignment_horizontal(Alignment_Horizontal new_texture_alignment_horizontal) {a_texture_alignment_horizontal = new_texture_alignment_horizontal;};
+        virtual void set_texture_alignment_vertical(Alignment_Vertical new_texture_alignment_vertical) {a_texture_alignment_vertical = new_texture_alignment_vertical;};
         inline void set_vao(std::shared_ptr<VAO> new_vao){a_vao = new_vao;};
         inline std::vector<std::shared_ptr<GUI_Object>>& sub_pages() {if(a_sub_page.size() <= 0){a_sub_page.push_back(std::vector<std::shared_ptr<GUI_Object>>());}return a_sub_page[0];};
         inline Texture* texture() const {return a_texture.get();};
@@ -423,6 +423,9 @@ namespace scls {
         inline std::string plain_text(){return window_struct().text_image_generator()->plain_text(text());};
         // Return the size of the plain text in the object
         inline unsigned int plain_text_size() {return plain_text().size();};
+        // Updates text image block
+        inline void update_text_image_block(){String temp=text();attached_text_image_block()->free_memory();set_text(temp);};
+        inline void update_text_image_block_style(){attached_text_image_block()->global_style().background_color = background_color();attached_text_image_block()->global_style().color = font_color();attached_text_image_block()->global_style().font_size = font_size();attached_text_image_block()->global_style().max_width = max_width();};
 
         // Getters and setters
         inline Text_Image_Multi_Block* attached_text_image_block() const {return a_text_image.get();};
@@ -433,9 +436,9 @@ namespace scls {
         inline int max_width() const {return a_global_style.max_width;};
         inline void set_font_color(Color new_font_color) {a_global_style.color = new_font_color;};
         inline void set_font_family(std::string new_font_family) {a_global_style.font = get_system_font(new_font_family);};
-        inline void set_font_size(unsigned short new_font_size) {a_global_style.font_size = new_font_size;};
+        inline void set_font_size(unsigned short new_font_size) {a_global_style.font_size = new_font_size;update_text_image_block();};
         inline void set_max_width(int new_max_width) {a_global_style.max_width = new_max_width;};
-        virtual void set_text(std::string new_text) {if(new_text == text()){return;}attached_text_image_block()->set_text(new_text);update_texture();};
+        virtual void set_text(std::string new_text) {if(new_text == text()){return;}update_text_image_block_style();attached_text_image_block()->set_text(new_text);update_texture();};
         inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {a_global_style.alignment_horizontal = new_text_alignment_horizontal;};
         virtual void set_text_image_type(Block_Type new_text_image_type) {a_text_image_type = new_text_image_type;};
         inline void set_text_offset(double new_text_offset) {a_global_style.text_offset_x = new_text_offset;a_global_style.text_offset_y = new_text_offset;a_global_style.text_offset_width = new_text_offset;a_global_style.text_offset_height = new_text_offset;};
@@ -492,6 +495,9 @@ namespace scls {
         // Most basic GUI_Object constructor
         GUI_Text(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent);
 
+        // Places the blocks in the text
+        void place_blocks();
+
         // Function called after that the window is resized
         virtual void after_resizing();
         // Soft reset the text
@@ -503,6 +509,8 @@ namespace scls {
         void update_text_texture(){update_text_texture(scls::Image_Generation_Type::IGT_Full);};
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
+        virtual void set_texture_alignment_horizontal(Alignment_Horizontal new_texture_alignment_horizontal){if(new_texture_alignment_horizontal != texture_alignment_horizontal()){GUI_Object::set_texture_alignment_horizontal(new_texture_alignment_horizontal);place_blocks();}};
+        virtual void set_texture_alignment_vertical(Alignment_Vertical new_texture_alignment_vertical){if(new_texture_alignment_vertical != texture_alignment_vertical()){GUI_Object::set_texture_alignment_vertical(new_texture_alignment_vertical);place_blocks();}}
         inline bool text_modified_during_this_frame() {return a_text_modified_during_this_frame;};
     private:
         //*********
@@ -511,6 +519,8 @@ namespace scls {
         //
         //*********
 
+        // Number of the generation
+        unsigned int a_generation = 0;
         // If the text has been modified or not
         bool a_modified = false;
         // If the text has been modified during this frame
@@ -552,7 +562,7 @@ namespace scls {
         std::string _format_one_letter(std::string letter, bool apply_alt = false, bool apply_capitalisation = true);
         // Input the inputed text
         void input_text();
-        // Place the lines in the text
+        // Places the lines in the text
         void place_lines();
         // Remove a text to the input at the cursor position
         void remove_text(unsigned int size_to_delete_in_plain_text);

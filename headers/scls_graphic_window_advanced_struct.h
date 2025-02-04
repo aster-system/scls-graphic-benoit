@@ -79,17 +79,12 @@ namespace scls {
         // Add an existing VBO into the game
         inline std::shared_ptr<VBO>* add_vbo(std::string name, const std::shared_ptr<VBO>& vbo) {
             if (!contains_vbo(name)) {vbos()[name] = vbo;return &(vbos()[name]);}
-            else print("Warning", "SCLS Window", "The \"" + name + "\" VBO you want to add already exists.");
+            print("Warning", "SCLS Window", "The \"" + name + "\" VBO you want to add already exists.");
             return 0;
         };
 
         // Returns if the struct contains a shader program
-        inline bool contains_shader_program(std::string name) {
-            for (std::map<std::string, Shader_Program>::iterator it = a_shaders_programs.begin(); it != a_shaders_programs.end(); it++) {
-                if (it->first == name) return true;
-            }
-            return false;
-        };
+        inline bool contains_shader_program(std::string name) {for (std::map<std::string, Shader_Program>::iterator it = a_shaders_programs.begin(); it != a_shaders_programs.end(); it++) {if (it->first == name) return true;}return false;};
         // Returns if the struct contains a textures
         inline bool contains_texture(std::string name) {for (std::map<std::string, std::shared_ptr<Texture>>::iterator it = textures().begin(); it != textures().end(); it++) {if (it->first == name) return true;}return false;};
         // Returns if the struct contains a VAO

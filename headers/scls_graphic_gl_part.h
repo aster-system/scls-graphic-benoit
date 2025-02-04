@@ -46,6 +46,7 @@ namespace scls {
     public:
         // Every type of built-in shaders
         enum Built_In_Shader {
+            Curved,
             Default,
             HUD_Default
         };
@@ -78,8 +79,8 @@ namespace scls {
         static std::string default_gui_blend_colors();
         static std::string default_gui_border_handling() {return std::string("if(tex_pos[0] < border_width.y || tex_pos[1] < border_width.z || tex_pos[0] > 1.0 - border_width.w || tex_pos[1] > 1.0 - border_width.x){final_color = blend_colors(border_color, final_color);}");};
         static std::string default_gui_extremum_handling() {return std::string("if(tex_pos.y > object_extremum.w || tex_pos.y < object_extremum.y){discard;}");};
-        static std::string get_built_in_fragment_shader(Built_In_Shader shader_type) {if (shader_type == Default) {return get_default_fragment_shader();}return get_default_hud_fragment_shader();};
-        static std::string get_built_in_vertex_shader(Built_In_Shader shader_type) {if (shader_type == Default){return get_default_vertex_shader();}return get_default_hud_vertex_shader();};
+        static std::string get_built_in_fragment_shader(Built_In_Shader shader_type) {if (shader_type == Default || shader_type == Curved) {return get_default_fragment_shader();}return get_default_hud_fragment_shader();};
+        static std::string get_built_in_vertex_shader(Built_In_Shader shader_type) {if (shader_type == Curved) {return curved_vertex_shader();}else if (shader_type == Default){return get_default_vertex_shader();}return get_default_hud_vertex_shader();};
         static std::string get_default_fragment_shader() {
             std::string to_return = "#version 330 core\n";
             to_return += "in vec3 frag_pos;\n";
@@ -93,19 +94,19 @@ namespace scls {
             to_return += "uniform bool texture_binded;\n";
 
             // Use the lighting function
-            to_return += shader_content::lighting_function();
+            //to_return += shader_content::lighting_function();
 
             // Get the good position of the object
             to_return += "void main(){\n";
             to_return += "vec4 final_color = vec4(0, 0, 0, 0);\n";
             to_return += "if(texture_binded){";
             to_return += "  vec2 final_tex_pos = tex_pos * tex_rect.zw;";
-            to_return += "  if (tex_multiplier.x == 0) final_tex_pos.x = final_tex_pos.x * scale.x;";
-            to_return += "  else if (tex_multiplier.x == 1) final_tex_pos.y = final_tex_pos.y * scale.x;";
-            to_return += "  if (tex_multiplier.y == 0) final_tex_pos.x = final_tex_pos.x * scale.y;";
-            to_return += "  else if (tex_multiplier.y == 1) final_tex_pos.y = final_tex_pos.y * scale.y;\n";
-            to_return += "  if(tex_multiplier.z == 0) final_tex_pos.x = final_tex_pos.x * scale.z;\n";
-            to_return += "  else if (tex_multiplier.z == 1)final_tex_pos.y = final_tex_pos.y * scale.z;\n";
+            to_return += "  if (tex_multiplier.x == 1) final_tex_pos.x = final_tex_pos.x * scale.x;";
+            to_return += "  else if (tex_multiplier.x == 2) final_tex_pos.y = final_tex_pos.y * scale.x;";
+            to_return += "  if (tex_multiplier.y == 1) final_tex_pos.x = final_tex_pos.x * scale.y;";
+            to_return += "  else if (tex_multiplier.y == 2) final_tex_pos.y = final_tex_pos.y * scale.y;\n";
+            to_return += "  if(tex_multiplier.z == 1) final_tex_pos.x = final_tex_pos.x * scale.z;\n";
+            to_return += "  else if (tex_multiplier.z == 2)final_tex_pos.y = final_tex_pos.y * scale.z;\n";
             to_return += "  while(final_tex_pos.x > tex_rect[2])final_tex_pos.x -= tex_rect[2];\n";
             to_return += "  while(final_tex_pos.y > tex_rect[3])final_tex_pos.y -= tex_rect[3];\n";
             to_return += "  final_color = texture(texture_0, tex_rect.xy + final_tex_pos);\n";
@@ -114,7 +115,7 @@ namespace scls {
             to_return += "}";
 
             // Edit the color as necesary with lighting
-            to_return += "final_color = apply_lighting(final_color);\n";
+            //to_return += "final_color = apply_lighting(final_color);\n";
             to_return += "FragColor = final_color;\n";
             to_return += "}";
             return to_return;
@@ -164,13 +165,14 @@ namespace scls {
             to_return += "uniform mat4 view;\n";
             to_return += "void main(){\n";
             to_return += "frag_pos = vec3(model * vec4(in_pos, 1.0));\n";
-            to_return += "normal = mat3(transpose(inverse(model))) * in_normal;;\n";
+            to_return += "normal = mat3(transpose(inverse(model))) * in_normal;\n";
             to_return += "tex_multiplier = in_tex_multiplier;\n";
             to_return += "tex_pos = in_tex_pos;\n";
             to_return += "tex_rect = in_tex_rect;\n";
             to_return += "gl_Position = projection * view * model * vec4(in_pos.xyz, 1.0);\n}";
             return to_return;
         };
+        static std::string curved_vertex_shader();
         static std::string get_default_hud_vertex_shader() {
             std::string to_return = "#version 330 core\n";
             to_return += "layout(location = 0) in vec3 position;";
@@ -220,14 +222,7 @@ namespace scls {
         ~VBO();
 
         // Returns the datas convert in float
-        std::vector<float> datas_to_float() {
-            std::vector<float> datas = std::vector<float>();
-            std::vector<double>& base_datas = a_datas;
-            for(int i = 0;i<static_cast<int>(base_datas.size());i++) {
-                datas.push_back(base_datas[i]);
-            }
-            return datas;
-        };
+        inline std::vector<float> datas_to_float() {std::vector<float> datas = std::vector<float>(a_datas.size());for(int i = 0;i<static_cast<int>(a_datas.size());i++) {datas[i] = a_datas[i];}return datas;};
 
         // Built-in VBOs
         // Returns the datas for a cube vbo
@@ -817,13 +812,11 @@ namespace scls {
         // Most basic VAO constructor
         VAO(const std::shared_ptr<VBO>& vbo);
         // Most usefull VAO constructor
-        VAO(Shader_Program* shader_program, const std::shared_ptr<VBO>& vbo);
-        VAO(std::string shader_path, std::vector<Shader_Program_Variable> a_attributes, const std::shared_ptr<VBO>& vbo); // VAO constructor
-        // VAO constructor
-        VAO(Shader_Program* shader_program, std::vector<Shader_Program_Variable> a_attributes, const std::shared_ptr<VBO>& vbo);
-        // VAO constructor
-        VAO(Shader_Program shader_program, std::vector<Shader_Program_Variable> a_attributes, const std::shared_ptr<VBO>& vbo);
-        virtual void bind(glm::vec3 scale = glm::vec3(1.0, 1.0, 1.0)); // Bind the VAO into the GPU memory
+        VAO(Shader_Program shader_program, const std::shared_ptr<VBO>& vbo);
+        VAO(std::string shader_path, const std::shared_ptr<VBO>& vbo);
+
+        // Bind the VAO into the GPU memory
+        virtual void bind(glm::vec3 scale = glm::vec3(1.0, 1.0, 1.0));
         Shader_Program load_shader_program(std::string shader_path); // Load and return a shader
         // Load the VAO into the GPU memory
         void load_vao();

@@ -76,16 +76,14 @@ namespace scls {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         a_window = glfwCreateWindow(window_width(), window_height(), "SCLS Graphic Benoit", NULL, NULL);
-        if (a_window == NULL)
-        {
+        if (a_window == NULL) {
             print("Error", "GLFW Loader", "Failed to create GLFW window");
             glfwTerminate();
         }
         glfwMakeContextCurrent(a_window);
 
         // Glad loading
-        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-        {
+        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
             print("Error", "GLAD Loader", "Failed to initialize GLAD");
             glfwTerminate();
         }
@@ -238,17 +236,12 @@ namespace scls {
     // Render the scene
     void Window::render() {
         // Clear OpenGL window
-        glClearColor(background_color().red() / 255.0, background_color().green() / 255.0, background_color().blue() / 255.0, background_color().alpha() / 255.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        glClearColor(background_color().red() / 255.0, background_color().green() / 255.0, background_color().blue() / 255.0, background_color().alpha() / 255.0);
 
         // Update the cursor texture
-        if(cursor_changed() && cursor() != 0) {
-            glfwSetCursor(window(), cursor());
-        }
-        else if(cursor() == 0) {
-            set_cursor(glfwCreateStandardCursor(GLFW_ARROW_CURSOR));
-            glfwSetCursor(window(), cursor());
-        }
+        if(cursor_changed() && cursor() != 0) {glfwSetCursor(window(), cursor());}
+        else if(cursor() == 0) {set_cursor(glfwCreateStandardCursor(GLFW_ARROW_CURSOR));glfwSetCursor(window(), cursor());}
         a_cursor_changed = false;
 
         // Render 3D pages
@@ -267,7 +260,7 @@ namespace scls {
             for(int i = 0;i<static_cast<int>(to_display.size());i++) {
                 to_display[i].get()->render();
             }
-        }
+        }//*/
 
         // Update OpenGL
         glfwSwapBuffers(window());
