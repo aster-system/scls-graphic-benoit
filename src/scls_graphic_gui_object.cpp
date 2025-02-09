@@ -101,8 +101,17 @@ namespace scls {
     //*********
 
     // Loads the object from XML
-    void GUI_Object::__load_from_xml(std::shared_ptr<XML_Text> text, std::shared_ptr<__GUI_Page_Loader> loader, std::string event) {
+    void GUI_Object::__load_from_xml_apply(std::string event) {
+        // Apply the changes
+        for(int i = 0;i<static_cast<int>(a_loading_parts.size());i++){if(a_loading_parts[i].get()->xml_balise_name() != std::string("content")){set_xml_attribute(a_loading_parts[i], event);a_loading_parts.erase(a_loading_parts.begin() + i);i--;}}
+        for(int i = 0;i<static_cast<int>(a_loading_parts.size());i++){set_xml_attribute(a_loading_parts[i], event);a_loading_parts.erase(a_loading_parts.begin() + i);i--;}
+    }
+    void GUI_Object::load_from_xml(std::shared_ptr<XML_Text> text, std::string event) {
+        if(text.get() == 0){return;}
+        set_loaded(true);
+
         // Parse the content
+        std::vector<std::shared_ptr<XML_Text>> needed_part;
         for(int i = 0;i<static_cast<int>(text.get()->sub_texts().size());i++) {
             std::shared_ptr<XML_Text> current_text = text.get()->sub_texts()[i];
             std::string current_balise_name = current_text.get()->xml_balise_name();
@@ -126,20 +135,22 @@ namespace scls {
 
                 if(event == "") {
                     // Apply the attribute for the event
-                    __load_from_xml(current_text, loader, current_event);
+                    load_from_xml(current_text, current_event);
                 }
                 else {
                     print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Can't load an event inside an another event with XML.");
                 }
             }
-            else if(current_balise_name != "parent") {
-                set_xml_attribute(current_text, event, loader, i);
-            }
+            else if(current_balise_name != "parent") {needed_part.push_back(current_text);}
         }
+
+        // Apply the change
+        a_loading_parts = needed_part;
+        __load_from_xml_apply(event);
     }
 
     // Handle an attribute from XML
-    void GUI_Object::set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i) {
+    void GUI_Object::set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event) {
         std::string xml_attribute_name = text.get()->xml_balise_name();
         if(xml_attribute_name == "background_color") {
             // Load the background color
@@ -367,7 +378,7 @@ namespace scls {
             else {
                 // Attach the object
                 std::shared_ptr<__GUI_Object_Core> other_object;
-                if(attached_object_vertical != "") other_object = loader.get()->created_objects[attached_object_vertical];
+                if(attached_object_vertical != "") other_object = a_loader.get()->created_objects[attached_object_vertical];
                 if(attachment_horizontal == 1) {
                     if(other_object.get() == 0) attach_left_in_parent(attachment_horizontal_offset.to_double());
                     //else attach_bottom_of_object_in_parent(other_object, attachment_horizontal_offset);
@@ -427,7 +438,7 @@ namespace scls {
             else {
                 // Attach the object
                 std::shared_ptr<__GUI_Object_Core> other_object;
-                if(attached_object_vertical != "") other_object = loader.get()->created_objects[attached_object_vertical];
+                if(attached_object_vertical != "") other_object = a_loader.get()->created_objects[attached_object_vertical];
                 if(attachment_vertical == 1) {
                     if(other_object.get() == 0) attach_top_in_parent(attachment_vertical_offset);
                 }
@@ -488,12 +499,12 @@ namespace scls {
             transformation()->calculate_position();
         }
         else if(a_transform_attachment.attachment_vertical_type == 3) {
-            __move_top_of_object_in_parent(a_transform_attachment.attached_object_vertical, a_transform_attachment.attachment_vertical_offset.to_double());
+            __move_top_of_object_in_parent(a_transform_attachment.attached_object_vertical.lock().get(), a_transform_attachment.attachment_vertical_offset.to_double());
             _apply_calculate_transformation(transformation_shared_ptr());
             transformation()->calculate_position();
         }
         else if(a_transform_attachment.attachment_vertical_type == 4) {
-            __move_bottom_of_object_in_parent(a_transform_attachment.attached_object_vertical, a_transform_attachment.attachment_vertical_offset.to_double());
+            __move_bottom_of_object_in_parent(a_transform_attachment.attached_object_vertical.lock().get(), a_transform_attachment.attachment_vertical_offset.to_double());
             _apply_calculate_transformation(transformation_shared_ptr());
             transformation()->calculate_position();
         }
@@ -512,8 +523,8 @@ namespace scls {
             parent()->calculate_transformation(false, false);
             parent_transformation = parent()->transformation_shared_ptr();
         }
-        if(transformation() == 0) transformation_shared_ptr() = std::make_shared<__GUI_Transformation>(0, 0, parent_transformation);
-        else { transformation_shared_ptr() = std::make_shared<__GUI_Transformation>(*transformation()); }
+        if(last_transformation_to_use.get() == 0) transformation_shared_ptr() = std::make_shared<__GUI_Transformation>(0, 0, parent_transformation);
+        else { transformation_shared_ptr() = std::make_shared<__GUI_Transformation>(*last_transformation_to_use.get()); }
         transformation()->parent_shared_ptr() = parent_transformation;
         transformation()->set_window_height(window_struct().window_height());
         transformation()->set_window_width(window_struct().window_width());
@@ -649,22 +660,25 @@ namespace scls {
 
     // Check the browser scroller
     void GUI_Scroller::check_scroller(bool reset) {
+        if(a_scroller_children.get() == 0){return;}
+
         int last_y_position = (a_scroller_children.get()->last_transformation()->y_in_pixel() + a_scroller_children.get()->last_transformation()->height_in_pixel()) - (a_scroller_children.get()->last_transformation()->parent()->height_in_pixel());
         GUI_Object::after_resizing();
         Fraction tallest_point = Fraction(0);
         for(int i = 0;i<static_cast<int>(a_scroller_children->children().size());i++) {
             GUI_Object* current_object = a_scroller_children->children()[i].get();
-            if(Fraction(current_object->y_in_pixel()) + Fraction(current_object->height_in_pixel()) > tallest_point) {
+            if(current_object->visible() && Fraction(current_object->y_in_pixel()) + Fraction(current_object->height_in_pixel()) > tallest_point) {
                 tallest_point = Fraction(current_object->y_in_pixel()) + current_object->height_in_pixel();
             }
         }
         a_scroller_children->set_height_in_pixel(static_cast<unsigned int>(tallest_point.to_double()));
-        if(scroller_vertical_alignment() == Alignment_Vertical::V_Top) {
+        /*if(scroller_vertical_alignment() == Alignment_Vertical::V_Top) {
             a_scroller_children->move_top_in_parent(1);
         }
         else if(scroller_vertical_alignment() == Alignment_Vertical::V_Bottom) {
             a_scroller_children->move_bottom_in_parent(1);
-        }
+        }//*/
+        a_scroller_children->attach_top_in_parent(1);
 
         // Resize the children
         if(a_scroller_children.get()->width_in_pixel() != width_in_pixel() - 2) a_scroller_children->set_width_in_pixel(width_in_pixel() - 2);
@@ -727,20 +741,38 @@ namespace scls {
     // Loads the choice from an XML test
     void GUI_Scroller_Choice::load_choices_from_xml(std::shared_ptr<XML_Text> text) {}
 
+    // Loads the object from XML
+    void GUI_Scroller_Choice::__load_from_xml_apply(std::string event) {
+        // Apply the changes
+        for(int i = 0;i<static_cast<int>(a_loading_parts.size());i++){
+            if(a_loading_parts[i].get()->xml_balise_name() != std::string("sub_choice") && a_loading_parts[i].get()->xml_balise_name() != std::string("choice")){
+                set_xml_attribute(a_loading_parts[i], event);a_loading_parts.erase(a_loading_parts.begin() + i);i--;
+            }
+        }
+        reset_scroller_children();
+        for(int i = 0;i<static_cast<int>(a_loading_parts.size());i++){set_xml_attribute(a_loading_parts[i], event);a_loading_parts.erase(a_loading_parts.begin() + i);i--;}
+        place_objects();
+    }
+
     // Place the objects
     void GUI_Scroller_Choice::place_objects() {
         // Place the objects
         std::shared_ptr<scls::GUI_Object> last_object;
-        for(int i = 0;i<static_cast<int>(a_objects.size());i++) {
-            GUI_Scroller_Single_Choice current_object = a_objects[(static_cast<int>(a_objects.size()) - 1) - i];
-            if(last_object.get() != 0) {current_object.object()->attach_top_of_object_in_parent(last_object);}
-            else {current_object.object()->attach_bottom_in_parent();}
-            current_object.object()->set_visible(true);
-            last_object = current_object.object_shared_ptr();
+        if(a_displayed) {
+            for(int i = 0;i<static_cast<int>(a_objects.size());i++) {
+                GUI_Scroller_Single_Choice current_object = a_objects[(static_cast<int>(a_objects.size()) - 1) - i];
+                if(last_object.get() != 0) {current_object.object()->attach_top_of_object_in_parent(last_object);}
+                else {current_object.object()->attach_bottom_in_parent();}
+                current_object.object()->set_visible(true);
+                last_object = current_object.object_shared_ptr();
+            }
         }
 
         // Displayer object
-        if(a_displayer_object.get() != 0){if(last_object.get() != 0) {a_displayer_object.get()->attach_top_of_object_in_parent(last_object);}else{a_displayer_object.get()->attach_bottom_in_parent();}}
+        if(a_displayer_object.get() != 0){
+            if(last_object.get() != 0) {a_displayer_object.get()->attach_top_of_object_in_parent(last_object);}
+            else{a_displayer_object.get()->attach_bottom_in_parent();}
+        }
 
         check_scroller();
     }
@@ -814,7 +846,7 @@ namespace scls {
     }
 
     // Handle an attribute from XML
-    void GUI_Scroller_Choice::set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i) {
+    void GUI_Scroller_Choice::set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event) {
         std::string xml_attribute_name = text.get()->xml_balise_name();
         if(xml_attribute_name == "choice") {
             // Get each attributes
@@ -864,9 +896,9 @@ namespace scls {
             std::shared_ptr<scls::GUI_Scroller_Choice> current_section = *add_sub_section(needed_name, needed_displayer);
             for(int i = 0;i<static_cast<int>(text.get()->sub_texts().size());i++) {
                 // Loads the sub-choices
-                current_section.get()->set_xml_attribute(text.get()->sub_texts()[i], event, loader, i);
+                current_section.get()->set_xml_attribute(text.get()->sub_texts()[i], event);
             }
-        } else {GUI_Object::set_xml_attribute(text, event, loader, i);}
+        } else {GUI_Object::set_xml_attribute(text, event);}
     }
 
     //*********
@@ -876,7 +908,7 @@ namespace scls {
     //*********
 
     // Handle an attribute from XML
-    void __GUI_Text_Metadatas::set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i) {
+    void __GUI_Text_Metadatas::set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event) {
         std::string xml_attribute_name = text.get()->xml_balise_name();
         if(xml_attribute_name == "content") {
             // Get each attributes
@@ -885,9 +917,18 @@ namespace scls {
                 XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
                 std::string current_attribute_name = current_attribute.name;
                 std::string current_attribute_value = current_attribute.value;
+                if(current_attribute_value[0] == '\"'){current_attribute_value = current_attribute_value.substr(1, current_attribute_value.size() - 1);}
+                if(current_attribute_value[current_attribute_value.size()-1] == '\"'){current_attribute_value = current_attribute_value.substr(0, current_attribute_value.size() - 1);}
 
                 // Load the font size of the text
-                if(current_attribute_name == "font_size") {
+                if(current_attribute_name == "alignment_horizontal") {
+                    // Loads the content of a balise from a file
+                    if(current_attribute_value == std::string("center")){set_text_alignment_horizontal(Alignment_Horizontal::H_Center);}
+                    else {
+                        print("Warning", "SCLS Graphic Benoit page \"" + name() + "\"", "The text horizontal alignment \"" + current_attribute_value + "\" is not a valid attribute.");
+                    }
+                }
+                else if(current_attribute_name == "font_size") {
                     // Value of the font size
                     set_font_size(Fraction::from_std_string(current_attribute_value).to_double());
                 } else if(current_attribute_name == "max_width") {
@@ -898,7 +939,7 @@ namespace scls {
                     if(current_attribute_value[0] == '\"'){current_attribute_value = current_attribute_value.substr(1, current_attribute_value.size() - 1);}
                     if(current_attribute_value[current_attribute_value.size()-1] == '\"'){current_attribute_value = current_attribute_value.substr(0, current_attribute_value.size() - 1);}
                     std::string base_attribute_value = current_attribute_value;
-                    if(!std::filesystem::exists(current_attribute_value)){current_attribute_value = path_parent(loader.get()->path) + "/" + current_attribute_value;}
+                    if(!std::filesystem::exists(current_attribute_value)){current_attribute_value = path_parent(a_loader.get()->path) + "/" + current_attribute_value;}
                     if(std::filesystem::exists(current_attribute_value)) {
                         needed_text = read_file(current_attribute_value);
                     } else {
@@ -908,6 +949,7 @@ namespace scls {
             }
             // Get the content of the text
             needed_text = scls::format_string_tabulations(scls::format_string_break_line(needed_text, " "), "");
+            if(max_width() != -1) {set_max_width(width_in_pixel());}
             set_text(needed_text);
         }
         else if(xml_attribute_name == "font_size") {
@@ -948,10 +990,7 @@ namespace scls {
             set_font_color(final_color);
             set_font_size(final_font_size.to_double());
         }
-        else {
-            // Load a lowest level attribute
-            GUI_Object::set_xml_attribute(text, event, loader, i);
-        }
+        else {GUI_Object::set_xml_attribute(text, event);}
     }
 
     //*********
@@ -970,16 +1009,19 @@ namespace scls {
     void GUI_Text::place_blocks() {
         // Place each children
         unsigned int total_height = 0;
-        for(int i = 0;i<static_cast<int>(children().size());i++) {
-            if(children()[i].get() != 0) {
+        for(int i = 0;i<static_cast<int>(a_blocks_children.size());i++) {
+            if(a_blocks_children[i].get() != 0) {
                 // Place the children
                 // Place the X
-                if(texture_alignment_horizontal() == scls::Alignment_Horizontal::H_Left){children()[i].get()->set_x_in_pixel(0);}
-                else{children()[i].get()->set_x_in_object_scale(scls::Fraction(1, 2));}
+                if(a_blocks_children[i].get()->style()->alignment_horizontal() == scls::Alignment_Horizontal::H_Left){a_blocks_children[i].get()->set_x_in_pixel(0);}
+                else{a_blocks_children[i].get()->set_x_in_object_scale(scls::Fraction(1, 2));}
                 // Place the Y
-                if(texture_alignment_vertical() == scls::Alignment_Vertical::V_Top){children()[i].get()->set_y_in_pixel(height_in_pixel() - (children()[i].get()->height_in_pixel() + total_height));}
-                else{children()[i].get()->set_y_in_object_scale(scls::Fraction(1, 2));}
-                total_height += children()[i].get()->height_in_pixel();
+                if(texture_alignment_vertical() == scls::Alignment_Vertical::V_Top){
+                    int needed_y = height_in_pixel() - ((a_blocks_children[i].get()->height_in_pixel() + total_height) - a_offset_y);
+                    a_blocks_children[i].get()->set_y_in_pixel(needed_y);
+                }
+                else{a_blocks_children[i].get()->set_y_in_object_scale(scls::Fraction(1, 2));}
+                total_height += a_blocks_children[i].get()->height_in_pixel();
             }
         }
     }
@@ -994,6 +1036,7 @@ namespace scls {
             int block_offset = 0;
             int needed_offset = 0;
             delete_children();
+            a_blocks_children.clear();
 
             unsigned short line_max_number = 0;
             unsigned int total_height = 0;
@@ -1002,19 +1045,21 @@ namespace scls {
                 Text_Image_Block* block_to_apply = attached_text_image_block()->generate_next_block(i).get();
                 if(block_to_apply != 0) {
                     // Check the total height
-                    if(total_height > height_in_pixel()) break;
+                    //if(total_height > height_in_pixel()) break;
 
                     std::shared_ptr<Image> image_to_apply = block_to_apply->image_shared_pointer(generation_type);
                     if(image_to_apply.get() != 0) {
                         // Generate the object for the line
                         std::string final_name = name() + "_gen_" + std::to_string(a_generation) + "_line_" + std::to_string(i);
-                        std::shared_ptr<GUI_Object> new_block = *new_object<GUI_Object>(final_name);
+                        std::shared_ptr<GUI_Text::__GUI_Text_Block> new_block = *new_object<GUI_Text::__GUI_Text_Block>(final_name);
                         new_block.get()->set_ignore_click(true);
                         new_block.get()->set_height_in_pixel(image_to_apply.get()->height());
+                        new_block.get()->set_style(block_to_apply->global_style_shared_ptr());
                         new_block.get()->set_width_in_pixel(image_to_apply.get()->width());
                         new_block.get()->texture()->set_image(image_to_apply);
 
                         // Place the children
+                        a_blocks_children.push_back(new_block);
                         total_height += image_to_apply.get()->height();
                     }
                 }
@@ -1435,8 +1480,8 @@ namespace scls {
         // Configure the text image
         if(attached_text_image() == 0) attached_text_image_block()->generate_blocks();
         if(attached_text_image() == 0) return;
-        attached_text_image()->global_style().color = font_color();
-        attached_text_image()->global_style().font = font();
+        attached_text_image()->global_style()->set_color(font_color());
+        attached_text_image()->global_style()->font = font();
         attached_text_image()->set_cursor_position_in_plain_text(cursor_position_in_formatted_text());
         attached_text_image()->set_use_cursor(true);
 
@@ -1919,7 +1964,7 @@ namespace scls {
     };
 
     // Loads an object in a page from XML and returns it
-    std::shared_ptr<GUI_Object> GUI_Page::__load_object_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text> content) {
+    std::shared_ptr<GUI_Object> GUI_Page::__load_object_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text> content, bool load_content) {
         // Search the parent
         GUI_Object* current_parent = parent_object();
         for(int i = 0;i<static_cast<int>(content.get()->sub_texts().size());i++) {
@@ -1945,7 +1990,10 @@ namespace scls {
         if(object.get() == 0) {
             print("Warning", "SCLS Graphic Benoit page \"" + name() + "\"", "The object \"" + object_name + "\" you want to load with XML is not recognised by the GUI.");
         } else {
-            object.get()->__load_from_xml(content, a_loader);
+            object.get()->set_visible(true);
+            object.get()->set_xml_loading_datas(content, a_loader);
+            if(load_content && current_parent->loaded()) {object.get()->load_from_xml(std::string(""));}
+            else {object.get()->set_loaded(false);}
         }
         return object;
     }
@@ -1959,6 +2007,7 @@ namespace scls {
 
             // Add a GUI object
             if(current_balise_name == "gui_object") {
+                bool load_content = true;
                 bool must_be_visible = false;
                 std::string object_name = "";
                 std::string object_type = "";
@@ -1969,6 +2018,10 @@ namespace scls {
                     if(current_attribute_name == "name") {
                         // Get the name of the object
                         object_name = current_attribute.value;
+                    }
+                    else if(current_attribute_name == "no_load") {
+                        // Do not load directly the object
+                        load_content = false;
                     }
                     else if(current_attribute_name == "sub_page") {
                         // Get the number of the sub-page of the object
@@ -1995,8 +2048,7 @@ namespace scls {
 
                 // Create the object
                 if(object_name != "") {
-                    std::shared_ptr<GUI_Object> object = __load_object_from_xml(object_name, object_type, current_text);
-                    object.get()->set_visible(true);
+                    std::shared_ptr<GUI_Object> object = __load_object_from_xml(object_name, object_type, current_text, load_content);
                     if(sub_page >= 0 && object.get()->parent() != 0){
                         object.get()->parent()->sub_pages().push_back(object);
                         if(!must_be_visible){object.get()->set_visible(false);}

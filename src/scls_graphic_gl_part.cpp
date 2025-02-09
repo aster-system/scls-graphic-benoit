@@ -69,7 +69,7 @@ namespace scls {
         to_return += "tex_pos = in_tex_pos;\n";
         to_return += "tex_rect = in_tex_rect;\n";
         to_return += "vec3 needed_pos = in_pos;\n";
-        to_return += "if(in_axis < 0){if(curve_difference > 0){needed_pos=vec3(needed_pos.x * curve_difference, needed_pos.y, needed_pos.z);}";
+        to_return += "if(in_axis > 0){if(curve_difference > 0){needed_pos=vec3(needed_pos.x * curve_difference, needed_pos.y, needed_pos.z);}";
         to_return += "else if(curve_difference < 0){needed_pos=vec3(needed_pos.x * -curve_difference, needed_pos.y, needed_pos.z);}}\n";
         to_return += "gl_Position = projection * view * model * vec4(needed_pos.xyz, 1.0);\n}";
         return to_return;
@@ -114,16 +114,14 @@ namespace scls {
         int  success = 0;
         char infoLog[512];
         glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
+        if (!success) {
             glGetShaderInfoLog(fragment, 512, NULL, infoLog);
             std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
         }
 
         success = 0;
         glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
+        if (!success) {
             glGetShaderInfoLog(vertex, 512, NULL, infoLog);
             std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
         }
@@ -148,11 +146,7 @@ namespace scls {
     }
 
     // Create a new Shader_Program from this one
-    Shader_Program* Shader_Program::new_copy() {
-        Shader_Program* copy = new Shader_Program(vertex_shader, fragment_shader);
-
-        return copy;
-    }
+    Shader_Program* Shader_Program::new_copy() {Shader_Program* copy = new Shader_Program(vertex_shader, fragment_shader);return copy;}
 
     // Pass variable to the shader program
     void Shader_Program::pass_variable(std::vector<Shader_Program_Variable> *variables) {
@@ -267,8 +261,8 @@ namespace scls {
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float) * datas.size(), arr, GL_STATIC_DRAW);
 
-        if(a_use_ebo) // Bind the EBO if the VBO use them
-        {
+        // Bind the EBO if the VBO use them
+        if(a_use_ebo) {
             unsigned int* arr_2 = get_indices_in_array();
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
@@ -385,11 +379,7 @@ namespace scls {
     VAO::VAO(std::string shader_path, const std::shared_ptr<VBO>& vbo) : VAO(load_shader_program(shader_path), vbo) {}
 
     // Bind the VAO into the GPU memory
-    void VAO::bind(glm::vec3 scale) {
-        a_shader_program->use();
-        glBindVertexArray(vao);
-        a_shader_program->set_uniform3f_value("scale", scale.x, scale.y, scale.z);
-    }
+    void VAO::bind(glm::vec3 scale) {a_shader_program->use();glBindVertexArray(vao);a_shader_program->set_uniform3f_value("scale", scale.x, scale.y, scale.z);}
 
     // Load and return a shader
     Shader_Program VAO::load_shader_program(std::string shader_path) {

@@ -564,10 +564,7 @@ namespace scls {
     }
 
     // Camera destructor
-    Camera::~Camera()
-    {
-
-    }
+    Camera::~Camera(){}
 
     //*********
     //
@@ -576,14 +573,10 @@ namespace scls {
     //*********
 
     // _Window_Base_Struct constructor
-    _Window_Base_Struct::_Window_Base_Struct(bool& cursor_on_window, double& mouse_x, double& mouse_y, int& window_width, int& window_height, std::string exec_path): a_cursor_on_window(cursor_on_window), a_exec_path(exec_path), a_mouse_x(mouse_x), a_mouse_y(mouse_y), a_last_mouse_x(mouse_x), a_last_mouse_y(mouse_y), a_window_height(window_height), a_window_width(window_width){
-
-    }
+    _Window_Base_Struct::_Window_Base_Struct(bool& cursor_on_window, double& mouse_x, double& mouse_y, int& window_width, int& window_height, std::string exec_path): a_cursor_on_window(cursor_on_window), a_exec_path(exec_path), a_mouse_x(mouse_x), a_mouse_y(mouse_y), a_last_mouse_x(mouse_x), a_last_mouse_y(mouse_y), a_window_height(window_height), a_window_width(window_width){}
 
     // _Window__Window_Base_Struct destructor
-    _Window_Base_Struct::~_Window_Base_Struct(){
-
-    }
+    _Window_Base_Struct::~_Window_Base_Struct(){}
 
     //*********
     //

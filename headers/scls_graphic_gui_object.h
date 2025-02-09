@@ -111,11 +111,13 @@ namespace scls {
         inline Color border_color() {return current_style()->a_border_color;};
         inline std::vector<std::shared_ptr<GUI_Object>>& children() {return a_children;};
         inline bool ignore_click() const {return a_ignore_click;};
+        inline bool loaded() const {return a_loaded;};
         inline std::string name() const {return a_name;};
         inline void set_background_color(Color new_background_color) {current_style()->a_background_color = new_background_color;};
         inline void set_border_color(Color new_color) {current_style()->a_border_color = new_color;};
+        inline void set_loaded(bool new_loaded){a_loaded=new_loaded;};
         inline void set_ignore_click(bool new_ignore_click) {a_ignore_click = new_ignore_click;};
-        inline void set_visible(bool new_visible) {a_visible = new_visible;};
+        inline void set_visible(bool new_visible) {a_visible = new_visible;if(a_visible&&!a_loaded){load_from_xml(std::string(""));for(int i = 0;i<static_cast<int>(a_children.size());i++){if(a_children[i].get()->visible() && !a_children[i].get()->a_loaded){a_children[i].get()->load_from_xml(std::string(""));}}} };
         inline bool visible() {return a_visible;};
 
         //*********
@@ -141,9 +143,12 @@ namespace scls {
         //*********
 
         // Loads the object from XML
-        void __load_from_xml(std::shared_ptr<XML_Text> text, std::shared_ptr<__GUI_Page_Loader> loader, std::string event = "");
+        inline void set_xml_loading_datas(std::shared_ptr<XML_Text> text, std::shared_ptr<__GUI_Page_Loader> loader){a_loading_datas=text;a_loader=loader;};
+        void load_from_xml(std::shared_ptr<XML_Text> text, std::string event);
+        inline void load_from_xml(std::string event){load_from_xml(a_loading_datas, event);};
+        virtual void __load_from_xml_apply(std::string event);
         // Handle an attribute from XML
-        virtual void set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i);
+        virtual void set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event);
 
         //*********
         //
@@ -245,6 +250,17 @@ namespace scls {
         // Weak pointer to this object
         std::weak_ptr<GUI_Object> a_this_object;
 
+        //*********
+        //
+        // Loading handling
+        //
+        //*********
+
+        // Loader of the software
+        std::shared_ptr<__GUI_Page_Loader> a_loader;
+        // XML parts to load the object
+        std::vector<std::shared_ptr<XML_Text>> a_loading_parts;
+
     private:
         //*********
         //
@@ -260,6 +276,17 @@ namespace scls {
         std::string a_name = "";
         // If the object is visible
         bool a_visible = true;
+
+        //*********
+        //
+        // Loading handling
+        //
+        //*********
+
+        // If the object is loaded or not
+        bool a_loaded = true;
+        // XML text containing the datas about the object
+        std::shared_ptr<XML_Text> a_loading_datas;
 
         //*********
         //
@@ -352,7 +379,7 @@ namespace scls {
         virtual ~GUI_Scroller(){a_scroller_children.reset();};
 
         // Function called after the creation of the object
-        virtual void after_creation(){a_scroller_children=*_create_scroller_children();};
+        //virtual void after_creation(){reset_scroller_children();};
         // Function called after that the window is resized
         virtual void after_resizing() {check_scroller();};
         // Function called after an XML loading
@@ -363,6 +390,7 @@ namespace scls {
         void check_scroller(bool reset = false);
         // Resets the scroller
         virtual void reset() {a_scroller_children.get()->delete_children();};
+        inline void reset_scroller_children(){delete_child(a_scroller_children.get());a_scroller_children.reset();a_scroller_children=*_create_scroller_children();};
         // Scroll the scroller on the Y axis
         void scroll_y(Fraction movement);
 
@@ -417,7 +445,7 @@ namespace scls {
         //*********
 
         // __GUI_Text_Metadatas constructor
-        __GUI_Text_Metadatas(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent) : GUI_Object(window, name, parent) {a_text_image.reset(window_struct().text_image_generator()->new_text_image_multi_block(""));};
+        __GUI_Text_Metadatas(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent) : GUI_Object(window, name, parent) {set_texture_alignment_horizontal(Alignment_Horizontal::H_Center);a_text_image.reset(window_struct().text_image_generator()->new_text_image_multi_block(""));};
 
         // Return the plain text in the object
         inline std::string plain_text(){return window_struct().text_image_generator()->plain_text(text());};
@@ -425,21 +453,22 @@ namespace scls {
         inline unsigned int plain_text_size() {return plain_text().size();};
         // Updates text image block
         inline void update_text_image_block(){String temp=text();attached_text_image_block()->free_memory();set_text(temp);};
-        inline void update_text_image_block_style(){attached_text_image_block()->global_style().background_color = background_color();attached_text_image_block()->global_style().color = font_color();attached_text_image_block()->global_style().font_size = font_size();attached_text_image_block()->global_style().max_width = max_width();};
+        inline void update_text_image_block_style(){attached_text_image_block()->global_style()->merge_style(a_global_style); };
 
         // Getters and setters
         inline Text_Image_Multi_Block* attached_text_image_block() const {return a_text_image.get();};
         inline Font font() const {return a_global_style.font;};
-        inline Color font_color() const {return a_global_style.color;};
+        inline Color font_color() const {return a_global_style.color();};
         inline std::string font_family() const {return a_global_style.font.font_family;};
-        inline unsigned short font_size() const {return a_global_style.font_size;};
+        inline unsigned short font_size() const {return a_global_style.font_size();};
+        inline Text_Style* global_style() {return &a_global_style;};
         inline int max_width() const {return a_global_style.max_width;};
-        inline void set_font_color(Color new_font_color) {a_global_style.color = new_font_color;};
+        inline void set_font_color(Color new_font_color) {a_global_style.set_color(new_font_color);};
         inline void set_font_family(std::string new_font_family) {a_global_style.font = get_system_font(new_font_family);};
-        inline void set_font_size(unsigned short new_font_size) {a_global_style.font_size = new_font_size;update_text_image_block();};
+        inline void set_font_size(unsigned short new_font_size) {a_global_style.set_font_size(new_font_size);update_text_image_block();};
         inline void set_max_width(int new_max_width) {a_global_style.max_width = new_max_width;};
         virtual void set_text(std::string new_text) {if(new_text == text()){return;}update_text_image_block_style();attached_text_image_block()->set_text(new_text);update_texture();};
-        inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {a_global_style.alignment_horizontal = new_text_alignment_horizontal;};
+        inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {global_style()->set_alignment_horizontal(new_text_alignment_horizontal);};
         virtual void set_text_image_type(Block_Type new_text_image_type) {a_text_image_type = new_text_image_type;};
         inline void set_text_offset(double new_text_offset) {a_global_style.text_offset_x = new_text_offset;a_global_style.text_offset_y = new_text_offset;a_global_style.text_offset_width = new_text_offset;a_global_style.text_offset_height = new_text_offset;};
         inline String text() const {if(attached_text_image_block()==0)return String();return attached_text_image_block()->text();};
@@ -453,7 +482,7 @@ namespace scls {
         //*********
 
         // Handle an attribute from XML
-        virtual void set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i);
+        virtual void set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event);
 
     protected:
 
@@ -486,6 +515,21 @@ namespace scls {
         // Class representing an GUI object displaying a text into the window
     public:
 
+        class __GUI_Text_Block : public GUI_Object {
+            // Children of a GUI text containing a block
+        public:
+            // Most basic __GUI_Text_Block constructor
+            __GUI_Text_Block(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent):GUI_Object(window, name, parent){};
+
+            // Getters and setters
+            inline void set_style(std::shared_ptr<Text_Style> new_style) {a_style = new_style;};
+            inline Text_Style* style() const {return a_style.get();};
+
+        private:
+            // Style for this block
+            std::shared_ptr<Text_Style> a_style;
+        };
+
         //*********
         //
         // GUI Text main functions
@@ -502,9 +546,11 @@ namespace scls {
         virtual void after_resizing();
         // Soft reset the text
         virtual void soft_reset() {GUI_Object::soft_reset();a_text_modified_during_this_frame = false;};
-        // Update the texture when needed
+        // Updates the event
+        virtual void update_event(){__GUI_Text_Metadatas::update_event();int wheel_move=window_struct().wheel_movement_y_during_this_frame()*4;if(wheel_move!=0){if(wheel_move - a_offset_y < 0){a_offset_y -= wheel_move;}else{a_offset_y=0;} place_blocks();}};
+        // Updates the texture when needed
         virtual void update_texture() {GUI_Object::update_texture();update_text_texture();};
-        // Update the texture of the text
+        // Updates the texture of the text
         void update_text_texture(scls::Image_Generation_Type generation_type);
         void update_text_texture(){update_text_texture(scls::Image_Generation_Type::IGT_Full);};
 
@@ -519,10 +565,14 @@ namespace scls {
         //
         //*********
 
+        // Blocks children in the object
+        std::vector<std::shared_ptr<__GUI_Text_Block>> a_blocks_children;
         // Number of the generation
         unsigned int a_generation = 0;
         // If the text has been modified or not
         bool a_modified = false;
+        // Offset Y of the text
+        int a_offset_y = 0;
         // If the text has been modified during this frame
         bool a_text_modified_during_this_frame = false;
     };
@@ -662,9 +712,9 @@ namespace scls {
         template <typename T = GUI_Text>
         std::shared_ptr<T>* __add_object(std::string object_name, std::string object_text){
             // Create the object
-            std::shared_ptr<T>* current_object = new_object<T>(name() + "-" + object_name);
+            std::shared_ptr<T>* current_object = scroller_children()->new_object<T>(name() + "-" + object_name);
             current_object->get()->set_text(object_text);
-            current_object->get()->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
+            current_object->get()->set_text_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
             if(a_displayer_object.get() != 0) {current_object->get()->attach_left_in_parent(20);}
             else {current_object->get()->attach_left_in_parent(0);}
             current_object->get()->set_height_in_pixel(current_object->get()->font_size() + 4);
@@ -717,10 +767,9 @@ namespace scls {
             GUI_Scroller_Single_Choice to_add; to_add.__choice = std::make_shared<__GUI_Scroller_Single_Choice>(choice);
             a_objects.push_back(to_add);
 
-            // Add the object
-            current_object->get()->set_displayer_object(object_name + std::string("-displayer"), object_text);
-
             // Place the object
+            current_object->get()->reset_scroller_children();
+            current_object->get()->set_displayer_object(object_name + std::string("-displayer"), object_text);
             place_objects();
 
             // Returns the object
@@ -826,8 +875,10 @@ namespace scls {
 
         // Loads the choice from an XML test
         void load_choices_from_xml(std::shared_ptr<XML_Text> text);
+        // Loads the object from XML
+        virtual void __load_from_xml_apply(std::string event);
         // Handle an attribute from XML
-        virtual void set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event, std::shared_ptr<__GUI_Page_Loader> loader, int& i);
+        virtual void set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event);
 
     private:
 
@@ -863,8 +914,7 @@ namespace scls {
         template <typename T = GUI_Text>
         void set_displayer_object(std::string object_name, std::string object_text) {
             // Create the object
-            std::shared_ptr<T>* current_object = new_object<T>(object_name);
-            current_object->get()->set_text(object_text);
+            std::shared_ptr<T>* current_object = scroller_children()->new_object<T>(object_name);
             current_object->get()->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
             current_object->get()->set_x_in_object_scale(scls::Fraction(1, 2));
             current_object->get()->set_height_in_pixel(current_object->get()->font_size() + 4);
@@ -873,6 +923,7 @@ namespace scls {
 
             // Apply the needed style
             current_object->get()->set_overflighted_cursor(a_unselected_objects_style.cursor);
+            current_object->get()->set_text(object_text);
         };
 
         // If the object is displayed or not
@@ -1031,7 +1082,7 @@ namespace scls {
         // Load the page from XML
         void load_from_xml(const std::string& content_to_parse, bool sup_paged = false) {load_objects_from_xml(content_to_parse, "", sup_paged);};
         // Load an object in a page from XML
-        std::shared_ptr<GUI_Object> __load_object_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text> content);
+        std::shared_ptr<GUI_Object> __load_object_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text> content, bool load_content);
         // Load objects in a page from XML
         void __load_objects_from_xml(std::shared_ptr<XML_Text> content, bool sub_paged);
         void load_objects_from_xml(const std::string& content_to_parse, std::string path, bool sub_paged);
@@ -1084,11 +1135,11 @@ namespace scls {
             to_return = reinterpret_cast<std::shared_ptr<O>*>(&a_created_objects_parent.get()->children()[a_created_objects_parent.get()->children().size() - 1]);
             *to_return = std::make_shared<O>(window_struct(), name, a_created_objects_parent);
         }
-        O* new_object = to_return->get();
 
         // Configurate the child
-        new_object->set_position_in_pixel(x, y);
+        O* new_object = to_return->get();
         new_object->a_this_object = *to_return;
+        new_object->set_position_in_pixel(x, y);
         new_object->after_creation();
 
         return to_return;

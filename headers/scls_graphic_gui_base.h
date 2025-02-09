@@ -657,33 +657,27 @@ namespace scls {
         // Attach the object
         inline bool __contains_attached_object(__GUI_Object_Core* another_object) {for(int i = 0;i<static_cast<int>(a_attached_object.size());i++){if(a_attached_object[i]==another_object)return true;} return false;};
         inline void __delete_attached_object(__GUI_Object_Core* another_object) {for(int i = 0;i<static_cast<int>(a_attached_object.size());i++){if(a_attached_object[i]==another_object){a_attached_object.erase(a_attached_object.begin()+i);return;}}};
-        inline void __attach_object_in_parent(__GUI_Object_Core* another_object, bool is_vertical = true){
+        inline void __attach_object_in_parent(std::weak_ptr<__GUI_Object_Core> another_object, bool is_vertical = true){
             if(is_vertical) {
-                if(a_transform_attachment.attached_object_vertical != 0) {
-                    a_transform_attachment.attached_object_vertical->__delete_attached_object(this);
+                if(a_transform_attachment.attached_object_vertical.lock().get() != 0) {
+                    a_transform_attachment.attached_object_vertical.lock().get()->__delete_attached_object(this);
                 } a_transform_attachment.attached_object_vertical = another_object;
             } else {
                 if(a_transform_attachment.attached_object_horizontal != 0) {
                     a_transform_attachment.attached_object_horizontal->__delete_attached_object(this);
-                } a_transform_attachment.attached_object_horizontal = another_object;
-            } if(another_object != 0 && !another_object->__contains_attached_object(this))another_object->a_attached_object.push_back(this);
+                } a_transform_attachment.attached_object_horizontal = another_object.lock().get();
+            } if(another_object.lock().get() != 0 && !another_object.lock().get()->__contains_attached_object(this)){another_object.lock().get()->a_attached_object.push_back(this);}
         };
         // Attach the object at the bottom of its parent
-        inline void attach_bottom_in_parent(Fraction offset = Fraction(0)) {
-            a_transform_attachment.attachment_vertical_offset = offset;
-            a_transform_attachment.attachment_vertical_type = 2;
-            __move_bottom_in_parent(offset.to_double());
-            a_transformation_updated = true;
-        };
+        inline void attach_bottom_in_parent(Fraction offset = Fraction(0)) {a_transform_attachment.attachment_vertical_offset = offset;a_transform_attachment.attachment_vertical_type = 2;__move_bottom_in_parent(offset.to_double());a_transformation_updated = true;};
         // Attach the object bottom of another in the parent
-        inline void attach_bottom_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) {
+        inline void attach_bottom_of_object_in_parent(std::shared_ptr<__GUI_Object_Core> another_object, Fraction offset = Fraction(0)) {
             __attach_object_in_parent(another_object);
             a_transform_attachment.attachment_vertical_offset = offset;
             a_transform_attachment.attachment_vertical_type = 4;
-            __move_bottom_of_object_in_parent(another_object, offset);
+            __move_bottom_of_object_in_parent(another_object.get(), offset);
             a_transformation_updated = true;
         };
-        inline void attach_bottom_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, Fraction offset = Fraction(0)) {attach_bottom_of_object_in_parent(another_object.get(), offset);};
         // Attach the object at the left of its parent
         inline void attach_left_in_parent(int offset = 0) {
             a_transform_attachment.attachment_horizontal_offset = offset;
@@ -707,7 +701,7 @@ namespace scls {
             a_transformation_updated = true;
         };
         // Attach the object at the right of an object in its parent
-        inline void attach_right_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, int offset = 0) {attach_right_of_object_in_parent(another_object.get(), offset);};
+        inline void attach_right_of_object_in_parent(std::shared_ptr<__GUI_Object_Core> another_object, int offset = 0) {attach_right_of_object_in_parent(another_object.get(), offset);};
         // Attach the object at the top of its parent
         inline void attach_top_in_parent(Fraction offset = Fraction(0)) {
             a_transform_attachment.attachment_vertical_offset = offset;
@@ -716,28 +710,19 @@ namespace scls {
             a_transformation_updated = true;
         };
         // Attach the object top of another in the parent
-        inline void attach_top_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) {
+        inline void attach_top_of_object_in_parent(std::shared_ptr<__GUI_Object_Core> another_object, Fraction offset = Fraction(0)) {
             __attach_object_in_parent(another_object);
             a_transform_attachment.attachment_vertical_offset = offset;
             a_transform_attachment.attachment_vertical_type = 3;
-            __move_top_of_object_in_parent(another_object, offset);
+            __move_top_of_object_in_parent(another_object.get(), offset);
             a_transformation_updated = true;
         };
-        inline void attach_top_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, Fraction offset = Fraction(0)) {attach_top_of_object_in_parent(another_object.get(), offset);};
 
         // Move the object
         // Move the object at the bottom of its parent
-        inline void move_bottom_in_parent(int offset = 0) {
-            a_transform_attachment.attachment_vertical_type = 0;
-            __move_bottom_in_parent(offset);
-            a_transformation_updated = true;
-        };
+        inline void move_bottom_in_parent(int offset = 0) {a_transform_attachment.attachment_vertical_type = 0;__move_bottom_in_parent(offset);a_transformation_updated = true;};
         // Move the object bottom of another in the parent
-        inline void move_bottom_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) {
-            a_transform_attachment.attachment_vertical_type = 0;
-            __move_bottom_of_object_in_parent(another_object, offset);
-            a_transformation_updated = true;
-        };
+        inline void move_bottom_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) {a_transform_attachment.attachment_vertical_type = 0;__move_bottom_of_object_in_parent(another_object, offset);a_transformation_updated = true;};
         inline void move_bottom_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, Fraction offset = Fraction(0)) { move_bottom_of_object_in_parent(another_object.get(), offset);};
         // Move the object at the left of its parent
         inline void move_left_in_parent(int offset = 0) { a_transform_attachment.attachment_horizontal_type = 0; __move_left_in_parent(offset); a_transformation_updated = true; };
@@ -753,19 +738,12 @@ namespace scls {
             a_transformation_updated = true;
         };
         // Move the object top of another in the parent
-        inline void move_top_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) {
-            a_transform_attachment.attachment_vertical_type = 0;
-            __move_top_of_object_in_parent(another_object, offset);
-            a_transformation_updated = true;
-        };
+        inline void move_top_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) {a_transform_attachment.attachment_vertical_type = 0;__move_top_of_object_in_parent(another_object, offset);a_transformation_updated = true;};
         inline void move_top_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, Fraction offset = Fraction(0)) { move_top_of_object_in_parent(another_object.get(), offset); };
 
         // Move the object without modifications
         // Move the object at the bottom of its parent without influencing attachment
-        inline void __move_bottom_in_parent(int offset = 0) {
-            set_y_in_pixel(Fraction(offset));
-            a_transformation_updated = false;
-        };
+        inline void __move_bottom_in_parent(int offset = 0) {set_y_in_pixel(Fraction(offset));a_transformation_updated = false;};
         // Move the object bottom of another in the parent without influencing attachment
         inline void __move_bottom_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) {
             set_y_in_pixel(Fraction(another_object->y_in_pixel()) - (Fraction(height_in_pixel()) + offset));
@@ -788,12 +766,7 @@ namespace scls {
             a_transformation_updated = false;
         };
         // Move the object at the top of its parent without influencing attachment
-        inline void __move_top_in_parent(int offset = 0) {
-            Fraction height = window_struct().window_height();
-            if(transformation_parent().get()!= 0) height = transformation_parent().get()->height_in_pixel();
-            set_y_in_pixel(height - (Fraction(height_in_pixel()) + Fraction(offset)));
-            a_transformation_updated = false;
-        };
+        inline void __move_top_in_parent(int offset = 0) {Fraction height = window_struct().window_height();if(transformation_parent().get()!= 0) height = transformation_parent().get()->height_in_pixel();set_y_in_pixel(height - (Fraction(height_in_pixel()) + Fraction(offset)));a_transformation_updated = false;};
         // Move the object top of another in the parent
         inline void __move_top_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) { set_y_in_pixel(Fraction(another_object->y_in_pixel() + another_object->height_in_pixel()) + offset); a_transformation_updated = false; };
 
@@ -825,7 +798,7 @@ namespace scls {
 
             // Vertical attachment
             // Object attached to this one
-            __GUI_Object_Core* attached_object_vertical = 0;
+            std::weak_ptr<__GUI_Object_Core> attached_object_vertical;
             // Offset of the vertical attachment
             Fraction attachment_vertical_offset = Fraction(0);
             // Type of the vertical attachment (0 = no attachment, 1 = top, 2 = bottom)

@@ -236,8 +236,8 @@ namespace scls {
     // Render the scene
     void Window::render() {
         // Clear OpenGL window
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         glClearColor(background_color().red() / 255.0, background_color().green() / 255.0, background_color().blue() / 255.0, background_color().alpha() / 255.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         // Update the cursor texture
         if(cursor_changed() && cursor() != 0) {glfwSetCursor(window(), cursor());}

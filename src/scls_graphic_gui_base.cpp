@@ -81,6 +81,7 @@ namespace scls {
 
     // Calculate the transformation
     void __GUI_Transformation::calculate_transformation() {
+
         // Calculate the size
         calculate_size();
         // Calculate the position
@@ -148,7 +149,7 @@ namespace scls {
         if(a_last_width_definition == _Size_Definition::Pixel_Size) {
             to_return *= one_pixel_width_in_absolute_scale();
         }
-        else if(a_last_width_definition == _Size_Definition::Scale_Size) {
+        else if(a_last_width_definition == _Size_Definition::Scale_Size && parent() != 0) {
             to_return *= parent()->width_in_absolute_scale();
         }
 
