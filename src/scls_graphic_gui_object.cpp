@@ -1026,6 +1026,31 @@ namespace scls {
         }
     }
 
+    // Returns the word clicked at a certain position in the text
+    std::shared_ptr<XML_Text> GUI_Text::text_clicked_at_position(int x, int y) {
+        if(a_blocks_children.size() <= 0){return std::shared_ptr<XML_Text>();}
+
+        // Get the good children
+        __GUI_Text_Block* current_object = a_blocks_children[0].get(); bool good = false; unsigned int i = 0;
+        while(current_object->y_in_pixel() > y && i < a_blocks_children.size()) {
+            i++;
+            if(i < children().size()) {current_object = a_blocks_children[i].get();}
+        }
+        // If the children needed is the last children
+        if(i >= a_blocks_children.size()) {
+            i = a_blocks_children.size() - 1;
+            current_object = a_blocks_children[i].get();
+        } y -= current_object->y_in_pixel();
+
+        // Get the needed block
+        Text_Image_Block* needed_block = attached_text_image_block()->blocks()[i].get(); int needed_y = 0;
+        Text_Image_Line* needed_line = needed_block->line_at_position_in_pixel(x, needed_block->image()->height() - y, needed_y);
+        y = (needed_block->image()->height() - y) - needed_y;
+        Text_Image_Word* needed_word = needed_line->word_at_position_in_pixel(x, y).get();
+        if(needed_word == 0){return std::shared_ptr<XML_Text>();}
+        return needed_word->datas().balise_parent();
+    }
+
     // Update the texture of the text
     void GUI_Text::update_text_texture(scls::Image_Generation_Type generation_type) {
         if(text() != "") {

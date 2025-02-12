@@ -117,7 +117,8 @@ namespace scls {
         inline void set_border_color(Color new_color) {current_style()->a_border_color = new_color;};
         inline void set_loaded(bool new_loaded){a_loaded=new_loaded;};
         inline void set_ignore_click(bool new_ignore_click) {a_ignore_click = new_ignore_click;};
-        inline void set_visible(bool new_visible) {a_visible = new_visible;if(a_visible&&!a_loaded){load_from_xml(std::string(""));for(int i = 0;i<static_cast<int>(a_children.size());i++){if(a_children[i].get()->visible() && !a_children[i].get()->a_loaded){a_children[i].get()->load_from_xml(std::string(""));}}} };
+        inline void set_visible(bool new_visible, bool with_children) {a_visible = new_visible;if(a_visible&&!a_loaded){load_from_xml(std::string(""));for(int i = 0;i<static_cast<int>(a_children.size());i++){if((a_children[i].get()->visible() || with_children) && !a_children[i].get()->a_loaded){a_children[i].get()->set_visible(true);}}} };
+        inline void set_visible(bool new_visible) {set_visible(new_visible, false);};
         inline bool visible() {return a_visible;};
 
         //*********
@@ -389,7 +390,7 @@ namespace scls {
         // Check the scroller object
         void check_scroller(bool reset = false);
         // Resets the scroller
-        virtual void reset() {a_scroller_children.get()->delete_children();};
+        virtual void reset() {if(a_scroller_children.get() != 0){a_scroller_children.get()->delete_children();}};
         inline void reset_scroller_children(){delete_child(a_scroller_children.get());a_scroller_children.reset();a_scroller_children=*_create_scroller_children();};
         // Scroll the scroller on the Y axis
         void scroll_y(Fraction movement);
@@ -541,6 +542,8 @@ namespace scls {
 
         // Places the blocks in the text
         void place_blocks();
+        // Returns the word clicked at a certain position in the text
+        std::shared_ptr<XML_Text> text_clicked_at_position(int x, int y);
 
         // Function called after that the window is resized
         virtual void after_resizing();
@@ -826,7 +829,7 @@ namespace scls {
         // Returns an object by its name
         inline GUI_Scroller_Single_Choice object_by_name(std::string object_name) {for(int i = 0;i<static_cast<int>(a_objects.size());i++){if(a_objects[i].name()==object_name)return a_objects[i]; } return GUI_Scroller_Single_Choice();};
         // Resets the scroller
-        virtual void reset() {a_displayer_object.reset();a_objects.clear();GUI_Scroller::reset();};
+        virtual void reset() {reset_objects();a_displayer_object.reset();a_objects.clear();GUI_Scroller::reset();};
         // Select an object
         void select_object(GUI_Scroller_Single_Choice needed_object);
         void select_object(std::string object_name){select_object(object_by_name(object_name));};
@@ -858,6 +861,7 @@ namespace scls {
         // Getters and setters
         inline bool choice_modified() const {return a_choice_modified;};
         inline bool choice_modified_during_this_frame() const {return a_choice_modified;};
+        inline std::vector<std::string>& currently_confirmed_objects() {return a_currently_confirmed_objects;};
         inline std::vector<GUI_Scroller_Single_Choice>& currently_selected_objects() {return a_currently_selected_objects;};
         inline std::vector<GUI_Scroller_Single_Choice>& currently_selected_objects_during_this_frame() {return a_currently_selected_objects_during_this_frame;};
         inline unsigned int max_number_selected_object() const {return a_max_number_selected_object;};
