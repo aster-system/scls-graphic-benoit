@@ -152,8 +152,7 @@ namespace scls {
     void Shader_Program::pass_variable(std::vector<Shader_Program_Variable> *variables) {
         // Define necessary variable size for binding
         unsigned int total_size = 0;
-        for (std::vector<Shader_Program_Variable>::iterator it = variables->begin(); it != variables->end(); it++)
-        {
+        for (std::vector<Shader_Program_Variable>::iterator it = variables->begin(); it != variables->end(); it++) {
             unsigned int type_size = 0;
             if (it->type == GL_FLOAT) {type_size = sizeof(float);}
             else if(it->type == GL_INT){type_size = sizeof(int);}
@@ -274,8 +273,7 @@ namespace scls {
     unsigned int VBO::get_vertice_number() {
         std::vector<float> datas = datas_to_float();
         unsigned int attribute_size = 0;
-        for(int i = 0;i<static_cast<int>(get_attributes()->size());i++)
-        {
+        for(int i = 0;i<static_cast<int>(get_attributes()->size());i++) {
             unsigned int type_size = 0;
             if ((*get_attributes())[i].type == GL_FLOAT) { type_size = sizeof(float); }
             attribute_size += (*get_attributes())[i].vector_size * type_size; // Get the total size of the datas
@@ -469,8 +467,7 @@ namespace scls {
 
     // Texture constructor
     Texture::Texture(std::string a_texture_path, bool a_resize): resize(a_resize), texture_path(a_texture_path), a_image(new scls::Image()) {
-        if (a_texture_path != "")
-        {
+        if (a_texture_path != "") {
             get_image()->load_from_path(texture_path);
             get_image()->flip_x();
 
@@ -478,33 +475,10 @@ namespace scls {
             load_texture();
         }
     }
-
-    // Texture constructor much modulable
-    Texture::Texture(unsigned short width, unsigned short height, glm::vec4 color, bool a_resize) : Texture("", false) {
-        // Load the image
-        a_image.reset(new scls::Image(width, height, color[0], color[1], color[2], color[3]));
-
-        // Load the texture
-        load_texture();
-    }
-
-    // Texture constructor much modulable
-    Texture::Texture(unsigned short width, unsigned short height, scls::Color color, bool a_resize) : Texture("", false) {
-        // Load the image
-        a_image.reset(new scls::Image(width, height, color));
-
-        // Load the texture
-        load_texture();
-    }
-
-    // Most basic texture constructor
+    Texture::Texture(unsigned short width, unsigned short height, glm::vec4 color, bool a_resize) : Texture("", false) {a_image.reset(new scls::Image(width, height, color[0], color[1], color[2], color[3]));load_texture();}
+    Texture::Texture(unsigned short width, unsigned short height, scls::Color color, bool a_resize) : Texture("", false) {a_image.reset(new scls::Image(width, height, color));load_texture();}
     Texture::Texture() : Texture(1, 1, scls::Color(255, 0, 0), false) {}
-
-    // Texture copy constructor
-    Texture::Texture(Texture& texture_to_copy) : Texture(texture_to_copy.width, texture_to_copy.height, glm::vec4(0, 0, 0, 0), texture_to_copy.use_resize()) {
-        get_image()->paste(texture_to_copy.get_image(), 0, 0, 1.0); change_texture();
-        texture_to_copy.a_copy_count++;
-    }
+    Texture::Texture(Texture& texture_to_copy) : Texture(texture_to_copy.width, texture_to_copy.height, glm::vec4(0, 0, 0, 0), texture_to_copy.use_resize()) {get_image()->paste(texture_to_copy.get_image(), 0, 0, 1.0); change_texture();texture_to_copy.a_copy_count++;}
 
     // Bind the texture into the GPU memory
     void Texture::bind() { glBindTexture(GL_TEXTURE_2D, texture_id); }
@@ -530,11 +504,7 @@ namespace scls {
     }
 
     // Load the texture into the GPU memory
-    void Texture::load_texture() {
-        if(!loaded()) glGenTextures(1, &texture_id);
-        a_loaded = true;
-        if(get_image() != 0) change_texture();
-    }
+    void Texture::load_texture() {if(!loaded()){glGenTextures(1, &texture_id);}a_loaded = true;if(get_image() != 0){change_texture();}}
 
     // Texture destructor
     Texture::~Texture() { a_image.reset(); glDeleteTextures(1, &texture_id); }

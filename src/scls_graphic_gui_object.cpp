@@ -1506,7 +1506,7 @@ namespace scls {
         if(attached_text_image() == 0) attached_text_image_block()->generate_blocks();
         if(attached_text_image() == 0) return;
         attached_text_image()->global_style()->set_color(font_color());
-        attached_text_image()->global_style()->font = font();
+        attached_text_image()->global_style()->set_font(font());
         attached_text_image()->set_cursor_position_in_plain_text(cursor_position_in_formatted_text());
         attached_text_image()->set_use_cursor(true);
 
@@ -1581,12 +1581,10 @@ namespace scls {
     //*********
 
     // Most parent GUI_File_Explorer constructor used for displaying
-    GUI_File_Explorer::GUI_File_Explorer(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent) : GUI_Object(window, name, parent) { load(); }
+    GUI_File_Explorer::GUI_File_Explorer(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent) : GUI_Object(window, name, parent) {}
 
     // Function called after that the window is resized
-    void GUI_File_Explorer::after_resizing() {
-         place_all();
-    }
+    void GUI_File_Explorer::after_resizing() {place_all();}
 
     // Returns if a file is chosen during this frame
     bool GUI_File_Explorer::file_chosen() {
@@ -1597,7 +1595,7 @@ namespace scls {
     // Load the explorer
     void GUI_File_Explorer::load() {
         // Browser of the file explorer
-        a_browser = *new_object<GUI_Scroller>("browser");
+        a_browser = *new_object<GUI_Scroller_Choice>("browser");
         a_browser.get()->set_background_color(scls::Color(255, 255, 255));
         a_browser.get()->set_border_width_in_pixel(1);
         a_browser.get()->set_height_in_scale(Fraction(4, 5));
@@ -1633,8 +1631,8 @@ namespace scls {
         GUI_Object::after_resizing();
 
         // Place each object
-        a_choose_button->move_bottom_in_parent();
-        a_choose_button->move_left_in_parent();
+        a_choose_button->attach_bottom_in_parent();
+        a_choose_button->attach_left_in_parent();
         a_final_path->set_height_in_scale(Fraction(1, 10));
         a_final_path->set_width_in_scale(Fraction(4, 5));
         a_final_path->move_bottom_in_parent();
@@ -1720,7 +1718,7 @@ namespace scls {
     void GUI_File_Explorer::update_browser() {
         unsigned char current_thread_number = 0;
         bool from_scratch = false;
-        unsigned char max_thread_number = 10;
+        unsigned char max_thread_number = 0;
         std::vector<std::string> paths = directory_content(to_utf_8(a_current_path));
         std::vector<std::thread*> threads = std::vector<std::thread*>();
         if(a_browser_buttons_to_modify.size() == 0) {
@@ -1733,44 +1731,8 @@ namespace scls {
 
                 // Create the button
                 paths[i] = file_name(paths[i], true);
-                std::shared_ptr<GUI_Text> new_button = *a_browser.get()->new_object_in_scroller<GUI_Text>("browser_button_" + std::to_string(i));
-                new_button.get()->set_background_color(scls::Color(255, 255, 255));
-                new_button.get()->set_font_color(scls::Color(0, 0, 0));
-                new_button.get()->set_font_size(50);
-                new_button.get()->set_overflighted_cursor(GLFW_HAND_CURSOR);
-                new_button.get()->set_height_in_pixel(30);
-                new_button.get()->set_width_in_scale(Fraction(4, 5));
-                new_button.get()->set_texture_alignment(scls::Alignment_Texture::T_Fit_Vertically);
-                new_button.get()->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
-                a_browser_buttons.push_back(new_button);
-
-                // Create the thread
-                if(max_thread_number > 0) {
-                    if(current_thread_number >= max_thread_number) {
-                        current_thread_number = 0;
-                        for(int j = 0;j<static_cast<int>(threads.size());j++) {
-                            std::thread* current_thread = threads[j];
-                            current_thread->join();
-                            delete current_thread; current_thread = 0;
-                            a_browser_buttons[((a_browser_buttons.size() - 1) - threads.size()) + j]->texture()->change_texture();
-                        } threads.clear();
-                    }
-                    std::string& button_text_reference = paths[i];
-                    std::thread* current_thread = new std::thread(&GUI_Text::set_text, new_button.get(), button_text_reference);
-                    threads.push_back(current_thread);
-                    current_thread_number++;
-                }
-                else {
-                    new_button.get()->set_text(paths[i]);
-                }
+                a_browser_buttons.push_back(*a_browser.get()->add_object(paths[i], paths[i]));
             }
-
-            for(int j = 0;j<static_cast<int>(threads.size());j++) {
-                std::thread* current_thread = threads[j];
-                current_thread->join();
-                delete current_thread; current_thread = 0;
-                a_browser_buttons[(a_browser_buttons.size() - threads.size()) + j].get()->texture()->change_texture();
-            } threads.clear();
 
             a_browser_y = 0;
         }
@@ -1949,10 +1911,7 @@ namespace scls {
     }
 
     // Update the event of the page
-    void GUI_Page::update_event() {
-        Object::update_event();
-        parent_object()->update_event();
-    }
+    void GUI_Page::update_event() {Object::update_event();parent_object()->update_event();}
 
     //*********
     //

@@ -380,7 +380,7 @@ namespace scls {
         virtual ~GUI_Scroller(){a_scroller_children.reset();};
 
         // Function called after the creation of the object
-        //virtual void after_creation(){reset_scroller_children();};
+        virtual void after_creation(){reset_scroller_children();};
         // Function called after that the window is resized
         virtual void after_resizing() {check_scroller();};
         // Function called after an XML loading
@@ -458,14 +458,14 @@ namespace scls {
 
         // Getters and setters
         inline Text_Image_Multi_Block* attached_text_image_block() const {return a_text_image.get();};
-        inline Font font() const {return a_global_style.font;};
+        inline Font font() const {return a_global_style.font();};
         inline Color font_color() const {return a_global_style.color();};
-        inline std::string font_family() const {return a_global_style.font.font_family;};
+        inline std::string font_family() const {return a_global_style.font().font_family;};
         inline unsigned short font_size() const {return a_global_style.font_size();};
         inline Text_Style* global_style() {return &a_global_style;};
         inline int max_width() const {return a_global_style.max_width;};
         inline void set_font_color(Color new_font_color) {a_global_style.set_color(new_font_color);};
-        inline void set_font_family(std::string new_font_family) {a_global_style.font = get_system_font(new_font_family);};
+        inline void set_font_family(std::string new_font_family) {a_global_style.set_font(get_system_font(new_font_family));update_text_image_block();};
         inline void set_font_size(unsigned short new_font_size) {a_global_style.set_font_size(new_font_size);update_text_image_block();};
         inline void set_max_width(int new_max_width) {a_global_style.max_width = new_max_width;};
         virtual void set_text(std::string new_text) {if(new_text == text()){return;}update_text_image_block_style();attached_text_image_block()->set_text(new_text);update_texture();};
@@ -714,6 +714,9 @@ namespace scls {
         // Adds an object
         template <typename T = GUI_Text>
         std::shared_ptr<T>* __add_object(std::string object_name, std::string object_text){
+            // Pre-creation check
+            if(scroller_children()==0){reset_scroller_children();}
+
             // Create the object
             std::shared_ptr<T>* current_object = scroller_children()->new_object<T>(name() + "-" + object_name);
             current_object->get()->set_text(object_text);
@@ -837,6 +840,8 @@ namespace scls {
         void unselect_object(std::string object_name);
         void unselect_object(GUI_Scroller_Single_Choice needed_object){unselect_object(needed_object.name());};
 
+        // Function called after the creation
+        virtual void after_creation() {GUI_Object::after_creation();};
         // Function called after an XML loading
         virtual void after_xml_loading() {if(a_displayed){show_objects();}else{hide_objects();}GUI_Object::after_xml_loading();};
         // Check the objects (place + size)
@@ -961,7 +966,7 @@ namespace scls {
         // Function called after that the window is resized
         virtual void after_resizing();
         // Function called after an XML loading
-        virtual void after_xml_loading() {place_all();GUI_Object::after_xml_loading();};
+        virtual void after_xml_loading() {load();place_all();GUI_Object::after_xml_loading();};
         // Returns if the choose button is clicked during this frame
         bool choose_clicked() const {return a_choose_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT);};
         // Returns if the explorer contains a selected file
@@ -1020,7 +1025,7 @@ namespace scls {
         //*********
 
         // Browser of the explorer
-        std::shared_ptr<scls::GUI_Scroller> a_browser = 0;
+        std::shared_ptr<scls::GUI_Scroller_Choice> a_browser;
         // Y position of the buttons in the browser
         double a_browser_y = 0;
         // List of every buttons in the browser
