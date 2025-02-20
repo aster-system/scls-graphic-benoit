@@ -128,12 +128,8 @@ namespace scls {
         if(a_last_height_definition == _Size_Definition::Absolute_Scale_Size || (a_last_height_definition == _Size_Definition::Scale_Size && parent() == 0)) return a_height;
         Fraction to_return = a_height;
 
-        if(a_last_height_definition == _Size_Definition::Pixel_Size) {
-            to_return *= one_pixel_height_in_absolute_scale();
-        }
-        else {
-            if(parent() != 0) { to_return *= parent()->height_in_absolute_scale(); }
-        }
+        if(a_last_height_definition == _Size_Definition::Pixel_Size) {to_return *= one_pixel_height_in_absolute_scale();}
+        else {if(parent() != 0) { to_return *= parent()->height_in_absolute_scale(); }}
 
         return to_return;
     }
@@ -146,12 +142,8 @@ namespace scls {
         if(a_last_width_definition == _Size_Definition::Absolute_Scale_Size || (a_last_width_definition == _Size_Definition::Scale_Size && parent() == 0)) return a_width;
         Fraction to_return = a_width;
 
-        if(a_last_width_definition == _Size_Definition::Pixel_Size) {
-            to_return *= one_pixel_width_in_absolute_scale();
-        }
-        else if(a_last_width_definition == _Size_Definition::Scale_Size && parent() != 0) {
-            to_return *= parent()->width_in_absolute_scale();
-        }
+        if(a_last_width_definition == _Size_Definition::Pixel_Size) {to_return *= one_pixel_width_in_absolute_scale();}
+        else if(a_last_width_definition == _Size_Definition::Scale_Size && parent() != 0) {to_return *= parent()->width_in_absolute_scale();}
 
         return to_return;
     }
@@ -164,9 +156,7 @@ namespace scls {
         if(parent() != 0) to_add += parent()->x_in_absolute_scale();
 
         // Check for the needed convertions
-        if(a_last_x_definition == _Size_Definition::Pixel_Size) {
-            to_return = a_x * one_pixel_width_in_absolute_scale();
-        }
+        if(a_last_x_definition == _Size_Definition::Pixel_Size) {to_return = a_x * one_pixel_width_in_absolute_scale();}
         else if(a_last_x_definition == _Size_Definition::Object_Scale_Size) {
             to_return = (width_in_absolute_scale() * Fraction(-1, 2));
             if(parent() == 0) to_return += a_x;
@@ -189,9 +179,7 @@ namespace scls {
         if(parent() != 0) to_add += parent()->y_in_absolute_scale();
 
         // Check for the needed convertions
-        if(a_last_y_definition == _Size_Definition::Pixel_Size) {
-            to_return = a_y * one_pixel_height_in_absolute_scale();
-        }
+        if(a_last_y_definition == _Size_Definition::Pixel_Size) {to_return = a_y * one_pixel_height_in_absolute_scale();}
         else if(a_last_y_definition == _Size_Definition::Object_Scale_Size) {
             to_return = (height_in_absolute_scale() * Fraction(-1, 2));
             if(parent() == 0) to_return += a_y;
@@ -314,11 +302,8 @@ namespace scls {
 
     // Most basic __GUI_Object_Core constructor
     __GUI_Object_Core::__GUI_Object_Core(_Window_Advanced_Struct& window, __GUI_Object_Core* parent) : a_window(window) {
-         if(parent != 0) a_transformation = std::make_shared<__GUI_Transformation>(window_struct().window_height(), window_struct().window_width(), parent->transformation_shared_ptr());
-         else {
-            std::shared_ptr<__GUI_Transformation> empty_ptr;
-            a_transformation = std::make_shared<__GUI_Transformation>(window_struct().window_height(), window_struct().window_width(), empty_ptr);
-         }
+         if(parent != 0){a_transformation = std::make_shared<__GUI_Transformation>(window_struct().window_height(), window_struct().window_width(), parent->transformation_shared_ptr());}
+         else {a_transformation = std::make_shared<__GUI_Transformation>(window_struct().window_height(), window_struct().window_width(), std::shared_ptr<__GUI_Transformation>());}
     }
 
     // Calculate the transformation of the object

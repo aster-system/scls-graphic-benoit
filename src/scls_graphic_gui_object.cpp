@@ -31,9 +31,6 @@ namespace scls {
         a_vao = (*window.vao_shared_ptr("gui_default"));
     }
 
-    // Function called after that the window is resized
-    void GUI_Object::after_resizing(){ calculate_transformation(true); }
-
     // Deletes a child of the object and returns if the child has been correctly deleted
     bool GUI_Object::delete_child(GUI_Object* object) {
         // Check if the child is here
@@ -470,6 +467,8 @@ namespace scls {
         a_transformation_updated = false;
         transformation()->calculate_transformation();
 
+        //if(visible()){print(name(), "Transformation");}
+
         // Check for the attachment horizontal
         if(a_transform_attachment.attachment_horizontal_type == 1) {
             __move_left_in_parent(a_transform_attachment.attachment_horizontal_offset.to_double());
@@ -510,7 +509,7 @@ namespace scls {
         }
 
         // Apply to children
-        if(with_children) {for(int i = 0;i<static_cast<int>(a_children.size());i++) {if(a_children[i].get() != 0) {a_children[i].get()->after_resizing();}}}
+        if(with_children) {for(int i = 0;i<static_cast<int>(a_children.size());i++) {if(a_children[i].get() != 0) {a_children[i].get()->calculate_transformation();}}}
 
         // Call the virtual function
         __GUI_Object_Core::calculate_transformation();
@@ -591,6 +590,9 @@ namespace scls {
     // GUI Main Object main functions
     //
     //*********
+
+    // Function called after that the window is resized
+    void GUI_Main_Object::after_resizing(){if(parent() != 0){calculate_transformation(true, true);}}
 
     // Update the object for the events
     void GUI_Main_Object::update_event() {

@@ -94,7 +94,9 @@ namespace scls {
         // Function called after the creation of the object
         virtual void after_creation(){};
         // Function called after that the window is resized
-        virtual void after_resizing();
+        virtual void after_resizing_window_early(){a_transformation_updated=true;};
+        void __after_resizing_window_early_children(){after_resizing_window_early();for(int i = 0;i<static_cast<int>(a_children.size());i++){a_children[i].get()->__after_resizing_window_early_children();}};
+        virtual void after_resizing(){};
         // Function called after an XML loading
         virtual void after_xml_loading() {for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i].get()!=0)children()[i].get()->after_xml_loading();}};
         // Reset the object without changing it
@@ -347,6 +349,8 @@ namespace scls {
         // GUI_Main_Object destructor
         virtual ~GUI_Main_Object() {};
 
+        // Function called after that the window is resized
+        virtual void after_resizing();
         // Function called when a child is deleted
         virtual void child_deleted(GUI_Object* child) { if(a_focused_object == child) a_focused_object = 0; GUI_Object::child_deleted(child); };
         // Sets this object
@@ -1064,7 +1068,7 @@ namespace scls {
         virtual ~GUI_Page() {a_loader.reset();};
 
         // Function called after that the window is resized
-        virtual void after_window_resizing(glm::vec2 last_scale){Object::after_window_resizing(last_scale);parent_object()->after_resizing();};
+        virtual void after_window_resizing(glm::vec2 last_scale){Object::after_window_resizing(last_scale);parent_object()->after_resizing_window_early();parent_object()->after_resizing();};
         // Function called after an XML loading
         virtual void after_xml_loading() {a_parent_object.get()->after_xml_loading();Object::after_xml_loading();};
         // Render the page
@@ -1073,6 +1077,9 @@ namespace scls {
         virtual void update_event();
         // Update the page
         virtual void update(){Object::update();parent_object()->update();};
+
+        // Add a child object to the object
+        template<typename O> std::shared_ptr<O>* new_object(std::string name) { return a_parent_object.get()->new_object<O>(name, 0, 0); }
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline GUI_Object* focused_object() {return a_focused_object;};
