@@ -109,11 +109,8 @@ namespace scls {
         scls::print("Warning", "SCLS Window", "The \"" + name + "\" texture uses the \"" + path + "\" path, which does not exist.");
         return 0;
     }
-
-    // Returns a texture in the struct
     std::shared_ptr<Texture>* _Window_Advanced_Struct::new_texture_shared_ptr(std::string name, unsigned short width, unsigned short height, Color color) {
-        if (!contains_texture(name))
-        {
+        if (!contains_texture(name)) {
             std::shared_ptr<Texture> texture = std::make_shared<Texture>(width, height, color);
             texture.get()->change_texture();
             textures()[name] = texture;
@@ -122,14 +119,22 @@ namespace scls {
         scls::print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to add already exists.");
         return 0;
     }
-
-    // Add a texture to the game with the most basic constructor
     Texture* _Window_Advanced_Struct::new_texture(std::string name) {
         if (!contains_texture(name))
         {
             std::shared_ptr<Texture> texture = std::make_shared<Texture>();
             textures()[name] = texture;
             return texture.get();
+        }
+        scls::print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to add already exists.");
+        return 0;
+    }
+    std::shared_ptr<Texture>* _Window_Advanced_Struct::new_texture_shared_ptr(std::string name, std::shared_ptr<Image> image, bool texture_resize) {
+        if (!contains_texture(name)) {
+            std::shared_ptr<Texture> texture = std::make_shared<Texture>(image, texture_resize);
+            texture.get()->change_texture();
+            textures()[name] = texture;
+            return &textures()[name];
         }
         scls::print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to add already exists.");
         return 0;

@@ -443,6 +443,9 @@ namespace scls {
         // __GUI_Object_Core destructor
         virtual ~__GUI_Object_Core(){};
 
+        // Returns if the object is loaded or not
+        inline bool loaded() const {return a_loaded;};
+
         //*********
         //
         // Input handling
@@ -806,6 +809,15 @@ namespace scls {
         } a_transform_attachment;
         // Each object attached to this one
         std::vector<__GUI_Object_Core*> a_attached_object = std::vector<__GUI_Object_Core*>();
+
+        //*********
+        //
+        // Loading handling
+        //
+        //*********
+
+        // If the object is loaded or not
+        bool a_loaded = true;
 
     private:
 

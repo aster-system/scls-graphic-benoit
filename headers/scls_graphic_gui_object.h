@@ -81,6 +81,8 @@ namespace scls {
         void delete_children();
         // Hide all the children in the object
         inline void hide_children() {for(int i = 0;i<static_cast<int>(a_children.size());i++) {if(a_children[i] != 0) a_children[i]->set_visible(false);}};
+        // Loads the objects and all his children
+        inline void load_with_children(){if(!loaded()){load_from_xml(std::string(""));}for(int i = 0;i<static_cast<int>(a_children.size());i++){a_children[i].get()->load_with_children();}};
         // Add a child object to the object
         template<typename O>
         std::shared_ptr<O>* new_object(std::string name);
@@ -97,6 +99,7 @@ namespace scls {
         virtual void after_resizing_window_early(){a_transformation_updated=true;};
         void __after_resizing_window_early_children(){after_resizing_window_early();for(int i = 0;i<static_cast<int>(a_children.size());i++){a_children[i].get()->__after_resizing_window_early_children();}};
         virtual void after_resizing(){};
+        void __after_resizing_children(){after_resizing();for(int i = 0;i<static_cast<int>(a_children.size());i++){a_children[i].get()->__after_resizing_children();}};
         // Function called after an XML loading
         virtual void after_xml_loading() {for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i].get()!=0)children()[i].get()->after_xml_loading();}};
         // Reset the object without changing it
@@ -113,7 +116,6 @@ namespace scls {
         inline Color border_color() {return current_style()->a_border_color;};
         inline std::vector<std::shared_ptr<GUI_Object>>& children() {return a_children;};
         inline bool ignore_click() const {return a_ignore_click;};
-        inline bool loaded() const {return a_loaded;};
         inline std::string name() const {return a_name;};
         inline void set_background_color(Color new_background_color) {current_style()->a_background_color = new_background_color;};
         inline void set_border_color(Color new_color) {current_style()->a_border_color = new_color;};
@@ -286,8 +288,6 @@ namespace scls {
         //
         //*********
 
-        // If the object is loaded or not
-        bool a_loaded = true;
         // XML text containing the datas about the object
         std::shared_ptr<XML_Text> a_loading_datas;
 
@@ -443,6 +443,23 @@ namespace scls {
         // Class representing the metadatas of a graphic text
     public:
 
+        class __GUI_Text_Block : public GUI_Object {
+            // Children of a GUI text containing a single block
+        public:
+            // Most basic __GUI_Text_Block constructor
+            __GUI_Text_Block(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent):GUI_Object(window, name, parent){};
+
+            // Getters and setters
+            inline void set_style(std::shared_ptr<Text_Style> new_style) {a_style = new_style;};
+            inline Text_Style* style() const {return a_style.get();};
+
+        private:
+            //Lines in the block object
+            std::vector<std::shared_ptr<GUI_Object>> a_lines;
+            // Style for this block
+            std::shared_ptr<Text_Style> a_style;
+        };
+
         //*********
         //
         // __GUI_Text_Metadatas main functions
@@ -450,18 +467,41 @@ namespace scls {
         //*********
 
         // __GUI_Text_Metadatas constructor
-        __GUI_Text_Metadatas(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent) : GUI_Object(window, name, parent) {set_texture_alignment_horizontal(Alignment_Horizontal::H_Center);a_text_image.reset(window_struct().text_image_generator()->new_text_image_multi_block(""));};
+        __GUI_Text_Metadatas(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent) : GUI_Object(window, name, parent) {set_texture_alignment_horizontal(Alignment_Horizontal::H_Center);};
 
+        // Function called after that the window is resized
+        virtual void after_resizing();
+        // Reset the text and the text image
+        void reset() {delete_children();a_offset_y = 0;};
+        // Soft reset the text
+        virtual void soft_reset() {GUI_Object::soft_reset();a_text_modified_during_this_frame = false;};
+        // Updates the event
+        virtual void update_event(){GUI_Object::update_event();int wheel_move=window_struct().wheel_movement_y_during_this_frame()*4;if(wheel_move!=0){if(wheel_move - a_offset_y < 0){a_offset_y -= wheel_move;}else{a_offset_y=0;} place_blocks();}};
+        // Updates the texture when needed
+        virtual void update_texture() {GUI_Object::update_texture();update_text_texture();};
+        // Updates the texture of the text
+        void update_text_texture(scls::Image_Generation_Type generation_type);
+        void update_text_texture(){update_text_texture(scls::Image_Generation_Type::IGT_Full);};
+
+        // Adds a text to the input at the cursor position returns if the text has correctly been added
+        virtual bool add_text(std::string text_to_add);
+        // Places the blocks in the text
+        virtual void place_blocks();
         // Return the plain text in the object
         inline std::string plain_text(){return window_struct().text_image_generator()->plain_text(text());};
         // Return the size of the plain text in the object
         inline unsigned int plain_text_size() {return plain_text().size();};
+        // Remove a text to the input at the cursor position
+        void remove_text(unsigned int size_to_delete_in_plain_text);
+        // Returns the word clicked at a certain position in the text
+        std::shared_ptr<XML_Text> text_clicked_at_position(int x, int y);
         // Updates text image block
         inline void update_text_image_block(){String temp=text();attached_text_image_block()->free_memory();set_text(temp);};
-        inline void update_text_image_block_style(){attached_text_image_block()->global_style()->merge_style(a_global_style); };
+        inline void update_text_image_block_style(){attached_text_image_block()->global_style()->merge_style(a_global_style);};
 
         // Getters and setters
-        inline Text_Image_Multi_Block* attached_text_image_block() const {return a_text_image.get();};
+        inline Text_Image_Block* attached_text_image() const {if(attached_text_image_block()->blocks().size()<=0)return 0; return attached_text_image_block()->blocks()[0].get();};
+        virtual Text_Image_Multi_Block* attached_text_image_block() const = 0;
         inline Font font() const {return a_global_style.font();};
         inline Color font_color() const {return a_global_style.color();};
         inline std::string font_family() const {return a_global_style.font().font_family;};
@@ -476,6 +516,9 @@ namespace scls {
         inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {global_style()->set_alignment_horizontal(new_text_alignment_horizontal);};
         virtual void set_text_image_type(Block_Type new_text_image_type) {a_text_image_type = new_text_image_type;};
         inline void set_text_offset(double new_text_offset) {a_global_style.text_offset_x = new_text_offset;a_global_style.text_offset_y = new_text_offset;a_global_style.text_offset_width = new_text_offset;a_global_style.text_offset_height = new_text_offset;};
+        virtual void set_texture_alignment_horizontal(Alignment_Horizontal new_texture_alignment_horizontal){if(new_texture_alignment_horizontal != texture_alignment_horizontal()){GUI_Object::set_texture_alignment_horizontal(new_texture_alignment_horizontal);place_blocks();}};
+        virtual void set_texture_alignment_vertical(Alignment_Vertical new_texture_alignment_vertical){if(new_texture_alignment_vertical != texture_alignment_vertical()){GUI_Object::set_texture_alignment_vertical(new_texture_alignment_vertical);place_blocks();}}
+        inline bool text_modified_during_this_frame() {return a_text_modified_during_this_frame;};
         inline String text() const {if(attached_text_image_block()==0)return String();return attached_text_image_block()->text();};
         inline Block_Type text_image_type() const {return a_text_image_type;};
         inline glm::vec4 text_offset() const {return glm::vec4(a_global_style.text_offset_x, a_global_style.text_offset_y, a_global_style.text_offset_width, a_global_style.text_offset_height);};
@@ -488,154 +531,6 @@ namespace scls {
 
         // Handle an attribute from XML
         virtual void set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event);
-
-    protected:
-
-        //*********
-        //
-        // Text mains attributes
-        //
-        //*********
-
-        // Text image of the object
-        std::shared_ptr<Text_Image_Multi_Block> a_text_image;
-
-    private:
-
-        //*********
-        //
-        // Text mains attributes
-        //
-        //*********
-
-        // Global style of the text
-        Text_Style a_global_style;
-        // Alignment of the text
-        Alignment_Horizontal a_text_alignment_horizontal = Alignment_Horizontal::H_Left;
-        // Type of the text image
-        Block_Type a_text_image_type = Block_Type::BT_Always_Free_Memory;
-    };
-
-    class GUI_Text : public __GUI_Text_Metadatas {
-        // Class representing an GUI object displaying a text into the window
-    public:
-
-        class __GUI_Text_Block : public GUI_Object {
-            // Children of a GUI text containing a block
-        public:
-            // Most basic __GUI_Text_Block constructor
-            __GUI_Text_Block(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent):GUI_Object(window, name, parent){};
-
-            // Getters and setters
-            inline void set_style(std::shared_ptr<Text_Style> new_style) {a_style = new_style;};
-            inline Text_Style* style() const {return a_style.get();};
-
-        private:
-            // Style for this block
-            std::shared_ptr<Text_Style> a_style;
-        };
-
-        //*********
-        //
-        // GUI Text main functions
-        //
-        //*********
-
-        // Most basic GUI_Object constructor
-        GUI_Text(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent);
-
-        // Places the blocks in the text
-        void place_blocks();
-        // Returns the word clicked at a certain position in the text
-        std::shared_ptr<XML_Text> text_clicked_at_position(int x, int y);
-
-        // Function called after that the window is resized
-        virtual void after_resizing();
-        // Soft reset the text
-        virtual void soft_reset() {GUI_Object::soft_reset();a_text_modified_during_this_frame = false;};
-        // Updates the event
-        virtual void update_event(){__GUI_Text_Metadatas::update_event();int wheel_move=window_struct().wheel_movement_y_during_this_frame()*4;if(wheel_move!=0){if(wheel_move - a_offset_y < 0){a_offset_y -= wheel_move;}else{a_offset_y=0;} place_blocks();}};
-        // Updates the texture when needed
-        virtual void update_texture() {GUI_Object::update_texture();update_text_texture();};
-        // Updates the texture of the text
-        void update_text_texture(scls::Image_Generation_Type generation_type);
-        void update_text_texture(){update_text_texture(scls::Image_Generation_Type::IGT_Full);};
-
-        // Getters and setters (ONLY WITH ATTRIBUTES)
-        virtual void set_texture_alignment_horizontal(Alignment_Horizontal new_texture_alignment_horizontal){if(new_texture_alignment_horizontal != texture_alignment_horizontal()){GUI_Object::set_texture_alignment_horizontal(new_texture_alignment_horizontal);place_blocks();}};
-        virtual void set_texture_alignment_vertical(Alignment_Vertical new_texture_alignment_vertical){if(new_texture_alignment_vertical != texture_alignment_vertical()){GUI_Object::set_texture_alignment_vertical(new_texture_alignment_vertical);place_blocks();}}
-        inline bool text_modified_during_this_frame() {return a_text_modified_during_this_frame;};
-    private:
-        //*********
-        //
-        // GUI Text base attributes
-        //
-        //*********
-
-        // Blocks children in the object
-        std::vector<std::shared_ptr<__GUI_Text_Block>> a_blocks_children;
-        // Number of the generation
-        unsigned int a_generation = 0;
-        // If the text has been modified or not
-        bool a_modified = false;
-        // Offset Y of the text
-        int a_offset_y = 0;
-        // If the text has been modified during this frame
-        bool a_text_modified_during_this_frame = false;
-    };
-
-    class GUI_Text_Input : public __GUI_Text_Metadatas {
-        // Class representing an GUI object displaying and getting a text into the window
-    public:
-
-        //*********
-        //
-        // GUI_Text_Input main functions
-        //
-        //*********
-
-        // Most basic GUI_Text_Input constructor
-        GUI_Text_Input(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent);
-
-        // Return the plain text in the object
-        inline std::string plain_text(){return window_struct().text_image_generator()->plain_text(text());};
-        // Return the size of the plain text in the object
-        inline unsigned int plain_text_size() {return plain_text().size();};
-
-        // Function called after that the window is resized
-        virtual void after_resizing();
-        // Soft reset the input
-        virtual void soft_reset() {GUI_Object::soft_reset();a_input_during_this_frame = false;};
-        // Update the texture when needed
-        virtual void update_texture() {GUI_Object::update_texture();attached_text_image_block()->generate_blocks();update_text_texture();};
-        // Update the texture of the text
-        void update_text_texture();
-
-        // Add a text to the input at the cursor position
-        void add_text(std::string text_to_add);
-        // Format a std::string
-        std::string _format(std::string letter, bool apply_alt = false, bool apply_capitalisation = true);
-        // Format an only letter
-        std::string _format_one_letter(std::string letter, bool apply_alt = false, bool apply_capitalisation = true);
-        // Input the inputed text
-        void input_text();
-        // Places the lines in the text
-        void place_lines();
-        // Remove a text to the input at the cursor position
-        void remove_text(unsigned int size_to_delete_in_plain_text);
-        // Reset the text and the text image
-        void reset() {delete_children();a_line_offset = 0;};
-        // Update the text
-        virtual void update_event();
-        // Update the cursor behavior
-        void update_cursor();
-
-        // Getters and setters
-        inline Text_Image_Block* attached_text_image() const {if(attached_text_image_block()->blocks().size()<=0)return 0; return attached_text_image_block()->blocks()[0].get();};
-        inline bool input_during_this_frame() const {return a_input_during_this_frame;};
-        inline unsigned short line_offset() const {return a_line_offset;};
-        virtual void set_text(std::string new_text, bool should_move_cursor = true) {if(new_text == text())return;reset();a_text_modified = true;__GUI_Text_Metadatas::set_text(new_text);};
-        virtual void set_text_image_type(Block_Type new_text_image_type) {__GUI_Text_Metadatas::set_text_image_type(new_text_image_type);reset();};
 
         //*********
         //
@@ -653,7 +548,8 @@ namespace scls {
         void move_cursor_y(int movement);
 
         // Getters and setters
-        inline unsigned int cursor_position_in_formatted_text() const {return attached_text_image()->cursor_position_in_plain_text();};
+        inline unsigned int cursor_position_in_formatted_text() const {if(attached_text_image()==0){return 0;}return attached_text_image()->cursor_position_in_plain_text();};
+        inline int line_offset() const {return 0;};
         inline void set_cursor_position_in_formatted_text(unsigned int new_cursor_position_in_formatted_text) {
             if(new_cursor_position_in_formatted_text == cursor_position_in_formatted_text()) return;
 
@@ -672,6 +568,113 @@ namespace scls {
         };
         inline void set_use_cursor(bool new_use_cursor) {attached_text_image()->set_use_cursor(new_use_cursor);};
         inline bool use_cursor() const {return attached_text_image()->use_cursor();};
+
+    private:
+
+        //*********
+        //
+        // Text mains attributes
+        //
+        //*********
+
+        // Blocks children in the object
+        std::vector<std::shared_ptr<__GUI_Text_Block>> a_blocks_children;
+        // Number of the generation
+        unsigned int a_generation = 0;
+        // Global style of the text
+        Text_Style a_global_style;
+        // Offset Y of the text
+        int a_offset_y = 0;
+        // Alignment of the text
+        Alignment_Horizontal a_text_alignment_horizontal = Alignment_Horizontal::H_Left;
+        // Type of the text image
+        Block_Type a_text_image_type = Block_Type::BT_Always_Free_Memory;
+        // If the text has been modified during this frame
+        bool a_text_modified_during_this_frame = false;
+    };
+
+    template <typename Text = Text_Image_Multi_Block> class GUI_Text_Base : public __GUI_Text_Metadatas {
+        // Class representing an GUI object displaying a text into the window
+    public:
+
+        //*********
+        //
+        // GUI Text main functions
+        //
+        //*********
+
+        // Most basic GUI_Object constructor
+        GUI_Text_Base(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent):__GUI_Text_Metadatas(window, name, parent){a_text_image.reset(window_struct().text_image_generator()->new_text_image_multi_block<Text>(""));};
+
+        // Getters and setters (ONLY WITH ATTRIBUTES)
+        virtual Text_Image_Multi_Block* attached_text_image_block() const {return a_text_image.get();};
+
+    private:
+        //*********
+        //
+        // Text mains attributes
+        //
+        //*********
+
+        // Text image of the object
+        std::shared_ptr<Text> a_text_image;
+    };
+    typedef GUI_Text_Base<Text_Image_Multi_Block> GUI_Text;
+
+    std::string __input_text(scls::_Window_Advanced_Struct& window_struct, std::string final_text, int cursor_position_in_unformatted_text, std::string& last_descriptive_character, int& to_remove);
+    template <typename Text = Text_Image_Multi_Block> class GUI_Text_Input_Base : public __GUI_Text_Metadatas {
+        // Class representing an GUI object displaying and getting a text into the window
+    public:
+
+        //*********
+        //
+        // GUI_Text_Input_Base main functions
+        //
+        //*********
+
+        // Most basic GUI_Text_Input_Base constructor
+        GUI_Text_Input_Base(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent):__GUI_Text_Metadatas(window, name, parent) {a_text_image.reset(window_struct().text_image_generator()->new_text_image_multi_block<Text>(""));};
+
+        // Soft reset the input
+        virtual void soft_reset() {GUI_Object::soft_reset();a_input_during_this_frame = false;};
+
+        // Adds a text to the input at the cursor position and returns if the text has correctly been added
+        virtual bool add_text(std::string text_to_add){if(__GUI_Text_Metadatas::add_text(text_to_add)){a_input_during_this_frame=true;return true;}return false;};
+        // Input the inputed text
+        inline void input_text(){int to_remove=0;std::string to_add=__input_text(window_struct(),text(),cursor_position_in_unformatted_text(),a_last_descriptive_character,to_remove);remove_text(to_remove);add_text(to_add);};
+        // Update the text
+        virtual void update_event(){GUI_Object::update_event();if(visible()&&(is_focused()||has_child_focused())){input_text();update_cursor();}};
+        // Update the cursor behavior
+        void update_cursor() {
+            if(window_struct().key_pressed_or_repeated_pressed("left arrow")) {move_cursor(-1);}
+            if(window_struct().key_pressed_or_repeated_pressed("right arrow")) {move_cursor(1);}
+
+            if(window_struct().key_pressed_or_repeated_pressed("up arrow")) {move_cursor_y(-1);}
+            if(window_struct().key_pressed_or_repeated_pressed("down arrow")) {move_cursor_y(1);}
+
+            /*if(is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT) || has_child_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
+                move_cursor_at_position_in_scale(mouse_position_in_scale());
+            }
+
+            // Handle wheel scrolling (TEMPORARY DISABLED)
+
+            if(has_child_overflighted() ||is_overflighted()) {
+                double final_movement = window_struct().wheel_movement_y_during_this_frame();
+                if(final_movement > 0 && a_line_offset > 0) final_movement = -1;
+                else if(final_movement < 0 && a_line_offset < attached_text_image()->lines_datas().size()) final_movement = 1;
+                else final_movement = 0;
+                if(final_movement != 0) {
+                    a_line_offset += final_movement;
+                    delete_children();
+                    update_text_texture();
+                }
+            }//*/
+        };
+
+        // Getters and setters
+        virtual Text_Image_Multi_Block* attached_text_image_block() const {return a_text_image.get();};
+        inline bool input_during_this_frame() const {return a_input_during_this_frame;};
+
     private:
         //*********
         //
@@ -679,17 +682,15 @@ namespace scls {
         //
         //*********
 
-        // Number of the generation
-        unsigned int a_generation = 0;
         // If an input occurred during this frame
         bool a_input_during_this_frame = false;
         // Last outputted descriptive character (^, ¨...)
         std::string a_last_descriptive_character = "";
-        // Offset of the first line
-        unsigned int a_line_offset = 0;
-        // If the text is modified or not
-        bool a_text_modified = false;
+
+        // Text image of the object
+        std::shared_ptr<Text> a_text_image;
     };
+    typedef GUI_Text_Input_Base<Text_Image_Multi_Block> GUI_Text_Input;
 
     class GUI_Scroller_Choice : public GUI_Scroller {
         // Class representing a simple GUI scroller displayed into the window, which propose choices to use
@@ -716,8 +717,7 @@ namespace scls {
         virtual ~GUI_Scroller_Choice();
 
         // Adds an object
-        template <typename T = GUI_Text>
-        std::shared_ptr<T>* __add_object(std::string object_name, std::string object_text){
+        template <typename T = GUI_Text> std::shared_ptr<T>* __add_object(std::string object_name, std::string object_text){
             // Pre-creation check
             if(scroller_children()==0){reset_scroller_children();}
 
@@ -746,8 +746,7 @@ namespace scls {
             // Returns the object
             return current_object;
         };
-        template <typename T = GUI_Text>
-        std::shared_ptr<T>* add_object(std::string object_name, std::string object_text, std::string sub_section){
+        template <typename T = GUI_Text> std::shared_ptr<T>* add_object(std::string object_name, std::string object_text, std::string sub_section){
             // Asserts
             GUI_Scroller_Choice* needed_parent = this;
             if(contains_object(object_name)){return 0;}
@@ -758,8 +757,7 @@ namespace scls {
         };
         template <typename T = GUI_Text> inline std::shared_ptr<T>* add_object(std::string object_name, std::string object_text){return add_object(object_name, object_text, "");};
         // Adds a sub-section for the object
-        template <typename T = GUI_Scroller_Choice>
-        std::shared_ptr<T>* add_sub_section(std::string object_name, std::string object_text){
+        template <typename T = GUI_Scroller_Choice> std::shared_ptr<T>* add_sub_section(std::string object_name, std::string object_text){
             // Asserts
             if(contains_object(object_name)){return 0;}
 
@@ -924,8 +922,7 @@ namespace scls {
         //*********
 
         // Set the good displayer object
-        template <typename T = GUI_Text>
-        void set_displayer_object(std::string object_name, std::string object_text) {
+        template <typename T = GUI_Text> void set_displayer_object(std::string object_name, std::string object_text) {
             // Create the object
             std::shared_ptr<T>* current_object = scroller_children()->new_object<T>(object_name);
             current_object->get()->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
@@ -1068,7 +1065,7 @@ namespace scls {
         virtual ~GUI_Page() {a_loader.reset();};
 
         // Function called after that the window is resized
-        virtual void after_window_resizing(glm::vec2 last_scale){Object::after_window_resizing(last_scale);parent_object()->after_resizing_window_early();parent_object()->after_resizing();};
+        virtual void after_window_resizing(glm::vec2 last_scale){Object::after_window_resizing(last_scale);parent_object()->__after_resizing_window_early_children();parent_object()->__after_resizing_children();};
         // Function called after an XML loading
         virtual void after_xml_loading() {a_parent_object.get()->after_xml_loading();Object::after_xml_loading();};
         // Render the page
@@ -1132,12 +1129,10 @@ namespace scls {
     };
 
     // Add a child object to the object
-    template<typename O>
-    std::shared_ptr<O>* GUI_Object::new_object(std::string name) { return new_object<O>(name, 0, 0); }
+    template<typename O> std::shared_ptr<O>* GUI_Object::new_object(std::string name) { return new_object<O>(name, 0, 0); }
 
     // Add a child object to the object
-    template<typename O>
-    std::shared_ptr<O>* GUI_Object::new_object(std::string name, unsigned int x, unsigned int y) {
+    template<typename O> std::shared_ptr<O>* GUI_Object::new_object(std::string name, unsigned int x, unsigned int y) {
         // Create the child
         std::shared_ptr<O> new_ptr;
         std::shared_ptr<O>* to_return = 0;
@@ -1162,8 +1157,7 @@ namespace scls {
     }
 
     // Add a child object to the scroller with its position
-    template<typename O>
-    std::shared_ptr<O>* GUI_Scroller::new_object_in_scroller(std::string name, unsigned int x, unsigned int y) {
+    template<typename O> std::shared_ptr<O>* GUI_Scroller::new_object_in_scroller(std::string name, unsigned int x, unsigned int y) {
         // Create the new object
         std::shared_ptr<O>* new_object = a_scroller_children->new_object<O>(name, x, y);
 
@@ -1173,8 +1167,7 @@ namespace scls {
     }
 
     // Add a child object to the scroller
-    template<typename O>
-    std::shared_ptr<O>* GUI_Scroller::new_object_in_scroller(std::string name) { return new_object_in_scroller<O>(name, 0, 0); }
+    template<typename O> std::shared_ptr<O>* GUI_Scroller::new_object_in_scroller(std::string name) { return new_object_in_scroller<O>(name, 0, 0); }
 }
 
 #endif // SCLS_GRAPHIC_GUI_OBJECT

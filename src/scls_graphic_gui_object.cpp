@@ -366,6 +366,8 @@ namespace scls {
                     attached_object_vertical = current_attribute_value;
                 }
             }
+
+            // Set the final X
             if(attachment_horizontal == 0) {
                 // Set the x
                 if(x_type == _Size_Definition::Object_Scale_Size) set_x_in_object_scale(x);
@@ -375,7 +377,15 @@ namespace scls {
             else {
                 // Attach the object
                 std::shared_ptr<__GUI_Object_Core> other_object;
-                if(attached_object_vertical != "") other_object = a_loader.get()->created_objects[attached_object_vertical];
+                if(attached_object_vertical != ""){
+                    other_object = a_loader.get()->created_objects[attached_object_vertical];
+                    if(other_object.get() == 0) {
+                        print("Warning", "SCLS GUI Object \"" + name() + "\"", "The object \"" + attached_object_vertical + "\" you want to attach at the X axis does not exist.");
+                    }
+                    else if(!other_object.get()->loaded()){
+                        print("Warning", "SCLS GUI Object \"" + name() + "\"", "The object \"" + attached_object_vertical + "\" you want to attach at the X axis is not loaded.");
+                    }
+                }
                 if(attachment_horizontal == 1) {
                     if(other_object.get() == 0) attach_left_in_parent(attachment_horizontal_offset.to_double());
                     //else attach_bottom_of_object_in_parent(other_object, attachment_horizontal_offset);
@@ -426,6 +436,8 @@ namespace scls {
                     attached_object_vertical = current_attribute_value;
                 }
             }
+
+            // Set the final Y
             if(attachment_vertical == 0) {
                 // Set the y
                 if(y_type == _Size_Definition::Object_Scale_Size) set_y_in_object_scale(y);
@@ -435,7 +447,15 @@ namespace scls {
             else {
                 // Attach the object
                 std::shared_ptr<__GUI_Object_Core> other_object;
-                if(attached_object_vertical != "") other_object = a_loader.get()->created_objects[attached_object_vertical];
+                if(attached_object_vertical != "") {
+                    other_object = a_loader.get()->created_objects[attached_object_vertical];
+                    if(other_object.get() == 0){
+                        print("Warning", "SCLS GUI Object \"" + name() + "\"", "The object \"" + attached_object_vertical + "\" you want to attach at the Y axis does not exist.");
+                    }
+                    else if(!other_object.get()->loaded()){
+                        print("Warning", "SCLS GUI Object \"" + name() + "\"", "The object \"" + attached_object_vertical + "\" you want to attach at the Y axis is not loaded.");
+                    }
+                }
                 if(attachment_vertical == 1) {
                     if(other_object.get() == 0) attach_top_in_parent(attachment_vertical_offset);
                 }
@@ -909,6 +929,127 @@ namespace scls {
     //
     //*********
 
+    // Add a text to the input at the cursor position returns if the text has correctly been added
+    bool __GUI_Text_Metadatas::add_text(std::string text_to_add) {
+        // Prepare the needed datas to add (the text is treated as unformatted here)
+        if(text_to_add != "") {
+            int needed_block_datas = 0;
+            if(attached_text_image() == 0) {set_text(text_to_add);set_cursor_position_in_formatted_text(text_to_add.size());}
+            else {
+                // Add the lines if needed
+                unsigned int cursor_position = attached_text_image()->cursor_position_in_full_text();
+                int new_line = count_string(text_to_add, "</br>");
+                for(int i = 0;i<new_line;i++) {
+                    if((attached_text_image()->line_number_at_position(cursor_position) - line_offset()) < children().size()) {
+                        children().insert(children().begin() + (attached_text_image()->line_number_at_position(cursor_position) - line_offset()) + 1, 0);
+                    }
+                    else {children().push_back(0);}
+                }
+
+                // Update the text
+                reset();
+                attached_text_image()->add_text(text_to_add);
+                update_text_texture();
+            }
+            return true;
+        }
+        return false;
+    };
+
+    // Function called after that the window is resized
+    void __GUI_Text_Metadatas::after_resizing(){GUI_Object::after_resizing();if(max_width() != -1) {set_max_width(width_in_pixel());update_text_texture(scls::Image_Generation_Type::IGT_Size);}}
+
+    // Move the cursor in the text
+    void __GUI_Text_Metadatas::move_cursor(int movement) {
+        int final_cursor_position = cursor_position_in_formatted_text() + movement;
+        if(movement < 0) {
+            if(final_cursor_position < 0) {
+                final_cursor_position = 0;
+            }
+        }
+        else if(movement > 0) {
+            if(final_cursor_position > static_cast<int>(plain_text_size())) {
+                final_cursor_position = plain_text_size();
+            }
+        }
+        else if(final_cursor_position == static_cast<int>(cursor_position_in_formatted_text())) return;
+        set_cursor_position_in_formatted_text(final_cursor_position);
+
+        update_text_texture();
+    }
+
+    // Moves the cursor at a pixel position
+    void __GUI_Text_Metadatas::move_cursor_at_position_in_scale(glm::vec2 position) {
+        if(children().size() <= 0) return;
+        GUI_Object* current_object = children()[0].get(); bool good = false; unsigned int i = 0;
+        while(current_object->y_in_scale() > position[1] && i < children().size()) {
+            i++;
+            if(i < children().size()) {
+                current_object = children()[i].get();
+            }
+        }
+        if(i >= children().size()) {
+            i = children().size() - 1;
+            current_object = children()[children().size() - 1].get();
+        }
+
+        move_cursor(attached_text_image()->cursor_position_in_plain_text_at_line_and_x(i + line_offset(), position[0] * width_in_pixel()) - cursor_position_in_formatted_text());
+    }
+
+    // Moves the cursor in the Y axis
+    void __GUI_Text_Metadatas::move_cursor_y(int movement) {
+        if(attached_text_image() == 0) return;
+
+        Text_Image_Line* cursor_line = attached_text_image()->cursor_line();
+        if(cursor_line != 0) {
+            int cursor_number = (cursor_line->datas().line_number) + movement;
+            if(cursor_number < 0) {
+                move_cursor(-cursor_position_in_formatted_text());
+            }
+            else if(cursor_number >= attached_text_image()->lines().size()) {
+                move_cursor(plain_text_size() - cursor_position_in_formatted_text());
+            }
+            else {
+                move_cursor(attached_text_image()->cursor_position_in_plain_text_at_line_and_x(cursor_number, cursor_line->cursor_x()) - cursor_position_in_formatted_text());
+            }
+        }
+    }
+
+    // Places the blocks in the text
+    void __GUI_Text_Metadatas::place_blocks() {
+        // Place each children
+        unsigned int total_height = 0;
+        for(int i = 0;i<static_cast<int>(a_blocks_children.size());i++) {
+            if(a_blocks_children[i].get() != 0) {
+                // Place the children
+                // Place the X
+                if(a_blocks_children[i].get()->style()->alignment_horizontal() == scls::Alignment_Horizontal::H_Left){a_blocks_children[i].get()->set_x_in_pixel(0);}
+                else{a_blocks_children[i].get()->set_x_in_object_scale(scls::Fraction(1, 2));}
+                // Place the Y
+                if(texture_alignment_vertical() == scls::Alignment_Vertical::V_Top){
+                    int needed_y = height_in_pixel() - ((a_blocks_children[i].get()->height_in_pixel() + total_height) - a_offset_y);
+                    a_blocks_children[i].get()->set_y_in_pixel(needed_y);
+                }
+                else{a_blocks_children[i].get()->set_y_in_object_scale(scls::Fraction(1, 2));}
+                total_height += a_blocks_children[i].get()->height_in_pixel();
+            }
+        }
+    }
+
+    // Remove a text to the input at the cursor position
+    void __GUI_Text_Metadatas::remove_text(unsigned int size_to_delete) {
+        if(size_to_delete == 0){return;}
+
+        // Preparate the needed datas
+        // Remove the text
+        unsigned int line_to_delete = attached_text_image()->line_number_at_position(cursor_position_in_unformatted_text());
+        unsigned int removed_lines = attached_text_image()->remove_text(size_to_delete);
+        // Remove the needed children
+        int final_size = static_cast<int>(children().size()) + line_offset();
+        if(removed_lines > 0) {for(int i = line_to_delete;i<final_size;i++) { children().erase(children().begin() + line_to_delete);}}
+        update_text_texture();
+    }
+
     // Handle an attribute from XML
     void __GUI_Text_Metadatas::set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event) {
         std::string xml_attribute_name = text.get()->xml_balise_name();
@@ -995,41 +1136,8 @@ namespace scls {
         else {GUI_Object::set_xml_attribute(text, event);}
     }
 
-    //*********
-    //
-    // GUI Text main functions
-    //
-    //*********
-
-    // Most basic GUI_Text constructor
-    GUI_Text::GUI_Text(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent) : __GUI_Text_Metadatas(window, name, parent) {}
-
-    // Function called after that the window is resized
-    void GUI_Text::after_resizing(){__GUI_Text_Metadatas::after_resizing();if(max_width() != -1) {set_max_width(width_in_pixel());update_text_texture(scls::Image_Generation_Type::IGT_Size);}}
-
-    // Places the blocks in the text
-    void GUI_Text::place_blocks() {
-        // Place each children
-        unsigned int total_height = 0;
-        for(int i = 0;i<static_cast<int>(a_blocks_children.size());i++) {
-            if(a_blocks_children[i].get() != 0) {
-                // Place the children
-                // Place the X
-                if(a_blocks_children[i].get()->style()->alignment_horizontal() == scls::Alignment_Horizontal::H_Left){a_blocks_children[i].get()->set_x_in_pixel(0);}
-                else{a_blocks_children[i].get()->set_x_in_object_scale(scls::Fraction(1, 2));}
-                // Place the Y
-                if(texture_alignment_vertical() == scls::Alignment_Vertical::V_Top){
-                    int needed_y = height_in_pixel() - ((a_blocks_children[i].get()->height_in_pixel() + total_height) - a_offset_y);
-                    a_blocks_children[i].get()->set_y_in_pixel(needed_y);
-                }
-                else{a_blocks_children[i].get()->set_y_in_object_scale(scls::Fraction(1, 2));}
-                total_height += a_blocks_children[i].get()->height_in_pixel();
-            }
-        }
-    }
-
     // Returns the word clicked at a certain position in the text
-    std::shared_ptr<XML_Text> GUI_Text::text_clicked_at_position(int x, int y) {
+    std::shared_ptr<XML_Text> __GUI_Text_Metadatas::text_clicked_at_position(int x, int y) {
         if(a_blocks_children.size() <= 0){return std::shared_ptr<XML_Text>();}
 
         // Get the good children
@@ -1054,7 +1162,7 @@ namespace scls {
     }
 
     // Update the texture of the text
-    void GUI_Text::update_text_texture(scls::Image_Generation_Type generation_type) {
+    void __GUI_Text_Metadatas::update_text_texture(scls::Image_Generation_Type generation_type) {
         if(text() != "") {
             // Update the text
             update_text_image_block_style();
@@ -1106,67 +1214,12 @@ namespace scls {
 
     //*********
     //
-    // GUI_Text_Input main functions
+    // GUI_Text_Input_Base main functions
     //
     //*********
 
-    // Most basic GUI_Text constructor
-    GUI_Text_Input::GUI_Text_Input(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent) : __GUI_Text_Metadatas(window, name, parent) {set_text_image_type(Block_Type::BT_Keep_Block_And_Line_In_Memory);}
-
-    // Add a text to the input at the cursor position
-    void GUI_Text_Input::add_text(std::string text_to_add) {
-        // Prepare the needed datas to add (the text is treated as unformatted here)
-        if(text_to_add != "") {
-            if(attached_text_image() == 0) {
-                set_text(text_to_add);
-                set_cursor_position_in_formatted_text(text_to_add.size());
-            } else {
-                // Add the lines if needed
-                unsigned int cursor_position = attached_text_image()->cursor_position_in_full_text();
-                int new_line = count_string(text_to_add, "</br>");
-                for(int i = 0;i<new_line;i++) {
-                    if((attached_text_image()->line_number_at_position(cursor_position) - line_offset()) < children().size()) {
-                        children().insert(children().begin() + (attached_text_image()->line_number_at_position(cursor_position) - line_offset()) + 1, 0);
-                    }
-                    else {
-                        children().push_back(0);
-                    }
-                }
-                // Update the text
-                attached_text_image()->add_text(text_to_add);
-                a_input_during_this_frame = true;
-                a_text_modified = true;
-                update_text_texture();
-            }
-        }
-    };
-
-    // Function called after that the window is resized
-    void GUI_Text_Input::after_resizing(){
-        GUI_Object::after_resizing();
-        place_lines();
-    }
-
-    // Format a char
-    std::string GUI_Text_Input::_format(std::string letter, bool apply_alt, bool apply_capitalisation) {
-        std::string result = "";
-        std::string to_analyse = "";
-
-        for(int i = 0;i<static_cast<int>(letter.size());i++) {
-            to_analyse += letter[i];
-            if(!is_character_utf_8(letter[i])) {
-                result += _format_one_letter(to_analyse, apply_alt, apply_capitalisation);
-                to_analyse = "";
-            }
-        }
-        // Last analyse
-        if(to_analyse != "") result += _format_one_letter(to_analyse, apply_alt, apply_capitalisation);
-
-        return result;
-    }
-
-    // Capitalize a std::string
-    std::string GUI_Text_Input::_format_one_letter(std::string letter, bool apply_alt, bool apply_capitalisation) {
+    // Format a letter
+    std::string __format_one_letter(std::string letter, bool apply_alt, bool apply_capitalisation, std::string& last_descriptive_character) {
         if(apply_alt) {
             // Top bar
             if(letter == "é") letter = "~";
@@ -1239,14 +1292,14 @@ namespace scls {
         }
 
         // Set the last descriptive character
-        if(a_last_descriptive_character == ""){
+        if(last_descriptive_character == ""){
             if(letter == "^" || letter == "¨") {
-                a_last_descriptive_character = letter;
+                last_descriptive_character = letter;
                 letter = "";
             }
         }
         else {
-            if(a_last_descriptive_character == "^") {
+            if(last_descriptive_character == "^") {
                 if(letter == "e") letter = "ê";
                 else if(letter == "E") letter = "Ê";
                 else if(letter == "a") letter = "â";
@@ -1258,11 +1311,11 @@ namespace scls {
                 else if(letter == "o") letter = "ô";
                 else if(letter == "O") letter = "Ô";
                 else {
-                    if(letter == " ") letter = a_last_descriptive_character;
-                    else letter = a_last_descriptive_character + letter;
+                    if(letter == " ") letter = last_descriptive_character;
+                    else letter = last_descriptive_character + letter;
                 }
             }
-            else if(a_last_descriptive_character == "¨") {
+            else if(last_descriptive_character == "¨") {
                 if(letter == "e") letter = "ë";
                 else if(letter == "E") letter = "Ë";
                 else if(letter == "a") letter = "ä";
@@ -1274,47 +1327,62 @@ namespace scls {
                 else if(letter == "o") letter = "ö";
                 else if(letter == "O") letter = "Ö";
                 else {
-                    if(letter == " ") letter = a_last_descriptive_character;
-                    else letter = a_last_descriptive_character + letter;
+                    if(letter == " ") letter = last_descriptive_character;
+                    else letter = last_descriptive_character + letter;
                 }
             }
-            a_last_descriptive_character = "";
+            last_descriptive_character = "";
         }
 
         return letter;
     }
+    std::string __format(std::string letter, bool apply_alt, bool apply_capitalisation, std::string& last_descriptive_character) {
+        std::string result = "";
+        std::string to_analyse = "";
 
-    // Input the inputed text
-    void GUI_Text_Input::input_text() {
-        std::string final_text = text();
+        for(int i = 0;i<static_cast<int>(letter.size());i++) {
+            to_analyse += letter[i];
+            if(!is_character_utf_8(letter[i])) {
+                result += __format_one_letter(to_analyse, apply_alt, apply_capitalisation, last_descriptive_character);
+                to_analyse = "";
+            }
+        }
+        // Last analyse
+        if(to_analyse != "") result += __format_one_letter(to_analyse, apply_alt, apply_capitalisation, last_descriptive_character);
+
+        return result;
+    }
+
+    // Returns the inputed text
+    std::string __input_text(scls::_Window_Advanced_Struct& window_struct, std::string final_text, int cursor_position_in_unformatted_text, std::string& last_descriptive_character, int& to_remove) {
         std::string to_add = "";
 
         // Handle letters
-        bool should_control = (window_struct().key_state("left control") == Key_State::Pressed || window_struct().key_state("right control") == Key_State::Pressed);
-        bool should_alt = (window_struct().key_state("alt gr") == Key_State::Pressed);
-        bool should_capitalise = (window_struct().key_state("left shift") == Key_State::Pressed || window_struct().key_state("right shift") == Key_State::Pressed);
-        if(window_struct().key_pressed_or_repeated_pressed("a")) { to_add += "a";  }
-        if(window_struct().key_pressed_or_repeated_pressed("b")) { to_add += "b";  }
-        if(window_struct().key_pressed_or_repeated_pressed("c")) { to_add += "c";  }
-        if(window_struct().key_pressed_or_repeated_pressed("d")) { to_add += "d";  }
-        if(window_struct().key_pressed_or_repeated_pressed("e")) { to_add += "e";  }
-        if(window_struct().key_pressed_or_repeated_pressed("f")) { to_add += "f";  }
-        if(window_struct().key_pressed_or_repeated_pressed("g")) { to_add += "g";  }
-        if(window_struct().key_pressed_or_repeated_pressed("h")) { to_add += "h";  }
-        if(window_struct().key_pressed_or_repeated_pressed("i")) { to_add += "i";  }
-        if(window_struct().key_pressed_or_repeated_pressed("j")) { to_add += "j";  }
-        if(window_struct().key_pressed_or_repeated_pressed("k")) { to_add += "k";  }
-        if(window_struct().key_pressed_or_repeated_pressed("l")) { to_add += "l";  }
-        if(window_struct().key_pressed_or_repeated_pressed("m")) { to_add += "m";  }
-        if(window_struct().key_pressed_or_repeated_pressed("n")) { to_add += "n";  }
-        if(window_struct().key_pressed_or_repeated_pressed("o")) { to_add += "o";  }
-        if(window_struct().key_pressed_or_repeated_pressed("p")) { to_add += "p";  }
-        if(window_struct().key_pressed_or_repeated_pressed("q")) { to_add += "q";  }
-        if(window_struct().key_pressed_or_repeated_pressed("r")) { to_add += "r";  }
-        if(window_struct().key_pressed_or_repeated_pressed("s")) { to_add += "s";  }
-        if(window_struct().key_pressed_or_repeated_pressed("t")) { to_add += "t";  }
-        if(window_struct().key_pressed_or_repeated_pressed("u")) { to_add += "u";  }
-        if(window_struct().key_pressed_or_repeated_pressed("v")) {
+        bool should_control = (window_struct.key_state("left control") == scls::Key_State::Pressed || window_struct.key_state("right control") == scls::Key_State::Pressed);
+        bool should_alt = (window_struct.key_state("alt gr") == scls::Key_State::Pressed);
+        bool should_capitalise = (window_struct.key_state("left shift") == scls::Key_State::Pressed || window_struct.key_state("right shift") == scls::Key_State::Pressed);
+        if(window_struct.key_pressed_or_repeated_pressed("a")) { to_add += "a";  }
+        if(window_struct.key_pressed_or_repeated_pressed("b")) { to_add += "b";  }
+        if(window_struct.key_pressed_or_repeated_pressed("c")) { to_add += "c";  }
+        if(window_struct.key_pressed_or_repeated_pressed("d")) { to_add += "d";  }
+        if(window_struct.key_pressed_or_repeated_pressed("e")) { to_add += "e";  }
+        if(window_struct.key_pressed_or_repeated_pressed("f")) { to_add += "f";  }
+        if(window_struct.key_pressed_or_repeated_pressed("g")) { to_add += "g";  }
+        if(window_struct.key_pressed_or_repeated_pressed("h")) { to_add += "h";  }
+        if(window_struct.key_pressed_or_repeated_pressed("i")) { to_add += "i";  }
+        if(window_struct.key_pressed_or_repeated_pressed("j")) { to_add += "j";  }
+        if(window_struct.key_pressed_or_repeated_pressed("k")) { to_add += "k";  }
+        if(window_struct.key_pressed_or_repeated_pressed("l")) { to_add += "l";  }
+        if(window_struct.key_pressed_or_repeated_pressed("m")) { to_add += "m";  }
+        if(window_struct.key_pressed_or_repeated_pressed("n")) { to_add += "n";  }
+        if(window_struct.key_pressed_or_repeated_pressed("o")) { to_add += "o";  }
+        if(window_struct.key_pressed_or_repeated_pressed("p")) { to_add += "p";  }
+        if(window_struct.key_pressed_or_repeated_pressed("q")) { to_add += "q";  }
+        if(window_struct.key_pressed_or_repeated_pressed("r")) { to_add += "r";  }
+        if(window_struct.key_pressed_or_repeated_pressed("s")) { to_add += "s";  }
+        if(window_struct.key_pressed_or_repeated_pressed("t")) { to_add += "t";  }
+        if(window_struct.key_pressed_or_repeated_pressed("u")) { to_add += "u";  }
+        if(window_struct.key_pressed_or_repeated_pressed("v")) {
             if(should_control) {
                 to_add += clipboard_datas();
             }
@@ -1322,259 +1390,65 @@ namespace scls {
                 to_add += "v";
             }
         }
-        if(window_struct().key_pressed_or_repeated_pressed("w")) { to_add += "w";  }
-        if(window_struct().key_pressed_or_repeated_pressed("x")) { to_add += "x";  }
-        if(window_struct().key_pressed_or_repeated_pressed("y")) { to_add += "y";  }
-        if(window_struct().key_pressed_or_repeated_pressed("z")) { to_add += "z";  }
+        if(window_struct.key_pressed_or_repeated_pressed("w")) { to_add += "w";  }
+        if(window_struct.key_pressed_or_repeated_pressed("x")) { to_add += "x";  }
+        if(window_struct.key_pressed_or_repeated_pressed("y")) { to_add += "y";  }
+        if(window_struct.key_pressed_or_repeated_pressed("z")) { to_add += "z";  }
         // Extended alphabet letter
-        if(window_struct().key_pressed_or_repeated_pressed("ù")) { to_add += "ù";  }
+        if(window_struct.key_pressed_or_repeated_pressed("ù")) { to_add += "ù";  }
 
         // Handle numbers
-        if(window_struct().key_pressed_or_repeated_pressed("0")) { to_add += "0";  }
-        if(window_struct().key_pressed_or_repeated_pressed("1")) { to_add += "1";  }
-        if(window_struct().key_pressed_or_repeated_pressed("2")) { to_add += "2";  }
-        if(window_struct().key_pressed_or_repeated_pressed("3")) { to_add += "3";  }
-        if(window_struct().key_pressed_or_repeated_pressed("4")) { to_add += "4";  }
-        if(window_struct().key_pressed_or_repeated_pressed("5")) { to_add += "5";  }
-        if(window_struct().key_pressed_or_repeated_pressed("6")) { to_add += "6";  }
-        if(window_struct().key_pressed_or_repeated_pressed("7")) { to_add += "7";  }
-        if(window_struct().key_pressed_or_repeated_pressed("8")) { to_add += "8";  }
-        if(window_struct().key_pressed_or_repeated_pressed("9")) { to_add += "9";  }
-        if(window_struct().key_pressed_or_repeated_pressed("=")) { to_add += "=";  }
-        if(window_struct().key_pressed_or_repeated_pressed("+")) { to_add += "+";  }
-        if(window_struct().key_pressed_or_repeated_pressed("/")) { to_add += "/";  }
-        if(window_struct().key_pressed_or_repeated_pressed(".")) { to_add += ".";  }
+        if(window_struct.key_pressed_or_repeated_pressed("0")) { to_add += "0";  }
+        if(window_struct.key_pressed_or_repeated_pressed("1")) { to_add += "1";  }
+        if(window_struct.key_pressed_or_repeated_pressed("2")) { to_add += "2";  }
+        if(window_struct.key_pressed_or_repeated_pressed("3")) { to_add += "3";  }
+        if(window_struct.key_pressed_or_repeated_pressed("4")) { to_add += "4";  }
+        if(window_struct.key_pressed_or_repeated_pressed("5")) { to_add += "5";  }
+        if(window_struct.key_pressed_or_repeated_pressed("6")) { to_add += "6";  }
+        if(window_struct.key_pressed_or_repeated_pressed("7")) { to_add += "7";  }
+        if(window_struct.key_pressed_or_repeated_pressed("8")) { to_add += "8";  }
+        if(window_struct.key_pressed_or_repeated_pressed("9")) { to_add += "9";  }
+        if(window_struct.key_pressed_or_repeated_pressed("=")) { to_add += "=";  }
+        if(window_struct.key_pressed_or_repeated_pressed("+")) { to_add += "+";  }
+        if(window_struct.key_pressed_or_repeated_pressed("/")) { to_add += "/";  }
+        if(window_struct.key_pressed_or_repeated_pressed(".")) { to_add += ".";  }
 
         // Handle numbers / special characters
-        if(window_struct().key_pressed_or_repeated_pressed("&")) { to_add += "&";  }
-        if(window_struct().key_pressed_or_repeated_pressed("é")) { to_add += "é";  }
-        if(window_struct().key_pressed_or_repeated_pressed("\"")) { to_add += "\"";  }
-        if(window_struct().key_pressed_or_repeated_pressed("'")) { to_add += "'";  }
-        if(window_struct().key_pressed_or_repeated_pressed("(")) { to_add += "(";  }
-        if(window_struct().key_pressed_or_repeated_pressed("-")) { to_add += "-";  }
-        if(window_struct().key_pressed_or_repeated_pressed("è")) { to_add += "è";  }
-        if(window_struct().key_pressed_or_repeated_pressed("_")) { to_add += "_";  }
-        if(window_struct().key_pressed_or_repeated_pressed("ç")) { to_add += "ç";  }
-        if(window_struct().key_pressed_or_repeated_pressed("à")) { to_add += "à";  }
-        if(window_struct().key_pressed_or_repeated_pressed("^")) { to_add += "^";  }
-        if(window_struct().key_pressed_or_repeated_pressed("*")) { to_add += "*";  }
+        if(window_struct.key_pressed_or_repeated_pressed("&")) { to_add += "&";  }
+        if(window_struct.key_pressed_or_repeated_pressed("é")) { to_add += "é";  }
+        if(window_struct.key_pressed_or_repeated_pressed("\"")) { to_add += "\"";  }
+        if(window_struct.key_pressed_or_repeated_pressed("'")) { to_add += "'";  }
+        if(window_struct.key_pressed_or_repeated_pressed("(")) { to_add += "(";  }
+        if(window_struct.key_pressed_or_repeated_pressed("-")) { to_add += "-";  }
+        if(window_struct.key_pressed_or_repeated_pressed("è")) { to_add += "è";  }
+        if(window_struct.key_pressed_or_repeated_pressed("_")) { to_add += "_";  }
+        if(window_struct.key_pressed_or_repeated_pressed("ç")) { to_add += "ç";  }
+        if(window_struct.key_pressed_or_repeated_pressed("à")) { to_add += "à";  }
+        if(window_struct.key_pressed_or_repeated_pressed("^")) { to_add += "^";  }
+        if(window_struct.key_pressed_or_repeated_pressed("*")) { to_add += "*";  }
 
         // Handle ponctuation
-        if(window_struct().key_pressed_or_repeated_pressed(":")) { to_add += ":";  }
-        if(window_struct().key_pressed_or_repeated_pressed(";")) { to_add += ";";  }
-        if(window_struct().key_pressed_or_repeated_pressed(",")) { to_add += ",";  }
-        if(window_struct().key_pressed_or_repeated_pressed("!")) { to_add += "!";  }
-        if(window_struct().key_pressed_or_repeated_pressed("<")) { to_add += "<";  }
+        if(window_struct.key_pressed_or_repeated_pressed(":")) { to_add += ":";  }
+        if(window_struct.key_pressed_or_repeated_pressed(";")) { to_add += ";";  }
+        if(window_struct.key_pressed_or_repeated_pressed(",")) { to_add += ",";  }
+        if(window_struct.key_pressed_or_repeated_pressed("!")) { to_add += "!";  }
+        if(window_struct.key_pressed_or_repeated_pressed("<")) { to_add += "<";  }
 
         // Handle special characters
-        if(window_struct().key_pressed_or_repeated_pressed("backspace") == Key_State::Pressed && final_text.size() > 0 && cursor_position_in_unformatted_text() > 0) {
-            remove_text(1);
-        }
-        if(window_struct().key_pressed_or_repeated_pressed("space")) { to_add += " ";  }
-        if(window_struct().key_pressed_or_repeated_pressed("tab")) { to_add += "    ";  }
-        if(window_struct().key_pressed_or_repeated_pressed(")")) { to_add += ")";  }
-        if(window_struct().key_pressed_or_repeated_pressed("$")) { to_add += "$";  }
-        to_add = _format(to_add, should_alt, should_capitalise);
+        if(window_struct.key_pressed_or_repeated_pressed("backspace") == scls::Key_State::Pressed && final_text.size() > 0 && cursor_position_in_unformatted_text > 0) {to_remove=1;}
+        if(window_struct.key_pressed_or_repeated_pressed("space")) { to_add += " ";  }
+        if(window_struct.key_pressed_or_repeated_pressed("tab")) { to_add += "    ";  }
+        if(window_struct.key_pressed_or_repeated_pressed(")")) { to_add += ")";  }
+        if(window_struct.key_pressed_or_repeated_pressed("$")) { to_add += "$";  }
+        to_add = __format(to_add, should_alt, should_capitalise, last_descriptive_character);
         to_add = format_string_from_plain_text(to_add);
 
-        if(window_struct().key_pressed_or_repeated_pressed("-k")) { to_add += "-";  }
-        if(window_struct().key_pressed_or_repeated_pressed("*k")) { to_add += "*";  }
-        if(window_struct().key_pressed_or_repeated_pressed("enter") == Key_State::Pressed) { to_add += "</br>";  }
+        if(window_struct.key_pressed_or_repeated_pressed("-k")) { to_add += "-";  }
+        if(window_struct.key_pressed_or_repeated_pressed("*k")) { to_add += "*";  }
+        if(window_struct.key_pressed_or_repeated_pressed("enter") == scls::Key_State::Pressed) { to_add += "</br>";  }
 
-        add_text(to_add);
+        return to_add;
     }
-
-    // Move the cursor in the text
-    void GUI_Text_Input::move_cursor(int movement) {
-        int final_cursor_position = cursor_position_in_formatted_text() + movement;
-        if(movement < 0) {
-            if(final_cursor_position < 0) {
-                final_cursor_position = 0;
-            }
-        }
-        else if(movement > 0) {
-            if(final_cursor_position > static_cast<int>(plain_text_size())) {
-                final_cursor_position = plain_text_size();
-            }
-        }
-        else if(final_cursor_position == static_cast<int>(cursor_position_in_formatted_text())) return;
-        set_cursor_position_in_formatted_text(final_cursor_position);
-
-        update_text_texture();
-    }
-
-    // Moves the cursor at a pixel position
-    void GUI_Text_Input::move_cursor_at_position_in_scale(glm::vec2 position) {
-        if(children().size() <= 0) return;
-        GUI_Object* current_object = children()[0].get(); bool good = false; unsigned int i = 0;
-        while(current_object->y_in_scale() > position[1] && i < children().size()) {
-            i++;
-            if(i < children().size()) {
-                current_object = children()[i].get();
-            }
-        }
-        if(i >= children().size()) {
-            i = children().size() - 1;
-            current_object = children()[children().size() - 1].get();
-        }
-
-        move_cursor(attached_text_image()->cursor_position_in_plain_text_at_line_and_x(i + line_offset(), position[0] * width_in_pixel()) - cursor_position_in_formatted_text());
-    }
-
-    // Moves the cursor in the Y axis
-    void GUI_Text_Input::move_cursor_y(int movement) {
-        if(attached_text_image() == 0) return;
-
-        Text_Image_Line* cursor_line = attached_text_image()->cursor_line();
-        if(cursor_line != 0) {
-            int cursor_number = (cursor_line->datas().line_number) + movement;
-            if(cursor_number < 0) {
-                move_cursor(-cursor_position_in_formatted_text());
-            }
-            else if(cursor_number >= attached_text_image()->lines().size()) {
-                move_cursor(plain_text_size() - cursor_position_in_formatted_text());
-            }
-            else {
-                move_cursor(attached_text_image()->cursor_position_in_plain_text_at_line_and_x(cursor_number, cursor_line->cursor_x()) - cursor_position_in_formatted_text());
-            }
-        }
-    }
-
-    // Place the lines in the text
-    void GUI_Text_Input::place_lines() {
-        GUI_Object* last_object = 0;
-        for(int i = 0;i<static_cast<int>(children().size());i++) {
-            GUI_Object* current_object = children()[i].get();
-            if(current_object != 0) {
-                current_object->set_height_in_pixel(current_object->texture()->get_image()->height());
-                current_object->move_left_in_parent();
-                if(last_object == 0) current_object->move_top_in_parent();
-                else current_object->move_bottom_of_object_in_parent(last_object);
-                last_object = current_object;
-            }
-        }
-    }
-
-    // Remove a text to the input at the cursor position
-    void GUI_Text_Input::remove_text(unsigned int size_to_delete) {
-        // Preparate the needed datas
-        // Remove the text
-        unsigned int line_to_delete = attached_text_image()->line_number_at_position(cursor_position_in_unformatted_text());
-        unsigned int removed_lines = attached_text_image()->remove_text(size_to_delete);
-        // Remove the needed children
-        int final_size = static_cast<int>(children().size()) + line_offset();
-        if(removed_lines > 0) {for(int i = line_to_delete;i<final_size;i++) { children().erase(children().begin() + line_to_delete);}}
-        update_text_texture();
-    }
-
-    // Update the cursor behavior
-    void GUI_Text_Input::update_cursor() {
-        if(window_struct().key_pressed_or_repeated_pressed("left arrow")) {move_cursor(-1);}
-        if(window_struct().key_pressed_or_repeated_pressed("right arrow")) {move_cursor(1);}
-
-        if(window_struct().key_pressed_or_repeated_pressed("up arrow")) {move_cursor_y(-1);}
-        if(window_struct().key_pressed_or_repeated_pressed("down arrow")) {move_cursor_y(1);}
-
-        if(is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT) || has_child_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
-            move_cursor_at_position_in_scale(mouse_position_in_scale());
-        }
-
-        // Handle wheel scrolling
-        if(has_child_overflighted() ||is_overflighted()) {
-            double final_movement = window_struct().wheel_movement_y_during_this_frame();
-            if(final_movement > 0 && a_line_offset > 0) final_movement = -1;
-            else if(final_movement < 0 && a_line_offset < attached_text_image()->lines_datas().size()) final_movement = 1;
-            else final_movement = 0;
-            if(final_movement != 0) {
-                a_line_offset += final_movement;
-                delete_children();
-                update_text_texture();
-            }
-        }
-    }
-
-    // Update the text
-    void GUI_Text_Input::update_event() {
-        GUI_Object::update_event();
-        if(visible() && (is_focused() || has_child_focused())) {
-            input_text();
-            update_cursor();
-        }
-    }
-
-    // Update the texture of the text
-    void GUI_Text_Input::update_text_texture() {
-        // Configure the text image
-        if(attached_text_image() == 0) attached_text_image_block()->generate_blocks();
-        if(attached_text_image() == 0) return;
-        attached_text_image()->global_style()->set_color(font_color());
-        attached_text_image()->global_style()->set_font(font());
-        attached_text_image()->set_cursor_position_in_plain_text(cursor_position_in_formatted_text());
-        attached_text_image()->set_use_cursor(true);
-
-        // Configure the needed creation settings
-        attached_text_image()->reset_line_generation();
-
-        // Delete the useless children modified
-        for(int i = 0;i<static_cast<int>(children().size());i++) {
-            if(i >= static_cast<int>(attached_text_image()->lines_datas().size())) {
-                 children().erase(children().begin() + i); i--;
-            }
-            else if(children()[i] != 0 && (i + line_offset() < attached_text_image()->lines().size() && (attached_text_image()->lines()[i + line_offset()] == 0 || attached_text_image()->lines()[i + line_offset()]->has_been_modified()))) {
-                children()[i].reset();
-            }
-        }
-
-        // Add lines if needed
-        while(children().size() < static_cast<int>(attached_text_image()->lines_datas().size() - line_offset())) {
-            children().push_back(0);
-        }
-
-        unsigned short line_max_number = 0;
-        unsigned int total_height = 0;
-        for(int i = 0;i + line_offset()<static_cast<int>(attached_text_image()->lines_datas().size());i++) {
-            // Create the configuration for the line
-            Text_Image_Line* line_to_apply = attached_text_image()->generate_next_line(i + line_offset());
-            if(line_to_apply != 0) {
-                // Check the total height
-                if(total_height > height_in_pixel()) break;
-
-                if(line_to_apply->has_been_modified() || (i < static_cast<int>(children().size()) && children()[i] == 0) || i >= static_cast<int>(children().size())) {
-                    Image* image_to_apply = line_to_apply->image();
-                    if(image_to_apply != 0) {
-                        line_to_apply->set_has_been_modified(false);
-
-                        // Generate the object for the line
-                        std::string final_name = name() + "_gen_" + std::to_string(a_generation) + "_line_" + std::to_string(i);
-                        std::shared_ptr<GUI_Object> new_line = *new_object<GUI_Object>(final_name, 0, i * 60);
-                        new_line.get()->set_ignore_click(true);
-                        new_line.get()->set_width_in_scale(Fraction(1)); new_line.get()->set_height_in_pixel(image_to_apply->height());
-                        new_line.get()->set_texture_alignment_horizontal(Alignment_Horizontal::H_Left);
-                        new_line.get()->texture()->set_image(line_to_apply->shared_image());
-
-                        // Place the children
-                        if(i < static_cast<int>(children().size()) && (children()[i].get() == 0 || line_to_apply->has_been_modified())) { children()[i] = children()[children().size() - 1]; children().pop_back(); }
-                        total_height += image_to_apply->height();
-                    }
-                }
-                else {
-                    Image* image_to_apply = line_to_apply->image();
-                    if(image_to_apply != 0) total_height += image_to_apply->height();
-                }
-            }
-        }
-
-        // End configure the needed creation settings
-        attached_text_image()->delete_useless_generated_lines();
-
-        // Delete the useless children in more
-        for(int i = 0;i<static_cast<int>(children().size()) - static_cast<int>(attached_text_image()->lines_datas().size());i++) {children().pop_back();}
-
-        // Delete empty children
-        for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i].get() == 0) {children().erase(children().begin() + i); i--;}}
-
-        place_lines(); a_generation++;
-    };
 
     //*********
     //
@@ -1810,9 +1684,7 @@ namespace scls {
     }
 
     // Update the size of the file explorer
-    void GUI_File_Explorer::update_GUI_scale() {
-        place_all();
-    }
+    void GUI_File_Explorer::update_GUI_scale() {place_all();}
 
     // Update the current path in the top bar
     void GUI_File_Explorer::update_top_bar() {
@@ -1862,18 +1734,7 @@ namespace scls {
     }
 
     // Render the page
-    void GUI_Page::render(){
-
-        // Render the object
-        parent_object()->render(absolute_scale());
-
-        // Soft reset the page
-        parent_object()->soft_reset();
-        soft_reset();
-
-        // using namespace std::chrono_literals;
-        // std::this_thread::sleep_for(10ms);
-    };
+    void GUI_Page::render(){parent_object()->render(absolute_scale());parent_object()->soft_reset();soft_reset();};
 
     // Handle an attribute from XML
     void GUI_Page::set_xml_attribute(std::shared_ptr<XML_Text> text, std::shared_ptr<__XML_Loader> loader_shared_ptr, int& i) {
@@ -1967,7 +1828,7 @@ namespace scls {
                 break;
             }
         }
-        if(current_parent == 0) current_parent = parent_object();
+        if(current_parent == 0){current_parent = parent_object();}
 
         // Create the object
         std::shared_ptr<GUI_Object> object = __create_loaded_object_from_type(object_name, object_type, current_parent);
@@ -1975,7 +1836,8 @@ namespace scls {
         a_loader.get()->created_objects[object_name] = object;
         if(object.get() == 0) {
             print("Warning", "SCLS Graphic Benoit page \"" + name() + "\"", "The object \"" + object_name + "\" you want to load with XML is not recognised by the GUI.");
-        } else {
+        }
+        else {
             object.get()->set_visible(true);
             object.get()->set_xml_loading_datas(content, a_loader);
             if(load_content && current_parent->loaded()) {object.get()->load_from_xml(std::string(""));}

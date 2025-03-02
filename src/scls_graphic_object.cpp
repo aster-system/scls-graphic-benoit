@@ -88,12 +88,7 @@ namespace scls {
     }
 
     // Delete all children of the object
-    void Object::delete_children() {
-        for(int i = 0;i<static_cast<int>(children().size());i++) {
-            if(children()[i] != 0) delete children()[i];
-        }
-        children().clear();
-    }
+    void Object::delete_children() {for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] != 0) delete children()[i];}children().clear();}
 
     //*********
     //
@@ -131,15 +126,7 @@ namespace scls {
             }
         }
     }
-
-    // Render the object on the window
-    void Object::render() {
-        // Create the upgraded matrix
-        glm::mat4 matrix = transform()->get_model_matrix();
-
-        // Call the hidden render part
-        _render(matrix);
-    }
+    void Object::render() {glm::mat4 matrix = transform()->get_model_matrix();_render(matrix);}
 
     //*********
     //
@@ -148,11 +135,7 @@ namespace scls {
     //*********
 
     // Clone the object
-    void* Object::clone(Object* parent, std::string name, std::string texture_name, std::string vao_name) {
-        Object* to_return = new Object(window_struct(), parent, name, texture_name, vao_name);
-
-        return to_return;
-    }
+    void* Object::clone(Object* parent, std::string name, std::string texture_name, std::string vao_name) {Object* to_return = new Object(window_struct(), parent, name, texture_name, vao_name);return to_return;}
 
     //*********
     //

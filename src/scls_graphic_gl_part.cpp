@@ -475,6 +475,7 @@ namespace scls {
             load_texture();
         }
     }
+    Texture::Texture(std::shared_ptr<Image> image, bool a_resize) : Texture("", false) {a_image=image;load_texture();}
     Texture::Texture(unsigned short width, unsigned short height, glm::vec4 color, bool a_resize) : Texture("", false) {a_image.reset(new scls::Image(width, height, color[0], color[1], color[2], color[3]));load_texture();}
     Texture::Texture(unsigned short width, unsigned short height, scls::Color color, bool a_resize) : Texture("", false) {a_image.reset(new scls::Image(width, height, color));load_texture();}
     Texture::Texture() : Texture(1, 1, scls::Color(255, 0, 0), false) {}

@@ -854,12 +854,11 @@ namespace scls {
     class Texture {
         // Class representing a texture interface
     public:
-        Texture(std::string a_texture_path, bool a_resize = true); // Texture constructor
-        // Texture constructor much modulable
+        Texture(std::string a_texture_path, bool a_resize = true);
+        Texture(std::shared_ptr<Image> image, bool a_resize);
+        Texture(std::shared_ptr<Image> image):Texture(image, true){};
         Texture(unsigned short width, unsigned short height, glm::vec4 color, bool a_resize = true);
-        // Texture constructor much modulable
         Texture(unsigned short width, unsigned short height, scls::Color color, bool a_resize = true);
-        // Texture copy constructor
         Texture(Texture& texture_to_copy);
         // Most basic texture constructor
         Texture();
