@@ -62,7 +62,7 @@ namespace scls {
         a_height_in_adapted_scale -= divisor_y / 2;
 
         // Calculate the real width with the pixel perfect system
-        a_width_in_adapted_absolute_scale = divisor_x * width_in_pixel();
+        a_width_in_adapted_absolute_scale = divisor_x * width_in_pixel() + divisor_x;
         a_width_in_adapted_scale = a_width_in_adapted_absolute_scale;
         if(parent() != 0) a_width_in_adapted_scale /= parent()->width_in_adapted_absolute_scale();
         a_width_in_adapted_scale -= divisor_x / 2;
