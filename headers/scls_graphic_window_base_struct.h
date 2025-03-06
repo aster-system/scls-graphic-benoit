@@ -375,6 +375,8 @@ namespace scls {
         //
         //*********
 
+        // Returns the default balise container
+        inline std::shared_ptr<__Balise_Container> balises_shared_ptr() {return text_image_generator()->balises_shared_ptr(); };
         // Returns if the struct contains a text generator
         inline bool contains_text_image_generator(std::string generator_name) {
             for(std::map<std::string, Text_Image_Generator*>::iterator it = text_image_generators().begin();it!=text_image_generators().end();it++) {
@@ -397,10 +399,7 @@ namespace scls {
             return 0;
         };
         // Returns the default text generator in the struct
-        Text_Image_Generator* text_image_generator() {
-            Text_Image_Generator* to_return = text_image_generator("default");
-            return to_return;
-        };
+        Text_Image_Generator* text_image_generator() {Text_Image_Generator* to_return = text_image_generator("default");return to_return;};
 
         // Getters and setters
         inline std::map<std::string, Text_Image_Generator*>& text_image_generators() {return a_text_image_generator;};

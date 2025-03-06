@@ -231,12 +231,16 @@ namespace scls {
         inline void set_texture_alignment(Alignment_Texture new_texture_alignment) {a_texture_alignment = new_texture_alignment;};
         virtual void set_texture_alignment_horizontal(Alignment_Horizontal new_texture_alignment_horizontal) {a_texture_alignment_horizontal = new_texture_alignment_horizontal;};
         virtual void set_texture_alignment_vertical(Alignment_Vertical new_texture_alignment_vertical) {a_texture_alignment_vertical = new_texture_alignment_vertical;};
+        inline void set_texture_scale_x(double new_texture_scale_x) {a_texture_scale_x = new_texture_scale_x;};
+        inline void set_texture_scale_y(double new_texture_scale_y) {a_texture_scale_y = new_texture_scale_y;};
         inline void set_vao(std::shared_ptr<VAO> new_vao){a_vao = new_vao;};
         inline std::vector<std::shared_ptr<GUI_Object>>& sub_pages() {if(a_sub_page.size() <= 0){a_sub_page.push_back(std::vector<std::shared_ptr<GUI_Object>>());}return a_sub_page[0];};
         inline Texture* texture() const {return a_texture.get();};
         inline Alignment_Texture texture_alignment() const {return a_texture_alignment;};
         inline Alignment_Horizontal texture_alignment_horizontal() const {return a_texture_alignment_horizontal;};
         inline Alignment_Vertical texture_alignment_vertical() const {return a_texture_alignment_vertical;};
+        inline double texture_scale_x() const {return a_texture_scale_x;};
+        inline double texture_scale_y() const {return a_texture_scale_y;};
         inline bool texture_fill_object() const {return a_texture_fill_object;};
         inline std::shared_ptr<Texture>& texture_shared_ptr() {return a_texture;};
         inline VAO* vao() const {return a_vao.get();};
@@ -328,6 +332,8 @@ namespace scls {
         Alignment_Horizontal a_texture_alignment_horizontal = Alignment_Horizontal::H_Center;
         // Vertical alignment of the texture, if the texture does not fill the object
         Alignment_Vertical a_texture_alignment_vertical = Alignment_Vertical::V_Center;
+        // Scales of the texture
+        double a_texture_scale_x = 1;double a_texture_scale_y = 1;
         // If the texture fill the object or not
         bool a_texture_fill_object = false;
         // VAO of this object (GUI)

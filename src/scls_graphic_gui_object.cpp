@@ -81,6 +81,7 @@ namespace scls {
         vao()->get_shader_program()->set_uniform4fv_value("model", matrix);
         vao()->get_shader_program()->set_uniform4f_value("object_extremum", final_extremum);
         vao()->get_shader_program()->set_uniform4f_value("object_rect", glm::vec4(0, 0, width_in_pixel(), height_in_pixel()));
+        vao()->get_shader_program()->set_uniform2f_value("scale", texture_scale_x(), texture_scale_y());
         vao()->render();
 
         for(int i = 0;i<static_cast<int>(children().size());i++) {
