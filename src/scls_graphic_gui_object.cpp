@@ -43,6 +43,9 @@ namespace scls {
         return false;
     }
 
+    // Merges the current object with a specific style
+    void GUI_Object::merge_style(GUI_Style* new_style) {set_background_color(new_style->a_background_color);set_border_color(new_style->a_border_color); }
+
     // Render the object
     void GUI_Object::render(glm::vec3 scale_multiplier) {
         if(a_transformation_updated) calculate_transformation(true);
@@ -101,15 +104,15 @@ namespace scls {
     // Loads the object from XML
     void GUI_Object::__load_from_xml_apply(std::string event) {
         // Apply the changes
-        for(int i = 0;i<static_cast<int>(a_loading_parts.size());i++){if(a_loading_parts[i].get()->xml_balise_name() != std::string("content")){set_xml_attribute(a_loading_parts[i], event);a_loading_parts.erase(a_loading_parts.begin() + i);i--;}}
-        for(int i = 0;i<static_cast<int>(a_loading_parts.size());i++){set_xml_attribute(a_loading_parts[i], event);a_loading_parts.erase(a_loading_parts.begin() + i);i--;}
+        for(int i = 0;i<static_cast<int>(a_loading_parts.size());i++){if(a_loading_parts[i].content.get()->xml_balise_name() != std::string("content")){set_xml_attribute(a_loading_parts[i].content, a_loading_parts[i].event);a_loading_parts.erase(a_loading_parts.begin() + i);i--;}}
+        for(int i = 0;i<static_cast<int>(a_loading_parts.size());i++){set_xml_attribute(a_loading_parts[i].content, a_loading_parts[i].event);a_loading_parts.erase(a_loading_parts.begin() + i);i--;}
     }
     void GUI_Object::load_from_xml(std::shared_ptr<XML_Text> text, std::string event) {
         if(text.get() == 0){return;}
         set_loaded(true);
 
         // Parse the content
-        std::vector<std::shared_ptr<XML_Text>> needed_part;
+        std::vector<__Loading_Part>& needed_part = a_loading_parts;
         for(int i = 0;i<static_cast<int>(text.get()->sub_texts().size());i++) {
             std::shared_ptr<XML_Text> current_text = text.get()->sub_texts()[i];
             std::string current_balise_name = current_text.get()->xml_balise_name();
@@ -139,89 +142,17 @@ namespace scls {
                     print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Can't load an event inside an another event with XML.");
                 }
             }
-            else if(current_balise_name != "parent") {needed_part.push_back(current_text);}
+            else if(current_balise_name != "parent") {__Loading_Part to_add;to_add.content=current_text;to_add.event=event;needed_part.push_back(to_add);}
         }
 
         // Apply the change
-        a_loading_parts = needed_part;
-        __load_from_xml_apply(event);
+        if(event == std::string()){__load_from_xml_apply(event);}
     }
 
     // Handle an attribute from XML
     void GUI_Object::set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event) {
         std::string xml_attribute_name = text.get()->xml_balise_name();
-        if(xml_attribute_name == "background_color") {
-            // Load the background color
-            Color background_color(0, 0, 0, 255);
-            for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
-                XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
-                std::string current_attribute_name = current_attribute.name;
-                std::string current_attribute_value = current_attribute.value;
-
-                if(current_attribute_name == "red") {
-                    // Red part of the color
-                    background_color.set_red(std::stoi(current_attribute_value));
-                }
-                else if(current_attribute_name == "green") {
-                    // Red part of the color
-                    background_color.set_green(std::stoi(current_attribute_value));
-                }
-                else if(current_attribute_name == "blue") {
-                    // Red part of the color
-                    background_color.set_blue(std::stoi(current_attribute_value));
-                }
-                else if(current_attribute_name == "alpha") {
-                    // Alpha part of the color
-                    background_color.set_alpha(std::stoi(current_attribute_value));
-                }
-            }
-            set_background_color(background_color);
-        }
-        else if(xml_attribute_name == "border") {
-            // Load the border
-            Color border_color(0, 0, 0, 255);
-            Fraction border_bottom = Fraction(0);
-            Fraction border_left = Fraction(0);
-            Fraction border_right = Fraction(0);
-            Fraction border_top = Fraction(0);
-            for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
-                XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
-                std::string current_attribute_name = current_attribute.name;
-                std::string current_attribute_value = current_attribute.value;
-
-                if(current_attribute_name == "red") {
-                    // Red part of the color
-                    border_color.set_red(std::stoi(current_attribute_value));
-                }
-                else if(current_attribute_name == "green") {
-                    // Red part of the color
-                    border_color.set_green(std::stoi(current_attribute_value));
-                }
-                else if(current_attribute_name == "blue") {
-                    // Red part of the color
-                    border_color.set_blue(std::stoi(current_attribute_value));
-                }
-                else if(current_attribute_name == "bottom") {
-                    // Bottom width of the border
-                    border_bottom = Fraction::from_std_string(current_attribute_value);
-                }
-                else if(current_attribute_name == "left") {
-                    // Left width of the border
-                    border_left = Fraction::from_std_string(current_attribute_value);
-                }
-                else if(current_attribute_name == "right") {
-                    // Right width of the border
-                    border_right = Fraction::from_std_string(current_attribute_value);
-                }
-                else if(current_attribute_name == "top") {
-                    // Top width of the border
-                    border_top = Fraction::from_std_string(current_attribute_value);
-                }
-            }
-            set_border_color(border_color);
-            set_border_width_in_pixel(border_top.to_double());
-        }
-        else if(xml_attribute_name == "cursor") {
+        if(xml_attribute_name == "cursor") {
             if(event == "overflighted") {
                 // Load the cursor of the object when overflighted
                 unsigned long cursor = GLFW_ARROW_CURSOR;
@@ -466,6 +397,99 @@ namespace scls {
                 }
             }
         }
+        else{set_xml_attribute_style(text, current_style());}
+    }
+
+    // Set the XML attributs for a style
+    void GUI_Object::set_xml_attribute_style(std::shared_ptr<XML_Text> text, GUI_Style* needed_style) {
+        std::string xml_attribute_name = text.get()->xml_balise_name();
+        if(xml_attribute_name == "background_color") {
+            // Load the background color
+            Color background_color(0, 0, 0, 255);
+            for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
+                std::string current_attribute_name = current_attribute.name;
+                std::string current_attribute_value = current_attribute.value;
+
+                if(current_attribute_name == "red") {
+                    // Red part of the color
+                    background_color.set_red(std::stoi(current_attribute_value));
+                }
+                else if(current_attribute_name == "green") {
+                    // Red part of the color
+                    background_color.set_green(std::stoi(current_attribute_value));
+                }
+                else if(current_attribute_name == "blue") {
+                    // Red part of the color
+                    background_color.set_blue(std::stoi(current_attribute_value));
+                }
+                else if(current_attribute_name == "alpha") {
+                    // Alpha part of the color
+                    background_color.set_alpha(std::stoi(current_attribute_value));
+                }
+            }
+            needed_style->a_background_color = background_color;
+        }
+        else if(xml_attribute_name == "border") {
+            // Load the border
+            Color border_color(0, 0, 0, 255);
+            Fraction border_bottom = Fraction(0);
+            Fraction border_left = Fraction(0);
+            Fraction border_right = Fraction(0);
+            Fraction border_top = Fraction(0);
+            for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
+                std::string current_attribute_name = current_attribute.name;
+                std::string current_attribute_value = current_attribute.value;
+
+                if(current_attribute_name == "red") {
+                    // Red part of the color
+                    border_color.set_red(std::stoi(current_attribute_value));
+                }
+                else if(current_attribute_name == "green") {
+                    // Red part of the color
+                    border_color.set_green(std::stoi(current_attribute_value));
+                }
+                else if(current_attribute_name == "blue") {
+                    // Red part of the color
+                    border_color.set_blue(std::stoi(current_attribute_value));
+                }
+                else if(current_attribute_name == "bottom") {
+                    // Bottom width of the border
+                    border_bottom = Fraction::from_std_string(current_attribute_value);
+                }
+                else if(current_attribute_name == "left") {
+                    // Left width of the border
+                    border_left = Fraction::from_std_string(current_attribute_value);
+                }
+                else if(current_attribute_name == "right") {
+                    // Right width of the border
+                    border_right = Fraction::from_std_string(current_attribute_value);
+                }
+                else if(current_attribute_name == "top") {
+                    // Top width of the border
+                    border_top = Fraction::from_std_string(current_attribute_value);
+                }
+            }
+            needed_style->a_border_color = border_color;
+            needed_style->border_width = glm::vec4(border_top.to_double());
+        }
+        else if(xml_attribute_name == "font_size") {
+            // Load the font size of the text
+            Fraction final_font_size = Fraction(1);
+            for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
+                XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
+                std::string current_attribute_name = current_attribute.name;
+                std::string current_attribute_value = current_attribute.value;
+
+                if(current_attribute_name == "value") {
+                    // Value of the height
+                    final_font_size = Fraction::from_std_string(current_attribute_value);
+                }
+            }
+            // Set the font size
+            needed_style->global_text_style.set_font_size(final_font_size.to_double());
+        }
     }
 
     //*********
@@ -704,7 +728,11 @@ namespace scls {
         a_scroller_children->attach_top_in_parent(1);
 
         // Resize the children
-        if(a_scroller_children.get()->width_in_pixel() != width_in_pixel() - 2) a_scroller_children->set_width_in_pixel(width_in_pixel() - 2);
+        int border_offset = (border_width_in_pixel()[1] + border_width_in_pixel()[3]);
+        if(a_scroller_children.get()->width_in_pixel() != width_in_pixel() - border_offset){
+            a_scroller_children->set_width_in_pixel(width_in_pixel() - border_offset);
+            a_scroller_children->set_x_in_pixel(border_width_in_pixel()[1]);
+        }
 
         /*// Calculate according to the last position
         int children_height = static_cast<int>(a_scroller_children->height_in_pixel());
@@ -768,12 +796,12 @@ namespace scls {
     void GUI_Scroller_Choice::__load_from_xml_apply(std::string event) {
         // Apply the changes
         for(int i = 0;i<static_cast<int>(a_loading_parts.size());i++){
-            if(a_loading_parts[i].get()->xml_balise_name() != std::string("sub_choice") && a_loading_parts[i].get()->xml_balise_name() != std::string("choice")){
-                set_xml_attribute(a_loading_parts[i], event);a_loading_parts.erase(a_loading_parts.begin() + i);i--;
+            if(a_loading_parts[i].event == std::string() && a_loading_parts[i].content.get()->xml_balise_name() != std::string("sub_choice") && a_loading_parts[i].content.get()->xml_balise_name() != std::string("choice")){
+                set_xml_attribute(a_loading_parts[i].content, a_loading_parts[i].event);a_loading_parts.erase(a_loading_parts.begin() + i);i--;
             }
         }
         reset_scroller_children();
-        for(int i = 0;i<static_cast<int>(a_loading_parts.size());i++){set_xml_attribute(a_loading_parts[i], event);a_loading_parts.erase(a_loading_parts.begin() + i);i--;}
+        for(int i = 0;i<static_cast<int>(a_loading_parts.size());i++){set_xml_attribute(a_loading_parts[i].content, a_loading_parts[i].event);a_loading_parts.erase(a_loading_parts.begin() + i);i--;}
         place_objects();
     }
 
@@ -807,7 +835,8 @@ namespace scls {
             // Add the contained object
             a_choice_modified = true;
             if(contains_selected_object(needed_object.name())) {
-                if(a_unselect_object_on_confirmation) unselect_object(needed_object);
+                // Confirm the object
+                if(a_unselect_object_on_confirmation){unselect_object(needed_object);}
                 a_currently_confirmed_objects.push_back(needed_object.name());
             }
             else {
@@ -816,14 +845,14 @@ namespace scls {
                 a_currently_selected_objects_during_this_frame.push_back(needed_object);
                 a_selection_modified = true;
 
+                // Set the style for the object
+                object->merge_style(&selected_objects_style());
+
                 // Remove the too much objects
                 while(a_currently_selected_objects.size() > max_number_selected_object()) {
                     unselect_object(a_currently_selected_objects[0]);
                 }
             }
-
-            // Apply the graphic modification
-            object->set_background_color(selected_objects_style().a_background_color);
         }
     };
 
@@ -831,10 +860,12 @@ namespace scls {
     void GUI_Scroller_Choice::unselect_object(std::string object_name) {
         for(int i = 0;i<static_cast<int>(currently_selected_objects().size());i++) {
             if(currently_selected_objects()[i].name()==object_name) {
+                GUI_Object* object = currently_selected_objects()[i].object();
                 currently_selected_objects()[i].__choice.get()->good = false;
                 currently_selected_objects().erase(currently_selected_objects().begin()+i,currently_selected_objects().begin()+i+1);
-                GUI_Object* object = currently_selected_objects()[i].object();
-                if(object != 0) object->set_background_color(unselected_objects_style().a_background_color);
+
+                // Set the style for the object
+                if(object != 0){object->merge_style(&unselected_objects_style());}
                 return;
             }
         }
@@ -921,7 +952,10 @@ namespace scls {
                 // Loads the sub-choices
                 current_section.get()->set_xml_attribute(text.get()->sub_texts()[i], event);
             }
-        } else {GUI_Object::set_xml_attribute(text, event);}
+        }
+        else if(event == "selected"){GUI_Object::set_xml_attribute_style(text, &selected_objects_style());}
+        else if(event == "unselected"){GUI_Object::set_xml_attribute_style(text, &unselected_objects_style());}
+        else {GUI_Object::set_xml_attribute(text, event);}
     }
 
     //*********
@@ -959,6 +993,9 @@ namespace scls {
 
     // Function called after that the window is resized
     void __GUI_Text_Metadatas::after_resizing(){GUI_Object::after_resizing();if(max_width() != -1) {set_max_width(width_in_pixel());update_text_texture(scls::Image_Generation_Type::IGT_Size);}}
+
+    // Merges the current object with a specific style
+    void __GUI_Text_Metadatas::merge_style(GUI_Style* new_style) {global_style()->merge_style(new_style->global_text_style);GUI_Object::merge_style(new_style);update_text_image_block();};
 
     // Move the cursor in the text
     void __GUI_Text_Metadatas::move_cursor(int movement) {
@@ -1025,6 +1062,9 @@ namespace scls {
                 // Place the children
                 // Place the X
                 if(a_blocks_children[i].get()->style()->alignment_horizontal() == scls::Alignment_Horizontal::H_Left){a_blocks_children[i].get()->set_x_in_pixel(0);}
+                else if(a_blocks_children[i].get()->style()->alignment_horizontal() == scls::Alignment_Horizontal::H_Right){
+                    a_blocks_children[i].get()->set_x_in_pixel(width_in_pixel() - a_blocks_children[i].get()->width_in_pixel());
+                }
                 else{a_blocks_children[i].get()->set_x_in_object_scale(scls::Fraction(1, 2));}
                 // Place the Y
                 if(texture_alignment_vertical() == scls::Alignment_Vertical::V_Top){
@@ -1464,10 +1504,7 @@ namespace scls {
     void GUI_File_Explorer::after_resizing() {place_all();}
 
     // Returns if a file is chosen during this frame
-    bool GUI_File_Explorer::file_chosen() {
-        if(!choose_clicked() && !a_file_chose) return false;
-        return true;
-    }
+    bool GUI_File_Explorer::file_chosen() {if(!choose_clicked() && !a_file_chose) return false;return true;}
 
     // Load the explorer
     void GUI_File_Explorer::load() {
@@ -1769,9 +1806,7 @@ namespace scls {
                 print("Warning", "SCLS Graphic Benoit page \"" + name() + "\"", "The path \"" + final_path + "\" you want to load as the content of this page does not exist.");
             }
         }
-        else {
-            Object::set_xml_attribute(text, loader_shared_ptr, i);
-        }
+        else {Object::set_xml_attribute(text, loader_shared_ptr, i);}
     }
 
     // Update the event of the page

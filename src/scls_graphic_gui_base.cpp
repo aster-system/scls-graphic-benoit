@@ -67,6 +67,17 @@ namespace scls {
         if(parent() != 0) a_width_in_adapted_scale /= parent()->width_in_adapted_absolute_scale();
         a_width_in_adapted_scale -= divisor_x / 2;
 
+        // Calculate the x minimum and maximum scale
+        a_object_x_maximum = object_absolute_x_last_extremum();
+        a_object_x_minimum = object_absolute_x_first_extremum();
+        if(parent() != 0) {
+            a_object_x_maximum -= x_in_absolute_pixel();
+            a_object_x_minimum -= x_in_absolute_pixel();
+        }
+        // Apply the local transformations
+        a_object_x_maximum *= one_pixel_width_in_scale();
+        a_object_x_minimum *= one_pixel_width_in_scale();
+
         // Calculate the y minimum and maximum scale
         a_object_y_maximum = object_absolute_y_last_extremum();
         a_object_y_minimum = object_absolute_y_first_extremum();
@@ -94,6 +105,26 @@ namespace scls {
     //
     //*********
 
+    // Returns the first absolute extremum of the object in the X axis
+    Fraction __GUI_Transformation::object_absolute_x_first_extremum(bool remove_border) {
+        Fraction to_return = x_in_absolute_pixel();
+        if(remove_border) to_return += border_width_in_pixel()[1];
+        Fraction parent_extremum = Fraction(-1);
+        if(parent() != 0) { parent_extremum = parent()->object_absolute_x_first_extremum(true);}
+        if(parent_extremum > to_return){to_return = parent_extremum;}
+        return to_return;
+    }
+
+    // Returns the last absolute extremum of the object in the YXaxis
+    Fraction __GUI_Transformation::object_absolute_x_last_extremum(bool remove_border) {
+        Fraction to_return = (x_in_absolute_pixel() + width_in_pixel());
+        if(remove_border) to_return -= border_width_in_pixel()[3];
+        Fraction parent_extremum = Fraction(window_width());
+        if(parent() != 0) { parent_extremum = parent()->object_absolute_x_last_extremum(true);}
+        if(parent_extremum < to_return){to_return = parent_extremum;}
+        return to_return;
+    }
+
     // Returns the first absolute extremum of the object in the Y axis
     Fraction __GUI_Transformation::object_absolute_y_first_extremum(bool remove_border) {
         Fraction to_return = y_in_absolute_pixel();
@@ -115,7 +146,7 @@ namespace scls {
     }
 
     // Returns the extremum of the object
-    glm::vec4 __GUI_Transformation::object_extremum() { return glm::vec4(-1.0, a_object_y_minimum.to_double(), 2.0, a_object_y_maximum.to_double()); }
+    glm::vec4 __GUI_Transformation::object_extremum() { return glm::vec4(a_object_x_minimum.to_double(), a_object_y_minimum.to_double(), a_object_x_maximum.to_double(), a_object_y_maximum.to_double()); }
 
     //*********
     //

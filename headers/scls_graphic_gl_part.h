@@ -73,7 +73,7 @@ namespace scls {
         // Return the default shaders
         static std::string default_gui_blend_colors();
         static std::string default_gui_border_handling() {return std::string("if(tex_pos[0] < border_width.y || tex_pos[1] < border_width.z || tex_pos[0] > 1.0 - border_width.w || tex_pos[1] > 1.0 - border_width.x){final_color = blend_colors(border_color, final_color);}");};
-        static std::string default_gui_extremum_handling() {return std::string("if(tex_pos.y > object_extremum.w || tex_pos.y < object_extremum.y){discard;}");};
+        static std::string default_gui_extremum_handling() {return std::string("if(tex_pos.x > object_extremum.z || tex_pos.x < object_extremum.x || tex_pos.y > object_extremum.w || tex_pos.y < object_extremum.y){discard;}");};
         static std::string get_built_in_fragment_shader(Built_In_Shader shader_type) {if (shader_type == Default || shader_type == Curved) {return get_default_fragment_shader();}return get_default_hud_fragment_shader();};
         static std::string get_built_in_vertex_shader(Built_In_Shader shader_type) {if (shader_type == Curved) {return curved_vertex_shader();}else if (shader_type == Default){return get_default_vertex_shader();}return get_default_hud_vertex_shader();};
         static std::string get_default_fragment_shader() {

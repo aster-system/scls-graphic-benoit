@@ -51,6 +51,9 @@ namespace scls {
         Color a_background_color = Color(0, 0, 0, 0);
         // Color of the border
         Color a_border_color = Color(0, 0, 0, 255);
+
+        // Global text style
+        Text_Style global_text_style;
     };
 
     class GUI_Object : public __GUI_Object_Core {
@@ -83,6 +86,8 @@ namespace scls {
         inline void hide_children() {for(int i = 0;i<static_cast<int>(a_children.size());i++) {if(a_children[i] != 0) a_children[i]->set_visible(false);}};
         // Loads the objects and all his children
         inline void load_with_children(){if(!loaded()){load_from_xml(std::string(""));}for(int i = 0;i<static_cast<int>(a_children.size());i++){a_children[i].get()->load_with_children();}};
+        // Merges the current object with a specific style
+        virtual void merge_style(GUI_Style* new_style);
         // Add a child object to the object
         template<typename O>
         std::shared_ptr<O>* new_object(std::string name);
@@ -114,10 +119,11 @@ namespace scls {
         // Getters and setters (ONLY WITH ATRIBUTES)
         inline Color background_color() {return current_style()->a_background_color;};
         inline Color border_color() {return current_style()->a_border_color;};
+        inline glm::vec4 border_width_in_pixel(){return current_style()->border_width;};
         inline std::vector<std::shared_ptr<GUI_Object>>& children() {return a_children;};
         inline bool ignore_click() const {return a_ignore_click;};
         inline std::string name() const {return a_name;};
-        inline void set_background_color(Color new_background_color) {current_style()->a_background_color = new_background_color;};
+        virtual void set_background_color(Color new_background_color) {current_style()->a_background_color = new_background_color;};
         inline void set_border_color(Color new_color) {current_style()->a_border_color = new_color;};
         inline void set_loaded(bool new_loaded){a_loaded=new_loaded;};
         inline void set_ignore_click(bool new_ignore_click) {a_ignore_click = new_ignore_click;};
@@ -154,6 +160,8 @@ namespace scls {
         virtual void __load_from_xml_apply(std::string event);
         // Handle an attribute from XML
         virtual void set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event);
+        // Set the XML attributs for a style
+        void set_xml_attribute_style(std::shared_ptr<XML_Text> text, GUI_Style*needed_style);
 
         //*********
         //
@@ -268,7 +276,8 @@ namespace scls {
         // Loader of the software
         std::shared_ptr<__GUI_Page_Loader> a_loader;
         // XML parts to load the object
-        std::vector<std::shared_ptr<XML_Text>> a_loading_parts;
+        struct __Loading_Part{std::shared_ptr<XML_Text> content;std::string event;};
+        std::vector<__Loading_Part> a_loading_parts;
 
     private:
         //*********
@@ -491,6 +500,8 @@ namespace scls {
 
         // Adds a text to the input at the cursor position returns if the text has correctly been added
         virtual bool add_text(std::string text_to_add);
+        // Merges the current object with a specific style
+        virtual void merge_style(GUI_Style* new_style);
         // Places the blocks in the text
         virtual void place_blocks();
         // Return the plain text in the object
@@ -514,12 +525,13 @@ namespace scls {
         inline unsigned short font_size() const {return a_global_style.font_size();};
         inline Text_Style* global_style() {return &a_global_style;};
         inline int max_width() const {return a_global_style.max_width;};
+        virtual void set_background_color(Color new_background_color) {GUI_Object::set_background_color(new_background_color);a_global_style.set_background_color(new_background_color);update_text_image_block();};
         inline void set_font_color(Color new_font_color) {a_global_style.set_color(new_font_color);};
         inline void set_font_family(std::string new_font_family) {a_global_style.set_font(get_system_font(new_font_family));update_text_image_block();};
         inline void set_font_size(unsigned short new_font_size) {a_global_style.set_font_size(new_font_size);update_text_image_block();};
         inline void set_max_width(int new_max_width) {a_global_style.max_width = new_max_width;};
         virtual void set_text(std::string new_text) {if(new_text == text()){return;}update_text_image_block_style();attached_text_image_block()->set_text(new_text);update_texture();};
-        inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {global_style()->set_alignment_horizontal(new_text_alignment_horizontal);};
+        inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {global_style()->set_alignment_horizontal(new_text_alignment_horizontal);update_text_image_block();};
         virtual void set_text_image_type(Block_Type new_text_image_type) {a_text_image_type = new_text_image_type;};
         inline void set_text_offset(double new_text_offset) {a_global_style.text_offset_x = new_text_offset;a_global_style.text_offset_y = new_text_offset;a_global_style.text_offset_width = new_text_offset;a_global_style.text_offset_height = new_text_offset;};
         virtual void set_texture_alignment_horizontal(Alignment_Horizontal new_texture_alignment_horizontal){if(new_texture_alignment_horizontal != texture_alignment_horizontal()){GUI_Object::set_texture_alignment_horizontal(new_texture_alignment_horizontal);place_blocks();}};
@@ -697,6 +709,12 @@ namespace scls {
         std::shared_ptr<Text> a_text_image;
     };
     typedef GUI_Text_Input_Base<Text_Image_Multi_Block> GUI_Text_Input;
+
+    //*********
+    //
+    // Complex GUI class
+    //
+    //*********
 
     class GUI_Scroller_Choice : public GUI_Scroller {
         // Class representing a simple GUI scroller displayed into the window, which propose choices to use

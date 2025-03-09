@@ -228,6 +228,12 @@ namespace scls {
 
         // Returns the border in the pixel plan
         glm::vec4 border_width_in_pixel() const {return a_border_width;};
+        // Returns the first absolute extremum of the object in the X axis
+        Fraction object_absolute_x_first_extremum(bool remove_border);
+        inline Fraction object_absolute_x_first_extremum(){return object_absolute_x_first_extremum(false);};
+        // Returns the last absolute extremum of the object in the YXaxis
+        Fraction object_absolute_x_last_extremum(bool remove_border);
+        inline Fraction object_absolute_x_last_extremum(){return object_absolute_x_last_extremum(false);};
         // Returns the first absolute extremum of the object in the Y axis
         Fraction object_absolute_y_first_extremum(bool remove_border = false);
         // Returns the last absolute extremum of the object in the Y axis
@@ -398,6 +404,10 @@ namespace scls {
         _Size_Definition a_last_x_definition = _Size_Definition::Scale_Size;
         // Last type of definition of the y
         _Size_Definition a_last_y_definition = _Size_Definition::Scale_Size;
+        // Maximum y position of the object
+        Fraction a_object_x_maximum = Fraction(2);
+        // Minimum y position of the object
+        Fraction a_object_x_minimum = Fraction(-1);
         // Maximum y position of the object
         Fraction a_object_y_maximum = Fraction(0);
         // Minimum y position of the object
@@ -735,11 +745,7 @@ namespace scls {
         inline void move_right_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) { __move_right_of_object_in_parent(another_object, offset); };
         inline void move_right_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, Fraction offset = Fraction(0)) { move_right_of_object_in_parent(another_object.get(), offset); };
         // Move the object at the top of its parent
-        inline void move_top_in_parent(int offset = 0) {
-            a_transform_attachment.attachment_vertical_type = 0;
-            __move_top_in_parent(offset);
-            a_transformation_updated = true;
-        };
+        inline void move_top_in_parent(int offset = 0) {a_transform_attachment.attachment_vertical_type = 0;__move_top_in_parent(offset);a_transformation_updated = true;};
         // Move the object top of another in the parent
         inline void move_top_of_object_in_parent(__GUI_Object_Core* another_object, Fraction offset = Fraction(0)) {a_transform_attachment.attachment_vertical_type = 0;__move_top_of_object_in_parent(another_object, offset);a_transformation_updated = true;};
         inline void move_top_of_object_in_parent(const std::shared_ptr<__GUI_Object_Core>& another_object, Fraction offset = Fraction(0)) { move_top_of_object_in_parent(another_object.get(), offset); };
