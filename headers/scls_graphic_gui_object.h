@@ -726,8 +726,24 @@ namespace scls {
         //
         //*********
 
-        struct __GUI_Scroller_Single_Choice {bool good=true;bool is_sub_section = false;int index = 0;std::shared_ptr<GUI_Object> object;std::string name;inline GUI_Scroller_Choice* sub_section()const{return reinterpret_cast<GUI_Scroller_Choice*>(object.get());};};
-        struct GUI_Scroller_Single_Choice {std::shared_ptr<__GUI_Scroller_Single_Choice> __choice;inline bool is_sub_section()const{return __choice.get()->is_sub_section;};inline std::string& name(){return __choice.get()->name;};inline GUI_Object* object()const{return __choice.get()->object.get();};inline std::shared_ptr<GUI_Object>object_shared_ptr()const{return __choice.get()->object;};inline GUI_Scroller_Choice* sub_section()const{return __choice.get()->sub_section();}};
+        struct __GUI_Scroller_Single_Choice {
+            bool good=true;bool is_sub_section = false;
+            int index = 0;
+            std::shared_ptr<GUI_Object> object;
+            std::string name;
+            inline GUI_Scroller_Choice* sub_section()const{return reinterpret_cast<GUI_Scroller_Choice*>(object.get());};};
+        struct GUI_Scroller_Single_Choice {
+            std::shared_ptr<__GUI_Scroller_Single_Choice> __choice;
+            inline bool exists()const{return __choice.get()!=0;};
+            inline bool is_sub_section()const{return __choice.get()->is_sub_section;};
+            inline std::string& name(){return __choice.get()->name;};
+            inline GUI_Object* object()const{if(!exists()){return 0;}return __choice.get()->object.get();};
+            inline std::shared_ptr<GUI_Object>object_shared_ptr()const{return __choice.get()->object;};
+            inline GUI_Scroller_Choice* sub_section()const{if(!exists()){return 0;}return __choice.get()->sub_section();}
+
+            // Returns an object by its name
+            inline GUI_Scroller_Single_Choice object_by_name(std::string object_name) {if(sub_section()!=0){return sub_section()->object_by_name(object_name);}return GUI_Scroller_Single_Choice();};
+        };
 
         //*********
         //
@@ -856,7 +872,7 @@ namespace scls {
         inline bool contains_selected_object(std::string object_name) {for(int i = 0;i<static_cast<int>(a_currently_selected_objects.size());i++){if(a_currently_selected_objects[i].name()==object_name)return true; } return false;};
         inline bool contains_selected_object_during_this_frame(std::string object_name) {for(int i = 0;i<static_cast<int>(a_currently_selected_objects_during_this_frame.size());i++){if(a_currently_selected_objects_during_this_frame[i].name()==object_name)return true; } return false;};
         // Returns an object by its name
-        inline GUI_Scroller_Single_Choice object_by_name(std::string object_name) {for(int i = 0;i<static_cast<int>(a_objects.size());i++){if(a_objects[i].name()==object_name)return a_objects[i]; } return GUI_Scroller_Single_Choice();};
+        inline GUI_Scroller_Single_Choice object_by_name(std::string object_name) {for(int i = 0;i<static_cast<int>(a_objects.size());i++){if(a_objects[i].name()==object_name)return a_objects[i];else{GUI_Scroller_Single_Choice test=a_objects[i].object_by_name(object_name);if(test.exists()){return test;}}}return GUI_Scroller_Single_Choice();};
         // Resets the scroller
         virtual void reset() {reset_objects();a_displayer_object.reset();a_objects.clear();GUI_Scroller::reset();};
         // Select an object

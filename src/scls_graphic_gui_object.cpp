@@ -1191,12 +1191,14 @@ namespace scls {
         if(i >= a_blocks_children.size()) {
             i = a_blocks_children.size() - 1;
             current_object = a_blocks_children[i].get();
-        } y -= current_object->y_in_pixel();
+        }
+        y -= current_object->y_in_pixel();
 
         // Get the needed block
+        int needed_height = current_object->texture()->get_image()->height();
         Text_Image_Block* needed_block = attached_text_image_block()->blocks()[i].get(); int needed_y = 0;
-        Text_Image_Line* needed_line = needed_block->line_at_position_in_pixel(x, needed_block->image()->height() - y, needed_y);
-        y = (needed_block->image()->height() - y) - needed_y;
+        Text_Image_Line* needed_line = needed_block->line_at_position_in_pixel(x, needed_height - y, needed_y);
+        y = (needed_height - y) - needed_y;
         Text_Image_Word* needed_word = needed_line->word_at_position_in_pixel(x, y).get();
         if(needed_word == 0){return std::shared_ptr<XML_Text>();}
         return needed_word->datas().balise_parent();
