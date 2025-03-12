@@ -234,15 +234,31 @@ namespace scls {
     //*********
 
     // Render the scene
-    void Window::render() {
-        // Clear OpenGL window
-        glClearColor(background_color().red() / 255.0, background_color().green() / 255.0, background_color().blue() / 255.0, background_color().alpha() / 255.0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
+    std::vector<std::shared_ptr<Object>> to_display;
+    void Window::render_always(){
         // Update the cursor texture
         if(cursor_changed() && cursor() != 0) {glfwSetCursor(window(), cursor());}
         else if(cursor() == 0) {set_cursor(glfwCreateStandardCursor(GLFW_ARROW_CURSOR));glfwSetCursor(window(), cursor());}
         a_cursor_changed = false;
+
+        // Soft reset 2D pages
+        glDepthFunc(GL_ALWAYS);
+        if (displayed_pages_2d_names().size() > 0) {
+            if(to_display.size() <= 0){to_display = displayed_pages_2d();}
+            for(int i = 0;i<static_cast<int>(to_display.size());i++) {
+                to_display[i].get()->soft_reset();
+            }
+        }
+        to_display.clear();
+
+        // Handle the events
+        glfwPollEvents();
+        a_displayed_pages_2d_modified_during_this_frame = false;
+    };
+    void Window::render() {
+        // Clear OpenGL window
+        glClearColor(background_color().red() / 255.0, background_color().green() / 255.0, background_color().blue() / 255.0, background_color().alpha() / 255.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         // Render 3D pages
         glDepthFunc(GL_LESS);
@@ -256,15 +272,13 @@ namespace scls {
         // Render 2D pages
         glDepthFunc(GL_ALWAYS);
         if (displayed_pages_2d_names().size() > 0) {
-            std::vector<std::shared_ptr<Object>> to_display = displayed_pages_2d();
-            for(int i = 0;i<static_cast<int>(to_display.size());i++) {
-                to_display[i].get()->render();
-            }
+            to_display = displayed_pages_2d();
+            for(int i = 0;i<static_cast<int>(to_display.size());i++) {to_display[i].get()->render();}
         }//*/
 
         // Update OpenGL
         glfwSwapBuffers(window());
-        glfwPollEvents();
+        render_always();
     }
 
     // Update one frame of the game

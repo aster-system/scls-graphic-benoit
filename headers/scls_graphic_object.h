@@ -124,6 +124,8 @@ namespace scls {
         virtual void after_window_resizing(glm::vec2 last_scale){for(int i = 0;i<static_cast<int>(children().size());i++){children()[i]->after_window_resizing(last_scale);}};
         // Render the object on the window
         virtual void render();
+        // Function called when the object is displayed
+        virtual void after_displaying() {};
         // Function called when the object is hidden
         virtual void after_hiding() {};
 
@@ -147,6 +149,7 @@ namespace scls {
             }
             a_vao = window_struct()->vao(new_vao);
         };
+        virtual bool should_render_during_this_frame(){return true;};
         inline Texture* texture() {return a_texture.get();};
         inline VAO* vao() {return a_vao;};
 

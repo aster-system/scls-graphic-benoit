@@ -152,13 +152,14 @@ namespace scls {
             return to_return;
         };
         inline std::vector<std::shared_ptr<Object>> displayed_pages_3d() {std::vector<std::shared_ptr<Object>> to_return = std::vector<std::shared_ptr<Object>>();if(displayed_pages_3d_names().size() > 0) {for(int i = 0;i<static_cast<int>(displayed_pages_3d_names().size());i++) {to_return.push_back(pages_3d()[displayed_pages_3d_names()[i]]);}}return to_return;};
-        virtual void display_page_2d(std::string new_page_2d) {if(new_page_2d != "" && !contains_page_2d(new_page_2d)){scls::print("Warning", "SCLS Window", "The \"" + new_page_2d + "\" 2D page you want to display does not exists.");}else if(!contains_displayed_page_2d(new_page_2d)) displayed_pages_2d_names().push_back(new_page_2d);};
+        virtual void display_page_2d(std::string new_page_2d) {if(new_page_2d != "" && !contains_page_2d(new_page_2d)){scls::print("Warning", "SCLS Window", "The \"" + new_page_2d + "\" 2D page you want to display does not exists.");}else if(!contains_displayed_page_2d(new_page_2d)){displayed_pages_2d_names().push_back(new_page_2d);page_2d(new_page_2d)->get()->after_displaying();a_displayed_pages_2d_modified_during_this_frame=true;}};
         inline void display_page_2d(std::shared_ptr<Object> new_page_2d){display_page_2d(new_page_2d.get()->name());};
         inline void display_page_3d(std::string new_page_3d) {if(new_page_3d != "" && !contains_page_3d(new_page_3d)){scls::print("Warning", "SCLS Window", "The \"" + new_page_3d + "\" 3D page you want to display does not exists.");}else if(!contains_displayed_page_3d(new_page_3d)){displayed_pages_3d_names().push_back(new_page_3d);}};
-        virtual void hide_all_pages_2d() {for(int i = 0;i<static_cast<int>(displayed_pages_2d_names().size());i++) {pages_2d()[displayed_pages_2d_names()[i]].get()->after_hiding();} displayed_pages_2d_names().clear();};
+        virtual void hide_all_pages_2d() {for(int i = 0;i<static_cast<int>(displayed_pages_2d_names().size());i++) {pages_2d()[displayed_pages_2d_names()[i]].get()->after_hiding();} displayed_pages_2d_names().clear();a_displayed_pages_2d_modified_during_this_frame=true;};
         inline std::shared_ptr<Object>* page_2d(std::string page_name) {if(contains_page_2d(page_name)){return &pages_2d()[page_name];}scls::print("Warning", "SCLS Window", "The \"" + page_name + "\" page you want to get does not exists.");return 0;};
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
+        inline bool displayed_pages_2d_modified_during_this_frame() const {return a_displayed_pages_2d_modified_during_this_frame;};
         inline std::vector<std::string>& displayed_pages_2d_names() {return a_displayed_pages_2d;};
         inline std::vector<std::string>& displayed_pages_3d_names() {return a_displayed_pages_3d;};
         inline bool is_resize_possible() {return a_is_resize_possible;};
@@ -177,6 +178,7 @@ namespace scls {
         // Hidden function to call the children that there has been a resizing
         inline void apply_window_resizing(glm::vec2 last_size){for(std::map<std::string, std::shared_ptr<Object>>::iterator it = pages_2d().begin(); it != pages_2d().end(); it++) {it->second->after_window_resizing(last_size);}};
         // Render the scene
+        void render_always();
         virtual void render();
         // Update one frame of the game
         virtual void update();
@@ -237,6 +239,7 @@ namespace scls {
 
         // Names of the displayed 2D page
         std::vector<std::string> a_displayed_pages_2d = std::vector<std::string>();
+        bool a_displayed_pages_2d_modified_during_this_frame = false;
         // Map containing each pages 2D in the window with their name as key
         std::map<std::string, std::shared_ptr<Object>> a_pages_2d = std::map<std::string, std::shared_ptr<Object>>();
         // Names of the displayed 3D page

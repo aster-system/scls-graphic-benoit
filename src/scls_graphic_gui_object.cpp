@@ -44,7 +44,7 @@ namespace scls {
     }
 
     // Merges the current object with a specific style
-    void GUI_Object::merge_style(GUI_Style* new_style) {set_background_color(new_style->a_background_color);set_border_color(new_style->a_border_color); }
+    void GUI_Object::merge_style(GUI_Style* new_style) {set_background_color(new_style->a_background_color);set_border_color(new_style->a_border_color);}
 
     // Render the object
     void GUI_Object::render(glm::vec3 scale_multiplier) {
@@ -86,10 +86,9 @@ namespace scls {
         vao()->get_shader_program()->set_uniform4f_value("object_rect", glm::vec4(0, 0, width_in_pixel(), height_in_pixel()));
         vao()->get_shader_program()->set_uniform2f_value("scale", texture_scale_x(), texture_scale_y());
         vao()->render();
+        set_should_render_during_this_frame(false);
 
-        for(int i = 0;i<static_cast<int>(children().size());i++) {
-            if(children()[i] != 0 && children()[i]->visible()) children()[i]->render(scale_multiplier);
-        }
+        for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] != 0 && children()[i]->visible()) children()[i]->render(scale_multiplier);}
     }
 
     // GUI_Object destructor
@@ -748,6 +747,7 @@ namespace scls {
             }
         } //*/
         //calculate_transformation(true, true);
+        set_should_render_during_this_frame(true);
     }
 
     // Private function to create the children scroller
@@ -775,6 +775,7 @@ namespace scls {
             a_scroller_children.get()->calculate_transformation(true, false);
             if(a_scroller_children.get()->children().size() > 0) a_scroller_children.get()->children()[a_scroller_children.get()->children().size()-1].get()->calculate_transformation(true, true);
         }
+        set_should_render_during_this_frame(true);
     }
 
     //*********
@@ -1075,6 +1076,9 @@ namespace scls {
                 total_height += a_blocks_children[i].get()->height_in_pixel();
             }
         }
+
+        // Update the view
+        set_should_render_during_this_frame(true);
     }
 
     // Remove a text to the input at the cursor position
@@ -1253,6 +1257,7 @@ namespace scls {
             a_generation++;
         }
         else {delete_children();texture()->set_image(0);}
+        set_should_render_during_this_frame(true);
     };
 
     //*********
@@ -1774,7 +1779,7 @@ namespace scls {
     }
 
     // Render the page
-    void GUI_Page::render(){parent_object()->render(absolute_scale());parent_object()->soft_reset();soft_reset();};
+    void GUI_Page::render(){if(should_render_during_this_frame()){parent_object()->render(absolute_scale());}};
 
     // Handle an attribute from XML
     void GUI_Page::set_xml_attribute(std::shared_ptr<XML_Text> text, std::shared_ptr<__XML_Loader> loader_shared_ptr, int& i) {

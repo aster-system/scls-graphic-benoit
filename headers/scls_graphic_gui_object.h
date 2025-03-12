@@ -103,7 +103,7 @@ namespace scls {
         // Function called after that the window is resized
         virtual void after_resizing_window_early(){a_transformation_updated=true;};
         void __after_resizing_window_early_children(){after_resizing_window_early();for(int i = 0;i<static_cast<int>(a_children.size());i++){a_children[i].get()->__after_resizing_window_early_children();}};
-        virtual void after_resizing(){};
+        virtual void after_resizing(){set_should_render_during_this_frame(true);};
         void __after_resizing_children(){after_resizing();for(int i = 0;i<static_cast<int>(a_children.size());i++){a_children[i].get()->__after_resizing_children();}};
         // Function called after an XML loading
         virtual void after_xml_loading() {for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i].get()!=0)children()[i].get()->after_xml_loading();}};
@@ -123,11 +123,11 @@ namespace scls {
         inline std::vector<std::shared_ptr<GUI_Object>>& children() {return a_children;};
         inline bool ignore_click() const {return a_ignore_click;};
         inline std::string name() const {return a_name;};
-        virtual void set_background_color(Color new_background_color) {current_style()->a_background_color = new_background_color;};
-        inline void set_border_color(Color new_color) {current_style()->a_border_color = new_color;};
+        virtual void set_background_color(Color new_background_color) {current_style()->a_background_color = new_background_color;set_should_render_during_this_frame(true);};
+        inline void set_border_color(Color new_color) {current_style()->a_border_color = new_color;set_should_render_during_this_frame(true);};
         inline void set_loaded(bool new_loaded){a_loaded=new_loaded;};
         inline void set_ignore_click(bool new_ignore_click) {a_ignore_click = new_ignore_click;};
-        inline void set_visible(bool new_visible, bool with_children) {a_visible = new_visible;if(a_visible&&!a_loaded){load_from_xml(std::string(""));for(int i = 0;i<static_cast<int>(a_children.size());i++){if((a_children[i].get()->visible() || with_children) && !a_children[i].get()->a_loaded){a_children[i].get()->set_visible(true);}}} };
+        inline void set_visible(bool new_visible, bool with_children) {a_visible = new_visible;set_should_render_during_this_frame(true);if(a_visible&&!a_loaded){load_from_xml(std::string(""));for(int i = 0;i<static_cast<int>(a_children.size());i++){if((a_children[i].get()->visible() || with_children) && !a_children[i].get()->a_loaded){a_children[i].get()->set_visible(true);}}}};
         inline void set_visible(bool new_visible) {set_visible(new_visible, false);};
         inline bool visible() {return a_visible;};
 
@@ -229,6 +229,7 @@ namespace scls {
 
         // Getters and setters
         inline Image* image() const {return texture()->get_image();};
+        inline void set_should_render_during_this_frame(bool new_should_render) {if(!a_rendered_during_this_frame && new_should_render && parent() != 0){parent()->set_should_render_during_this_frame(true);}a_rendered_during_this_frame = new_should_render;};
         inline void set_texture(std::shared_ptr<Image> new_texture, bool remove_last_texture = true) {std::shared_ptr<Texture> needed_texture = std::make_shared<Texture>();needed_texture.get()->set_image(new_texture);set_texture(needed_texture, remove_last_texture);};
         inline void set_texture(std::shared_ptr<Texture> new_texture, bool remove_last_texture = true) {if(remove_last_texture) {window_struct().remove_texture(texture());}a_texture = new_texture;};
         inline void set_texture(std::string texture_name, bool remove_last_texture = true) {
@@ -242,6 +243,7 @@ namespace scls {
         inline void set_texture_scale_x(double new_texture_scale_x) {a_texture_scale_x = new_texture_scale_x;};
         inline void set_texture_scale_y(double new_texture_scale_y) {a_texture_scale_y = new_texture_scale_y;};
         inline void set_vao(std::shared_ptr<VAO> new_vao){a_vao = new_vao;};
+        inline bool should_render_during_this_frame() const {return a_rendered_during_this_frame;};
         inline std::vector<std::shared_ptr<GUI_Object>>& sub_pages() {if(a_sub_page.size() <= 0){a_sub_page.push_back(std::vector<std::shared_ptr<GUI_Object>>());}return a_sub_page[0];};
         inline Texture* texture() const {return a_texture.get();};
         inline Alignment_Texture texture_alignment() const {return a_texture_alignment;};
@@ -292,6 +294,8 @@ namespace scls {
         bool a_ignore_click = false;
         // Name of this object
         std::string a_name = "";
+        // If the object has been rendered during this frame or not
+        bool a_rendered_during_this_frame = true;
         // If the object is visible
         bool a_visible = true;
 
@@ -1104,12 +1108,16 @@ namespace scls {
         // GUI_Page destructor
         virtual ~GUI_Page() {a_loader.reset();};
 
+        // Function called when the object is displayed
+        virtual void after_displaying() {parent_object()->set_should_render_during_this_frame(true);};
         // Function called after that the window is resized
         virtual void after_window_resizing(glm::vec2 last_scale){Object::after_window_resizing(last_scale);parent_object()->__after_resizing_window_early_children();parent_object()->__after_resizing_children();};
         // Function called after an XML loading
         virtual void after_xml_loading() {a_parent_object.get()->after_xml_loading();Object::after_xml_loading();};
         // Render the page
         virtual void render();
+        // Soft reset the page
+        virtual void soft_reset(){parent_object()->soft_reset();Object::soft_reset();};
         // Update the event of the page
         virtual void update_event();
         // Update the page
@@ -1123,6 +1131,8 @@ namespace scls {
         inline GUI_Object* overflighted_object() {return a_overflighted_object;};
         inline GUI_Main_Object* parent_object() {return a_parent_object.get();};
         inline std::shared_ptr<GUI_Main_Object>& parent_object_shared_ptr() {return a_parent_object;};
+        inline void set_should_render_during_this_frame(bool result){parent_object()->set_should_render_during_this_frame(result);};
+        virtual bool should_render_during_this_frame(){return parent_object()->should_render_during_this_frame();};
 
         //*********
         //
