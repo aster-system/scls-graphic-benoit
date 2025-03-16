@@ -788,6 +788,7 @@ namespace scls {
 
             return a_datas;
         }
+        static std::vector<double> gui_vbo(){std::vector<Shader_Program_Variable> attributes = std::vector<Shader_Program_Variable>(5);return gui_vbo(attributes);};
 
         // Getters and setters
         inline std::vector<Shader_Program_Variable> *get_attributes() { return &a_attributes; };

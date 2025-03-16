@@ -242,7 +242,6 @@ namespace scls {
         a_cursor_changed = false;
 
         // Soft reset 2D pages
-        glDepthFunc(GL_ALWAYS);
         if (displayed_pages_2d_names().size() > 0) {
             if(to_display.size() <= 0){to_display = displayed_pages_2d();}
             for(int i = 0;i<static_cast<int>(to_display.size());i++) {

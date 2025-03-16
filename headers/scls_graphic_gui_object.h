@@ -71,6 +71,8 @@ namespace scls {
         // GUI_Object destructor
         virtual ~GUI_Object();
 
+        // Applies the extremum to a VAO
+        inline bool apply_extremum(VAO* needed_vao){glm::vec4 final_extremum = object_extremum();if(final_extremum[1] >= 1 || final_extremum[3] <= 0){return false;}vao()->get_shader_program()->set_uniform4f_value("object_extremum", final_extremum);return true;};
         // Returns a child by its name
         template <typename T = GUI_Object>
         inline T* child_by_name(std::string child_name) const {for(int i = 0;i<static_cast<int>(a_children.size());i++) {if(a_children[i] != 0 && a_children[i].get()->name() == child_name) return reinterpret_cast<T*>(a_children[i].get());}return 0;};
@@ -535,6 +537,7 @@ namespace scls {
         inline void set_font_size(unsigned short new_font_size) {a_global_style.set_font_size(new_font_size);update_text_image_block();};
         inline void set_max_width(int new_max_width) {a_global_style.max_width = new_max_width;};
         virtual void set_text(std::string new_text) {if(new_text == text()){return;}update_text_image_block_style();attached_text_image_block()->set_text(new_text);update_texture();};
+        virtual void set_xml_text(std::shared_ptr<XML_Text> new_text) {update_text_image_block_style();attached_text_image_block()->set_xml_text(new_text);update_texture();};
         inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {global_style()->set_alignment_horizontal(new_text_alignment_horizontal);update_text_image_block();};
         virtual void set_text_image_type(Block_Type new_text_image_type) {a_text_image_type = new_text_image_type;};
         inline void set_text_offset(double new_text_offset) {a_global_style.text_offset_x = new_text_offset;a_global_style.text_offset_y = new_text_offset;a_global_style.text_offset_width = new_text_offset;a_global_style.text_offset_height = new_text_offset;};

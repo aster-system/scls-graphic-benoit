@@ -48,11 +48,10 @@ namespace scls {
 
     // Render the object
     void GUI_Object::render(glm::vec3 scale_multiplier) {
-        if(a_transformation_updated) calculate_transformation(true);
+        if(a_transformation_updated){calculate_transformation(true);}
 
         // Handle the extremum
-        glm::vec4 final_extremum = object_extremum();
-        if(final_extremum[1] >= 1 || final_extremum[3] <= 0) return;
+        if(!apply_extremum(vao())){return;}
 
         // Handle the matrix
         glm::mat4 matrix = glm::mat4(1.0);
@@ -74,15 +73,9 @@ namespace scls {
         vao()->get_shader_program()->set_uniform4f_value("texture_rect", texture_rect());
 
         // Handle the texture and the VAO
-        if(texture() == 0) {
-            vao()->get_shader_program()->set_uniformb_value("texture_binded", false);
-        }
-        else {
-            texture()->bind(); // Bind the texture
-            vao()->get_shader_program()->set_uniformb_value("texture_binded", true);
-        }
+        if(texture() == 0){vao()->get_shader_program()->set_uniformb_value("texture_binded", false);}
+        else{texture()->bind();vao()->get_shader_program()->set_uniformb_value("texture_binded", true);}
         vao()->get_shader_program()->set_uniform4fv_value("model", matrix);
-        vao()->get_shader_program()->set_uniform4f_value("object_extremum", final_extremum);
         vao()->get_shader_program()->set_uniform4f_value("object_rect", glm::vec4(0, 0, width_in_pixel(), height_in_pixel()));
         vao()->get_shader_program()->set_uniform2f_value("scale", texture_scale_x(), texture_scale_y());
         vao()->render();
@@ -402,33 +395,7 @@ namespace scls {
     // Set the XML attributs for a style
     void GUI_Object::set_xml_attribute_style(std::shared_ptr<XML_Text> text, GUI_Style* needed_style) {
         std::string xml_attribute_name = text.get()->xml_balise_name();
-        if(xml_attribute_name == "background_color") {
-            // Load the background color
-            Color background_color(0, 0, 0, 255);
-            for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
-                XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
-                std::string current_attribute_name = current_attribute.name;
-                std::string current_attribute_value = current_attribute.value;
-
-                if(current_attribute_name == "red") {
-                    // Red part of the color
-                    background_color.set_red(std::stoi(current_attribute_value));
-                }
-                else if(current_attribute_name == "green") {
-                    // Red part of the color
-                    background_color.set_green(std::stoi(current_attribute_value));
-                }
-                else if(current_attribute_name == "blue") {
-                    // Red part of the color
-                    background_color.set_blue(std::stoi(current_attribute_value));
-                }
-                else if(current_attribute_name == "alpha") {
-                    // Alpha part of the color
-                    background_color.set_alpha(std::stoi(current_attribute_value));
-                }
-            }
-            needed_style->a_background_color = background_color;
-        }
+        if(xml_attribute_name == "background_color") {needed_style->a_background_color = Color::from_xml(text);}
         else if(xml_attribute_name == "border") {
             // Load the border
             Color border_color(0, 0, 0, 255);
@@ -510,8 +477,6 @@ namespace scls {
 
         a_transformation_updated = false;
         transformation()->calculate_transformation();
-
-        //if(visible()){print(name(), "Transformation");}
 
         // Check for the attachment horizontal
         if(a_transform_attachment.attachment_horizontal_type == 1) {
@@ -1101,6 +1066,7 @@ namespace scls {
         if(xml_attribute_name == "content") {
             // Get each attributes
             std::string needed_text = text.get()->text();
+            std::string needed_text_src = std::string("");
             for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
                 XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
                 std::string current_attribute_name = current_attribute.name;
@@ -1116,13 +1082,9 @@ namespace scls {
                         print("Warning", "SCLS Graphic Benoit page \"" + name() + "\"", "The text horizontal alignment \"" + current_attribute_value + "\" is not a valid attribute.");
                     }
                 }
-                else if(current_attribute_name == "font_size") {
-                    // Value of the font size
-                    set_font_size(Fraction::from_std_string(current_attribute_value).to_double());
-                } else if(current_attribute_name == "max_width") {
-                    // Value of the max width
-                    set_max_width(Fraction::from_std_string(current_attribute_value).to_double());
-                } else if(current_attribute_name == "src") {
+                else if(current_attribute_name == "font_size") {set_font_size(Fraction::from_std_string(current_attribute_value).to_double());}
+                else if(current_attribute_name == "max_width") {set_max_width(Fraction::from_std_string(current_attribute_value).to_double());}
+                else if(current_attribute_name == "src") {
                     // Loads the content of a balise from a file
                     if(current_attribute_value[0] == '\"'){current_attribute_value = current_attribute_value.substr(1, current_attribute_value.size() - 1);}
                     if(current_attribute_value[current_attribute_value.size()-1] == '\"'){current_attribute_value = current_attribute_value.substr(0, current_attribute_value.size() - 1);}
@@ -1130,15 +1092,17 @@ namespace scls {
                     if(!std::filesystem::exists(current_attribute_value)){current_attribute_value = path_parent(a_loader.get()->path) + "/" + current_attribute_value;}
                     if(std::filesystem::exists(current_attribute_value)) {
                         needed_text = read_file(current_attribute_value);
-                    } else {
-                        print("Warning", "SCLS Graphic Benoit page \"" + name() + "\"", "The path \"" + base_attribute_value + "\" you want to load as the content of this text does not exist.");
+                        needed_text_src = current_attribute_value;
                     }
+                    else {print("Warning", "SCLS Graphic Benoit page \"" + name() + "\"", "The path \"" + base_attribute_value + "\" you want to load as the content of this text does not exist.");}
                 }
             }
             // Get the content of the text
             needed_text = scls::format_string_tabulations(scls::format_string_break_line(needed_text, " "), "");
             if(max_width() != -1) {set_max_width(width_in_pixel());}
-            set_text(needed_text);
+            std::shared_ptr<XML_Text> final_text = xml(window_struct().balises_shared_ptr(), needed_text);
+            final_text.get()->check_include(needed_text_src);
+            set_xml_text(final_text);
         }
         else if(xml_attribute_name == "font_size") {
             // Load the font size of the text
@@ -1946,31 +1910,7 @@ namespace scls {
                     }
                 }
             }
-            else if(current_balise_name == "include") {
-                // Include a part to the XML loading
-                std::string src = std::string("");
-                for(int j = 0;j<static_cast<int>(current_text.get()->xml_balise_attributes().size());j++) {
-                    std::string current_attribute_name = current_text.get()->xml_balise_attributes()[j].name;
-                    std::string current_attribute_value = current_text.get()->xml_balise_attributes()[j].value;
-                    if(current_attribute_value.size() > 0 && current_attribute_value[0] == '\"'){current_attribute_value = current_attribute_value.substr(1, current_attribute_value.size() - 1);}
-                    if(current_attribute_value.size() > 0 && current_attribute_value[current_attribute_value.size() - 1] == '\"'){current_attribute_value = current_attribute_value.substr(0, current_attribute_value.size() - 1);}
-                    if(current_attribute_name == "src") {
-                        // Get the src of the include
-                        src = current_attribute_value;
-                    }
-                }
-
-                // Include the part
-                std::string base_src = src;
-                if(!std::filesystem::exists(src)){src = scls::path_parent(a_loader.get()->path) + "/" + src;}
-                if(std::filesystem::exists(src)) {
-                    std::string content_to_parse = scls::read_file(src);
-                    std::shared_ptr<XML_Text> content = std::make_shared<XML_Text>(gui_loading_balises, content_to_parse);
-                    __load_objects_from_xml(content, sub_paged);
-                } else {
-                    print("Warning", "SCLS GUI Page \"" + name() + "\"", "The \"" + base_src + "\" path you want to include does not exist.");
-                }
-            }
+            else if(current_balise_name == "included"){__load_objects_from_xml(current_text, sub_paged);}
         }
     }
     void GUI_Page::load_objects_from_xml(const std::string& content_to_parse, std::string path, bool sub_paged) {
@@ -1982,6 +1922,7 @@ namespace scls {
 
         // Load the balises
         std::shared_ptr<XML_Text> content = std::make_shared<XML_Text>(gui_loading_balises, content_to_parse);
+        content.get()->check_include(path);
         __load_objects_from_xml(content, sub_paged);
     }
 }

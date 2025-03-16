@@ -126,23 +126,23 @@ namespace scls {
     }
 
     // Returns the first absolute extremum of the object in the Y axis
-    Fraction __GUI_Transformation::object_absolute_y_first_extremum(bool remove_border) {
+    int __GUI_Transformation::object_absolute_y_first_extremum(bool remove_border) {
         Fraction to_return = y_in_absolute_pixel();
         if(remove_border) to_return += border_width_in_pixel()[2];
         Fraction parent_extremum = Fraction(-1);
         if(parent() != 0) { parent_extremum = parent()->object_absolute_y_first_extremum(true); }
         if(parent_extremum > to_return) to_return = parent_extremum;
-        return to_return;
+        return to_return.to_double();
     }
 
     // Returns the last absolute extremum of the object in the Y axis
-    Fraction __GUI_Transformation::object_absolute_y_last_extremum(bool remove_border) {
+    int __GUI_Transformation::object_absolute_y_last_extremum(bool remove_border) {
         Fraction to_return = (y_in_absolute_pixel() + height_in_pixel());
         if(remove_border) to_return -= border_width_in_pixel()[0];
         Fraction parent_extremum = Fraction(window_height());
         if(parent() != 0) { parent_extremum = parent()->object_absolute_y_last_extremum(true); }
         if(parent_extremum < to_return) to_return = parent_extremum;
-        return to_return;
+        return to_return.to_double();
     }
 
     // Returns the extremum of the object
@@ -232,35 +232,45 @@ namespace scls {
     //*********
 
     // Returns the height in pixel of the object
-    unsigned int __GUI_Transformation::height_in_pixel() const {
-        if(a_last_height_definition == _Size_Definition::Pixel_Size) return static_cast<unsigned int>(a_height.to_double());
-
-        // Calculate the real height with the pixel perfect system
-        Fraction divisor_y = Fraction(1, window_height());
-        Fraction start_height = height_in_absolute_scale();
-        unsigned int real_height_in_pixel = 0;
-        while(start_height >= divisor_y) {
-            start_height -= divisor_y;
-            real_height_in_pixel++;
+    int __GUI_Transformation::height_in_pixel() {
+        if(!a_height_in_pixel_calculated){
+            if(a_last_height_definition == _Size_Definition::Pixel_Size){a_height_in_pixel=a_height.to_double();}
+            else {
+                // Calculate the real height with the pixel perfect system
+                Fraction divisor_y = Fraction(1, window_height());
+                Fraction start_height = height_in_absolute_scale();
+                a_height_in_pixel = 0;
+                while(start_height >= divisor_y) {
+                    start_height -= divisor_y;
+                    a_height_in_pixel++;
+                }
+                if(start_height > 0 && start_height < divisor_y / 2.0){a_height_in_pixel++;}
+            }
+            a_height_in_pixel_calculated = true;
         }
-        if(start_height > 0 && start_height < divisor_y / 2.0) real_height_in_pixel++;
-        return real_height_in_pixel;
+
+        return a_height_in_pixel;
     }
 
     // Returns the width in pixel of the object
-    unsigned int __GUI_Transformation::width_in_pixel() const {
-        if(a_last_width_definition == _Size_Definition::Pixel_Size) return a_width.to_double();
-
-        // Calculate the real width with the pixel perfect system
-        Fraction divisor_x = Fraction(1, window_width());
-        Fraction start_width = width_in_absolute_scale();
-        unsigned int real_width_in_pixel = 0;
-        while(start_width >= divisor_x) {
-            start_width -= divisor_x;
-            real_width_in_pixel++;
+    int __GUI_Transformation::width_in_pixel() {
+        if(!a_width_in_pixel_calculated) {
+            if(a_last_width_definition == _Size_Definition::Pixel_Size){a_width_in_pixel = a_width.to_double();}
+            else {
+                // Calculate the real width with the pixel perfect system
+                Fraction divisor_x = Fraction(1, window_width());
+                Fraction start_width = width_in_absolute_scale();
+                a_width_in_pixel = 0;
+                while(start_width >= divisor_x) {
+                    start_width -= divisor_x;
+                    a_width_in_pixel++;
+                }
+                if(start_width > 0 && start_width < divisor_x / 2.0){a_width_in_pixel++;}
+            }
+            a_width_in_pixel_calculated = true;
         }
-        if(start_width > 0 && start_width < divisor_x / 2.0) real_width_in_pixel++;
-        return real_width_in_pixel;
+
+        return a_width_in_pixel;
     }
 
     // Returns the x position in pixel of the object
@@ -272,11 +282,18 @@ namespace scls {
     }
 
     // Returns the y position in pixel of the object
-    int __GUI_Transformation::y_in_pixel() const {
-        if(a_last_y_definition == _Size_Definition::Pixel_Size) return static_cast<int>(a_y.to_double());
-        Fraction to_return = (y_in_absolute_scale() / one_pixel_height_in_absolute_scale());
-        if(parent() != 0) to_return -= parent()->y_in_absolute_pixel();
-        return static_cast<int>(to_return.to_double());
+    int __GUI_Transformation::y_in_pixel() {
+        if(!a_y_position_in_pixel_calculated){
+            if(a_last_y_definition == _Size_Definition::Pixel_Size){a_y_position_in_pixel = a_y.to_double();}
+            else {
+                Fraction to_return = (y_in_absolute_scale() / one_pixel_height_in_absolute_scale());
+                if(parent() != 0) to_return -= parent()->y_in_absolute_pixel();
+                a_y_position_in_pixel = to_return.to_double();
+            }
+            a_y_position_in_pixel_calculated = true;
+        }
+
+        return a_y_position_in_pixel;
     }
 
     //*********
@@ -286,7 +303,7 @@ namespace scls {
     //*********
 
     // Returns the scale of the border width
-    glm::vec4 __GUI_Transformation::border_width_in_scale() const {
+    glm::vec4 __GUI_Transformation::border_width_in_scale() {
         double one_pixel_height = one_pixel_height_in_scale().to_double();
         double one_pixel_width = one_pixel_width_in_scale().to_double();
         return a_border_width * glm::vec4(one_pixel_height, one_pixel_width, one_pixel_height, one_pixel_width);

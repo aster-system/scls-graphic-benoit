@@ -328,7 +328,8 @@ namespace scls {
         // Getters and setters (ONLY WITH ATTRIBUTES)
 
         // FPS
-        inline double delta_time() { return a_delta_time; };
+        inline double delta_time()const{return a_delta_time;};
+        inline double time_since_last_fps_calculation()const{return a_time_since_last_fps_calculation;};
 
         // Keyboard
         inline bool key_pressed(std::string name) const { return a_keys_state_frame.at(name) == Key_State::Pressed || a_keys_state_frame.at(name) == Key_State::Already_Pressed || a_keys_state_frame.at(name) == Key_State::Pressed_Repeated; };

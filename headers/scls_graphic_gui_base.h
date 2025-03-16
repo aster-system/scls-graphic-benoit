@@ -214,6 +214,13 @@ namespace scls {
         // Calculate the transformations
         void calculate_transformation();
 
+        // Change the height value
+        inline void change_height(){a_height_in_pixel_calculated=false;};
+        // Change the width value
+        inline void change_width(){a_width_in_pixel_calculated=false;};
+        // Change the Y value
+        inline void change_y(){a_y_position_in_absolute_pixel_calculated=false;a_y_position_in_pixel_calculated=false;};
+
         // Getters and setters
         inline __GUI_Transformation* parent() const {return a_parent.get();};
         inline std::shared_ptr<__GUI_Transformation>& parent_shared_ptr() {return a_parent;};
@@ -235,9 +242,9 @@ namespace scls {
         Fraction object_absolute_x_last_extremum(bool remove_border);
         inline Fraction object_absolute_x_last_extremum(){return object_absolute_x_last_extremum(false);};
         // Returns the first absolute extremum of the object in the Y axis
-        Fraction object_absolute_y_first_extremum(bool remove_border = false);
+        int object_absolute_y_first_extremum(bool remove_border = false);
         // Returns the last absolute extremum of the object in the Y axis
-        Fraction object_absolute_y_last_extremum(bool remove_border = false);
+        int object_absolute_y_last_extremum(bool remove_border = false);
         // Returns the extremum of the object
         glm::vec4 object_extremum();
 
@@ -291,7 +298,7 @@ namespace scls {
         inline Fraction y_in_object_scale() { return y_in_scale() - (height_in_scale() * Fraction(1, 2)); }
         // Setters
         inline void set_x_in_object_scale(Fraction new_x) {a_x=new_x;a_last_x_definition=_Size_Definition::Object_Scale_Size;};
-        inline void set_y_in_object_scale(Fraction new_y) {a_y=new_y;a_last_y_definition=_Size_Definition::Object_Scale_Size;};
+        inline void set_y_in_object_scale(Fraction new_y) {a_y=new_y;a_last_y_definition=_Size_Definition::Object_Scale_Size;change_y();};
 
         //*********
         //
@@ -300,34 +307,34 @@ namespace scls {
         //*********
 
         // Returns the height of the object in pixel plan
-        unsigned int height_in_pixel() const;
+        int height_in_pixel();
         // Returns if a pixel is in the object
-        inline bool is_in_rect_in_pixel(int x_position, int y_position) const { return x_position >= x_in_absolute_pixel() && y_position >= y_in_absolute_pixel() && x_position < x_in_absolute_pixel() + width_in_pixel() && y_position < y_in_absolute_pixel() + height_in_pixel(); };
+        inline bool is_in_rect_in_pixel(int x_position, int y_position) { return x_position >= x_in_absolute_pixel() && y_position >= y_in_absolute_pixel() && x_position < x_in_absolute_pixel() + width_in_pixel() && y_position < y_in_absolute_pixel() + height_in_pixel(); };
         // Returns the width of the object in pixel plan
-        unsigned int width_in_pixel() const;
+        int width_in_pixel();
         // Returns the x of the object in pixel plan
         int x_in_pixel() const;
         // Returns the y of the object in pixel plan
-        int y_in_pixel() const;
+        int y_in_pixel();
 
         // Returns the x of the object in absolute pixel plan
         inline int x_in_absolute_pixel() const {if(parent()==0)return x_in_pixel();return x_in_pixel() + parent()->x_in_absolute_pixel();};
         // Returns the y of the object in absolute pixel plan
-        inline int y_in_absolute_pixel() const {if(parent()==0)return y_in_pixel();return y_in_pixel() + parent()->y_in_absolute_pixel();};
+        inline int y_in_absolute_pixel() {if(!a_y_position_in_absolute_pixel_calculated){if(parent()==0){a_y_position_in_absolute_pixel = y_in_pixel();}else{a_y_position_in_absolute_pixel = y_in_pixel() + parent()->y_in_absolute_pixel();}a_y_position_in_absolute_pixel_calculated=true;}return a_y_position_in_absolute_pixel;};
 
         // Setters
         inline void set_border_width_in_pixel(int new_width) {set_border_width_in_pixel(glm::vec4(new_width));};
         inline void set_border_width_in_pixel(glm::vec4 new_width) {a_border_width = new_width;};
 
         // Setters
-        inline void set_height_in_pixel(unsigned int new_height) {a_height=new_height;a_last_height_definition=_Size_Definition::Pixel_Size;};
+        inline void set_height_in_pixel(unsigned int new_height) {a_height=new_height;a_last_height_definition=_Size_Definition::Pixel_Size;change_height();};
         inline void set_height_in_pixel(Fraction new_height) {set_height_in_pixel(static_cast<unsigned int>(new_height.to_double()));};
         inline void set_position_in_pixel(int new_x, int new_y) {set_x_in_pixel(new_x);set_y_in_pixel(new_y);};
-        inline void set_width_in_pixel(unsigned int new_width) {a_width=new_width;a_last_width_definition=_Size_Definition::Pixel_Size;};
+        inline void set_width_in_pixel(unsigned int new_width) {a_width=new_width;a_last_width_definition=_Size_Definition::Pixel_Size;change_width();};
         inline void set_width_in_pixel(Fraction new_width) {set_width_in_pixel(static_cast<unsigned int>(new_width.to_double()));};
         inline void set_x_in_pixel(Fraction new_x) {a_x=new_x;a_last_x_definition=_Size_Definition::Pixel_Size;};
         inline void set_x_in_pixel(int x) {set_x_in_pixel(Fraction(x));};
-        inline void set_y_in_pixel(Fraction new_y) {a_y=new_y;a_last_y_definition=_Size_Definition::Pixel_Size;};
+        inline void set_y_in_pixel(Fraction new_y) {a_y=new_y;a_last_y_definition=_Size_Definition::Pixel_Size;change_y();};
         inline void set_y_in_pixel(int new_y) {set_y_in_pixel(Fraction(new_y));};
         inline void set_window_height(unsigned int new_height) {a_window_height = new_height;};
         inline void set_window_width(unsigned int new_width) {a_window_width = new_width;};
@@ -339,13 +346,13 @@ namespace scls {
         //*********
 
         // Returns the width of the border in scale
-        glm::vec4 border_width_in_scale() const;
+        glm::vec4 border_width_in_scale();
         // Returns the height of the object in scale
         Fraction height_in_scale() const;
         // One pixel in height
-        inline Fraction one_pixel_height_in_scale() const {if(parent()==0)return one_pixel_height_in_absolute_scale();return Fraction(1, height_in_pixel());};
+        inline Fraction one_pixel_height_in_scale() {if(parent()==0)return one_pixel_height_in_absolute_scale();return Fraction(1, height_in_pixel());};
         // One pixel in width
-        inline Fraction one_pixel_width_in_scale() const {if(parent()==0)return one_pixel_width_in_absolute_scale();return Fraction(1, width_in_pixel());};
+        inline Fraction one_pixel_width_in_scale() {if(parent()==0)return one_pixel_width_in_absolute_scale();return Fraction(1, width_in_pixel());};
         // Returns the width of the object in scale
         Fraction width_in_scale() const;
         // Returns the x of the object in scale
@@ -354,11 +361,11 @@ namespace scls {
         Fraction y_in_scale() const;
 
         // Setters
-        inline void set_height_in_scale(Fraction new_height) {a_height=new_height;a_last_height_definition=_Size_Definition::Scale_Size;};
+        inline void set_height_in_scale(Fraction new_height) {a_height=new_height;a_last_height_definition=_Size_Definition::Scale_Size;change_height();};
         inline void set_position_in_scale(Fraction new_x, Fraction new_y) {set_x_in_scale(new_x);set_y_in_scale(new_y);};
-        inline void set_width_in_scale(Fraction new_width) {a_width=new_width;a_last_width_definition=_Size_Definition::Scale_Size;};
+        inline void set_width_in_scale(Fraction new_width) {a_width=new_width;a_last_width_definition=_Size_Definition::Scale_Size;change_width();};
         inline void set_x_in_scale(Fraction new_x) {a_x=new_x;a_last_x_definition=_Size_Definition::Scale_Size;};
-        inline void set_y_in_scale(Fraction new_y) {a_y=new_y;a_last_y_definition=_Size_Definition::Scale_Size;};
+        inline void set_y_in_scale(Fraction new_y) {a_y=new_y;a_last_y_definition=_Size_Definition::Scale_Size;change_y();};
 
     private:
 
@@ -436,6 +443,25 @@ namespace scls {
         Fraction a_y_in_adapted_scale = Fraction(0, 1);
         // X position of the object in real pixel
         int a_y_in_real_pixel = 0;
+
+        //*********
+        //
+        // Transform possible values
+        //
+        //*********
+
+        // Height of the object in pixel
+        int a_height_in_pixel = 0;
+        bool a_height_in_pixel_calculated = false;
+        // Width of the object in pixel
+        int a_width_in_pixel = 0;
+        bool a_width_in_pixel_calculated = false;
+        // Y position of the object in pixel
+        int a_y_position_in_pixel = 0;
+        bool a_y_position_in_pixel_calculated = false;
+        // Y position of the object in absolute pixel
+        int a_y_position_in_absolute_pixel = 0;
+        bool a_y_position_in_absolute_pixel_calculated = false;
     };
 
     class __GUI_Object_Core {
