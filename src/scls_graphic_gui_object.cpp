@@ -19,6 +19,78 @@
 // Using of the "scls" namespace to simplify the programmation
 namespace scls {
 
+    // Get datas about a border from an XML loading system
+    void border_from_xml(std::shared_ptr<XML_Text> text, scls::Color& border_color, scls::Fraction& border_bottom, scls::Fraction& border_left, scls::Fraction& border_right, scls::Fraction& border_top) {
+        for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
+            XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
+            std::string current_attribute_name = current_attribute.name;
+            std::string current_attribute_value = current_attribute.value;
+
+            if(current_attribute_name == "red") {
+                // Red part of the color
+                border_color.set_red(std::stoi(current_attribute_value));
+            }
+            else if(current_attribute_name == "green") {
+                // Red part of the color
+                border_color.set_green(std::stoi(current_attribute_value));
+            }
+            else if(current_attribute_name == "blue") {
+                // Red part of the color
+                border_color.set_blue(std::stoi(current_attribute_value));
+            }
+            else if(current_attribute_name == "bottom") {
+                // Bottom width of the border
+                border_bottom = Fraction::from_std_string(current_attribute_value);
+            }
+            else if(current_attribute_name == "left") {
+                // Left width of the border
+                border_left = Fraction::from_std_string(current_attribute_value);
+            }
+            else if(current_attribute_name == "right") {
+                // Right width of the border
+                border_right = Fraction::from_std_string(current_attribute_value);
+            }
+            else if(current_attribute_name == "top") {
+                // Top width of the border
+                border_top = Fraction::from_std_string(current_attribute_value);
+            }
+        }
+    }
+    void border_from_xml(std::shared_ptr<XML_Text> text, scls::Color& border_color, glm::vec4& border){
+        scls::Fraction bottom = 0;scls::Fraction left = 0;scls::Fraction right = 0;scls::Fraction top = 0;
+        border_from_xml(text, border_color, bottom, left, right, top);
+        border.x = bottom.to_double();border.y = left.to_double();border.z = right.to_double();border.w = top.to_double();
+    }
+    void border_from_xml(std::shared_ptr<XML_Text> text, std::shared_ptr<Image> img) {
+        scls::Color border_color;scls::Fraction bottom; scls::Fraction left; scls::Fraction right; scls::Fraction top;
+        border_from_xml(text, border_color, bottom, left, right, top);
+        img.get()->draw_border(bottom.to_double(), left.to_double(), right.to_double(), top.to_double(), border_color);
+    }
+    void border_from_xml(std::shared_ptr<XML_Text> text, scls::Text_Style* style){
+        scls::Fraction bottom = 0; scls::Fraction left = 0; scls::Fraction right = 0; scls::Fraction top = 0;
+        border_from_xml(text, style->border_color, bottom, left, right, top);
+        style->border_bottom_width = bottom.to_double();style->border_left_width = left.to_double();style->border_right_width = right.to_double();style->border_top_width = top.to_double();
+    }
+
+    // Get datas about a padding from an XML loading system
+    void padding_from_xml(std::shared_ptr<XML_Text> text, scls::Fraction& border_bottom, scls::Fraction& border_left, scls::Fraction& border_right, scls::Fraction& border_top) {
+        for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
+            XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
+            std::string current_attribute_name = current_attribute.name;
+            std::string current_attribute_value = current_attribute.value;
+
+            if(current_attribute_name == "bottom") {border_bottom = Fraction::from_std_string(current_attribute_value);}
+            else if(current_attribute_name == "left") {border_left = Fraction::from_std_string(current_attribute_value);}
+            else if(current_attribute_name == "right") {border_right = Fraction::from_std_string(current_attribute_value);}
+            else if(current_attribute_name == "top") {border_top = Fraction::from_std_string(current_attribute_value);}
+        }
+    }
+    void padding_from_xml(std::shared_ptr<XML_Text> text, scls::Text_Style* style){
+        scls::Fraction bottom = 0; scls::Fraction left = 0; scls::Fraction right = 0; scls::Fraction top = 0;
+        padding_from_xml(text, bottom, left, right, top);
+        style->set_padding_bottom(bottom.to_double());style->set_padding_left(left.to_double());style->set_padding_right(right.to_double());style->set_padding_top(top.to_double());
+    }
+
     //*********
     //
     // GUI Object main functions
@@ -44,7 +116,7 @@ namespace scls {
     }
 
     // Merges the current object with a specific style
-    void GUI_Object::merge_style(GUI_Style* new_style) {set_background_color(new_style->a_background_color);set_border_color(new_style->a_border_color);}
+    void GUI_Object::merge_style(GUI_Style* new_style) {set_background_color(new_style->a_background_color);current_style()->global_text_style.merge_style(new_style->global_text_style);}
 
     // Render the object
     void GUI_Object::render(glm::vec3 scale_multiplier) {
@@ -396,50 +468,7 @@ namespace scls {
     void GUI_Object::set_xml_attribute_style(std::shared_ptr<XML_Text> text, GUI_Style* needed_style) {
         std::string xml_attribute_name = text.get()->xml_balise_name();
         if(xml_attribute_name == "background_color") {needed_style->a_background_color = Color::from_xml(text);}
-        else if(xml_attribute_name == "border") {
-            // Load the border
-            Color border_color(0, 0, 0, 255);
-            Fraction border_bottom = Fraction(0);
-            Fraction border_left = Fraction(0);
-            Fraction border_right = Fraction(0);
-            Fraction border_top = Fraction(0);
-            for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
-                XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
-                std::string current_attribute_name = current_attribute.name;
-                std::string current_attribute_value = current_attribute.value;
-
-                if(current_attribute_name == "red") {
-                    // Red part of the color
-                    border_color.set_red(std::stoi(current_attribute_value));
-                }
-                else if(current_attribute_name == "green") {
-                    // Red part of the color
-                    border_color.set_green(std::stoi(current_attribute_value));
-                }
-                else if(current_attribute_name == "blue") {
-                    // Red part of the color
-                    border_color.set_blue(std::stoi(current_attribute_value));
-                }
-                else if(current_attribute_name == "bottom") {
-                    // Bottom width of the border
-                    border_bottom = Fraction::from_std_string(current_attribute_value);
-                }
-                else if(current_attribute_name == "left") {
-                    // Left width of the border
-                    border_left = Fraction::from_std_string(current_attribute_value);
-                }
-                else if(current_attribute_name == "right") {
-                    // Right width of the border
-                    border_right = Fraction::from_std_string(current_attribute_value);
-                }
-                else if(current_attribute_name == "top") {
-                    // Top width of the border
-                    border_top = Fraction::from_std_string(current_attribute_value);
-                }
-            }
-            needed_style->a_border_color = border_color;
-            needed_style->border_width = glm::vec4(border_top.to_double());
-        }
+        else if(xml_attribute_name == "border") {border_from_xml(text, &needed_style->global_text_style);}
         else if(xml_attribute_name == "font_size") {
             // Load the font size of the text
             Fraction final_font_size = Fraction(1);

@@ -72,7 +72,8 @@ namespace scls {
         //*********
 
         // Width of the border
-        glm::vec4 border_width = glm::vec4(0, 0, 0, 0);
+        virtual glm::vec4 border_width() = 0;
+        virtual void set_border_width(glm::vec4 border_width) = 0;
 
         // Each modified attribute
         bool border_width_modified = false;
@@ -127,12 +128,7 @@ namespace scls {
         // Border
         // Border width to apply
         // Return the border width to apply
-        glm::vec4 border_width_to_apply() {
-            if(border_width_modified || parent.get() == 0) {
-                return border_width;
-            }
-            return parent.get()->border_width_to_apply();
-        };
+        glm::vec4 border_width_to_apply() {if(border_width_modified || parent.get() == 0) {return border_width();}return parent.get()->border_width_to_apply();};
         // Transformation
         // Return the height to apply
         Fraction height_to_apply() {
@@ -569,15 +565,9 @@ namespace scls {
 
         // Object scale plan
         // Returns the x in object scale
-        inline Fraction x_in_object_scale() {
-            if(a_transformation_updated)calculate_transformation();
-            return a_transformation.get()->x_in_object_scale();
-        }
+        inline Fraction x_in_object_scale() {if(a_transformation_updated)calculate_transformation();return a_transformation.get()->x_in_object_scale();};
         // Returns the y in object scale
-        inline Fraction y_in_object_scale() {
-            if(a_transformation_updated)calculate_transformation();
-            return a_transformation.get()->y_in_object_scale();
-        }
+        inline Fraction y_in_object_scale() {if(a_transformation_updated)calculate_transformation();return a_transformation.get()->y_in_object_scale();};
         // Setters
         inline void set_x_in_object_scale(Fraction new_x) {
             if(__current_style_transformation()->x_to_apply() == new_x && __current_style_transformation()->x_definition_to_apply() == _Size_Definition::Object_Scale_Size) return;
@@ -611,7 +601,7 @@ namespace scls {
         int y_in_pixel() {if(a_transformation_updated)calculate_transformation();return a_transformation.get()->y_in_pixel();};
         // Setters
         inline void set_border_width_in_pixel(int new_width) {
-            __current_style_transformation()->border_width = glm::vec4(new_width);
+            __current_style_transformation()->set_border_width(glm::vec4(new_width));
             __current_style_transformation()->border_width_modified = true;
             a_transformation_updated = true;
         };

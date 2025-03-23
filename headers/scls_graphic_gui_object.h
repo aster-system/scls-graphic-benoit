@@ -28,7 +28,7 @@ namespace scls {
 
     //*********
     //
-    // Mains GUI classes
+    // GUI loading system
     //
     //*********
 
@@ -49,12 +49,31 @@ namespace scls {
 
         // Background color of the object
         Color a_background_color = Color(0, 0, 0, 0);
-        // Color of the border
-        Color a_border_color = Color(0, 0, 0, 255);
 
         // Global text style
         Text_Style global_text_style;
+        // Getters and setters of the text style
+        inline scls::Color border_color()const{return global_text_style.border_color;};
+        inline void set_border_color(scls::Color new_color){global_text_style.border_color = new_color;};
+        // Border handling (virtually linked to the text style)
+        virtual glm::vec4 border_width(){return glm::vec4(global_text_style.border_top_width, global_text_style.border_left_width, global_text_style.border_bottom_width, global_text_style.border_right_width);};
+        virtual void set_border_width(glm::vec4 border_width){global_text_style.border_top_width=border_width.x;global_text_style.border_left_width=border_width.y;global_text_style.border_bottom_width=border_width.z;global_text_style.border_right_width=border_width.w;};
     };
+
+    // Get datas about a border from an XML loading system
+    void border_from_xml(std::shared_ptr<XML_Text> text, scls::Color& border_color, scls::Fraction& border_bottom, scls::Fraction& border_left, scls::Fraction& border_right, scls::Fraction& border_top);
+    void border_from_xml(std::shared_ptr<XML_Text> text, scls::Color& border_color, glm::vec4& border);
+    void border_from_xml(std::shared_ptr<XML_Text> text, std::shared_ptr<Image> img);
+    void border_from_xml(std::shared_ptr<XML_Text> text, scls::Text_Style* style);
+    // Get datas about a padding from an XML loading system
+    void padding_from_xml(std::shared_ptr<XML_Text> text, scls::Fraction& border_bottom, scls::Fraction& border_left, scls::Fraction& border_right, scls::Fraction& border_top);
+    void padding_from_xml(std::shared_ptr<XML_Text> text, scls::Text_Style* style);
+
+    //*********
+    //
+    // Mains GUI classes
+    //
+    //*********
 
     class GUI_Object : public __GUI_Object_Core {
         // Class representing an GUI object displayed into the window
@@ -120,13 +139,13 @@ namespace scls {
 
         // Getters and setters (ONLY WITH ATRIBUTES)
         inline Color background_color() {return current_style()->a_background_color;};
-        inline Color border_color() {return current_style()->a_border_color;};
-        inline glm::vec4 border_width_in_pixel(){return current_style()->border_width;};
+        inline Color border_color() {return current_style()->border_color();};
+        inline glm::vec4 border_width_in_pixel(){return glm::vec4(current_style()->global_text_style.border_top_width, current_style()->global_text_style.border_left_width, current_style()->global_text_style.border_bottom_width, current_style()->global_text_style.border_right_width);};
         inline std::vector<std::shared_ptr<GUI_Object>>& children() {return a_children;};
         inline bool ignore_click() const {return a_ignore_click;};
         inline std::string name() const {return a_name;};
         virtual void set_background_color(Color new_background_color) {current_style()->a_background_color = new_background_color;set_should_render_during_this_frame(true);};
-        inline void set_border_color(Color new_color) {current_style()->a_border_color = new_color;set_should_render_during_this_frame(true);};
+        inline void set_border_color(Color new_color) {current_style()->set_border_color(new_color);set_should_render_during_this_frame(true);};
         inline void set_loaded(bool new_loaded){a_loaded=new_loaded;};
         inline void set_ignore_click(bool new_ignore_click) {a_ignore_click = new_ignore_click;};
         inline void set_visible(bool new_visible, bool with_children) {a_visible = new_visible;set_should_render_during_this_frame(true);if(a_visible&&!a_loaded){load_from_xml(std::string(""));for(int i = 0;i<static_cast<int>(a_children.size());i++){if((a_children[i].get()->visible() || with_children) && !a_children[i].get()->a_loaded){a_children[i].get()->set_visible(true);}}}};
