@@ -349,7 +349,7 @@ namespace scls {
     //*********
 
     // Most basic __GUI_Object_Core constructor
-    __GUI_Object_Core::__GUI_Object_Core(_Window_Advanced_Struct& window, __GUI_Object_Core* parent) : a_window(window) {
+    __GUI_Object_Core::__GUI_Object_Core(_Window_Advanced_Struct& window, std::string name, __GUI_Object_Core* parent) : a_name(name), a_window(window) {
          if(parent != 0){a_transformation = std::make_shared<__GUI_Transformation>(window_struct().window_height(), window_struct().window_width(), parent->transformation_shared_ptr());}
          else {a_transformation = std::make_shared<__GUI_Transformation>(window_struct().window_height(), window_struct().window_width(), std::shared_ptr<__GUI_Transformation>());}
     }
@@ -372,6 +372,6 @@ namespace scls {
         // Pass the Y
         if(__current_style_transformation()->y_definition_to_apply() == _Size_Definition::Scale_Size) current_transformation.get()->set_y_in_scale(__current_style_transformation()->y_to_apply());
         else if(__current_style_transformation()->y_definition_to_apply() == _Size_Definition::Object_Scale_Size) current_transformation.get()->set_y_in_object_scale(__current_style_transformation()->y_to_apply());
-        else if(__current_style_transformation()->y_definition_to_apply() == _Size_Definition::Pixel_Size) current_transformation.get()->set_y_in_pixel(__current_style_transformation()->y_to_apply());
+        else if(__current_style_transformation()->y_definition_to_apply() == _Size_Definition::Pixel_Size){current_transformation.get()->set_y_in_pixel(__current_style_transformation()->y_to_apply());}
     }
 }

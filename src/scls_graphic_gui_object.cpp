@@ -98,7 +98,7 @@ namespace scls {
     //*********
 
     // Most basic GUI_Object constructor
-    GUI_Object::GUI_Object(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent) : __GUI_Object_Core(window, parent.lock().get()), a_name(name), a_parent(parent) {
+    GUI_Object::GUI_Object(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent) : __GUI_Object_Core(window, name, parent.lock().get()), a_parent(parent) {
         a_texture = (*window.new_texture_shared_ptr(name, 1, 1, Color(255, 255, 255, 0)));
         a_vao = (*window.vao_shared_ptr("gui_default"));
     }
@@ -510,16 +510,19 @@ namespace scls {
         // Check for the attachment horizontal
         if(a_transform_attachment.attachment_horizontal_type == 1) {
             __move_left_in_parent(a_transform_attachment.attachment_horizontal_offset.to_double());
+            a_transform_attachment.attachment_horizontal_type = 1;
             _apply_calculate_transformation(transformation_shared_ptr());
             transformation()->calculate_position();
         }
         else if(a_transform_attachment.attachment_horizontal_type == 2) {
             __move_right_in_parent(a_transform_attachment.attachment_horizontal_offset.to_double());
+            a_transform_attachment.attachment_horizontal_type = 2;
             _apply_calculate_transformation(transformation_shared_ptr());
             transformation()->calculate_position();
         }
         else if(a_transform_attachment.attachment_horizontal_type == 4) {
             __move_right_of_object_in_parent(a_transform_attachment.attached_object_horizontal, a_transform_attachment.attachment_horizontal_offset.to_double());
+            a_transform_attachment.attachment_horizontal_type = 4;
             _apply_calculate_transformation(transformation_shared_ptr());
             transformation()->calculate_position();
         }
@@ -527,21 +530,25 @@ namespace scls {
         // Check for the attachment vertical
         if(a_transform_attachment.attachment_vertical_type == 1) {
             __move_top_in_parent(a_transform_attachment.attachment_vertical_offset.to_double());
+            a_transform_attachment.attachment_vertical_type = 1;
             _apply_calculate_transformation(transformation_shared_ptr());
             transformation()->calculate_position();
         }
         else if(a_transform_attachment.attachment_vertical_type == 2) {
             __move_bottom_in_parent(a_transform_attachment.attachment_vertical_offset.to_double());
+            a_transform_attachment.attachment_vertical_type = 2;
             _apply_calculate_transformation(transformation_shared_ptr());
             transformation()->calculate_position();
         }
         else if(a_transform_attachment.attachment_vertical_type == 3) {
             __move_top_of_object_in_parent(a_transform_attachment.attached_object_vertical.lock().get(), a_transform_attachment.attachment_vertical_offset.to_double());
+            a_transform_attachment.attachment_vertical_type = 3;
             _apply_calculate_transformation(transformation_shared_ptr());
             transformation()->calculate_position();
         }
         else if(a_transform_attachment.attachment_vertical_type == 4) {
             __move_bottom_of_object_in_parent(a_transform_attachment.attached_object_vertical.lock().get(), a_transform_attachment.attachment_vertical_offset.to_double());
+            a_transform_attachment.attachment_vertical_type = 4;
             _apply_calculate_transformation(transformation_shared_ptr());
             transformation()->calculate_position();
         }
@@ -702,25 +709,10 @@ namespace scls {
     void GUI_Scroller::check_scroller(bool reset) {
         if(a_scroller_children.get() == 0){return;}
 
-        int last_y_position = (a_scroller_children.get()->last_transformation()->y_in_pixel() + a_scroller_children.get()->last_transformation()->height_in_pixel()) - (a_scroller_children.get()->last_transformation()->parent()->height_in_pixel());
-        GUI_Object::after_resizing();
-        Fraction tallest_point = Fraction(0);
-        for(int i = 0;i<static_cast<int>(a_scroller_children->children().size());i++) {
-            GUI_Object* current_object = a_scroller_children->children()[i].get();
-            if(current_object->visible() && Fraction(current_object->y_in_pixel()) + Fraction(current_object->height_in_pixel()) > tallest_point) {
-                tallest_point = Fraction(current_object->y_in_pixel()) + current_object->height_in_pixel();
-            }
-        }
-        a_scroller_children->set_height_in_pixel(static_cast<unsigned int>(tallest_point.to_double()));
-
         // Handle the Y of the scroller
-        /*if(scroller_vertical_alignment() == Alignment_Vertical::V_Top) {
-            a_scroller_children->move_top_in_parent(1);
+        if(a_scroller_children->height_in_scale() <= 1 || static_cast<int>(height_in_pixel()) - (a_scroller_children->y_in_pixel() + static_cast<int>(a_scroller_children->height_in_pixel())) > 0){
+            a_scroller_children->attach_top_in_parent(1);
         }
-        else if(scroller_vertical_alignment() == Alignment_Vertical::V_Bottom) {
-            a_scroller_children->move_bottom_in_parent(1);
-        }//*/
-        //a_scroller_children->attach_top_in_parent(1);
 
         // Resize the children
         int border_offset = (border_width_in_pixel()[1] + border_width_in_pixel()[3]);
@@ -765,7 +757,6 @@ namespace scls {
                 Fraction final_pos = (a_scroller_children->y_in_pixel()) - movement;
                 a_scroller_children->set_y_in_pixel(final_pos);
                 check_scroller();
-                std::cout << "G " << final_pos << " " << a_scroller_children->y_in_pixel() << std::endl;
             }
             else {a_scroller_children->move_top_in_parent(1);}
         }
@@ -820,6 +811,8 @@ namespace scls {
             else{a_displayer_object.get()->attach_bottom_in_parent();}
         }
 
+        // Check the scroller
+        if(scroller_children() != 0){scroller_children()->set_height_in_pixel(needed_height());}
         GUI_Scroller::check_scroller(false);
     }
 

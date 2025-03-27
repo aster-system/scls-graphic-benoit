@@ -143,7 +143,6 @@ namespace scls {
         inline glm::vec4 border_width_in_pixel(){return glm::vec4(current_style()->global_text_style.border_top_width, current_style()->global_text_style.border_left_width, current_style()->global_text_style.border_bottom_width, current_style()->global_text_style.border_right_width);};
         inline std::vector<std::shared_ptr<GUI_Object>>& children() {return a_children;};
         inline bool ignore_click() const {return a_ignore_click;};
-        inline std::string name() const {return a_name;};
         virtual void set_background_color(Color new_background_color) {current_style()->a_background_color = new_background_color;set_should_render_during_this_frame(true);};
         inline void set_border_color(Color new_color) {current_style()->set_border_color(new_color);set_should_render_during_this_frame(true);};
         inline void set_loaded(bool new_loaded){a_loaded=new_loaded;};
@@ -313,8 +312,6 @@ namespace scls {
         std::vector<std::shared_ptr<GUI_Object>> a_children = std::vector<std::shared_ptr<GUI_Object>>();
         // If the object ignore focus or not
         bool a_ignore_click = false;
-        // Name of this object
-        std::string a_name = "";
         // If the object has been rendered during this frame or not
         bool a_rendered_during_this_frame = true;
         // If the object is visible
