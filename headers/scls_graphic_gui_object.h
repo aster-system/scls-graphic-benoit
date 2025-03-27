@@ -432,7 +432,8 @@ namespace scls {
         // Check if a scroll should occurs
         void check_scroll();
         // Check the scroller object
-        void check_scroller(bool reset = false);
+        virtual void check_scroller(bool reset);
+        inline void check_scroller(){check_scroller(false);};
         // Resets the scroller
         virtual void reset() {if(a_scroller_children.get() != 0){a_scroller_children.get()->delete_children();}};
         inline void reset_scroller_children(){delete_child(a_scroller_children.get());a_scroller_children.reset();a_scroller_children=*_create_scroller_children();};
@@ -516,7 +517,7 @@ namespace scls {
         // Soft reset the text
         virtual void soft_reset() {GUI_Object::soft_reset();a_text_modified_during_this_frame = false;};
         // Updates the event
-        virtual void update_event(){GUI_Object::update_event();int wheel_move=window_struct().wheel_movement_y_during_this_frame()*4;if(wheel_move!=0){if(wheel_move - a_offset_y < 0){a_offset_y -= wheel_move;}else{a_offset_y=0;} place_blocks();}};
+        virtual void update_event();
         // Updates the texture when needed
         virtual void update_texture() {GUI_Object::update_texture();update_text_texture();};
         // Updates the texture of the text
@@ -828,7 +829,7 @@ namespace scls {
             if(contains_object(object_name)){return 0;}
 
             // Create the object
-            std::shared_ptr<T>* current_object = new_object<T>(object_name);
+            std::shared_ptr<T>* current_object = new_object_in_scroller<T>(object_name);
             current_object->get()->a_scroller_parent = a_this_object;
             current_object->get()->set_x_in_object_scale(scls::Fraction(1, 2));
             current_object->get()->set_height_in_pixel(50);
@@ -853,7 +854,7 @@ namespace scls {
         // Adds an object (without text)
         template <typename T = GUI_Object> std::shared_ptr<T>* __add_object(std::string object_name){
             // Create the object
-            std::shared_ptr<T>* current_object = new_object<T>(name() + "-" + object_name);
+            std::shared_ptr<T>* current_object = new_object_in_scroller<T>(name() + "-" + object_name);
             current_object->get()->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
             if(a_displayer_object.get() != 0) {current_object->get()->attach_left_in_parent(20);}
             else {current_object->get()->attach_left_in_parent(0);}
@@ -914,6 +915,8 @@ namespace scls {
         virtual void after_xml_loading() {if(a_displayed){show_objects();}else{hide_objects();}GUI_Object::after_xml_loading();};
         // Check the objects (place + size)
         inline void check_objects() {place_objects();if(scroller_parent()!=0){if(a_displayed){set_height_in_pixel(needed_height());}else if(a_displayer_object.get()!=0){set_height_in_pixel(a_displayer_object.get()->height_in_pixel());}scroller_parent()->check_objects();}};
+        // Check the scroller object
+        virtual void check_scroller(bool reset){check_objects();};
         // Hides the object
         void hide_objects(){a_displayed=false;for(int i = 0;i<static_cast<int>(a_objects.size());i++){a_objects[i].object()->set_visible(false);}check_objects();};
         // Returns the parent scroller of the object

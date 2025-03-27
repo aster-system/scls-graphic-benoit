@@ -712,13 +712,15 @@ namespace scls {
             }
         }
         a_scroller_children->set_height_in_pixel(static_cast<unsigned int>(tallest_point.to_double()));
+
+        // Handle the Y of the scroller
         /*if(scroller_vertical_alignment() == Alignment_Vertical::V_Top) {
             a_scroller_children->move_top_in_parent(1);
         }
         else if(scroller_vertical_alignment() == Alignment_Vertical::V_Bottom) {
             a_scroller_children->move_bottom_in_parent(1);
         }//*/
-        a_scroller_children->attach_top_in_parent(1);
+        //a_scroller_children->attach_top_in_parent(1);
 
         // Resize the children
         int border_offset = (border_width_in_pixel()[1] + border_width_in_pixel()[3]);
@@ -757,17 +759,15 @@ namespace scls {
 
     // Scroll the scroller
     void GUI_Scroller::scroll_y(Fraction movement) {
-        if(scroller_vertical_alignment() == Alignment_Vertical::V_Top) {
+        if(scroller_vertical_alignment() == Alignment_Vertical::V_Top || true) {
             if(a_scroller_children->height_in_scale() > 1) {
                 movement *= Fraction(15);
                 Fraction final_pos = (a_scroller_children->y_in_pixel()) - movement;
                 a_scroller_children->set_y_in_pixel(final_pos);
+                check_scroller();
+                std::cout << "G " << final_pos << " " << a_scroller_children->y_in_pixel() << std::endl;
             }
-            else {
-                a_scroller_children->move_top_in_parent(1);
-            }
-            a_scroller_children.get()->calculate_transformation(true, false);
-            if(a_scroller_children.get()->children().size() > 0) a_scroller_children.get()->children()[a_scroller_children.get()->children().size()-1].get()->calculate_transformation(true, true);
+            else {a_scroller_children->move_top_in_parent(1);}
         }
         set_should_render_during_this_frame(true);
     }
@@ -820,7 +820,7 @@ namespace scls {
             else{a_displayer_object.get()->attach_bottom_in_parent();}
         }
 
-        check_scroller();
+        GUI_Scroller::check_scroller(false);
     }
 
     // Select an object
@@ -885,11 +885,7 @@ namespace scls {
         // Check the displayer
         if(a_displayer_object.get() != 0) {
             if(a_displayer_object.get()->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
-                if(a_displayed) {
-                    hide_objects();
-                } else {
-                    show_objects();
-                }
+                if(a_displayed) {hide_objects();} else {show_objects();}
             }
         }
     }
@@ -1199,6 +1195,17 @@ namespace scls {
         Text_Image_Word* needed_word = needed_line->word_at_position_in_pixel(x, y).get();
         if(needed_word == 0){return std::shared_ptr<XML_Text>();}
         return needed_word->datas().balise_parent();
+    }
+
+    // Updates the event
+    void __GUI_Text_Metadatas::update_event(){
+        GUI_Object::update_event();
+
+        // Check the scroller
+        if(is_focused() || has_child_focused()) {
+            int wheel_move=window_struct().wheel_movement_y_during_this_frame()*4;
+            if(wheel_move!=0){if(wheel_move - a_offset_y < 0){a_offset_y -= wheel_move;}else{a_offset_y=0;} place_blocks();}
+        }
     }
 
     // Update the texture of the text
