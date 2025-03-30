@@ -675,7 +675,7 @@ namespace scls {
         //*********
 
         // Most basic GUI_Text_Input_Base constructor
-        GUI_Text_Input_Base(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent):__GUI_Text_Metadatas(window, name, parent) {a_text_image.reset(window_struct().text_image_generator()->new_text_image_multi_block<Text>(""));};
+        GUI_Text_Input_Base(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent):__GUI_Text_Metadatas(window, name, parent) {a_text_image.reset(window_struct().text_image_generator()->new_text_image_multi_block<Text>(""));a_text_image.get()->set_use_cursor(true);};
 
         // Soft reset the input
         virtual void soft_reset() {GUI_Object::soft_reset();a_input_during_this_frame = false;};
