@@ -1260,7 +1260,7 @@ namespace scls {
     //*********
 
     // Format a letter
-    std::string __format_one_letter(std::string letter, bool apply_alt, bool apply_capitalisation, std::string& last_descriptive_character) {
+    std::string __format_one_letter(std::string letter, bool apply_alt, bool apply_capitalisation, bool apply_control, std::string& last_descriptive_character) {
         if(apply_alt) {
             // Top bar
             if(letter == "é") letter = "~";
@@ -1331,6 +1331,7 @@ namespace scls {
             if(letter == "*") letter = "µ";
             if(letter == "<") letter = ">";
         }
+        if(apply_control){letter = std::string();}
 
         // Set the last descriptive character
         if(last_descriptive_character == ""){
@@ -1377,19 +1378,19 @@ namespace scls {
 
         return letter;
     }
-    std::string __format(std::string letter, bool apply_alt, bool apply_capitalisation, std::string& last_descriptive_character) {
+    std::string __format(std::string letter, bool apply_alt, bool apply_capitalisation, bool apply_control, std::string& last_descriptive_character) {
         std::string result = "";
         std::string to_analyse = "";
 
         for(int i = 0;i<static_cast<int>(letter.size());i++) {
             to_analyse += letter[i];
             if(!is_character_utf_8(letter[i])) {
-                result += __format_one_letter(to_analyse, apply_alt, apply_capitalisation, last_descriptive_character);
+                result += __format_one_letter(to_analyse, apply_alt, apply_capitalisation, apply_control, last_descriptive_character);
                 to_analyse = "";
             }
         }
         // Last analyse
-        if(to_analyse != "") result += __format_one_letter(to_analyse, apply_alt, apply_capitalisation, last_descriptive_character);
+        if(to_analyse != "") result += __format_one_letter(to_analyse, apply_alt, apply_capitalisation, apply_control, last_descriptive_character);
 
         return result;
     }
@@ -1481,7 +1482,7 @@ namespace scls {
         if(window_struct.key_pressed_or_repeated_pressed("tab")) { to_add += "    ";  }
         if(window_struct.key_pressed_or_repeated_pressed(")")) { to_add += ")";  }
         if(window_struct.key_pressed_or_repeated_pressed("$")) { to_add += "$";  }
-        to_add = __format(to_add, should_alt, should_capitalise, last_descriptive_character);
+        to_add = __format(to_add, should_alt, should_capitalise, should_control, last_descriptive_character);
         to_add = format_string_from_plain_text(to_add);
 
         if(window_struct.key_pressed_or_repeated_pressed("-k")) { to_add += "-";  }
