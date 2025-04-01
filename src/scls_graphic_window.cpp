@@ -184,7 +184,7 @@ namespace scls {
         a_keys[";"] = GLFW_KEY_COMMA;
         a_keys[","] = GLFW_KEY_M;
         a_keys["!"] = GLFW_KEY_SLASH;
-        a_keys["<"] = GLFW_KEY_WORLD_2;
+        a_keys["<"] = GLFW_KEY_WORLD_2;a_keys["<<"] = GLFW_KEY_WORLD_1;
 
         // Other
         a_keys["alt gr"] = GLFW_KEY_RIGHT_ALT;
@@ -358,8 +358,14 @@ namespace scls {
 
         for (std::map<std::string, unsigned int>::iterator it = a_keys.begin(); it != a_keys.end(); it++) {
             if (glfwGetKey(window(), it->second) == GLFW_PRESS) {
-                keys_state()[it->first] = Key_State::Pressed;
-                pressed_keys().push_back(it->first);
+                if(it->first == std::string("<<")) {
+                    keys_state()[std::string("<")] = Key_State::Pressed;
+                    pressed_keys().push_back(std::string("<"));
+                }
+                else {
+                    keys_state()[it->first] = Key_State::Pressed;
+                    pressed_keys().push_back(it->first);
+                }
             }
         }
 
