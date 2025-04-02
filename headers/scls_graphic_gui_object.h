@@ -783,7 +783,7 @@ namespace scls {
         // Adds an object
         template <typename T = GUI_Text> std::shared_ptr<T>* __add_object(std::string object_name, std::string object_text){
             // Pre-creation check
-            if(scroller_children()==0){reset_scroller_children();}
+            if(scroller_children()==0){reset_scroller_children();check_scroller(false);}
 
             // Create the object
             std::shared_ptr<T>* current_object = scroller_children()->new_object<T>(name() + "-" + object_name);
@@ -1033,7 +1033,7 @@ namespace scls {
         // Function called after that the window is resized
         virtual void after_resizing();
         // Function called after an XML loading
-        virtual void after_xml_loading() {load();place_all();GUI_Object::after_xml_loading();};
+        virtual void after_xml_loading() {GUI_Object::after_xml_loading();load();};
         // Returns if the choose button is clicked during this frame
         bool choose_clicked() const {return a_choose_button->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT);};
         // Returns if the explorer contains a selected file
@@ -1051,8 +1051,6 @@ namespace scls {
         void load();
         // Place all the elements in the file explorer
         void place_all();
-        // Place correctly all the buttons in the browser
-        void place_browser_buttons();
         // Place correctly all the buttons in the top bar
         void place_top_bar_buttons();
         // Set the current path to a new path
@@ -1229,16 +1227,7 @@ namespace scls {
     }
 
     // Add a child object to the scroller with its position
-    template<typename O> std::shared_ptr<O>* GUI_Scroller::new_object_in_scroller(std::string name, unsigned int x, unsigned int y) {
-        // Create the new object
-        std::shared_ptr<O>* new_object = a_scroller_children->new_object<O>(name, x, y);
-
-        // Configurate the scroller
-        check_scroller();
-        return new_object;
-    }
-
-    // Add a child object to the scroller
+    template<typename O> std::shared_ptr<O>* GUI_Scroller::new_object_in_scroller(std::string name, unsigned int x, unsigned int y) {std::shared_ptr<O>* new_object = a_scroller_children->new_object<O>(name, x, y);check_scroller();return new_object;}
     template<typename O> std::shared_ptr<O>* GUI_Scroller::new_object_in_scroller(std::string name) { return new_object_in_scroller<O>(name, 0, 0); }
 }
 

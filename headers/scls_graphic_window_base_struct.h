@@ -255,7 +255,7 @@ namespace scls {
 
     // State of a button
     enum Button_State {Clicked, Released, Already_Clicked};
-    enum Key_State { Nothing, Pressed, Pressed_Repeated, Already_Pressed }; // Differents orientations for a map lev collection
+    enum Key_State { Nothing, Pressed, Pressed_Repeated, Already_Pressed, KS_Released}; // Differents orientations for a map lev collection
 
     class _Window_Base_Struct {
         // Class representing the base struct in the game
@@ -335,6 +335,7 @@ namespace scls {
         inline bool key_pressed(std::string name) const { return a_keys_state_frame.at(name) == Key_State::Pressed || a_keys_state_frame.at(name) == Key_State::Already_Pressed || a_keys_state_frame.at(name) == Key_State::Pressed_Repeated; };
         inline bool key_pressed_during_this_frame(std::string name) const { return a_keys_state_frame.at(name) == Key_State::Pressed; };
         inline bool key_pressed_or_repeated_pressed(std::string name) const { return a_keys_state_frame.at(name) == Key_State::Pressed || a_keys_state_frame.at(name) == Key_State::Pressed_Repeated; };
+        inline bool key_release_during_this_frame(std::string name) const { return a_keys_state.at(name) == Key_State::KS_Released; };
         inline unsigned short key_state(std::string name) const { return a_keys_state.at(name); };
         inline unsigned short key_state_frame(std::string name) const { return a_keys_state_frame.at(name); };
         inline double key_state_time(std::string name) const { return a_keys_state_time.at(name); };

@@ -563,10 +563,7 @@ namespace scls {
     // Create the new transformation
     void GUI_Object::__create_new_transformation(std::shared_ptr<__GUI_Transformation> last_transformation_to_use) {
         std::shared_ptr<__GUI_Transformation> parent_transformation;
-        if(parent() != 0) {
-            parent()->calculate_transformation(false, false);
-            parent_transformation = parent()->transformation_shared_ptr();
-        }
+        if(parent() != 0) {parent()->calculate_transformation(false, false);parent_transformation = parent()->transformation_shared_ptr();}
         if(last_transformation_to_use.get() == 0) transformation_shared_ptr() = std::make_shared<__GUI_Transformation>(0, 0, parent_transformation);
         else { transformation_shared_ptr() = std::make_shared<__GUI_Transformation>(*last_transformation_to_use.get()); }
         transformation()->parent_shared_ptr() = parent_transformation;
@@ -717,7 +714,8 @@ namespace scls {
         // Resize the children
         int border_offset = (border_width_in_pixel()[1] + border_width_in_pixel()[3]);
         if(a_scroller_children.get()->width_in_pixel() != width_in_pixel() - border_offset){
-            a_scroller_children->set_width_in_pixel(width_in_pixel() - border_offset);
+            if(static_cast<int>(width_in_pixel()) - border_offset > 0){a_scroller_children->set_width_in_pixel(width_in_pixel() - border_offset);}
+            else{a_scroller_children->set_width_in_pixel(0);}
             a_scroller_children->set_x_in_pixel(border_width_in_pixel()[1]);
         }
 
@@ -1505,7 +1503,7 @@ namespace scls {
     void GUI_File_Explorer::after_resizing() {place_all();}
 
     // Returns if a file is chosen during this frame
-    bool GUI_File_Explorer::file_chosen() {if(!choose_clicked() && !a_file_chose) return false;return true;}
+    bool GUI_File_Explorer::file_chosen() {return choose_clicked() || a_file_chose;}
 
     // Load the explorer
     void GUI_File_Explorer::load() {
@@ -1558,20 +1556,9 @@ namespace scls {
         a_top_bar->set_x_in_scale(Fraction(0));
         a_top_bar->move_top_in_parent();
 
-        place_browser_buttons();
         place_top_bar_buttons();
-    }
 
-    // Place correctly all the buttons in the browser
-    void GUI_File_Explorer::place_browser_buttons() {
-        std::shared_ptr<GUI_Text> last_button = 0;
-        for(int i = 0;i<static_cast<int>(a_browser_buttons.size());i++) {
-            std::shared_ptr<GUI_Text> current_button = a_browser_buttons[static_cast<int>(a_browser_buttons.size()) - (i + 1)];
-            current_button.get()->move_left_in_parent(1);
-            if(last_button.get() == 0) current_button.get()->move_bottom_in_parent();
-            else current_button.get()->move_top_of_object_in_parent(last_button);
-            last_button = current_button;
-        }
+        set_should_render_during_this_frame(true);
     }
 
     // Place correctly all the buttons in the top bar
@@ -1605,9 +1592,7 @@ namespace scls {
                 update_browser();
                 update_top_bar();
             }
-            else {
-                a_file_chose = true;
-            }
+            else {a_file_chose = true;}
         }
         else {
             // Handle a single file
@@ -1646,7 +1631,8 @@ namespace scls {
 
                 // Create the button
                 paths[i] = file_name(paths[i], true);
-                a_browser_buttons.push_back(*a_browser.get()->add_object(paths[i], paths[i]));
+                std::shared_ptr<GUI_Text>* result = a_browser.get()->add_object(paths[i], paths[i]);
+                if(result != 0) {a_browser_buttons.push_back(*result);result->get()->set_height_in_pixel(20);result->get()->set_width_in_scale(1);}
             }
 
             a_browser_y = 0;
@@ -1692,7 +1678,7 @@ namespace scls {
         threads.clear();
 
         place_all();
-        a_browser.get()->check_scroller(from_scratch);
+        a_browser.get()->check_objects();
     }
 
     // Update the explorer during an event
@@ -1711,9 +1697,7 @@ namespace scls {
         // Check if a top button is clicked
         std::string path = "";
         for(int i = 0;i<static_cast<int>(a_top_bar_buttons.size());i++) {
-            if(i > 0) {
-                path += a_top_bar_buttons[i]->plain_text();
-            }
+            if(i > 0) {path += a_top_bar_buttons[i]->plain_text();}
             if(a_top_bar_buttons[i]->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
                 a_current_path = "";
                 set_path(path);

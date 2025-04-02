@@ -689,12 +689,16 @@ namespace scls {
             if(is_vertical) {
                 if(a_transform_attachment.attached_object_vertical.lock().get() != 0) {
                     a_transform_attachment.attached_object_vertical.lock().get()->__delete_attached_object(this);
-                } a_transform_attachment.attached_object_vertical = another_object;
-            } else {
+                }
+                a_transform_attachment.attached_object_vertical = another_object;
+            }
+            else {
                 if(a_transform_attachment.attached_object_horizontal != 0) {
                     a_transform_attachment.attached_object_horizontal->__delete_attached_object(this);
-                } a_transform_attachment.attached_object_horizontal = another_object.lock().get();
-            } if(another_object.lock().get() != 0 && !another_object.lock().get()->__contains_attached_object(this)){another_object.lock().get()->a_attached_object.push_back(this);}
+                }
+                a_transform_attachment.attached_object_horizontal = another_object.lock().get();
+            }
+            if(another_object.lock().get() != 0 && !another_object.lock().get()->__contains_attached_object(this)){another_object.lock().get()->a_attached_object.push_back(this);}
         };
         // Attach the object at the bottom of its parent
         inline void attach_bottom_in_parent(Fraction offset = Fraction(0)) {__move_bottom_in_parent(offset.to_double());a_transformation_updated = true;a_transform_attachment.attachment_vertical_offset = offset;a_transform_attachment.attachment_vertical_type = 2;};

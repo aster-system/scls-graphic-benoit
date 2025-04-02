@@ -355,12 +355,10 @@ namespace scls {
         pressed_keys().clear();
         pressed_keys_frame().clear();
         for (std::map<std::string, Key_State>::iterator it = keys_state().begin(); it != keys_state().end(); it++) {
-            it->second = Key_State::Nothing; // Reset keys
+            if(it->second == Key_State::Pressed){it->second = Key_State::KS_Released;}
+            else{it->second = Key_State::Nothing;}
         }
-        for (std::map<std::string, double>::iterator it = keys_state_time().begin(); it != keys_state_time().end(); it++) {
-            // Update the time
-            it->second += delta_time();
-        }
+        for (std::map<std::string, double>::iterator it = keys_state_time().begin(); it != keys_state_time().end(); it++) {it->second += delta_time();}
 
         for (std::map<std::string, unsigned int>::iterator it = a_keys.begin(); it != a_keys.end(); it++) {
             if (glfwGetKey(window(), it->second) == GLFW_PRESS) {
@@ -389,9 +387,9 @@ namespace scls {
                     }
                 }
             }
-            else
-            {
-                keys_state_frame()[it->first] = Key_State::Nothing; // Reset keys
+            else {
+                // Reset keys
+                keys_state_frame()[it->first] = state;
                 keys_state_time()[it->first] = 0;
             }
         }
