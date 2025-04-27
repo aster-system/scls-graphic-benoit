@@ -307,19 +307,16 @@ namespace scls {
         a_last_frame_time = current_time;
         a_execution_time += delta_time();
 
-        if (delta_time() > 1.0) set_delta_time(0);
+        if (delta_time() > 1.0){set_delta_time(0);}
 
         // FPS calculation
         a_time_since_last_fps_calculation += delta_time();
-        if (a_time_since_last_fps_calculation >= 1)
-        {
+        if (a_time_since_last_fps_calculation >= 1) {
             print("SCLS", "FPS", a_frame_count);
             a_frame_count = 0;
             a_time_since_last_fps_calculation = 0;
         }
-        else {
-            a_frame_count++;
-        }
+        else {a_frame_count++;}
 
         // Calculate the resizing of the window
         if(_screen_resized) {
@@ -352,8 +349,7 @@ namespace scls {
         wheel_y = 0;
 
         // Update the keys
-        pressed_keys().clear();
-        pressed_keys_frame().clear();
+        pressed_keys().clear();pressed_keys_frame().clear();
         for (std::map<std::string, Key_State>::iterator it = keys_state().begin(); it != keys_state().end(); it++) {
             if(it->second == Key_State::Pressed){it->second = Key_State::KS_Released;}
             else{it->second = Key_State::Nothing;}
@@ -371,14 +367,13 @@ namespace scls {
         for (std::map<std::string, Key_State>::iterator it = keys_state().begin(); it != keys_state().end(); it++) {
             Key_State state = it->second;
             if (state != Key_State::Nothing) {
-                if (keys_state_frame()[it->first] != state && keys_state_frame()[it->first] != Key_State::Already_Pressed && keys_state_frame()[it->first] != Key_State::Pressed_Repeated)
+                if (keys_state_frame()[it->first] != Key_State::Pressed && keys_state_frame()[it->first] != Key_State::Already_Pressed && keys_state_frame()[it->first] != Key_State::Pressed_Repeated)
                 {
                     keys_state_frame()[it->first] = Key_State::Pressed;
                     keys_state_time()[it->first] = 0;
                     pressed_keys_frame().push_back(it->first);
                 }
-                else
-                {
+                else {
                     keys_state_frame()[it->first] = Key_State::Already_Pressed;
 
                     if(keys_state_time()[it->first] > 0.5) {
@@ -387,11 +382,7 @@ namespace scls {
                     }
                 }
             }
-            else {
-                // Reset keys
-                keys_state_frame()[it->first] = state;
-                keys_state_time()[it->first] = 0;
-            }
+            else {keys_state_frame()[it->first] = Key_State::Nothing;keys_state_time()[it->first] = 0;}
         }
 
         // Update last mouse pos for future mouse pos calcul

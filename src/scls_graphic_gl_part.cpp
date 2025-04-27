@@ -334,10 +334,7 @@ namespace scls {
         // Fill the datas
         a_datas.clear();
         std::vector<std::string> cutted = scls::cut_string(content, " ");
-        for (int i = 0; i < cutted.size(); i++)
-        {
-            a_datas.push_back(atof(cutted[i].c_str()));
-        }
+        for (int i = 0; i < static_cast<int>(cutted.size()); i++){a_datas.push_back(atof(cutted[i].c_str()));}
     }
 
     // Load the VBO into the GPU memory
@@ -466,15 +463,7 @@ namespace scls {
     //*********
 
     // Texture constructor
-    Texture::Texture(std::string a_texture_path, bool a_resize): resize(a_resize), texture_path(a_texture_path), a_image(new scls::Image()) {
-        if (a_texture_path != "") {
-            get_image()->load_from_path(texture_path);
-            get_image()->flip_x();
-
-            // Load the texture
-            load_texture();
-        }
-    }
+    Texture::Texture(std::string a_texture_path, bool a_resize): a_image(new scls::Image()), resize(a_resize), texture_path(a_texture_path) {if(a_texture_path != std::string()){get_image()->load_from_path(texture_path);get_image()->flip_x();load_texture();}}
     Texture::Texture(std::shared_ptr<Image> image, bool a_resize) : Texture("", false) {a_image=image;load_texture();}
     Texture::Texture(unsigned short width, unsigned short height, glm::vec4 color, bool a_resize) : Texture("", false) {a_image.reset(new scls::Image(width, height, color[0], color[1], color[2], color[3]));load_texture();}
     Texture::Texture(unsigned short width, unsigned short height, scls::Color color, bool a_resize) : Texture("", false) {a_image.reset(new scls::Image(width, height, color));load_texture();}

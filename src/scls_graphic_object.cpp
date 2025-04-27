@@ -37,13 +37,10 @@ namespace scls {
     }
 
     // Object blank constructor
-    Object::Object(_Window_Advanced_Struct* window_struct) : Object(window_struct, "") {
-    }
+    Object::Object(_Window_Advanced_Struct* window_struct) : Object(window_struct, "") {}
 
     // Object most basic constructor with a transform parent
-    Object::Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent) : Object(window_struct, transform_parent, "") {
-
-    }
+    Object::Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent) : Object(window_struct, transform_parent, "") {}
 
     // Most parent Object constructor used for displaying
     Object::Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : Object(window_struct, transform_parent, name) {

@@ -920,7 +920,7 @@ namespace scls {
         bool a_loaded = false;
         bool resize = true; // If the shader resize the texture or not
         unsigned int texture_id = 0; // Handle to the texture
-        std::string texture_path = ""; // Path of the texture
+        std::string texture_path = std::string(); // Path of the texture
         int width = 0; // Width of the texture
     };
 }

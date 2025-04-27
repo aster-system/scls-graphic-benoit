@@ -56,8 +56,8 @@ namespace scls {
         inline scls::Color border_color()const{return global_text_style.border_color;};
         inline void set_border_color(scls::Color new_color){global_text_style.border_color = new_color;};
         // Border handling (virtually linked to the text style)
-        virtual glm::vec4 border_width(){return glm::vec4(global_text_style.border_top_width, global_text_style.border_left_width, global_text_style.border_bottom_width, global_text_style.border_right_width);};
-        virtual void set_border_width(glm::vec4 border_width){global_text_style.border_top_width=border_width.x;global_text_style.border_left_width=border_width.y;global_text_style.border_bottom_width=border_width.z;global_text_style.border_right_width=border_width.w;};
+        virtual glm::vec4 border_width(){return glm::vec4(global_text_style.border_top_width(), global_text_style.border_left_width(), global_text_style.border_bottom_width(), global_text_style.border_right_width());};
+        virtual void set_border_width(glm::vec4 border_width){global_text_style.set_border_bottom_width(border_width.z);global_text_style.set_border_left_width(border_width.y);global_text_style.set_border_right_width(border_width.w);global_text_style.set_border_top_width(border_width.x);};
     };
 
     // Get datas about a border from an XML loading system
@@ -140,7 +140,7 @@ namespace scls {
         // Getters and setters (ONLY WITH ATRIBUTES)
         inline Color background_color() {return current_style()->a_background_color;};
         inline Color border_color() {return current_style()->border_color();};
-        inline glm::vec4 border_width_in_pixel(){return glm::vec4(current_style()->global_text_style.border_top_width, current_style()->global_text_style.border_left_width, current_style()->global_text_style.border_bottom_width, current_style()->global_text_style.border_right_width);};
+        inline glm::vec4 border_width_in_pixel(){return glm::vec4(current_style()->global_text_style.border_top_width(), current_style()->global_text_style.border_left_width(), current_style()->global_text_style.border_bottom_width(), current_style()->global_text_style.border_right_width());};
         inline std::vector<std::shared_ptr<GUI_Object>>& children() {return a_children;};
         inline bool ignore_click() const {return a_ignore_click;};
         virtual void set_background_color(Color new_background_color) {current_style()->a_background_color = new_background_color;set_should_render_during_this_frame(true);};
@@ -481,19 +481,27 @@ namespace scls {
         // Class representing the metadatas of a graphic text
     public:
 
-        class __GUI_Text_Block : public GUI_Object {
+        class __GUI_Text_Block {
             // Children of a GUI text containing a single block
         public:
             // Most basic __GUI_Text_Block constructor
-            __GUI_Text_Block(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent):GUI_Object(window, name, parent){};
+            __GUI_Text_Block(std::shared_ptr<GUI_Object> needed_object):a_object(needed_object){};
+
+            // Returns the height of the block
+            inline int height()const{return a_object.get()->height_in_pixel() + style()->margin_bottom() + style()->margin_top();};
+            // Updates the texture of the block
+            virtual void update_texture(Text_Image_Block* block_to_apply, scls::Image_Generation_Type generation_type);
 
             // Getters and setters
+            inline GUI_Object* object()const{return a_object.get();};
             inline void set_style(std::shared_ptr<Text_Style> new_style) {a_style = new_style;};
             inline Text_Style* style() const {return a_style.get();};
 
         private:
             //Lines in the block object
             std::vector<std::shared_ptr<GUI_Object>> a_lines;
+            // Object for the block
+            std::shared_ptr<GUI_Object> a_object;
             // Style for this block
             std::shared_ptr<Text_Style> a_style;
         };
@@ -523,6 +531,12 @@ namespace scls {
 
         // Adds a text to the input at the cursor position returns if the text has correctly been added
         virtual bool add_text(std::string text_to_add);
+        // Creates a text block from a block of text
+        template <typename S = __GUI_Text_Metadatas::__GUI_Text_Block, typename T = GUI_Object> std::shared_ptr<__GUI_Text_Metadatas::__GUI_Text_Block> __create_text_block_object() {return std::make_shared<S>(*new_object<T>(__create_text_block_object_name()));};
+        virtual std::shared_ptr<__GUI_Text_Metadatas::__GUI_Text_Block> __create_text_block_object(Text_Image_Block* block_to_apply);
+        std::string __create_text_block_object_name();
+        // Generates a text block from a block of text
+        virtual void __generate_text_block_object(Text_Image_Block* block_to_apply, scls::Image_Generation_Type generation_type, unsigned int& total_height);
         // Merges the current object with a specific style
         virtual void merge_style(GUI_Style* new_style);
         // Places the blocks in the text
@@ -937,7 +951,7 @@ namespace scls {
         inline std::vector<std::string>& currently_confirmed_objects() {return a_currently_confirmed_objects;};
         inline std::vector<GUI_Scroller_Single_Choice>& currently_selected_objects() {return a_currently_selected_objects;};
         inline std::vector<GUI_Scroller_Single_Choice>& currently_selected_objects_during_this_frame() {return a_currently_selected_objects_during_this_frame;};
-        inline unsigned int max_number_selected_object() const {return a_max_number_selected_object;};
+        inline int max_number_selected_object() const {return a_max_number_selected_object;};
         inline std::vector<GUI_Scroller_Single_Choice>& objects() {return a_objects;};
         inline GUI_Style& selected_objects_style() {return a_selected_objects_style;};
         inline bool selection_modified() const {return a_selection_modified;};
@@ -973,7 +987,7 @@ namespace scls {
         std::vector<GUI_Scroller_Single_Choice> a_currently_selected_objects = std::vector<GUI_Scroller_Single_Choice>();
         std::vector<GUI_Scroller_Single_Choice> a_currently_selected_objects_during_this_frame = std::vector<GUI_Scroller_Single_Choice>();
         // Maximum number of selected object
-        unsigned int a_max_number_selected_object = 1;
+        int a_max_number_selected_object = 1;
         // Scroller parent of the object
         std::weak_ptr<GUI_Object> a_scroller_parent;
         // If the selection as been modified during this frame
