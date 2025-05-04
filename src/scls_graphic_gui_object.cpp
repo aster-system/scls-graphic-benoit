@@ -917,6 +917,7 @@ namespace scls {
                 // Loads the sub-choices
                 current_section.get()->set_xml_attribute(text.get()->sub_texts()[i], event);
             }
+            current_section.get()->check_objects();
         }
         else if(event == "selected"){GUI_Object::set_xml_attribute_style(text, &selected_objects_style());}
         else if(event == "unselected"){GUI_Object::set_xml_attribute_style(text, &unselected_objects_style());}

@@ -923,9 +923,9 @@ namespace scls {
         // Function called after the creation
         virtual void after_creation() {GUI_Object::after_creation();};
         // Function called after an XML loading
-        virtual void after_xml_loading() {if(a_displayed){show_objects();}else{hide_objects();}GUI_Object::after_xml_loading();};
+        virtual void after_xml_loading() {GUI_Object::after_xml_loading();if(a_displayed){show_objects();}else{hide_objects();}};
         // Check the objects (place + size)
-        inline void check_objects() {place_objects();if(scroller_parent()!=0){if(a_displayed){set_height_in_pixel(needed_height());}else if(a_displayer_object.get()!=0){set_height_in_pixel(a_displayer_object.get()->height_in_pixel());}scroller_parent()->check_objects();}};
+        inline void check_objects() {place_objects();if(scroller_parent()!=0){set_height_in_pixel(needed_height());scroller_parent()->check_objects();}};
         // Check the scroller object
         virtual void check_scroller(bool reset){check_objects();};
         // Hides the object
@@ -935,7 +935,7 @@ namespace scls {
         // Places the objects
         void place_objects();
         // Returns the needed height
-        inline int needed_height() const {int to_return = 0;if(a_displayer_object.get()!=0){to_return+=a_displayer_object.get()->height_in_pixel();}for(int i = 0;i<static_cast<int>(a_objects.size());i++){to_return += a_objects[i].object()->height_in_pixel();}return to_return;};
+        inline int needed_height() const {int to_return = 0;if(a_displayer_object.get()!=0){to_return+=a_displayer_object.get()->height_in_pixel();}if(a_displayed){for(int i = 0;i<static_cast<int>(a_objects.size());i++){to_return += a_objects[i].object()->height_in_pixel();}}return to_return;};
         // Resets the object
         void reset_objects() {a_currently_confirmed_objects.clear();while(static_cast<int>(a_currently_selected_objects.size() > 0)){unselect_object(a_currently_selected_objects[0]);}};
         // Shows the object
