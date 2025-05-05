@@ -432,7 +432,7 @@ namespace scls {
         virtual void check_scroller(bool reset);
         inline void check_scroller(){check_scroller(false);};
         // Resets the scroller
-        virtual void reset() {if(a_scroller_children.get() != 0){a_scroller_children.get()->delete_children();}};
+        virtual void reset() {if(a_scroller_children.get() != 0){a_scroller_children.get()->delete_children();}check_scroller(false);};
         inline void reset_scroller_children(){delete_child(a_scroller_children.get());a_scroller_children.reset();a_scroller_children=*_create_scroller_children();};
         // Scroll the scroller on the Y axis
         void scroll_y(Fraction movement);
@@ -848,6 +848,7 @@ namespace scls {
 
             // Create the choice
             __GUI_Scroller_Single_Choice choice;
+            choice.name = object_name;
             choice.is_sub_section = true;
             choice.object = *current_object;
             GUI_Scroller_Single_Choice to_add; to_add.__choice = std::make_shared<__GUI_Scroller_Single_Choice>(choice);
@@ -912,7 +913,7 @@ namespace scls {
         // Returns an object by its name
         inline GUI_Scroller_Single_Choice object_by_name(std::string object_name) {for(int i = 0;i<static_cast<int>(a_objects.size());i++){if(a_objects[i].name()==object_name)return a_objects[i];else{GUI_Scroller_Single_Choice test=a_objects[i].object_by_name(object_name);if(test.exists()){return test;}}}return GUI_Scroller_Single_Choice();};
         // Resets the scroller
-        virtual void reset() {reset_objects();a_displayer_object.reset();a_objects.clear();GUI_Scroller::reset();};
+        virtual void reset() {reset_objects();a_objects.clear();check_objects();}; // a_displayer_object.reset();
         // Select an object
         void select_object(GUI_Scroller_Single_Choice needed_object);
         void select_object(std::string object_name){select_object(object_by_name(object_name));};
@@ -930,18 +931,20 @@ namespace scls {
         virtual void check_scroller(bool reset){check_objects();};
         // Hides the object
         void hide_objects(){a_displayed=false;for(int i = 0;i<static_cast<int>(a_objects.size());i++){a_objects[i].object()->set_visible(false);}check_objects();};
-        // Returns the parent scroller of the object
-        inline GUI_Scroller_Choice* scroller_parent() const {return reinterpret_cast<GUI_Scroller_Choice*>(a_scroller_parent.lock().get());};
         // Places the objects
         void place_objects();
         // Returns the needed height
         inline int needed_height() const {int to_return = 0;if(a_displayer_object.get()!=0){to_return+=a_displayer_object.get()->height_in_pixel();}if(a_displayed){for(int i = 0;i<static_cast<int>(a_objects.size());i++){to_return += a_objects[i].object()->height_in_pixel();}}return to_return;};
         // Resets the object
         void reset_objects() {a_currently_confirmed_objects.clear();while(static_cast<int>(a_currently_selected_objects.size() > 0)){unselect_object(a_currently_selected_objects[0]);}};
+        // Returns the parent scroller of the object
+        inline GUI_Scroller_Choice* scroller_parent() const {return reinterpret_cast<GUI_Scroller_Choice*>(a_scroller_parent.lock().get());};
         // Shows the object
         void show_objects(){a_displayed=true;for(int i = 0;i<static_cast<int>(a_objects.size());i++){a_objects[i].object()->set_visible(true);}check_objects();};
         // Soft resets the object
         virtual void soft_reset() {GUI_Scroller::soft_reset();a_choice_modified=false;a_selection_modified=false;a_currently_confirmed_objects.clear();a_currently_selected_objects_during_this_frame.clear();for(int i=0;i<static_cast<int>(a_currently_selected_objects.size());i++){if(!a_currently_selected_objects[i].__choice.get()->good){a_currently_selected_objects.erase(a_currently_selected_objects.begin() + i, a_currently_selected_objects.begin() + i + 1);i--;}}};
+        // Returns a precise sub-section of the scroller
+        inline GUI_Scroller_Choice* sub_section(std::string sub_section_name){for(int i=0;i<static_cast<int>(a_objects.size());i++){if(a_objects[i].name()==sub_section_name){return a_objects[i].sub_section();}}return 0;};
         // Updates the even in the scroller
         virtual void update_event();
 
