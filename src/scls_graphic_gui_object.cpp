@@ -950,6 +950,7 @@ namespace scls {
                 reset();
                 attached_text_image()->add_text(text_to_add);
                 update_text_texture();
+                a_text_modified_during_this_frame = true;
             }
             return true;
         }

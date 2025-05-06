@@ -692,7 +692,7 @@ namespace scls {
         GUI_Text_Input_Base(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent):__GUI_Text_Metadatas(window, name, parent) {a_text_image.reset(window_struct().text_image_generator()->new_text_image_multi_block<Text>(""));a_text_image.get()->set_use_cursor(true);};
 
         // Soft reset the input
-        virtual void soft_reset() {GUI_Object::soft_reset();a_input_during_this_frame = false;};
+        virtual void soft_reset() {__GUI_Text_Metadatas::soft_reset();a_input_during_this_frame = false;};
 
         // Adds a text to the input at the cursor position and returns if the text has correctly been added
         virtual bool add_text(std::string text_to_add){if(__GUI_Text_Metadatas::add_text(text_to_add)){a_input_during_this_frame=true;return true;}return false;};
@@ -913,7 +913,8 @@ namespace scls {
         // Returns an object by its name
         inline GUI_Scroller_Single_Choice object_by_name(std::string object_name) {for(int i = 0;i<static_cast<int>(a_objects.size());i++){if(a_objects[i].name()==object_name)return a_objects[i];else{GUI_Scroller_Single_Choice test=a_objects[i].object_by_name(object_name);if(test.exists()){return test;}}}return GUI_Scroller_Single_Choice();};
         // Resets the scroller
-        virtual void reset() {reset_objects();a_objects.clear();check_objects();}; // a_displayer_object.reset();
+        virtual void reset() {reset_objects();__reset_objects();check_objects();}; // a_displayer_object.reset();
+        void __reset_objects() {for(int i = 0;i<static_cast<int>(a_objects.size());i++){scroller_children()->delete_child(a_objects.at(i).object());}a_objects.clear();};
         // Select an object
         void select_object(GUI_Scroller_Single_Choice needed_object);
         void select_object(std::string object_name){select_object(object_by_name(object_name));};
