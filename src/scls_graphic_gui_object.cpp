@@ -917,6 +917,7 @@ namespace scls {
                 // Loads the sub-choices
                 current_section.get()->set_xml_attribute(text.get()->sub_texts()[i], event);
             }
+            current_section.get()->check_objects();
         }
         else if(event == "selected"){GUI_Object::set_xml_attribute_style(text, &selected_objects_style());}
         else if(event == "unselected"){GUI_Object::set_xml_attribute_style(text, &unselected_objects_style());}
@@ -1902,8 +1903,11 @@ namespace scls {
                 // Create the object
                 if(object_name != "") {
                     std::shared_ptr<GUI_Object> object = __load_object_from_xml(object_name, object_type, current_text, load_content);
+
+                    // Apply the sub-page system
                     if(sub_page >= 0 && object.get()->parent() != 0){
-                        object.get()->parent()->sub_pages().push_back(object);
+                        //object.get()->parent()->sub_pages().push_back(object);
+                        parent_object()->sub_pages().push_back(object);
                         if(!must_be_visible){object.get()->set_visible(false);}
                     }
                 }
