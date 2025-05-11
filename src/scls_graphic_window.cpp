@@ -498,7 +498,10 @@ namespace scls {
                 }
 
                 // Add the page
-                if(page_name != "") { __load_page_3d_from_xml(page_name, page_type, cutted[i], loader); }
+                if(page_name != "") {
+                    __load_page_3d_from_xml(page_name, page_type, cutted[i], loader);
+                    if(display_page){display_page_3d(page_name);}
+                }
             }
             else if(cutted[i].get()->xml_balise_name() == "texture") {
                 // Add a texture

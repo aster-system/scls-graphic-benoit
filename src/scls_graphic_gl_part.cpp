@@ -158,8 +158,8 @@ namespace scls {
             else if(it->type == GL_INT){type_size = sizeof(int);}
             total_size += it->vector_size * type_size;
         }
-        unsigned int current_size = 0;
-        unsigned short variable_number = 0;
+        int64_t current_size = 0;
+        unsigned int variable_number = 0;
 
         use();
         for (std::vector<Shader_Program_Variable>::iterator it = variables->begin(); it != variables->end(); it++) {
@@ -167,7 +167,7 @@ namespace scls {
             if (it->type == GL_FLOAT) { type_size = sizeof(float); }
             else if(it->type == GL_INT){type_size = sizeof(int);}
 
-            glVertexAttribPointer(variable_number, it->vector_size, GL_FLOAT, GL_FALSE, total_size, (void*)current_size);
+            glVertexAttribPointer(variable_number, it->vector_size, GL_FLOAT, GL_FALSE, total_size, reinterpret_cast<void*>(current_size));
             glEnableVertexAttribArray(variable_number); // Pass each variables to the shader
             current_size += it->vector_size * type_size;
             variable_number++;
@@ -269,6 +269,444 @@ namespace scls {
         }
     }
 
+    // Returns the datas for a cube vbo
+    std::vector<double> VBO::cube_vbo() {
+        std::vector<double> a_datas = std::vector<double>();
+        a_datas.push_back(-0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.66667);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.66667);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.66667);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.66667);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.66667);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.66667);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.66667);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.66667);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.66667);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.75);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.75);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.66667);
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.75);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.75);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.75);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.75);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.66667);
+        a_datas.push_back(0.75);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.75);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.66667);
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.75);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.66667);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.66667);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.66667);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.66667);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.75);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.66667);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.75);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.66667);
+        a_datas.push_back(0.75);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.66667);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.66667);
+        a_datas.push_back(0);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.5);
+        a_datas.push_back(0.66667);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(-0.5);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0);
+        a_datas.push_back(0.33333);
+        a_datas.push_back(0.25);
+        a_datas.push_back(1.0);
+        a_datas.push_back(-1.0);
+        a_datas.push_back(0.0);
+        return a_datas;
+    }
+
     // Returns the number of vertices into the VBO
     unsigned int VBO::get_vertice_number() {
         std::vector<float> datas = datas_to_float();
@@ -280,6 +718,126 @@ namespace scls {
         }
         return (datas.size() * sizeof(float)) / attribute_size; // Divise the total size with the size of one float
     }
+
+    // Returns the datas for a gui vbo
+    std::vector<double> VBO::gui_vbo(std::vector<Shader_Program_Variable> attributes) {
+        std::vector<double> a_datas = std::vector<double>();
+        a_datas.push_back(1.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.0);
+
+        a_datas.push_back(1.0);
+        a_datas.push_back(1.0);
+
+        if (attributes.size() > 2) {
+            a_datas.push_back(0.0);
+            a_datas.push_back(0.0);
+            a_datas.push_back(1.0);
+            a_datas.push_back(1.0);
+
+            a_datas.push_back(0.0);
+            a_datas.push_back(-1.0);
+            a_datas.push_back(1.0);
+        }
+
+        a_datas.push_back(0.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.0);
+
+        a_datas.push_back(0.0);
+        a_datas.push_back(1.0);
+
+        if (attributes.size() > 2)
+        {
+            a_datas.push_back(0.0);
+            a_datas.push_back(0.0);
+            a_datas.push_back(1.0);
+            a_datas.push_back(1.0);
+
+            a_datas.push_back(0.0);
+            a_datas.push_back(-1.0);
+            a_datas.push_back(1.0);
+        }
+
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(0.0);
+
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.0);
+
+        if (attributes.size() > 2)
+        {
+            a_datas.push_back(0.0);
+            a_datas.push_back(0.0);
+            a_datas.push_back(1.0);
+            a_datas.push_back(1.0);
+
+            a_datas.push_back(0.0);
+            a_datas.push_back(-1.0);
+            a_datas.push_back(1.0);
+        }
+
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(0.0);
+
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.0);
+
+        if (attributes.size() > 2)
+        {
+            a_datas.push_back(0.0);
+            a_datas.push_back(0.0);
+            a_datas.push_back(1.0);
+            a_datas.push_back(1.0);
+
+            a_datas.push_back(0.0);
+            a_datas.push_back(-1.0);
+            a_datas.push_back(1.0);
+        }
+
+        a_datas.push_back(0.0);
+        a_datas.push_back(0.0);
+        a_datas.push_back(0.0);
+
+        a_datas.push_back(0.0);
+        a_datas.push_back(0.0);
+
+        if (attributes.size() > 2)
+        {
+            a_datas.push_back(0.0);
+            a_datas.push_back(0.0);
+            a_datas.push_back(1.0);
+            a_datas.push_back(1.0);
+
+            a_datas.push_back(0.0);
+            a_datas.push_back(-1.0);
+            a_datas.push_back(1.0);
+        }
+
+        a_datas.push_back(0.0);
+        a_datas.push_back(1.0);
+        a_datas.push_back(0.0);
+
+        a_datas.push_back(0.0);
+        a_datas.push_back(1.0);
+
+        if (attributes.size() > 2)
+        {
+            a_datas.push_back(0.0);
+            a_datas.push_back(0.0);
+            a_datas.push_back(1.0);
+            a_datas.push_back(1.0);
+
+            a_datas.push_back(0.0);
+            a_datas.push_back(-1.0);
+            a_datas.push_back(1.0);
+        }
+
+        return a_datas;
+    }
+    std::vector<double> VBO::gui_vbo(){std::vector<Shader_Program_Variable> attributes = std::vector<Shader_Program_Variable>(5);return gui_vbo(attributes);};
 
     // Load the VBO from binary
     void VBO::load_from_binary(char* binary) {
@@ -326,10 +884,7 @@ namespace scls {
             // convert stream into string
             content = stream.str();
         }
-        catch (std::ifstream::failure e)
-        {
-            std::cout << "Matrix game : error ! Can't open the VBO file \"" << path << "\"." << std::endl;
-        }
+        catch (const std::ifstream::failure& e){scls::print("SCLS Graphic \"Benoit\"", std::string("Can't open the VBO file \"") + path + std::string("\"."));}
 
         // Fill the datas
         a_datas.clear();
@@ -341,16 +896,7 @@ namespace scls {
     void VBO::load_vbo() {glGenBuffers(1, &vbo);if (a_use_ebo){glGenBuffers(1, &ebo);}}
 
     // Create a new VBO from this one
-    VBO* VBO::new_copy() {
-        VBO* vbo = new VBO();
-
-        vbo->a_attributes = a_attributes;
-        vbo->a_datas = a_datas;
-        vbo->a_indices = a_indices;
-        vbo->a_use_ebo = a_use_ebo;
-
-        return vbo;
-    }
+    VBO* VBO::new_copy() {VBO* vbo = new VBO();vbo->a_attributes = a_attributes;vbo->a_datas = a_datas;vbo->a_indices = a_indices;vbo->a_use_ebo = a_use_ebo;return vbo;}
 
     // Unbind the VBO from the GPU memory
     void VBO::unbind() {glBindBuffer(GL_ARRAY_BUFFER, 0);}
@@ -405,10 +951,7 @@ namespace scls {
             vertex_content = vertex_stream.str();
             fragment_content = fragment_stream.str();
         }
-        catch (std::ifstream::failure e)
-        {
-            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
-        }
+        catch (const std::ifstream::failure& e){scls::print("SCLS Graphic \"Benoit\"", std::string("Can't open the Shader Program file \"") + shader_path + std::string("\"."));}
         const char* vertex_code = vertex_content.c_str();
         const char* fragment_code = fragment_content.c_str();
 

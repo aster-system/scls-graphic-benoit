@@ -92,7 +92,7 @@ namespace scls {
         void soft_reset(); // Reset softly the object
         virtual void update() { update_animation(); }; // Update the object
         void update_animation(); // Update the animations for the object
-        ~Transform_Object(); // Transform_Object destructor
+        virtual ~Transform_Object(); // Transform_Object destructor
 
         // Getters
         inline glm::vec3 absolute_scale() {if(get_parent() == 0) return get_scale();return get_scale() * get_parent()->absolute_scale();};
@@ -284,11 +284,7 @@ namespace scls {
         // Loads a variable
         inline void load_variable(std::string variable_name, std::string variable_value) {a_loaded_variables[variable_name] = variable_value; }
         // Returns a loaded variable
-        inline std::string loaded_variable(std::string variable_name) const {
-            try { return a_loaded_variables.at(variable_name); }
-            catch (std::out_of_range) {return "";}
-            return "";
-        };
+        inline std::string loaded_variable(std::string variable_name) const {try { return a_loaded_variables.at(variable_name); }catch (const std::out_of_range&) {return std::string();}return std::string();};
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline std::string assets_directory_path() { return a_assets_directory_path; };
@@ -299,22 +295,12 @@ namespace scls {
         inline glm::mat4 projection() {return camera()->get_projection(window_height(), window_width());};
         inline void set_assets_directory_path(std::string new_assets_directory_path) {
             new_assets_directory_path = file_formatted(new_assets_directory_path);
-            if (std::filesystem::exists(new_assets_directory_path))
-            {
-                if (std::filesystem::is_directory(new_assets_directory_path))
-                {
-                    a_assets_directory_path = new_assets_directory_path;
-                }
-                else
-                {
-                    print("Warning", "SCLS Window", "The path \"" + new_assets_directory_path + "\" you want to set as the window assets directory is not a directory.");
-                }
+            if (std::filesystem::exists(new_assets_directory_path)) {
+                if (std::filesystem::is_directory(new_assets_directory_path)){a_assets_directory_path = new_assets_directory_path;}
+                else{print("Warning", "SCLS Window", "The path \"" + new_assets_directory_path + "\" you want to set as the window assets directory is not a directory.");}
             }
-            else
-            {
-                print("Warning", "SCLS Window", "The path \"" + new_assets_directory_path + "\" you want to set as the window assets directory does not exist.");
-            }
-        }
+            else{print("Warning", "SCLS Window", "The path \"" + new_assets_directory_path + "\" you want to set as the window assets directory does not exist.");}
+        };
 
         //*********
         //

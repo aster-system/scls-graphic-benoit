@@ -36,8 +36,6 @@ namespace scls {
         a_x_in_adapted_absolute_scale = divisor_x * x_in_absolute_pixel() * 2 + divisor_x / 4;
         a_y_in_adapted_absolute_scale = divisor_y * y_in_absolute_pixel() * 2 + divisor_y / 4;
 
-        Fraction absolute_height_to_apply = height_in_adapted_absolute_scale();
-
         // Calculate the y minimum and maximum scale
         a_object_y_maximum = object_absolute_y_last_extremum();
         a_object_y_minimum = object_absolute_y_first_extremum();

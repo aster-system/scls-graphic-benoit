@@ -392,7 +392,7 @@ namespace scls {
                 if(current_attribute_name == "value") {
                     // Value of the width
                     try {y = Fraction::from_std_string(current_attribute_value);}
-                    catch(std::invalid_argument) {
+                    catch(const std::invalid_argument&) {
                         y = Fraction(0); set_can_print(true);
                         print("Warning", "SCLS GUI Object \"" + name() + "\"", "Unvalid Y value \"" + current_attribute_value + "\".");
                     }

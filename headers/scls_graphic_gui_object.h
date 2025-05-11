@@ -839,10 +839,14 @@ namespace scls {
             // Asserts
             if(contains_object(object_name)){return 0;}
 
+            // Pre-creation check
+            if(scroller_children()==0){reset_scroller_children();check_scroller(false);}
+
             // Create the object
-            std::shared_ptr<T>* current_object = new_object_in_scroller<T>(object_name);
+            std::shared_ptr<T>* current_object = scroller_children()->new_object<T>(object_name);
             current_object->get()->a_scroller_parent = a_this_object;
-            current_object->get()->set_x_in_object_scale(scls::Fraction(1, 2));
+            if(a_displayer_object.get() != 0) {current_object->get()->attach_left_in_parent(20);}
+            else {current_object->get()->attach_left_in_parent(0);}
             current_object->get()->set_height_in_pixel(50);
             current_object->get()->set_width_in_scale(1);
 
