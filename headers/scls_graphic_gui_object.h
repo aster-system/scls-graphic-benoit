@@ -213,6 +213,7 @@ namespace scls {
 
         // Getters
         inline GUI_Object* parent() const {return a_parent.lock().get();};
+        inline std::weak_ptr<GUI_Object> parent_weak_ptr() const {return a_parent;};
 
         //*********
         //
@@ -389,7 +390,7 @@ namespace scls {
         // Function called after that the window is resized
         virtual void after_resizing();
         // Function called when a child is deleted
-        virtual void child_deleted(GUI_Object* child) { if(a_focused_object == child) a_focused_object = 0; GUI_Object::child_deleted(child); };
+        virtual void child_deleted(GUI_Object* child) { if(a_focused_object.lock().get() == child){a_focused_object.reset();}if(a_overflighted_object.lock().get() == child){a_overflighted_object.reset();} GUI_Object::child_deleted(child); };
         // Sets this object
         inline void set_this_object(std::weak_ptr<scls::GUI_Object> this_object){a_this_object = this_object;};
         // Updates the object for the events
@@ -398,11 +399,11 @@ namespace scls {
     private:
         // Handle the focused object
         // Pointer to the focused object
-        GUI_Object* a_focused_object = 0;
+        std::weak_ptr<GUI_Object> a_focused_object;
 
         // Handle the overflighted object
         // Pointer to the overflighted object
-        GUI_Object* a_overflighted_object = 0;
+        std::weak_ptr<GUI_Object> a_overflighted_object;
     };
 
     class GUI_Scroller : public GUI_Object {
@@ -818,8 +819,8 @@ namespace scls {
             // Apply the needed style
             current_object->get()->set_overflighted_cursor(a_unselected_objects_style.cursor);
 
-            // Place the object
-            place_objects();
+            // Check the object
+            check_objects();
 
             // Returns the object
             return current_object;
@@ -887,8 +888,8 @@ namespace scls {
             // Apply the needed style
             current_object->get()->set_overflighted_cursor(a_unselected_objects_style.cursor);
 
-            // Place the object
-            place_objects();
+            // Check the object
+            check_objects();
 
             // Returns the object
             return current_object;

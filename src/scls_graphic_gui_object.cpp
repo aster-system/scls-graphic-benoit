@@ -624,47 +624,40 @@ namespace scls {
     // Update the object for the events
     void GUI_Main_Object::update_event() {
         // Check the overflighted cursor
-        GUI_Object* current_overflighted_object = this;
-        for(int i = 0;i<static_cast<int>(current_overflighted_object->children().size());i++) {
-            GUI_Object* current_object = current_overflighted_object->children()[i].get();
+        std::weak_ptr<GUI_Object> current_overflighted_object = a_this_object;
+        for(int i = 0;i<static_cast<int>(current_overflighted_object.lock().get()->children().size());i++) {
+            GUI_Object* current_object = current_overflighted_object.lock().get()->children()[i].get();
+            std::weak_ptr<GUI_Object> current_object_weak_ptr = current_overflighted_object.lock().get()->children()[i];
             if(current_object->visible() && !current_object->ignore_click() && current_object->is_in_rect_in_pixel(window_struct().mouse_x(), window_struct().window_height() - window_struct().mouse_y())) {
-                current_overflighted_object = current_object;
+                current_overflighted_object = current_object_weak_ptr;
                 i = -1;
             }
         }
 
         // Update the cursor texture
-        if(a_overflighted_object != current_overflighted_object) {
-            if(current_overflighted_object == 0) {
-                window_struct().set_cursor(glfwCreateStandardCursor(GLFW_ARROW_CURSOR));
-            }
-            else {
-                window_struct().set_cursor(glfwCreateStandardCursor(current_overflighted_object->overflighted_cursor()));
-            }
+        if(a_overflighted_object.lock().get() != current_overflighted_object.lock().get()) {
+            if(current_overflighted_object.lock().get() == 0) {window_struct().set_cursor(glfwCreateStandardCursor(GLFW_ARROW_CURSOR));}
+            else {window_struct().set_cursor(glfwCreateStandardCursor(current_overflighted_object.lock().get()->overflighted_cursor()));}
         }
         a_overflighted_object = current_overflighted_object;
-        GUI_Object* current_parent = a_overflighted_object;
+        std::weak_ptr<GUI_Object> current_parent = a_overflighted_object;
         short state = 0;
-        while(current_parent != 0) {
-            current_parent->set_overflighting_state(state);
-            current_parent = current_parent->parent();
+        while(current_parent.lock().get() != 0) {
+            current_parent.lock().get()->set_overflighting_state(state);
+            current_parent = current_parent.lock().get()->parent_weak_ptr();
             state++;
         }
 
         // Check the focused object
         if(window_struct().mouse_button_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
-            if(a_overflighted_object != 0) {
-                a_focused_object = a_overflighted_object;
-            }
-            else {
-                a_focused_object = 0;
-            }
+            if(a_overflighted_object.lock().get() != 0) {a_focused_object = a_overflighted_object;}
+            else {a_focused_object.reset();}
         }
         current_parent = a_focused_object;
         state = 0;
-        while(current_parent != 0) {
-            current_parent->set_focusing_state(state);
-            current_parent = current_parent->parent();
+        while(current_parent.lock().get() != 0) {
+            current_parent.lock().get()->set_focusing_state(state);
+            current_parent = current_parent.lock().get()->parent_weak_ptr();
             state++;
         }
 
