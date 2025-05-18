@@ -212,7 +212,7 @@ namespace scls {
 
                     if(current_attribute_name == "type") {
                         // Value of the cursor
-                        if(current_attribute_value == "pointing_hand_cursor") { cursor = GLFW_HAND_CURSOR; }
+                        if(current_attribute_value == "pointing_hand_cursor" || current_attribute_value == "pointing_hand") { cursor = GLFW_HAND_CURSOR; }
                         else {print("Warning", "SCLS Graphic \"Benoit\" object \"" + name() + "\"", "Unknown value of cursor \"" + current_attribute_value + "\".");}
                     }
                 }
@@ -1095,12 +1095,10 @@ namespace scls {
                 if(current_attribute_value[current_attribute_value.size()-1] == '\"'){current_attribute_value = current_attribute_value.substr(0, current_attribute_value.size() - 1);}
 
                 // Load the font size of the text
-                if(current_attribute_name == "alignment_horizontal") {
+                if(current_attribute_name == "alignment_horizontal" || current_attribute_name == "horizontal_alignment") {
                     // Loads the content of a balise from a file
                     if(current_attribute_value == std::string("center")){set_text_alignment_horizontal(Alignment_Horizontal::H_Center);}
-                    else {
-                        print("Warning", "SCLS Graphic Benoit page \"" + name() + "\"", "The text horizontal alignment \"" + current_attribute_value + "\" is not a valid attribute.");
-                    }
+                    else {print("Warning", "SCLS Graphic Benoit page \"" + name() + "\"", "The text horizontal alignment \"" + current_attribute_value + "\" is not a valid attribute.");}
                 }
                 else if(current_attribute_name == "font_size") {set_font_size(Fraction::from_std_string(current_attribute_value).to_double());}
                 else if(current_attribute_name == "max_width") {set_max_width(Fraction::from_std_string(current_attribute_value).to_double());}
