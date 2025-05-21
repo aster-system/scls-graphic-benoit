@@ -108,7 +108,8 @@ namespace scls {
         if(a_transformation_updated){calculate_transformation(true);}
 
         // Handle the extremum
-        if(!apply_extremum(vao())){return;}
+        if(use_extremums()){if(!apply_extremum(vao())){return;}}
+        else{vao()->get_shader_program()->set_uniform4f_value("object_extremum", glm::vec4(0, 0, 1, 1));}
 
         // Handle the matrix
         glm::mat4 matrix = glm::mat4(1.0);

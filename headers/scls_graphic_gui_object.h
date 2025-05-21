@@ -147,8 +147,10 @@ namespace scls {
         inline void set_border_color(Color new_color) {current_style()->set_border_color(new_color);set_should_render_during_this_frame(true);};
         inline void set_loaded(bool new_loaded){a_loaded=new_loaded;};
         inline void set_ignore_click(bool new_ignore_click) {a_ignore_click = new_ignore_click;};
+        inline void set_use_extremums(bool new_use_extremums) {a_use_extremums = new_use_extremums;};
         inline void set_visible(bool new_visible, bool with_children) {a_visible = new_visible;set_should_render_during_this_frame(true);if(a_visible&&!a_loaded){load_from_xml(std::string(""));for(int i = 0;i<static_cast<int>(a_children.size());i++){if((a_children[i].get()->visible() || with_children) && !a_children[i].get()->a_loaded){a_children[i].get()->set_visible(true);}}}};
         inline void set_visible(bool new_visible) {set_visible(new_visible, false);};
+        inline bool use_extremums() const {return a_use_extremums;};
         inline bool visible() {return a_visible;};
 
         //*********
@@ -315,6 +317,8 @@ namespace scls {
         bool a_ignore_click = false;
         // If the object has been rendered during this frame or not
         bool a_rendered_during_this_frame = true;
+        // If the object use extremums or not
+        bool a_use_extremums = true;
         // If the object is visible
         bool a_visible = true;
 
