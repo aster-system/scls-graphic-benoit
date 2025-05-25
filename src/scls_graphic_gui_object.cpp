@@ -111,6 +111,9 @@ namespace scls {
         if(use_extremums()){if(!apply_extremum(vao())){return;}}
         else{vao()->get_shader_program()->set_uniform4f_value("object_extremum", glm::vec4(0, 0, 1, 1));}
 
+        // Debug mode
+        if(window_struct().debug_mode() & 2){print(std::string("SCLS GUI Object \"") + name() + std::string("\""), std::string("Start rendering..."));}
+
         // Handle the matrix
         glm::mat4 matrix = glm::mat4(1.0);
         glm::vec2 absolute_position_to_apply = glm::vec2(x_in_adapted_absolute_scale().to_double(), y_in_adapted_absolute_scale().to_double());
@@ -138,6 +141,9 @@ namespace scls {
         vao()->get_shader_program()->set_uniform2f_value("scale", texture_scale_x(), texture_scale_y());
         vao()->render();
         set_should_render_during_this_frame(false);
+
+        // Debug mode
+        if(window_struct().debug_mode() & 2){print(std::string("SCLS GUI Object \"") + name() + std::string("\""), std::string("Successful rendering."));}
 
         for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] != 0 && children()[i]->visible()) children()[i]->render(scale_multiplier);}
     }

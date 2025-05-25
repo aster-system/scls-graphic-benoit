@@ -290,6 +290,7 @@ namespace scls {
         inline std::string assets_directory_path() { return a_assets_directory_path; };
         inline Camera* camera() { return &a_camera; };
         inline std::string config_file_path() { return a_config_file_path; };
+        inline uint64_t debug_mode() const {return a_debug_mode;};
         inline std::string exec_path() { return a_exec_path; };
         inline double execution_time() const {return a_execution_time;};
         inline glm::mat4 projection() {return camera()->get_projection(window_height(), window_width());};
@@ -301,6 +302,7 @@ namespace scls {
             }
             else{print("Warning", "SCLS Window", "The path \"" + new_assets_directory_path + "\" you want to set as the window assets directory does not exist.");}
         };
+        inline void set_debug_mode(uint64_t new_debug_mode){a_debug_mode = new_debug_mode;};
 
         //*********
         //
@@ -465,6 +467,8 @@ namespace scls {
         std::string a_assets_directory_path = "";
         // Camera of the window
         Camera a_camera = Camera();
+        // If the debug mode is enabled or not
+        uint64_t a_debug_mode = 0;
         // Path of the window executable
         const std::string a_exec_path = "";
         // Loaded variables

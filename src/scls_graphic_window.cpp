@@ -241,6 +241,9 @@ namespace scls {
         else if(cursor() == 0) {set_cursor(glfwCreateStandardCursor(GLFW_ARROW_CURSOR));glfwSetCursor(window(), cursor());}
         a_cursor_changed = false;
 
+        // Debug mode
+        if(debug_mode() & 1){scls::print(std::string("SCLS GUI Window"), std::string("Start soft-reseting 2D pages..."));}
+
         // Soft reset 2D pages
         if (displayed_pages_2d_names().size() > 0) {
             if(to_display.size() <= 0){to_display = displayed_pages_2d();}
@@ -249,6 +252,9 @@ namespace scls {
             }
         }
         to_display.clear();
+
+        // Debug mode
+        if(debug_mode() & 1){scls::print(std::string("SCLS GUI Window"), std::string("Successfully soft-reseting 2D pages. Start polling events..."));}
 
         // Handle the events
         glfwPollEvents();
@@ -259,6 +265,9 @@ namespace scls {
         glClearColor(background_color().red() / 255.0, background_color().green() / 255.0, background_color().blue() / 255.0, background_color().alpha() / 255.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+        // Debug mode
+        if(debug_mode() & 1){scls::print(std::string("SCLS GUI Window"), std::string("Start rendering 3D pages..."));}
+
         // Render 3D pages
         glDepthFunc(GL_LESS);
         if (displayed_pages_3d_names().size() > 0) {
@@ -268,12 +277,18 @@ namespace scls {
             }
         }
 
+        // Debug mode
+        if(debug_mode() & 1){scls::print(std::string("SCLS GUI Window"), std::string("Successfully rendered 3D pages, start rendering 2D pages..."));}
+
         // Render 2D pages
         glDepthFunc(GL_ALWAYS);
         if (displayed_pages_2d_names().size() > 0) {
             to_display = displayed_pages_2d();
             for(int i = 0;i<static_cast<int>(to_display.size());i++) {to_display[i].get()->render();}
         }//*/
+
+        // Debug mode
+        if(debug_mode() & 1){scls::print(std::string("SCLS GUI Window"), std::string("Successfully rendered 2D pages."));}
 
         // Update OpenGL
         glfwSwapBuffers(window());
