@@ -104,7 +104,7 @@ namespace scls {
     void GUI_Object::merge_style(GUI_Style* new_style) {set_background_color(new_style->a_background_color);current_style()->global_text_style.merge_style(new_style->global_text_style);}
 
     // Render the object
-    void GUI_Object::render(glm::vec3 scale_multiplier) {
+    void GUI_Object::render(bool render_children, glm::vec3 scale_multiplier) {
         if(a_transformation_updated){calculate_transformation(true);}
 
         // Handle the extremum
@@ -131,7 +131,8 @@ namespace scls {
         vao()->get_shader_program()->set_uniform4f_value("border_width", border_width_in_scale());
 
         // Handle the rect of the texture
-        vao()->get_shader_program()->set_uniform4f_value("texture_rect", texture_rect());
+        glm::vec4 needed_texture_rect = texture_rect();
+        vao()->get_shader_program()->set_uniform4f_value("texture_rect", needed_texture_rect);
 
         // Handle the texture and the VAO
         if(texture() == 0){vao()->get_shader_program()->set_uniformb_value("texture_binded", false);}
@@ -145,7 +146,7 @@ namespace scls {
         // Debug mode
         if(window_struct().debug_mode() & 2){print(std::string("SCLS GUI Object \"") + name() + std::string("\""), std::string("Successful rendering."));}
 
-        for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] != 0 && children()[i]->visible()) children()[i]->render(scale_multiplier);}
+        if(render_children){for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] != 0 && children()[i]->visible()) children()[i]->render(true, scale_multiplier);}}
     }
 
     // GUI_Object destructor
@@ -612,10 +613,10 @@ namespace scls {
         Fraction width_texture = texture_width_in_scale();
         Fraction x_texture = Fraction(0);
         Fraction y_texture = Fraction(0);
-        if(texture_alignment_horizontal() == Alignment_Horizontal::H_Center) x_texture = Fraction(1, 2) - width_texture / Fraction(2);
-        else if(texture_alignment_horizontal() == Alignment_Horizontal::H_Right) x_texture = Fraction(1) - width_texture;
-        if(texture_alignment_vertical() == Alignment_Vertical::V_Center) y_texture = Fraction(1, 2) - height_texture /Fraction(2);
-        else if(texture_alignment_vertical() == Alignment_Vertical::V_Top) y_texture = Fraction(1) - height_texture;
+        if(texture_alignment_horizontal() == Alignment_Horizontal::H_Center){x_texture = Fraction(1, 2) - width_texture / Fraction(2);}
+        else if(texture_alignment_horizontal() == Alignment_Horizontal::H_Right){x_texture = Fraction(1) - width_texture;}
+        if(texture_alignment_vertical() == Alignment_Vertical::V_Center){y_texture = Fraction(1, 2) - height_texture /Fraction(2);}
+        else if(texture_alignment_vertical() == Alignment_Vertical::V_Top){y_texture = Fraction(1) - height_texture;}
         return glm::vec4(x_texture.to_double(), y_texture.to_double(), width_texture.to_double(), height_texture.to_double());
     }
 
@@ -1086,6 +1087,9 @@ namespace scls {
         if(removed_lines > 0) {for(int i = line_to_delete;i<final_size;i++) { children().erase(children().begin() + line_to_delete);}}
         update_text_texture();
     }
+
+    // Sets the text from plain text
+    void __GUI_Text_Metadatas::set_plain_text(std::string new_text) {if(new_text == plain_text()){return;}new_text=scls::format_string_break_line(scls::format_string_from_plain_text(new_text), std::string("</br>"));update_text_image_block_style();attached_text_image_block()->set_text(new_text);update_texture();};
 
     // Handle an attribute from XML
     void __GUI_Text_Metadatas::set_xml_attribute(std::shared_ptr<XML_Text> text, std::string event) {
@@ -1741,7 +1745,7 @@ namespace scls {
     }
 
     // Render the page
-    void GUI_Page::render(){if(should_render_during_this_frame()){parent_object()->render(absolute_scale());}};
+    void GUI_Page::render(){if(should_render_during_this_frame()){parent_object()->render(true, absolute_scale());}};
 
     // Handle an attribute from XML
     void GUI_Page::set_xml_attribute(std::shared_ptr<XML_Text> text, std::shared_ptr<__XML_Loader> loader_shared_ptr, int& i) {

@@ -39,6 +39,48 @@ namespace scls {
         }
     }
 
+    // Built-in shaders
+    std::string gui_default_fragment_shader() {
+        std::string to_return = "#version 330 core\n";
+        to_return += "in vec2 tex_pos;"; // Uniform / in/out variables
+        to_return += "out vec4 FragColor;";
+        to_return += "uniform vec4 background_color;";
+        to_return += "uniform vec4 border_color;";
+        to_return += "uniform vec4 border_width;";
+        to_return += "uniform vec4 object_extremum;";
+        to_return += "uniform vec4 object_rect;";
+        to_return += "uniform vec2 scale;";
+        to_return += "uniform sampler2D texture_0;";
+        to_return += "uniform bool texture_binded;";
+        to_return += "uniform vec4 texture_rect;";
+
+        // Blend function
+        to_return += Shader_Program::default_gui_blend_colors();
+
+        // Main function
+        to_return += "void main(){";
+        // Check if the object should be displayed
+        to_return += Shader_Program::default_gui_extremum_handling();
+        to_return += "vec4 final_color = background_color;";
+        to_return += Shader_Program::default_gui_border_handling();
+        to_return += "else if(texture_binded){";
+        // TEMPORARAY DISABLED && tex_pos[0] >= texture_rect[0] && tex_pos[1] >= texture_rect[1] && tex_pos[0] < texture_rect[0] + texture_rect[2] && tex_pos[1] < texture_rect[1] + texture_rect[3]
+
+        // Object texture
+        to_return += "vec2 final_tex_pos = tex_pos;";
+        to_return += "final_tex_pos.x *= scale.x;";
+        to_return += "final_tex_pos.y *= scale.y;\n";
+        to_return += std::string("final_tex_pos -= texture_rect.xy;");
+        //to_return += "while(final_tex_pos.x > texture_rect.z)final_tex_pos.x -= texture_rect.z;";
+        //to_return += "while(final_tex_pos.y > 1.0/texture_rect.w){final_tex_pos.y -= 1.0/texture_rect.w;}";
+        //to_return += "final_tex_pos /= texture_rect.zw;\n";
+        //to_return += std::string("while(final_tex_pos.y < 0.0){final_tex_pos.y += 1.0;}while(final_tex_pos.y > 1.0){final_tex_pos.y -= 1.0;}");
+
+        to_return += "final_color = blend_colors(texture(texture_0, final_tex_pos), final_color);}"; //*/
+        to_return += "FragColor = final_color;}";
+        return to_return;
+    };
+
     // Shader_Program constructor
     Shader_Program::Shader_Program(Built_In_Shader shader_type) : Shader_Program(Shader_Program::get_built_in_vertex_shader(shader_type), Shader_Program::get_built_in_fragment_shader(shader_type)) {}
 

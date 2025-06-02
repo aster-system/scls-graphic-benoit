@@ -36,6 +36,9 @@ namespace scls {
     // Struct representing the values for a "in" variable in the shader program
     struct Shader_Program_Variable {unsigned short type = GL_FLOAT;unsigned int vector_size = 1;};
 
+    // Built-in shaders
+    std::string gui_default_fragment_shader();
+
     class Shader_Program {
         // Class representing a shader program interface
     public:
@@ -74,7 +77,7 @@ namespace scls {
         static std::string default_gui_blend_colors();
         static std::string default_gui_border_handling() {return std::string("if(tex_pos[0] < border_width.y || tex_pos[1] < border_width.z || tex_pos[0] > 1.0 - border_width.w || tex_pos[1] > 1.0 - border_width.x){final_color = blend_colors(border_color, final_color);}");};
         static std::string default_gui_extremum_handling() {return std::string("if(tex_pos.x > object_extremum.z || tex_pos.x < object_extremum.x || tex_pos.y > object_extremum.w || tex_pos.y < object_extremum.y){discard;}");};
-        static std::string get_built_in_fragment_shader(Built_In_Shader shader_type) {if (shader_type == Default || shader_type == Curved) {return get_default_fragment_shader();}return get_default_hud_fragment_shader();};
+        static std::string get_built_in_fragment_shader(Built_In_Shader shader_type) {if (shader_type == Default || shader_type == Curved) {return get_default_fragment_shader();}return gui_default_fragment_shader();};
         static std::string get_built_in_vertex_shader(Built_In_Shader shader_type) {if (shader_type == Curved) {return curved_vertex_shader();}else if (shader_type == Default){return get_default_vertex_shader();}return get_default_hud_vertex_shader();};
         static std::string get_default_fragment_shader() {
             std::string to_return = "#version 330 core\n";
@@ -117,44 +120,6 @@ namespace scls {
             //to_return += "final_color = apply_lighting(final_color);\n";
             to_return += "FragColor = final_color;\n";
             to_return += "}";
-            return to_return;
-        };
-        static std::string get_default_hud_fragment_shader() {
-            std::string to_return = "#version 330 core\n";
-            to_return += "in vec2 tex_pos;"; // Uniform / in/out variables
-            to_return += "out vec4 FragColor;";
-            to_return += "uniform vec4 background_color;";
-            to_return += "uniform vec4 border_color;";
-            to_return += "uniform vec4 border_width;";
-            to_return += "uniform vec4 object_extremum;";
-            to_return += "uniform vec4 object_rect;";
-            to_return += "uniform vec2 scale;";
-            to_return += "uniform sampler2D texture_0;";
-            to_return += "uniform bool texture_binded;";
-            to_return += "uniform vec4 texture_rect;";
-
-            // Blend function
-            to_return += default_gui_blend_colors();
-
-            // Main function
-            to_return += "void main(){";
-            // Check if the object should be displayed
-            to_return += default_gui_extremum_handling();
-            to_return += "vec4 final_color = background_color;";
-            to_return += default_gui_border_handling();
-            to_return += "else if(texture_binded && tex_pos[0] >= texture_rect[0] && tex_pos[1] >= texture_rect[1] && tex_pos[0] < texture_rect[0] + texture_rect[2] && tex_pos[1] < texture_rect[1] + texture_rect[3]){";
-
-            // Object texture
-            to_return += "vec2 final_tex_pos = tex_pos;";
-            to_return += "final_tex_pos.x = final_tex_pos.x * scale.x;";
-            to_return += "final_tex_pos.y = final_tex_pos.y * scale.y;\n";
-            to_return += "while(final_tex_pos.x > 1.0)final_tex_pos.x -= 1.0;";
-            to_return += "while(final_tex_pos.y > 1.0)final_tex_pos.y -= 1.0;";
-            to_return += "final_tex_pos = final_tex_pos - texture_rect.xy;";
-            to_return += "final_tex_pos /= texture_rect.zw;\n";
-
-            to_return += "final_color = blend_colors(texture(texture_0, final_tex_pos), final_color);}"; //*/
-            to_return += "FragColor = final_color;}";
             return to_return;
         };
         static std::string get_default_vertex_shader() {

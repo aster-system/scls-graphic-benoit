@@ -93,8 +93,7 @@ namespace scls {
         // Applies the extremum to a VAO
         inline bool apply_extremum(VAO* needed_vao){glm::vec4 final_extremum = object_extremum();if(final_extremum[1] >= 1 || final_extremum[3] <= 0){return false;}vao()->get_shader_program()->set_uniform4f_value("object_extremum", final_extremum);return true;};
         // Returns a child by its name
-        template <typename T = GUI_Object>
-        inline T* child_by_name(std::string child_name) const {for(int i = 0;i<static_cast<int>(a_children.size());i++) {if(a_children[i] != 0 && a_children[i].get()->name() == child_name) return reinterpret_cast<T*>(a_children[i].get());}return 0;};
+        template <typename T = GUI_Object> inline T* child_by_name(std::string child_name) const {for(int i = 0;i<static_cast<int>(a_children.size());i++) {if(a_children[i] != 0 && a_children[i].get()->name() == child_name) return reinterpret_cast<T*>(a_children[i].get());}return 0;};
         // Returns a child shared pointer by its name
         inline std::shared_ptr<GUI_Object>* child_by_name_shared_ptr(std::string child_name) {for(int i = 0;i<static_cast<int>(a_children.size());i++) {if(a_children[i] != 0 && a_children[i].get()->name() == child_name) return &a_children[i];}return 0;};
         // Function called when a child is deleted
@@ -116,7 +115,9 @@ namespace scls {
         template<typename O>
         std::shared_ptr<O>* new_object(std::string name, unsigned int x, unsigned int y);
         // Render the object
-        virtual void render(glm::vec3 scale_multiplier = glm::vec3(1, 1, 1));
+        virtual void render(bool render_children, glm::vec3 scale_multiplier);
+        // Sets an object in the last place of the hierarchy
+        void set_last_in_hierarchy(std::shared_ptr<GUI_Object> object){delete_child(object.get());a_children.insert(a_children.begin(), object);};
 
         // Hierarchy functions
         // Function called after the creation of the object
@@ -252,6 +253,7 @@ namespace scls {
 
         // Getters and setters
         inline Image* image() const {return texture()->get_image();};
+        inline bool resize_texture() const {return texture()->use_resize();};
         inline void set_should_render_during_this_frame(bool new_should_render) {if(!a_rendered_during_this_frame && new_should_render && parent() != 0){parent()->set_should_render_during_this_frame(true);}a_rendered_during_this_frame = new_should_render;};
         inline void set_texture(std::shared_ptr<Image> new_texture, bool remove_last_texture = true) {std::shared_ptr<Texture> needed_texture = std::make_shared<Texture>();needed_texture.get()->set_image(new_texture);set_texture(needed_texture, remove_last_texture);};
         inline void set_texture(std::shared_ptr<Texture> new_texture, bool remove_last_texture = true) {if(remove_last_texture) {window_struct().remove_texture(texture());}a_texture = new_texture;};
@@ -573,6 +575,7 @@ namespace scls {
         inline void set_font_size(unsigned short new_font_size) {a_global_style.set_font_size(new_font_size);update_text_image_block();};
         inline void set_max_width(int new_max_width) {a_global_style.max_width = new_max_width;};
         virtual void set_text(std::string new_text) {if(new_text == text()){return;}update_text_image_block_style();attached_text_image_block()->set_text(new_text);update_texture();};
+        void set_plain_text(std::string new_text);
         virtual void set_xml_text(std::shared_ptr<XML_Text> new_text) {update_text_image_block_style();attached_text_image_block()->set_xml_text(new_text);update_texture();};
         inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {global_style()->set_alignment_horizontal(new_text_alignment_horizontal);update_text_image_block();};
         virtual void set_text_image_type(Block_Type new_text_image_type) {a_text_image_type = new_text_image_type;};
