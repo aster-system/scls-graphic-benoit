@@ -129,7 +129,7 @@ namespace scls {
         scls::print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to add already exists.");
         return 0;
     }
-    std::shared_ptr<Texture>* _Window_Advanced_Struct::new_texture_shared_ptr(std::string name, std::shared_ptr<Image> image, bool texture_resize) {
+    std::shared_ptr<Texture>* _Window_Advanced_Struct::new_texture_shared_ptr(std::string name, std::shared_ptr<__Image_Base> image, bool texture_resize) {
         if (!contains_texture(name)) {
             std::shared_ptr<Texture> texture = std::make_shared<Texture>(image, texture_resize);
             texture.get()->change_texture();

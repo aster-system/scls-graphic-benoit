@@ -366,6 +366,7 @@ namespace scls {
         //*********
 
         // Returns the default balise container
+        inline __Balise_Container* balises() {return text_image_generator()->balises(); };
         inline std::shared_ptr<__Balise_Container> balises_shared_ptr() {return text_image_generator()->balises_shared_ptr(); };
         // Returns if the struct contains a text generator
         inline bool contains_text_image_generator(std::string generator_name) {

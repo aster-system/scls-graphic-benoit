@@ -410,6 +410,8 @@ namespace scls {
         set_last_mouse_x(mouse_x());
         set_last_mouse_y(mouse_y());
 
+        if(debug_mode() & 1){scls::print(std::string("SCLS GUI Window"), std::string("Successfully updated window events, start rendering 2D pages events..."));}
+
         // Update the event of the 2D pages
         if (displayed_pages_2d_names().size() > 0) {
             std::vector<std::shared_ptr<Object>> to_display = displayed_pages_2d();
@@ -418,6 +420,8 @@ namespace scls {
             }
         }
 
+        if(debug_mode() & 1){scls::print(std::string("SCLS GUI Window"), std::string("Successfully rendered 2D pages events, start rendering 3D pages events..."));}
+
         // Update the event of the 3D pages
         if (displayed_pages_3d_names().size() > 0) {
             std::vector<std::shared_ptr<Object>> to_display = displayed_pages_3d();
@@ -425,6 +429,8 @@ namespace scls {
                 to_display[i].get()->update_event();
             }
         }
+
+        if(debug_mode() & 1){scls::print(std::string("SCLS GUI Window"), std::string("Successfully rendered 3D pages events."));}
     }
 
     //*********
@@ -462,8 +468,8 @@ namespace scls {
 
         // Get the XML analyser
         if(window_loading_balises.get() == 0){window_loading_balises = std::make_shared<__Balise_Container>();window_loading_balises.get()->__load_built_in_balises_window();}
-        std::shared_ptr<XML_Text> xml_text = xml(window_loading_balises, remove_comment_out_of(read_file(window_path), "\""));
-        std::vector<std::shared_ptr<XML_Text>>& cutted = xml_text.get()->sub_texts();
+        std::shared_ptr<__XML_Text_Base> xml_text = xml(window_loading_balises, remove_comment_out_of(read_file(window_path), "\""));
+        std::vector<std::shared_ptr<__XML_Text_Base>>& cutted = xml_text.get()->sub_texts();
         window_path = path_parent(window_path);
 
         // Check each balises
@@ -584,7 +590,7 @@ namespace scls {
     }
 
     // Load an object in a page from XML
-    void Window::__load_object_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text> object_content, std::shared_ptr<Window_Loader> loader) {
+    void Window::__load_object_from_xml(std::string object_name, std::string object_type, std::shared_ptr<__XML_Text_Base> object_content, std::shared_ptr<Window_Loader> loader) {
         // Create the object
         std::shared_ptr<Object> object = __create_loaded_object_from_type(object_name, object_type);
         loader.get()->created_objects[object_name] = object;
@@ -598,7 +604,7 @@ namespace scls {
     }
 
     // Load a 3D page from XML
-    void Window::__load_page_3d_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text> object_content, std::shared_ptr<Window_Loader> loader) {
+    void Window::__load_page_3d_from_xml(std::string object_name, std::string object_type, std::shared_ptr<__XML_Text_Base> object_content, std::shared_ptr<Window_Loader> loader) {
         // Create the 3D page
         std::shared_ptr<Object> object = __create_loaded_page_3d_from_type(object_name, object_type);
         loader.get()->created_objects[object_name] = object;

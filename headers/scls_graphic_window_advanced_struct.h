@@ -114,9 +114,9 @@ namespace scls {
         std::shared_ptr<Texture>* new_texture_shared_ptr(std::string name, unsigned short width, unsigned short height, Color color);
         Texture* new_texture(std::string name, unsigned short width, unsigned short height, Color color) {std::shared_ptr<Texture>* current_ptr = new_texture_shared_ptr(name, width, height, color);if(current_ptr == 0){return 0;} return current_ptr->get();};
         Texture* new_texture(std::string name);
-        std::shared_ptr<Texture>* new_texture_shared_ptr(std::string name, std::shared_ptr<Image> image, bool texture_resize);
-        inline Texture* new_texture(std::string name, std::shared_ptr<Image> image){std::shared_ptr<Texture>* temp = new_texture_shared_ptr(name, image, true);if(temp==0){return 0;}return temp->get();};
-        inline Texture* new_texture(std::string name, std::shared_ptr<Image> image, bool texture_resize){std::shared_ptr<Texture>* temp = new_texture_shared_ptr(name, image, texture_resize);if(temp==0){return 0;}return temp->get();};
+        std::shared_ptr<Texture>* new_texture_shared_ptr(std::string name, std::shared_ptr<__Image_Base> image, bool texture_resize);
+        inline Texture* new_texture(std::string name, std::shared_ptr<__Image_Base> image){std::shared_ptr<Texture>* temp = new_texture_shared_ptr(name, image, true);if(temp==0){return 0;}return temp->get();};
+        inline Texture* new_texture(std::string name, std::shared_ptr<__Image_Base> image, bool texture_resize){std::shared_ptr<Texture>* temp = new_texture_shared_ptr(name, image, texture_resize);if(temp==0){return 0;}return temp->get();};
         // Create a new VAO into the window with the most basic constructor
         VAO* new_vao(std::string name, char* binary);
         // Create a new VAO into the window

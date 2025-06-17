@@ -191,7 +191,7 @@ namespace scls {
         Transform_Object* transform_parent() {if(transform() == 0)return 0;return transform()->get_parent();};
 
         // Handle an attribute from XML
-        virtual void set_xml_attribute(std::shared_ptr<XML_Text> text, std::shared_ptr<__XML_Loader> loader_shared_ptr, int& i);
+        virtual void set_xml_attribute(std::shared_ptr<__XML_Text_Base> text, std::shared_ptr<__XML_Loader> loader_shared_ptr, int& i);
     protected:
         // Basic object descriptor
         // Pointer to the Texture used to render the object

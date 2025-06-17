@@ -274,8 +274,8 @@ namespace scls {
         // Class representing a texture interface
     public:
         Texture(std::string a_texture_path, bool a_resize = true);
-        Texture(std::shared_ptr<Image> image, bool a_resize);
-        Texture(std::shared_ptr<Image> image):Texture(image, true){};
+        Texture(std::shared_ptr<__Image_Base> image, bool a_resize);
+        Texture(std::shared_ptr<__Image_Base> image):Texture(image, true){};
         Texture(unsigned short width, unsigned short height, glm::vec4 color, bool a_resize = true);
         Texture(unsigned short width, unsigned short height, scls::Color color, bool a_resize = true);
         Texture(Texture& texture_to_copy);
@@ -288,19 +288,19 @@ namespace scls {
         ~Texture(); // Texture destructor
 
         // Set the image from a path
-        inline void set_image_by_path(std::string path) { set_image(new scls::Image(path)); };
+        inline void set_image_by_path(std::string path) { set_image(new __Image_Base(path)); };
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         inline Fraction image_ratio() {return Fraction(get_image()->width(), get_image()->height());};
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline unsigned short copy_count() {return a_copy_count;};
-        inline scls::Image* get_image() { return a_image.get(); };
+        inline __Image_Base* get_image() { return a_image.get(); };
         inline glm::vec2 get_texture_size() { return glm::vec2(width, height); };
         inline std::string get_texture_path() { return texture_path; };
-        inline std::shared_ptr<scls::Image>& image_shared_ptr() { return a_image; };
+        inline std::shared_ptr<__Image_Base>& image_shared_ptr() { return a_image; };
         inline bool loaded() {return a_loaded;};
-        inline void set_image(scls::Image* new_image) {
+        inline void set_image(__Image_Base* new_image) {
             if(new_image == 0 && get_image() != 0) {
                 glDeleteTextures(1, &texture_id);
             }
@@ -312,7 +312,7 @@ namespace scls {
             if(get_image() != 0 && get_image()->flip_x_number() % 2 == 0) get_image()->flip_x();
             change_texture();
         };
-        inline void set_image(std::shared_ptr<scls::Image> new_image) {
+        inline void set_image(std::shared_ptr<__Image_Base> new_image) {
             if(new_image.get() == 0 && get_image() != 0) {
                 glDeleteTextures(1, &texture_id);
             }
@@ -330,7 +330,7 @@ namespace scls {
         unsigned short a_copy_count = 0;
         int height = 0; // Height of the texture
         // SCLS image of this texture
-        std::shared_ptr<scls::Image> a_image;
+        std::shared_ptr<__Image_Base> a_image;
         bool a_loaded = false;
         bool resize = true; // If the shader resize the texture or not
         unsigned int texture_id = 0; // Handle to the texture

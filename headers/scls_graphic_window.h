@@ -198,9 +198,9 @@ namespace scls {
         // Load the page from XML
         std::shared_ptr<Window_Loader> load_from_xml(std::string window_path);
         // Load an object in a page from XML
-        void __load_object_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text> object_content, std::shared_ptr<Window_Loader> loader);
+        void __load_object_from_xml(std::string object_name, std::string object_type, std::shared_ptr<__XML_Text_Base> object_content, std::shared_ptr<Window_Loader> loader);
         // Load a 3D page from XML
-        void __load_page_3d_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text> object_content, std::shared_ptr<Window_Loader> loader);
+        void __load_page_3d_from_xml(std::string object_name, std::string object_type, std::shared_ptr<__XML_Text_Base> object_content, std::shared_ptr<Window_Loader> loader);
 
     private:
 

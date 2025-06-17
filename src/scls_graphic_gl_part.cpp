@@ -1048,10 +1048,10 @@ namespace scls {
     //*********
 
     // Texture constructor
-    Texture::Texture(std::string a_texture_path, bool a_resize): a_image(new scls::Image()), resize(a_resize), texture_path(a_texture_path) {if(a_texture_path != std::string()){get_image()->load_from_path(texture_path);get_image()->flip_x();load_texture();}}
-    Texture::Texture(std::shared_ptr<Image> image, bool a_resize) : Texture("", false) {a_image=image;load_texture();}
-    Texture::Texture(unsigned short width, unsigned short height, glm::vec4 color, bool a_resize) : Texture("", false) {a_image.reset(new scls::Image(width, height, color[0], color[1], color[2], color[3]));load_texture();}
-    Texture::Texture(unsigned short width, unsigned short height, scls::Color color, bool a_resize) : Texture("", false) {a_image.reset(new scls::Image(width, height, color));load_texture();}
+    Texture::Texture(std::string a_texture_path, bool a_resize): a_image(new __Image_Base()), resize(a_resize), texture_path(a_texture_path) {if(a_texture_path != std::string()){get_image()->load_from_path(texture_path);get_image()->flip_x();load_texture();}}
+    Texture::Texture(std::shared_ptr<__Image_Base> image, bool a_resize) : Texture("", false) {a_image=image;load_texture();}
+    Texture::Texture(unsigned short width, unsigned short height, glm::vec4 color, bool a_resize) : Texture("", false) {a_image.reset(new __Image_Base(width, height, color[0], color[1], color[2], color[3]));load_texture();}
+    Texture::Texture(unsigned short width, unsigned short height, scls::Color color, bool a_resize) : Texture("", false) {a_image.reset(new __Image_Base(width, height, color));load_texture();}
     Texture::Texture() : Texture(1, 1, scls::Color(255, 0, 0), false) {}
     Texture::Texture(Texture& texture_to_copy) : Texture(texture_to_copy.width, texture_to_copy.height, glm::vec4(0, 0, 0, 0), texture_to_copy.use_resize()) {get_image()->paste(texture_to_copy.get_image(), 0, 0, 1.0); change_texture();texture_to_copy.a_copy_count++;}
 
