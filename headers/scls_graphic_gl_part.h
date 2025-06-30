@@ -49,8 +49,9 @@ namespace scls {
             HUD_Default
         };
 
-        Shader_Program(Built_In_Shader shader_type = Default); // Shader_Program constructor
-        Shader_Program(std::string a_vertex_shader, std::string a_fragment_shader); // Shader_Program constructor
+        // Shader_Program constructor
+        Shader_Program(Built_In_Shader shader_type = Default);
+        Shader_Program(std::string a_vertex_shader, std::string a_fragment_shader);
         // Load the Shader
         void load_shader();
         // Create a new Shader_Program from this one
@@ -74,78 +75,14 @@ namespace scls {
         inline bool loaded() {return a_loaded;};
 
         // Return the default shaders
+        static std::string curved_vertex_shader();
+        static std::string default_fragment_shader();
         static std::string default_gui_blend_colors();
         static std::string default_gui_border_handling() {return std::string("if(tex_pos[0] < border_width.y || tex_pos[1] < border_width.z || tex_pos[0] > 1.0 - border_width.w || tex_pos[1] > 1.0 - border_width.x){final_color = blend_colors(border_color, final_color);}");};
         static std::string default_gui_extremum_handling() {return std::string("if(tex_pos.x > object_extremum.z || tex_pos.x < object_extremum.x || tex_pos.y > object_extremum.w || tex_pos.y < object_extremum.y){discard;}");};
-        static std::string get_built_in_fragment_shader(Built_In_Shader shader_type) {if (shader_type == Default || shader_type == Curved) {return get_default_fragment_shader();}return gui_default_fragment_shader();};
-        static std::string get_built_in_vertex_shader(Built_In_Shader shader_type) {if (shader_type == Curved) {return curved_vertex_shader();}else if (shader_type == Default){return get_default_vertex_shader();}return get_default_hud_vertex_shader();};
-        static std::string get_default_fragment_shader() {
-            std::string to_return = "#version 330 core\n";
-            to_return += "in vec3 frag_pos;\n";
-            to_return += "in vec3 normal;\n";
-            to_return += "in vec3 tex_multiplier;\n";
-            to_return += "in vec2 tex_pos;\n";
-            to_return += "in vec4 tex_rect;\n";
-            to_return += "out vec4 FragColor;\n";
-            to_return += "uniform bool reverse_texture_x;\n";
-            to_return += "uniform bool reverse_texture_y;\n";
-            to_return += "uniform vec3 scale;\n";
-            to_return += "uniform sampler2D texture_0;\n";
-            to_return += "uniform bool texture_binded;\n";
-
-            // Use the lighting function
-            //to_return += shader_content::lighting_function();
-
-            // Get the good position of the object
-            to_return += "void main(){\n";
-            to_return += "vec4 final_color = vec4(0, 0, 0, 0);\n";
-            to_return += "if(texture_binded){";
-            to_return += "  vec2 final_tex_pos = tex_pos * tex_rect.zw;";
-            to_return += "  if(reverse_texture_x){final_tex_pos.x = 1.0 - final_tex_pos.x;}";
-            to_return += "  if(reverse_texture_y){final_tex_pos.y = 1.0 - final_tex_pos.y;}";
-            to_return += "  if (tex_multiplier.x == 1) final_tex_pos.x = final_tex_pos.x * scale.x;";
-            to_return += "  else if (tex_multiplier.x == 2) final_tex_pos.y = final_tex_pos.y * scale.x;";
-            to_return += "  if (tex_multiplier.y == 1) final_tex_pos.x = final_tex_pos.x * scale.y;";
-            to_return += "  else if (tex_multiplier.y == 2) final_tex_pos.y = final_tex_pos.y * scale.y;\n";
-            to_return += "  if(tex_multiplier.z == 1) final_tex_pos.x = final_tex_pos.x * scale.z;\n";
-            to_return += "  else if (tex_multiplier.z == 2)final_tex_pos.y = final_tex_pos.y * scale.z;\n";
-            to_return += "  while(final_tex_pos.x > tex_rect[2])final_tex_pos.x -= tex_rect[2];\n";
-            to_return += "  while(final_tex_pos.y > tex_rect[3])final_tex_pos.y -= tex_rect[3];\n";
-            to_return += "  final_color = texture(texture_0, tex_rect.xy + final_tex_pos);\n";
-            to_return += "} else {";
-            to_return += "final_color = vec4(1, 1, 1, 1);";
-            to_return += "}";
-
-            // Edit the color as necesary with lighting
-            //to_return += "final_color = apply_lighting(final_color);\n";
-            to_return += "FragColor = final_color;\n";
-            to_return += "}";
-            return to_return;
-        };
-        static std::string get_default_vertex_shader() {
-            std::string to_return = "#version 330 core\n";
-            to_return += "layout(location = 1) in vec3 in_normal;\n";
-            to_return += "layout(location = 0) in vec3 in_pos;\n";
-            to_return += "layout(location = 2) in vec2 in_tex_pos;\n";
-            to_return += "layout(location = 3) in vec4 in_tex_rect;\n";
-            to_return += "layout(location = 4) in vec3 in_tex_multiplier;\n";
-            to_return += "out vec3 frag_pos;\n";
-            to_return += "out vec3 normal;\n";
-            to_return += "out vec3 tex_multiplier;\n";
-            to_return += "out vec2 tex_pos;out vec4 tex_rect;\n";
-            to_return += "uniform mat4 model;\n";
-            to_return += "uniform mat4 projection;\n";
-            to_return += "uniform mat4 view;\n";
-            to_return += "void main(){\n";
-            to_return += "frag_pos = vec3(model * vec4(in_pos, 1.0));\n";
-            to_return += "normal = mat3(transpose(inverse(model))) * in_normal;\n";
-            to_return += "tex_multiplier = in_tex_multiplier;\n";
-            to_return += "tex_pos = in_tex_pos;\n";
-            to_return += "tex_rect = in_tex_rect;\n";
-            to_return += "gl_Position = projection * view * model * vec4(in_pos.xyz, 1.0);\n}";
-            return to_return;
-        };
-        static std::string curved_vertex_shader();
+        static std::string default_vertex_shader();
+        static std::string get_built_in_fragment_shader(Built_In_Shader shader_type) {if (shader_type == Default || shader_type == Curved) {return default_fragment_shader();}return gui_default_fragment_shader();};
+        static std::string get_built_in_vertex_shader(Built_In_Shader shader_type) {if (shader_type == Curved) {return curved_vertex_shader();}else if (shader_type == Default){return default_vertex_shader();}return get_default_hud_vertex_shader();};
         static std::string get_default_hud_vertex_shader() {
             std::string to_return = "#version 330 core\n";
             to_return += "layout(location = 0) in vec3 position;";

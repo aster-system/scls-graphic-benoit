@@ -144,7 +144,7 @@ namespace scls {
         set_should_render_during_this_frame(false);
 
         // Debug mode
-        if(window_struct().debug_mode() & 2){print(std::string("SCLS GUI Object \"") + name() + std::string("\""), std::string("Successful rendering."));}
+        if(window_struct().debug_mode() >> 1){print(std::string("SCLS GUI Object \"") + name() + std::string("\""), std::string("Successful rendering."));}
 
         if(render_children){for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] != 0 && children()[i]->visible()) children()[i]->render(true, scale_multiplier);}}
     }
@@ -1926,7 +1926,7 @@ namespace scls {
         a_loader = std::make_shared<__GUI_Page_Loader>(); a_loader.get()->path = path;
 
         // Load the balises
-        std::shared_ptr<__XML_Text_Base> content = std::make_shared<__XML_Text_Base>(gui_loading_balises, content_to_parse);
+        std::shared_ptr<__XML_Text_Base> content = scls::xml(gui_loading_balises, content_to_parse);
         content.get()->check_include(path);
         __load_objects_from_xml(content, sub_paged);
     }
