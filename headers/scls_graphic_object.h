@@ -90,6 +90,8 @@ namespace scls {
         inline bool contains_tag(std::string tag) { for (int i = 0; i < static_cast<int>(tags().size()); i++) { if (tags()[i] == tag) { return true; } } return false; };
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
+        inline __Balise_Container* balises() const {return a_window_struct->balises();};
+        inline std::shared_ptr<__Balise_Container> balises_shared_ptr() const {return a_window_struct->balises_shared_ptr();};
         inline std::vector<Object*>& children() {return a_children;};
         inline Object* parent() const {return a_parent;};
         inline std::string name() const { return a_name; };
@@ -168,13 +170,13 @@ namespace scls {
         // Clone the object
         virtual void* clone(Object* parent, std::string a_name, std::string texture_name, std::string vao_name = "hud_default");
         // Function called after every updates
-        virtual void last_update() {};
+        virtual void last_update();
         // Reset the object without changing it
-        virtual void soft_reset() {for(int i = 0;i<static_cast<int>(children().size());i++){children()[i]->soft_reset();}};
+        virtual void soft_reset();
         // Function called during every updates
-        virtual void update() {for(int i = 0;i<static_cast<int>(children().size());i++){children()[i]->update();}};
+        virtual void update();
         // Function called when the events are updated
-        virtual void update_event(){for(int i = 0;i<static_cast<int>(children().size());i++){children()[i]->update_event();}};
+        virtual void update_event();
 
         //*********
         //

@@ -149,6 +149,21 @@ namespace scls {
         if(render_children){for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] != 0 && children()[i]->visible()) children()[i]->render(true, scale_multiplier);}}
     }
 
+    // Update the object for the events
+    void GUI_Object::update_event() {
+        for(int i = 0;i<static_cast<int>(children().size());i++){
+            if(children()[i] != 0 && children()[i]->visible()){
+                // Debug
+                if(window_struct().debug_mode() & 3){scls::print(std::string("SCLS GUI Page \"") + name() + std::string("\""), std::string("Start updating GUI object \"") + children()[i]->name() + std::string("\" events..."));}
+
+                children()[i]->update_event();
+
+                // Debug
+                if(window_struct().debug_mode() & 3){scls::print(std::string("SCLS GUI Page \"") + name() + std::string("\""), std::string("Successfully updated GUI object \"") + children()[i]->name() + std::string("\" events."));}
+            }
+        }
+    }
+
     // GUI_Object destructor
     GUI_Object::~GUI_Object() {delete_children();if(parent() != 0) {parent()->child_deleted(this);}window_struct().remove_texture(texture());}
 
@@ -631,6 +646,9 @@ namespace scls {
 
     // Update the object for the events
     void GUI_Main_Object::update_event() {
+        // Debug
+        if(window_struct().debug_mode() & 2){scls::print(std::string("SCLS GUI Page \"") + name() + std::string("\""), std::string("Start updating GUI page events..."));}
+
         // Check the overflighted cursor
         std::weak_ptr<GUI_Object> current_overflighted_object = a_this_object;
         for(int i = 0;i<static_cast<int>(current_overflighted_object.lock().get()->children().size());i++) {
@@ -670,6 +688,9 @@ namespace scls {
         }
 
         GUI_Object::update_event();
+
+        // Debug
+        if(window_struct().debug_mode() & 2){scls::print(std::string("SCLS GUI Page \"") + name() + std::string("\""), std::string("Successfully updated GUI page events."));}
     }
 
     //*********
@@ -802,7 +823,11 @@ namespace scls {
 
     // Select an object
     void GUI_Scroller_Choice::select_object(GUI_Scroller_Single_Choice needed_object) {
-        GUI_Object* object = needed_object.object();
+        // Get the good GUI object
+        GUI_Object* object = 0;
+        if(needed_object.is_sub_section()){object = needed_object.sub_section()->a_displayer_object.get();}
+        else{object = needed_object.object();}
+
         if(object != 0) {
             // Add the contained object
             a_choice_modified = true;
@@ -826,11 +851,18 @@ namespace scls {
         }
     };
 
+    // Handles styles
+    void GUI_Scroller_Choice::set_selected_objects_style_color(Color new_color){a_selected_objects_style.a_background_color = new_color;};
+
     // Unselect an object
     void GUI_Scroller_Choice::unselect_object(std::string object_name) {
         for(int i = 0;i<static_cast<int>(currently_selected_objects().size());i++) {
             if(currently_selected_objects()[i].name()==object_name) {
-                GUI_Object* object = currently_selected_objects()[i].object();
+                // Get the good GUI object
+                GUI_Object* object = 0;
+                if(currently_selected_objects().at(i).is_sub_section()){object = currently_selected_objects().at(i).sub_section()->a_displayer_object.get();}
+                else{object = currently_selected_objects().at(i).object();}
+
                 currently_selected_objects()[i].__choice.get()->good = false;
                 currently_selected_objects().erase(currently_selected_objects().begin()+i,currently_selected_objects().begin()+i+1);
 
@@ -849,8 +881,13 @@ namespace scls {
         for(int i = 0;i<static_cast<int>(a_objects.size());i++) {
             if(a_objects[i].is_sub_section()) {
                 // Check each sub-choices
-                for(int j = 0;j<static_cast<int>(a_objects[i].sub_section()->currently_selected_objects_during_this_frame().size());j++) {
-                    if(a_objects[i].__choice.get()->good){select_object(a_objects[i].sub_section()->currently_selected_objects_during_this_frame()[j]);}
+                if(a_objects.at(i).sub_section()->a_displayer_object.get() && a_objects.at(i).sub_section()->a_displayer_object.get()->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)){
+                    select_object(a_objects.at(i));
+                }
+                else {
+                    for(int j = 0;j<static_cast<int>(a_objects[i].sub_section()->currently_selected_objects_during_this_frame().size());j++) {
+                        if(a_objects[i].__choice.get()->good){select_object(a_objects[i].sub_section()->currently_selected_objects_during_this_frame()[j]);}
+                    }
                 }
             }
             else {if(a_objects[i].object()->is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {select_object(a_objects[i]);}}
@@ -935,7 +972,7 @@ namespace scls {
     bool __GUI_Text_Metadatas::add_text(std::string text_to_add) {
         // Prepare the needed datas to add (the text is treated as unformatted here)
         if(text_to_add != "") {
-            if(attached_text_image() == 0) {set_text(text_to_add);set_cursor_position_in_formatted_text(text_to_add.size());}
+            if(attached_text_image() == 0) {set_text(text_to_add);set_cursor_position_in_formatted_text(plain_text_size());}
             else {
                 // Add the lines if needed
                 unsigned int cursor_position = attached_text_image()->cursor_position_in_full_text();
@@ -1018,17 +1055,13 @@ namespace scls {
 
     // Moves the cursor at a pixel position
     void __GUI_Text_Metadatas::move_cursor_at_position_in_scale(glm::vec2 position) {
-        if(children().size() <= 0) return;
-        GUI_Object* current_object = children()[0].get(); unsigned int i = 0;
-        while(current_object->y_in_scale() > position[1] && i < children().size()) {
-            i++;
-            if(i < children().size()) {
-                current_object = children()[i].get();
-            }
-        }
-        if(i >= children().size()) {
-            i = children().size() - 1;
-            current_object = children()[children().size() - 1].get();
+        if(a_blocks_children.size() <= 0) return;
+
+        GUI_Object* current_object = a_blocks_children.at(0).get()->object(); unsigned int i = 0;
+        while(current_object->y_in_scale() < position[1] && i < a_blocks_children.size()) {i++;if(i < a_blocks_children.size()) {current_object = a_blocks_children.at(i).get()->object();}}
+        if(i >= a_blocks_children.size()) {
+            i = a_blocks_children.size() - 1;
+            current_object = a_blocks_children.at(a_blocks_children.size() - 1).get()->object();
         }
 
         move_cursor(attached_text_image()->cursor_position_in_plain_text_at_line_and_x(i + line_offset(), position[0] * width_in_pixel()) - cursor_position_in_formatted_text());
@@ -1073,6 +1106,10 @@ namespace scls {
         // Update the view
         set_should_render_during_this_frame(true);
     }
+
+    // Return the plain text in the object
+    std::string __GUI_Text_Metadatas::plain_text(){return window_struct().text_image_generator()->plain_text(text());};
+    unsigned int __GUI_Text_Metadatas::plain_text_size() {return plain_text().size();};
 
     // Remove a text to the input at the cursor position
     void __GUI_Text_Metadatas::remove_text(unsigned int size_to_delete) {
@@ -1200,6 +1237,10 @@ namespace scls {
         if(needed_word == 0){return std::shared_ptr<__XML_Text_Base>();}
         return needed_word->datas().balise_parent();
     }
+
+    // Updates text image block
+    void __GUI_Text_Metadatas::update_text_image_block(){String temp=text();attached_text_image_block()->free_memory();set_text(temp);};
+    void __GUI_Text_Metadatas::update_text_image_block_style(){attached_text_image_block()->global_style()->merge_style(a_global_style);};
 
     // Updates the event
     void __GUI_Text_Metadatas::update_event(){

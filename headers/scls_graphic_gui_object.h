@@ -134,7 +134,7 @@ namespace scls {
         // Update the object
         virtual void update(){ for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i] != 0 && children()[i]->visible()){children()[i]->update();}}};
         // Update the object for the events
-        virtual void update_event() {for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i] != 0 && children()[i]->visible()){children()[i]->update_event();}}};
+        virtual void update_event();
         // Update the texture when needed
         virtual void update_texture() {for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] != 0 && children()[i]->visible())children()[i]->update_texture();}};
 
@@ -549,16 +549,16 @@ namespace scls {
         // Places the blocks in the text
         virtual void place_blocks();
         // Return the plain text in the object
-        inline std::string plain_text(){return window_struct().text_image_generator()->plain_text(text());};
+        std::string plain_text();
         // Return the size of the plain text in the object
-        inline unsigned int plain_text_size() {return plain_text().size();};
+        unsigned int plain_text_size();
         // Remove a text to the input at the cursor position
         void remove_text(unsigned int size_to_delete_in_plain_text);
         // Returns the word clicked at a certain position in the text
         std::shared_ptr<__XML_Text_Base> text_clicked_at_position(int x, int y);
         // Updates text image block
-        inline void update_text_image_block(){String temp=text();attached_text_image_block()->free_memory();set_text(temp);};
-        inline void update_text_image_block_style(){attached_text_image_block()->global_style()->merge_style(a_global_style);};
+        void update_text_image_block();
+        void update_text_image_block_style();
 
         // Getters and setters
         inline Text_Image_Block* attached_text_image() const {if(attached_text_image_block()->blocks().size()<=0)return 0; return attached_text_image_block()->blocks()[0].get();};
@@ -716,13 +716,10 @@ namespace scls {
             if(window_struct().key_pressed_or_repeated_pressed("up arrow")) {move_cursor_y(-1);}
             if(window_struct().key_pressed_or_repeated_pressed("down arrow")) {move_cursor_y(1);}
 
-            /*if(is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT) || has_child_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {
-                move_cursor_at_position_in_scale(mouse_position_in_scale());
-            }
+            if(is_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT) || has_child_clicked_during_this_frame(GLFW_MOUSE_BUTTON_LEFT)) {move_cursor_at_position_in_scale(mouse_position_in_scale());}
 
             // Handle wheel scrolling (TEMPORARY DISABLED)
-
-            if(has_child_overflighted() ||is_overflighted()) {
+            /*if(has_child_overflighted() ||is_overflighted()) {
                 double final_movement = window_struct().wheel_movement_y_during_this_frame();
                 if(final_movement > 0 && a_line_offset > 0) final_movement = -1;
                 else if(final_movement < 0 && a_line_offset < attached_text_image()->lines_datas().size()) final_movement = 1;
@@ -841,7 +838,7 @@ namespace scls {
             // Returns the object
             return needed_parent->__add_object(object_name, object_text);
         };
-        template <typename T = GUI_Text> inline std::shared_ptr<T>* add_object(std::string object_name, std::string object_text){return add_object(object_name, object_text, "");};
+        template <typename T = GUI_Text> std::shared_ptr<T>* add_object(std::string object_name, std::string object_text){return add_object(object_name, object_text, "");};
         // Adds a sub-section for the object
         template <typename T = GUI_Scroller_Choice> std::shared_ptr<T>* add_sub_section(std::string object_name, std::string object_text){
             // Asserts
@@ -960,6 +957,9 @@ namespace scls {
         inline GUI_Scroller_Choice* sub_section(std::string sub_section_name){for(int i=0;i<static_cast<int>(a_objects.size());i++){if(a_objects[i].name()==sub_section_name){return a_objects[i].sub_section();}}return 0;};
         // Updates the even in the scroller
         virtual void update_event();
+
+        // Handles styles
+        void set_selected_objects_style_color(Color new_color);
 
         // Getters and setters
         inline bool choice_modified() const {return a_choice_modified;};
@@ -1174,7 +1174,7 @@ namespace scls {
         virtual void update(){Object::update();parent_object()->update();};
 
         // Add a child object to the object
-        template<typename O> std::shared_ptr<O>* new_object(std::string name) { return a_parent_object.get()->new_object<O>(name, 0, 0); }
+        template<typename O> std::shared_ptr<O>* new_object(std::string name) {return a_parent_object.get()->new_object<O>(name, 0, 0); }
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline GUI_Object* focused_object() {return a_focused_object;};

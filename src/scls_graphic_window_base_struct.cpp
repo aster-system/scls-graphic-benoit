@@ -629,4 +629,18 @@ namespace scls {
         a_mouse_buttons_state[GLFW_MOUSE_BUTTON_LEFT] = Button_State::Released;
         a_mouse_buttons_state[GLFW_MOUSE_BUTTON_RIGHT] = Button_State::Released;
     }
+
+    //*********
+    // Variable system
+    //*********
+
+    // Variable constructor
+    _Window_Base_Struct::Variable::Variable(){}
+    _Window_Base_Struct::Variable::Variable(std::string variable_name, std::string variable_content):a_variable(std::make_shared<__Variable>(variable_name, variable_content)){}
+    _Window_Base_Struct::Variable::Variable(const Variable& variable_copy):a_variable(variable_copy.a_variable){}
+
+    // Creates and returns a variable
+    void _Window_Base_Struct::new_variable(std::string variable_name, std::string variable_value) {a_variables.push_back(_Window_Base_Struct::Variable(variable_name, variable_value));}
+    // Returns a variable by its name
+    _Window_Base_Struct::Variable _Window_Base_Struct::variable_by_name(std::string variable_name) const {for(int i = 0;i<static_cast<int>(a_variables.size());i++){if(a_variables.at(i).name() == variable_name){return a_variables.at(i);}}return _Window_Base_Struct::Variable();}
 }

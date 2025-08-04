@@ -125,6 +125,15 @@ namespace scls {
     }
     void Object::render() {glm::mat4 matrix = transform()->get_model_matrix();_render(matrix);}
 
+    // Function called after every updates
+    void Object::last_update() {};
+    // Reset the object without changing it
+    void Object::soft_reset() {for(int i = 0;i<static_cast<int>(children().size());i++){children()[i]->soft_reset();}};
+    // Function called during every updates
+    void Object::update() {for(int i = 0;i<static_cast<int>(children().size());i++){children()[i]->update();}};
+    // Function called when the events are updated
+    void Object::update_event(){for(int i = 0;i<static_cast<int>(children().size());i++){children()[i]->update_event();}};
+
     //*********
     //
     // Object heritage functions

@@ -82,7 +82,7 @@ namespace scls {
         // Return if the window is running or not
         bool run();
 
-        // Getters and setters (ONLY WITH ATTRIBUTES)
+        // Getters and setters
         inline Color background_color() { return a_background_color; };
         inline bool is_running() {return a_is_running;};
         inline void set_background_color(Color new_background_color) {a_background_color = new_background_color;};
@@ -130,6 +130,9 @@ namespace scls {
         //
         //*********
 
+        // Returns pointers to the displayed 2D pages
+        std::vector<std::shared_ptr<Object>> displayed_pages_2d();
+
         // Create a new 2D page to the Window and return it
         template <typename _P>
         std::shared_ptr<_P>* new_page_2d(std::string page_name);
@@ -142,15 +145,6 @@ namespace scls {
         inline bool contains_page_3d(std::string name) { for(std::map<std::string, std::shared_ptr<Object>>::iterator it = pages_3d().begin();it!=pages_3d().end();it++) if(it->first == name) return true; return false;};
         inline bool contains_displayed_page_2d(std::string name) { for(int i = 0;i<static_cast<int>(displayed_pages_2d_names().size());i++) { if(displayed_pages_2d_names()[i] == name) return true;} return false;};
         inline bool contains_displayed_page_3d(std::string name) { for(int i = 0;i<static_cast<int>(displayed_pages_3d_names().size());i++) { if(displayed_pages_3d_names()[i] == name) return true;} return false;};
-        inline std::vector<std::shared_ptr<Object>> displayed_pages_2d() {
-            std::vector<std::shared_ptr<Object>> to_return = std::vector<std::shared_ptr<Object>>();
-            if(displayed_pages_2d_names().size() > 0) {
-                for(int i = 0;i<static_cast<int>(displayed_pages_2d_names().size());i++) {
-                    to_return.push_back(pages_2d()[displayed_pages_2d_names()[i]]);
-                }
-            }
-            return to_return;
-        };
         inline std::vector<std::shared_ptr<Object>> displayed_pages_3d() {std::vector<std::shared_ptr<Object>> to_return = std::vector<std::shared_ptr<Object>>();if(displayed_pages_3d_names().size() > 0) {for(int i = 0;i<static_cast<int>(displayed_pages_3d_names().size());i++) {to_return.push_back(pages_3d()[displayed_pages_3d_names()[i]]);}}return to_return;};
         virtual void display_page_2d(std::string new_page_2d) {if(new_page_2d != "" && !contains_page_2d(new_page_2d)){scls::print("Warning", "SCLS Window", "The \"" + new_page_2d + "\" 2D page you want to display does not exists.");}else if(!contains_displayed_page_2d(new_page_2d)){displayed_pages_2d_names().push_back(new_page_2d);page_2d(new_page_2d)->get()->after_displaying();a_displayed_pages_2d_modified_during_this_frame=true;}};
         inline void display_page_2d(std::shared_ptr<Object> new_page_2d){display_page_2d(new_page_2d.get()->name());};

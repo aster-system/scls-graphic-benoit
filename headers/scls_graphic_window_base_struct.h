@@ -281,11 +281,6 @@ namespace scls {
         // Return if a file formatted with the window context
         std::string file_formatted(std::string path);
 
-        // Loads a variable
-        inline void load_variable(std::string variable_name, std::string variable_value) {a_loaded_variables[variable_name] = variable_value; }
-        // Returns a loaded variable
-        inline std::string loaded_variable(std::string variable_name) const {try { return a_loaded_variables.at(variable_name); }catch (const std::out_of_range&) {return std::string();}return std::string();};
-
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline std::string assets_directory_path() { return a_assets_directory_path; };
         inline Camera* camera() { return &a_camera; };
@@ -395,6 +390,36 @@ namespace scls {
         // Getters and setters
         inline std::map<std::string, Text_Image_Generator*>& text_image_generators() {return a_text_image_generator;};
 
+        //*********
+        // Variable system
+        //*********
+
+        class Variable{
+        public:
+            // Variable constructor
+            Variable();
+            Variable(std::string variable_name, std::string variable_content);
+            Variable(const Variable& variable_copy);
+
+            // Content of the variable
+            std::string content() const {return a_variable.get()->content;};
+            void set_content(std::string new_content){a_variable.get()->content = new_content;}
+
+            // Name of the variable
+            std::string name() const {return a_variable.get()->name;};
+            void set_name(std::string new_name){a_variable.get()->name = new_name;}
+
+        private:
+            // Attached variable
+            struct __Variable {std::string content = std::string();std::string name = std::string();};
+            std::shared_ptr<__Variable> a_variable;
+        };
+
+        // Creates and returns a variable
+        void new_variable(std::string variable_name, std::string variable_value);
+        // Returns a variable by its name
+        Variable variable_by_name(std::string variable_name) const;
+
     protected:
 
         //*********
@@ -456,6 +481,7 @@ namespace scls {
 
         // Each text generator, with their name as key
         std::map<std::string, Text_Image_Generator*> a_text_image_generator = std::map<std::string, Text_Image_Generator*>();
+
     private:
 
         //*********
@@ -472,8 +498,9 @@ namespace scls {
         uint64_t a_debug_mode = 0;
         // Path of the window executable
         const std::string a_exec_path = "";
+
         // Loaded variables
-        std::map<std::string, std::string> a_loaded_variables = std::map<std::string, std::string>();
+        std::vector<Variable> a_variables = std::vector<Variable>();
 
         //*********
         //

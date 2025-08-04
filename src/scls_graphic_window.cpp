@@ -227,6 +227,17 @@ namespace scls {
     //
     //*********
 
+    // Returns pointers to the displayed 2D pages
+    std::vector<std::shared_ptr<Object>> Window::displayed_pages_2d() {
+        std::vector<std::shared_ptr<Object>> to_return = std::vector<std::shared_ptr<Object>>();
+        if(displayed_pages_2d_names().size() > 0) {
+            for(int i = 0;i<static_cast<int>(displayed_pages_2d_names().size());i++) {
+                to_return.push_back(pages_2d()[displayed_pages_2d_names()[i]]);
+            }
+        }
+        return to_return;
+    };
+
     //*********
     //
     // Window operating
@@ -297,6 +308,9 @@ namespace scls {
 
     // Update one frame of the game
     void Window::update() {
+        // Debug
+        if(debug_mode() & 1){scls::print(std::string("SCLS GUI Window"), std::string("Successfully updated window events, start updating 2D pages..."));}
+
         // Update 2D pages
         if (displayed_pages_2d_names().size() > 0) {
             std::vector<std::shared_ptr<Object>> to_display = displayed_pages_2d();
@@ -305,6 +319,9 @@ namespace scls {
             }
         }
 
+        // Debug
+        if(debug_mode() & 1){scls::print(std::string("SCLS GUI Window"), std::string("Successfully updated 2D pages, start updating 3D pages..."));}
+
         // Update 3D pages
         if (displayed_pages_3d_names().size() > 0) {
             std::vector<std::shared_ptr<Object>> to_display = displayed_pages_3d();
@@ -312,10 +329,16 @@ namespace scls {
                 to_display[i].get()->update();
             }
         }
+
+        // Debug
+        if(debug_mode() & 1){scls::print(std::string("SCLS GUI Window"), std::string("Successfully updated 3D pages."));}
     }
 
     // Update the event of the game during this frame
     void Window::update_event() {
+        // Debug mode
+        if(debug_mode() & 1){scls::print(std::string("SCLS GUI Window"), std::string("Start updating events..."));}
+
         // Calculate delta time
         double current_time = scls::time_ns() / 1000000000.0;
         set_delta_time(current_time - a_last_frame_time);
@@ -410,7 +433,7 @@ namespace scls {
         set_last_mouse_x(mouse_x());
         set_last_mouse_y(mouse_y());
 
-        if(debug_mode() & 1){scls::print(std::string("SCLS GUI Window"), std::string("Successfully updated window events, start rendering 2D pages events..."));}
+        if(debug_mode() & 1){scls::print(std::string("SCLS GUI Window"), std::string("Successfully updated window events, start updating 2D pages events..."));}
 
         // Update the event of the 2D pages
         if (displayed_pages_2d_names().size() > 0) {
@@ -420,7 +443,7 @@ namespace scls {
             }
         }
 
-        if(debug_mode() & 1){scls::print(std::string("SCLS GUI Window"), std::string("Successfully rendered 2D pages events, start rendering 3D pages events..."));}
+        if(debug_mode() & 1){scls::print(std::string("SCLS GUI Window"), std::string("Successfully updated 2D pages events, start updating 3D pages events..."));}
 
         // Update the event of the 3D pages
         if (displayed_pages_3d_names().size() > 0) {
@@ -430,7 +453,7 @@ namespace scls {
             }
         }
 
-        if(debug_mode() & 1){scls::print(std::string("SCLS GUI Window"), std::string("Successfully rendered 3D pages events."));}
+        if(debug_mode() & 1){scls::print(std::string("SCLS GUI Window"), std::string("Successfully updated 3D pages events."));}
     }
 
     //*********
@@ -563,13 +586,11 @@ namespace scls {
                     std::string current_attribute_name = cutted[i].get()->xml_balise_attributes()[j].name;
                     std::string current_attribute_value = cutted[i].get()->xml_balise_attributes()[j].value;
 
-                    if(current_attribute_name == "name") {
-                        // Get the value of the object
-                        name = current_attribute_value;
-                    }
+                    if(current_attribute_name == "name") {name = current_attribute_value;}
                 }
+
                 // Add the variable
-                if(name != "")load_variable(name, cutted[i].get()-> text());
+                if(name != std::string()){new_variable(name, cutted[i].get()-> text());}
             }
         }
 
