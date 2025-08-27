@@ -53,8 +53,8 @@ namespace scls {
         // Global text style
         Text_Style global_text_style;
         // Getters and setters of the text style
-        inline scls::Color border_color()const{return global_text_style.border_color;};
-        inline void set_border_color(scls::Color new_color){global_text_style.border_color = new_color;};
+        inline scls::Color border_color()const{return global_text_style.border_color();};
+        inline void set_border_color(scls::Color new_color){global_text_style.set_border_color(new_color);};
         // Border handling (virtually linked to the text style)
         virtual glm::vec4 border_width(){return glm::vec4(global_text_style.border_top_width(), global_text_style.border_left_width(), global_text_style.border_bottom_width(), global_text_style.border_right_width());};
         virtual void set_border_width(glm::vec4 border_width){global_text_style.set_border_bottom_width(border_width.z);global_text_style.set_border_left_width(border_width.y);global_text_style.set_border_right_width(border_width.w);global_text_style.set_border_top_width(border_width.x);};
@@ -64,10 +64,10 @@ namespace scls {
     void border_from_xml(std::shared_ptr<__XML_Text_Base> text, scls::Color& border_color, scls::Fraction& border_bottom, scls::Fraction& border_left, scls::Fraction& border_right, scls::Fraction& border_top);
     void border_from_xml(std::shared_ptr<__XML_Text_Base> text, scls::Color& border_color, glm::vec4& border);
     void border_from_xml(std::shared_ptr<__XML_Text_Base> text, std::shared_ptr<__Image_Base> img);
-    void border_from_xml(std::shared_ptr<__XML_Text_Base> text, scls::Text_Style* style);
+    void border_from_xml(std::shared_ptr<__XML_Text_Base> text, scls::Text_Style style);
     // Get datas about a padding from an XML loading system
     void padding_from_xml(std::shared_ptr<__XML_Text_Base> text, scls::Fraction& border_bottom, scls::Fraction& border_left, scls::Fraction& border_right, scls::Fraction& border_top);
-    void padding_from_xml(std::shared_ptr<__XML_Text_Base> text, scls::Text_Style* style);
+    void padding_from_xml(std::shared_ptr<__XML_Text_Base> text, scls::Text_Style style);
 
     //*********
     //
@@ -495,14 +495,14 @@ namespace scls {
             __GUI_Text_Block(std::shared_ptr<GUI_Object> needed_object):a_object(needed_object){};
 
             // Returns the height of the block
-            inline int height()const{return a_object.get()->height_in_pixel() + style()->margin_bottom() + style()->margin_top();};
+            inline int height()const{return a_object.get()->height_in_pixel() + style().margin_bottom() + style().margin_top();};
             // Updates the texture of the block
             virtual void update_texture(Text_Image_Block* block_to_apply, scls::Image_Generation_Type generation_type);
 
             // Getters and setters
             inline GUI_Object* object()const{return a_object.get();};
-            inline void set_style(std::shared_ptr<Text_Style> new_style) {a_style = new_style;};
-            inline Text_Style* style() const {return a_style.get();};
+            inline void set_style(Text_Style new_style) {a_style = new_style;};
+            inline Text_Style style() const {return a_style;};
 
         private:
             //Lines in the block object
@@ -510,7 +510,7 @@ namespace scls {
             // Object for the block
             std::shared_ptr<GUI_Object> a_object;
             // Style for this block
-            std::shared_ptr<Text_Style> a_style;
+            Text_Style a_style;
         };
 
         //*********
@@ -567,25 +567,25 @@ namespace scls {
         inline Color font_color() const {return a_global_style.color();};
         inline std::string font_family() const {return a_global_style.font().font_family;};
         inline unsigned short font_size() const {return a_global_style.font_size();};
-        inline Text_Style* global_style() {return &a_global_style;};
-        inline int max_width() const {return a_global_style.max_width;};
+        inline Text_Style global_style() {return a_global_style;};
+        inline int max_width() const {return a_global_style.max_width();};
         virtual void set_background_color(Color new_background_color) {GUI_Object::set_background_color(new_background_color);a_global_style.set_background_color(new_background_color);update_text_image_block();};
         inline void set_font_color(Color new_font_color) {a_global_style.set_color(new_font_color);};
         inline void set_font_family(std::string new_font_family) {a_global_style.set_font(get_system_font(new_font_family));update_text_image_block();};
         inline void set_font_size(unsigned short new_font_size) {a_global_style.set_font_size(new_font_size);update_text_image_block();};
-        inline void set_max_width(int new_max_width) {a_global_style.max_width = new_max_width;};
+        inline void set_max_width(int new_max_width) {a_global_style.set_max_width(new_max_width);};
         virtual void set_text(std::string new_text) {if(new_text == text()){return;}update_text_image_block_style();attached_text_image_block()->set_text(new_text);update_texture();};
         void set_plain_text(std::string new_text);
         virtual void set_xml_text(std::shared_ptr<__XML_Text_Base> new_text) {update_text_image_block_style();attached_text_image_block()->set_xml_text(new_text);update_texture();};
-        inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {global_style()->set_alignment_horizontal(new_text_alignment_horizontal);update_text_image_block();};
+        inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {global_style().set_alignment_horizontal(new_text_alignment_horizontal);update_text_image_block();};
         virtual void set_text_image_type(Block_Type new_text_image_type) {a_text_image_type = new_text_image_type;};
-        inline void set_text_offset(double new_text_offset) {a_global_style.text_offset_x = new_text_offset;a_global_style.text_offset_y = new_text_offset;a_global_style.text_offset_width = new_text_offset;a_global_style.text_offset_height = new_text_offset;};
+        inline void set_text_offset(double new_text_offset) {a_global_style.set_text_offset_x(new_text_offset);a_global_style.set_text_offset_y(new_text_offset);a_global_style.set_text_offset_width(new_text_offset);a_global_style.set_text_offset_height(new_text_offset);};
         virtual void set_texture_alignment_horizontal(Alignment_Horizontal new_texture_alignment_horizontal){if(new_texture_alignment_horizontal != texture_alignment_horizontal()){GUI_Object::set_texture_alignment_horizontal(new_texture_alignment_horizontal);place_blocks();}};
         virtual void set_texture_alignment_vertical(Alignment_Vertical new_texture_alignment_vertical){if(new_texture_alignment_vertical != texture_alignment_vertical()){GUI_Object::set_texture_alignment_vertical(new_texture_alignment_vertical);place_blocks();}}
         inline bool text_modified_during_this_frame() {return a_text_modified_during_this_frame;};
         inline String text() const {if(attached_text_image_block()==0)return String();return attached_text_image_block()->text();};
         inline Block_Type text_image_type() const {return a_text_image_type;};
-        inline glm::vec4 text_offset() const {return glm::vec4(a_global_style.text_offset_x, a_global_style.text_offset_y, a_global_style.text_offset_width, a_global_style.text_offset_height);};
+        inline glm::vec4 text_offset() const {return glm::vec4(a_global_style.text_offset_x(), a_global_style.text_offset_y(), a_global_style.text_offset_width(), a_global_style.text_offset_height());};
 
         //*********
         //

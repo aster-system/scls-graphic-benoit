@@ -51,10 +51,18 @@ namespace scls {
         border_from_xml(text, border_color, bottom, left, right, top);
         img.get()->draw_border(bottom.to_double(), left.to_double(), right.to_double(), top.to_double(), border_color);
     }
-    void border_from_xml(std::shared_ptr<__XML_Text_Base> text, scls::Text_Style* style){
-        scls::Fraction bottom = 0; scls::Fraction left = 0; scls::Fraction right = 0; scls::Fraction top = 0;
-        border_from_xml(text, style->border_color, bottom, left, right, top);
-        style->set_border_bottom_width(bottom.to_double());style->set_border_left_width(left.to_double());style->set_border_right_width(right.to_double());style->set_border_top_width(top.to_double());
+    void border_from_xml(std::shared_ptr<__XML_Text_Base> text, scls::Text_Style style){
+        scls::Fraction bottom = 0;
+        scls::Color border_color;
+        scls::Fraction left = 0;
+        scls::Fraction right = 0;
+        scls::Fraction top = 0;
+        border_from_xml(text, border_color, bottom, left, right, top);
+        style.set_border_bottom_width(bottom.to_double());
+        style.set_border_color(border_color);
+        style.set_border_left_width(left.to_double());
+        style.set_border_right_width(right.to_double());
+        style.set_border_top_width(top.to_double());
     }
 
     // Get datas about a padding from an XML loading system
@@ -70,10 +78,10 @@ namespace scls {
             else if(current_attribute_name == "top") {border_top = Fraction::from_std_string(current_attribute_value);}
         }
     }
-    void padding_from_xml(std::shared_ptr<__XML_Text_Base> text, scls::Text_Style* style){
+    void padding_from_xml(std::shared_ptr<__XML_Text_Base> text, scls::Text_Style style){
         scls::Fraction bottom = 0; scls::Fraction left = 0; scls::Fraction right = 0; scls::Fraction top = 0;
         padding_from_xml(text, bottom, left, right, top);
-        style->set_padding_bottom(bottom.to_double());style->set_padding_left(left.to_double());style->set_padding_right(right.to_double());style->set_padding_top(top.to_double());
+        style.set_padding_bottom(bottom.to_double());style.set_padding_left(left.to_double());style.set_padding_right(right.to_double());style.set_padding_top(top.to_double());
     }
 
     //*********
@@ -476,7 +484,7 @@ namespace scls {
     void GUI_Object::set_xml_attribute_style(std::shared_ptr<__XML_Text_Base> text, GUI_Style* needed_style) {
         std::string xml_attribute_name = text.get()->xml_balise_name();
         if(xml_attribute_name == "background_color") {needed_style->a_background_color = Color::from_xml(text);}
-        else if(xml_attribute_name == "border") {border_from_xml(text, &needed_style->global_text_style);}
+        else if(xml_attribute_name == "border") {border_from_xml(text, needed_style->global_text_style);}
         else if(xml_attribute_name == "font_size") {
             // Load the font size of the text
             Fraction final_font_size = Fraction(1);
@@ -1023,7 +1031,7 @@ namespace scls {
     void __GUI_Text_Metadatas::__generate_text_block_object(Text_Image_Block* block_to_apply, scls::Image_Generation_Type generation_type, unsigned int& total_height) {
         // Generate the object for the line
         std::shared_ptr<GUI_Text::__GUI_Text_Block> new_block = __create_text_block_object(block_to_apply);
-        new_block.get()->set_style(block_to_apply->global_style_shared_ptr());
+        new_block.get()->set_style(block_to_apply->global_style());
         new_block.get()->update_texture(block_to_apply, generation_type);
 
         // Place the children
@@ -1032,7 +1040,7 @@ namespace scls {
     }
 
     // Merges the current object with a specific style
-    void __GUI_Text_Metadatas::merge_style(GUI_Style* new_style) {global_style()->merge_style(new_style->global_text_style);GUI_Object::merge_style(new_style);update_text_image_block();};
+    void __GUI_Text_Metadatas::merge_style(GUI_Style* new_style) {global_style().merge_style(new_style->global_text_style);GUI_Object::merge_style(new_style);update_text_image_block();};
 
     // Move the cursor in the text
     void __GUI_Text_Metadatas::move_cursor(int movement) {
@@ -1088,15 +1096,15 @@ namespace scls {
             if(a_blocks_children[i].get() != 0) {
                 // Place the children
                 // Place the X
-                if(a_blocks_children[i].get()->style()->alignment_horizontal() == scls::Alignment_Horizontal::H_Left){a_blocks_children[i].get()->object()->set_x_in_pixel(0);}
-                else if(a_blocks_children[i].get()->style()->alignment_horizontal() == scls::Alignment_Horizontal::H_Right){
+                if(a_blocks_children[i].get()->style().alignment_horizontal() == scls::Alignment_Horizontal::H_Left){a_blocks_children[i].get()->object()->set_x_in_pixel(0);}
+                else if(a_blocks_children[i].get()->style().alignment_horizontal() == scls::Alignment_Horizontal::H_Right){
                     a_blocks_children[i].get()->object()->set_x_in_pixel(width_in_pixel() - a_blocks_children[i].get()->object()->width_in_pixel());
                 }
                 else{a_blocks_children[i].get()->object()->set_x_in_object_scale(scls::Fraction(1, 2));}
                 // Place the Y
                 if(texture_alignment_vertical() == scls::Alignment_Vertical::V_Top){
                     int needed_y = height_in_pixel() - ((a_blocks_children[i].get()->height() + total_height) - a_offset_y);
-                    a_blocks_children[i].get()->object()->set_y_in_pixel(needed_y + a_blocks_children[i].get()->style()->margin_top());
+                    a_blocks_children[i].get()->object()->set_y_in_pixel(needed_y + a_blocks_children[i].get()->style().margin_top());
                 }
                 else{a_blocks_children[i].get()->object()->set_y_in_object_scale(scls::Fraction(1, 2));}
                 total_height += a_blocks_children[i].get()->height();
@@ -1240,7 +1248,7 @@ namespace scls {
 
     // Updates text image block
     void __GUI_Text_Metadatas::update_text_image_block(){String temp=text();attached_text_image_block()->free_memory();set_text(temp);};
-    void __GUI_Text_Metadatas::update_text_image_block_style(){attached_text_image_block()->global_style()->merge_style(a_global_style);};
+    void __GUI_Text_Metadatas::update_text_image_block_style(){attached_text_image_block()->global_style().merge_style(a_global_style);};
 
     // Updates the event
     void __GUI_Text_Metadatas::update_event(){
