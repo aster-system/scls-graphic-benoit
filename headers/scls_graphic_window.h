@@ -134,11 +134,13 @@ namespace scls {
         std::vector<std::shared_ptr<Object>> displayed_pages_2d();
 
         // Create a new 2D page to the Window and return it
-        template <typename _P>
-        std::shared_ptr<_P>* new_page_2d(std::string page_name);
+        template <typename _P> std::shared_ptr<_P> new_page_2d(std::string page_name);
         // Create a new 3D page to the Window and return it
         template <typename _P>
         std::shared_ptr<_P>* new_page_3d(std::string page_name);
+
+        // If the window should render during this frame
+        bool should_render_during_this_frame();
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
         inline bool contains_page_2d(std::string name) { for(std::map<std::string, std::shared_ptr<Object>>::iterator it = pages_2d().begin();it!=pages_2d().end();it++) if(it->first == name) return true; return false;};
@@ -168,12 +170,13 @@ namespace scls {
         //*********
 
         // Function called after that the window has been resized
-        virtual void after_window_resizing(glm::vec2 last_size){apply_window_resizing(last_size);};
+        virtual void after_window_resizing(glm::vec2 last_size){apply_window_resizing(last_size);a_should_render_during_this_frame=true;};
         // Hidden function to call the children that there has been a resizing
         inline void apply_window_resizing(glm::vec2 last_size){for(std::map<std::string, std::shared_ptr<Object>>::iterator it = pages_2d().begin(); it != pages_2d().end(); it++) {it->second->after_window_resizing(last_size);}};
         // Render the scene
         void render_always();
-        virtual void render();
+        void render();
+        virtual void __render();
         // Update one frame of the game
         virtual void update();
         // Update the event of the game during this frame
@@ -207,6 +210,8 @@ namespace scls {
         // Basics Window descriptors
         // Background color of the window
         Color a_background_color = Color(255, 255, 255);
+        // If the window should render during this frame
+        bool a_should_render_during_this_frame = true;
         // Pointer to the GLFW window
         GLFWwindow* a_window = 0;
         // Title of the window
@@ -261,8 +266,7 @@ namespace scls {
     //*********
 
     // Create a new page to the Window and return it
-    template <typename _P>
-    std::shared_ptr<_P>* Window::new_page_2d(std::string page_name) {
+    template <typename _P> std::shared_ptr<_P> Window::new_page_2d(std::string page_name) {
         if(contains_page_2d(page_name)) {
             scls::print("Warning", "SCLS Window", "The \"" + page_name + "\" 2D page you want to add in the window already exist.");
             return 0;
@@ -271,9 +275,8 @@ namespace scls {
         std::shared_ptr<_P> page = std::make_shared<_P>(this, page_name);
         pages_2d()[page_name] = page;
 
-        // Return the static pointer
-        std::shared_ptr<_P>* to_return = reinterpret_cast<std::shared_ptr<_P>*>(&pages_2d()[page_name]);
-        return to_return;
+        // Return the page
+        return page;
     }
 
     // Create a new 3D page to the Window and return it

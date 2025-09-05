@@ -428,19 +428,19 @@ namespace scls {
         virtual ~GUI_Scroller(){a_scroller_children.reset();};
 
         // Function called after the creation of the object
-        virtual void after_creation(){reset_scroller_children();};
+        virtual void after_creation();
         // Function called after that the window is resized
-        virtual void after_resizing() {check_scroller();};
+        virtual void after_resizing();
         // Function called after an XML loading
-        virtual void after_xml_loading() {check_scroller();GUI_Object::after_xml_loading();};
+        virtual void after_xml_loading();
         // Check if a scroll should occurs
         void check_scroll();
         // Check the scroller object
         virtual void check_scroller(bool reset);
         inline void check_scroller(){check_scroller(false);};
-        // Resets the scroller
-        virtual void reset() {if(a_scroller_children.get() != 0){a_scroller_children.get()->delete_children();}check_scroller(false);};
-        inline void reset_scroller_children(){delete_child(a_scroller_children.get());a_scroller_children.reset();a_scroller_children=*_create_scroller_children();};
+        // Clears the scroller
+        virtual void clear_scroller();
+        void clear_scroller_children();
         // Scroll the scroller on the Y axis
         void scroll_y(Fraction movement);
 
@@ -498,6 +498,7 @@ namespace scls {
             inline int height()const{return a_object.get()->height_in_pixel() + style().margin_bottom() + style().margin_top();};
             // Updates the texture of the block
             virtual void update_texture(Text_Image_Block* block_to_apply, scls::Image_Generation_Type generation_type);
+            virtual void update_texture(Text_Image_Line* line_to_apply, scls::Image_Generation_Type generation_type);
 
             // Getters and setters
             inline GUI_Object* object()const{return a_object.get();};
@@ -541,8 +542,10 @@ namespace scls {
         // Creates a text block from a block of text
         template <typename S = __GUI_Text_Metadatas::__GUI_Text_Block, typename T = GUI_Object> std::shared_ptr<__GUI_Text_Metadatas::__GUI_Text_Block> __create_text_block_object() {return std::make_shared<S>(*new_object<T>(__create_text_block_object_name()));};
         virtual std::shared_ptr<__GUI_Text_Metadatas::__GUI_Text_Block> __create_text_block_object(Text_Image_Block* block_to_apply);
+        virtual std::shared_ptr<__GUI_Text_Metadatas::__GUI_Text_Block> __create_text_block_object(Text_Image_Line* line_to_apply);
         std::string __create_text_block_object_name();
         // Generates a text block from a block of text
+        virtual void __generate_text_block_object(Text_Image_Line* block_to_apply, scls::Image_Generation_Type generation_type, unsigned int& total_height);
         virtual void __generate_text_block_object(Text_Image_Block* block_to_apply, scls::Image_Generation_Type generation_type, unsigned int& total_height);
         // Merges the current object with a specific style
         virtual void merge_style(GUI_Style* new_style);
@@ -610,26 +613,12 @@ namespace scls {
         void move_cursor_at_position_in_scale(glm::vec2 position);
         // Moves the cursor in the Y axis
         void move_cursor_y(int movement);
+        // Sets the new position of the cursor
+        void set_cursor_position_in_formatted_text(unsigned int new_cursor_position_in_formatted_text);
 
         // Getters and setters
         inline unsigned int cursor_position_in_formatted_text() const {if(attached_text_image()==0){return 0;}return attached_text_image()->cursor_position_in_plain_text();};
         inline int line_offset() const {return 0;};
-        inline void set_cursor_position_in_formatted_text(unsigned int new_cursor_position_in_formatted_text) {
-            if(new_cursor_position_in_formatted_text == cursor_position_in_formatted_text()) return;
-
-            if(attached_text_image() != 0) {
-                Text_Image_Line* line_to_modify = attached_text_image()->line_at_position_in_plain_text(cursor_position_in_formatted_text());
-                if(line_to_modify != 0) {
-                    line_to_modify->set_modified(true);
-                }
-            }
-            if(attached_text_image() != 0) {
-                Text_Image_Line* line_to_modify = attached_text_image()->line_at_position_in_plain_text(new_cursor_position_in_formatted_text);
-                if(line_to_modify != 0) {
-                    line_to_modify->set_modified(true);
-                }
-            } attached_text_image()->set_cursor_position_in_plain_text(new_cursor_position_in_formatted_text);
-        };
         inline void set_use_cursor(bool new_use_cursor) {attached_text_image()->set_use_cursor(new_use_cursor);};
         inline bool use_cursor() const {return attached_text_image()->use_cursor();};
 
@@ -707,7 +696,7 @@ namespace scls {
         // Input the inputed text
         inline void input_text(){int to_remove=0;std::string to_add=__input_text(window_struct(),text(),cursor_position_in_unformatted_text(),a_last_descriptive_character,to_remove);remove_text(to_remove);add_text(to_add);};
         // Update the text
-        virtual void update_event(){GUI_Object::update_event();if(visible()&&(is_focused()||has_child_focused())){input_text();update_cursor();}};
+        virtual void update_event(){__GUI_Text_Metadatas::update_event();if(visible()&&(is_focused()||has_child_focused())){input_text();update_cursor();}};
         // Update the cursor behavior
         void update_cursor() {
             if(window_struct().key_pressed_or_repeated_pressed("left arrow")) {move_cursor(-1);}
@@ -802,7 +791,7 @@ namespace scls {
         // Adds an object
         template <typename T = GUI_Text> std::shared_ptr<T>* __add_object(std::string object_name, std::string object_text){
             // Pre-creation check
-            if(scroller_children()==0){reset_scroller_children();check_scroller(false);}
+            if(scroller_children()==0){clear_scroller_children();check_scroller(false);}
 
             // Create the object
             std::shared_ptr<T>* current_object = scroller_children()->new_object<T>(name() + "-" + object_name);
@@ -845,7 +834,7 @@ namespace scls {
             if(contains_object(object_name)){return 0;}
 
             // Pre-creation check
-            if(scroller_children()==0){reset_scroller_children();check_scroller(false);}
+            if(scroller_children()==0){clear_scroller_children();check_scroller(false);}
 
             // Create the object
             std::shared_ptr<T>* current_object = scroller_children()->new_object<T>(object_name);
@@ -864,7 +853,7 @@ namespace scls {
             a_objects.push_back(to_add);
 
             // Place the object
-            current_object->get()->reset_scroller_children();
+            current_object->get()->clear_scroller_children();
             current_object->get()->set_displayer_object(object_name + std::string("-displayer"), object_text);
             place_objects();
 
@@ -1229,9 +1218,7 @@ namespace scls {
     };
 
     // Add a child object to the object
-    template<typename O> std::shared_ptr<O>* GUI_Object::new_object(std::string name) { return new_object<O>(name, 0, 0); }
-
-    // Add a child object to the object
+    template<typename O> std::shared_ptr<O>* GUI_Object::new_object(std::string name){return new_object<O>(name, 0, 0);}
     template<typename O> std::shared_ptr<O>* GUI_Object::new_object(std::string name, unsigned int x, unsigned int y) {
         // Create the child
         std::shared_ptr<O> new_ptr;

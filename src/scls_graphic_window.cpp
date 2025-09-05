@@ -211,12 +211,8 @@ namespace scls {
     void Window::resize_window(unsigned int width, unsigned int height) {
         glm::vec2 last_size = glm::vec2(width, height);
         glfwSetWindowSize(window(), width, height);
-        if(is_resize_possible()) {
-            glfwSetWindowSizeLimits(window(), minimum_window_width(), minimum_window_height(), maximum_window_width(), maximum_window_height());
-        }
-        else {
-            glfwSetWindowSizeLimits(window(), width, height, width, height);
-        }
+        if(is_resize_possible()) {glfwSetWindowSizeLimits(window(), minimum_window_width(), minimum_window_height(), maximum_window_width(), maximum_window_height());}
+        else {glfwSetWindowSizeLimits(window(), width, height, width, height);}
 
         after_window_resizing(last_size);
     }
@@ -238,6 +234,20 @@ namespace scls {
         return to_return;
     };
 
+    // If the window should render during this frame
+    bool Window::should_render_during_this_frame() {
+        // Asserts
+        if(a_should_render_during_this_frame){return true;}
+
+        // Get every 2D pages
+        bool good = false;
+        for(int i = 0;i<static_cast<int>(displayed_pages_2d().size());i++) {if(displayed_pages_2d().at(i).get()->should_render_during_this_frame()){good = true;break;}}
+        return good;
+
+        if(good || displayed_pages_2d_modified_during_this_frame()){scls::Window::render();}
+        else{scls::Window::render_always();}
+    }
+
     //*********
     //
     // Window operating
@@ -246,6 +256,7 @@ namespace scls {
 
     // Render the scene
     std::vector<std::shared_ptr<Object>> to_display;
+    void Window::render(){if(should_render_during_this_frame()){__render();}else{render_always();}};
     void Window::render_always(){
         // Update the cursor texture
         if(cursor_changed() && cursor() != 0) {glfwSetCursor(window(), cursor());}
@@ -271,7 +282,7 @@ namespace scls {
         glfwPollEvents();
         a_displayed_pages_2d_modified_during_this_frame = false;
     };
-    void Window::render() {
+    void Window::__render() {
         // Clear OpenGL window
         glClearColor(background_color().red() / 255.0, background_color().green() / 255.0, background_color().blue() / 255.0, background_color().alpha() / 255.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -302,6 +313,7 @@ namespace scls {
         if(debug_mode() & 1){scls::print(std::string("SCLS GUI Window"), std::string("Successfully rendered 2D pages."));}
 
         // Update OpenGL
+        a_should_render_during_this_frame = false;
         glfwSwapBuffers(window());
         render_always();
     }
@@ -465,12 +477,12 @@ namespace scls {
     // Create an object from a type
     std::shared_ptr<Object> Window::__create_loaded_object_from_type(std::string object_name, std::string object_type) {
         if(object_type == "gui") {
-            std::shared_ptr<Object> to_return = *new_page_2d<GUI_Page>(object_name);
+            std::shared_ptr<Object> to_return = new_page_2d<GUI_Page>(object_name);
             return to_return;
         }
         if(object_type == "") print("Warning", "SCLS Graphic Benoit", "Unspecified type for object \"" + object_name + "\".");
         else print("Warning", "SCLS Graphic Benoit", "Unrecognized type \"" + object_type + "\" for object \"" + object_name + "\".");
-        return *new_page_2d<Object>(object_name);
+        return new_page_2d<Object>(object_name);
     }
 
     // Create an page 3D from a type
