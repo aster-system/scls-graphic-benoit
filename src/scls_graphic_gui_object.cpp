@@ -113,7 +113,11 @@ namespace scls {
 
     // Render the object
     void GUI_Object::render(bool render_children, glm::vec3 scale_multiplier) {
+        // Asserts
+        if(y_in_absolute_pixel() > window_struct().window_height() || y_in_absolute_pixel() + height_in_pixel() < 0){return;}
+
         if(a_transformation_updated){calculate_transformation(true);}
+        if(a_should_update_texture){update_texture();}
 
         // Handle the extremum
         if(use_extremums()){if(!apply_extremum(vao())){return;}}
@@ -127,6 +131,7 @@ namespace scls {
         glm::vec2 absolute_position_to_apply = glm::vec2(x_in_adapted_absolute_scale().to_double(), y_in_adapted_absolute_scale().to_double());
         glm::vec2 absolute_scale_to_apply = glm::vec2(width_in_adapted_absolute_scale().to_double(), height_in_adapted_absolute_scale().to_double());
         absolute_scale_to_apply *= glm::vec2(scale_multiplier[0], scale_multiplier[1]);
+        // Sets the matrix
         matrix = glm::translate(matrix, glm::vec3(-1.0, -1.0, 0.0));
         matrix = glm::translate(matrix, glm::vec3(absolute_position_to_apply[0], absolute_position_to_apply[1], 0));
         matrix = glm::scale(matrix, glm::vec3(absolute_scale_to_apply[0], absolute_scale_to_apply[1], 1));
@@ -154,7 +159,7 @@ namespace scls {
         // Debug mode
         if(window_struct().debug_mode() >> 1){print(std::string("SCLS GUI Object \"") + name() + std::string("\""), std::string("Successful rendering."));}
 
-        if(render_children){for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] != 0 && children()[i]->visible()) children()[i]->render(true, scale_multiplier);}}
+        if(render_children){for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] != 0 && children()[i]->visible()){children()[i]->render(true, scale_multiplier);}}}
     }
 
     // Update the object for the events
@@ -171,6 +176,9 @@ namespace scls {
             }
         }
     }
+
+    // Updates the texture when needed
+    void GUI_Object::update_texture() {a_should_update_texture=false;};
 
     // GUI_Object destructor
     GUI_Object::~GUI_Object() {delete_children();if(parent() != 0) {parent()->child_deleted(this);}window_struct().remove_texture(texture());}
@@ -630,6 +638,22 @@ namespace scls {
         return mouse_pos;
     }
 
+    // Sets the new parent
+    void GUI_Object::set_parent(std::weak_ptr<GUI_Object> new_parent){
+        // Removes the last parent
+        if(parent() != 0){parent()->delete_child(this);}
+
+        // Sets the good parent
+        a_parent = new_parent;
+        if(parent() != 0){
+            if(a_created_objects_parent.get()==0){parent()->delete_child(this);parent()->children().push_back(a_this_object.lock());}
+            else{parent()->a_created_objects_parent.get()->delete_child(this);a_created_objects_parent.get()->children().push_back(a_this_object.lock());}
+        }
+
+        // Finish the result
+        a_transformation_updated = true;
+    };
+
     // Returns the rect of user defined texture
     glm::vec4 GUI_Object::user_defined_texture_rect() {
         Fraction height_texture = texture_height_in_scale();
@@ -707,6 +731,9 @@ namespace scls {
     //
     //*********
 
+    // Adds an object in the scroller
+    void GUI_Scroller::add_object_in_scroller(std::shared_ptr<GUI_Object> new_object){if(a_scroller_children.get()==0){clear_scroller_children();}new_object.get()->set_parent(a_scroller_children);check_scroller();}
+
     // Function called after the creation of the object
     void GUI_Scroller::after_creation(){clear_scroller_children();}
 
@@ -730,10 +757,12 @@ namespace scls {
     void GUI_Scroller::check_scroller(bool reset) {
         if(a_scroller_children.get() == 0){return;}
 
-        // Handle the Y of the scroller
-        if(a_scroller_children->height_in_scale() <= 1 || static_cast<int>(height_in_pixel()) - (a_scroller_children->y_in_pixel() + static_cast<int>(a_scroller_children->height_in_pixel())) > 0){
-            a_scroller_children->attach_top_in_parent(1);
-        }
+        // Handle the height of the scroller
+        a_scroller_children->set_height_in_pixel(a_inner_height);
+
+        // Handle the X/Y of the scroller
+        a_scroller_children->set_x_in_pixel(border_width_in_pixel()[1]);
+        a_scroller_children->attach_top_in_parent(a_y_offset);
 
         // Resize the children
         int border_offset = (border_width_in_pixel()[1] + border_width_in_pixel()[3]);
@@ -743,26 +772,13 @@ namespace scls {
             a_scroller_children->set_x_in_pixel(border_width_in_pixel()[1]);
         }
 
-        /*// Calculate according to the last position
-        int children_height = static_cast<int>(a_scroller_children->height_in_pixel());
-        int height = static_cast<int>(height_in_pixel());
-        if(!reset) {
-            if(last_y_position >= 1) {
-                if(height >= children_height || last_y_position < children_height - height) {
-                    a_scroller_children->move_top_in_parent(-last_y_position);
-                }
-                else {
-                    a_scroller_children->move_bottom_in_parent(1);
-                }
-            }
-        } //*/
-        //calculate_transformation(true, true);
+        // Render the scroller
         set_should_render_during_this_frame(true);
     }
 
     // Clears the scroller
     void GUI_Scroller::clear_scroller() {if(a_scroller_children.get() != 0){a_scroller_children.get()->delete_children();}check_scroller(false);};
-    void GUI_Scroller::clear_scroller_children(){delete_child(a_scroller_children.get());a_scroller_children.reset();a_scroller_children=*_create_scroller_children();};
+    void GUI_Scroller::clear_scroller_children(){if(a_scroller_children.get()!=0){delete_child(a_scroller_children.get());a_scroller_children.reset();}a_scroller_children=*_create_scroller_children();};
 
     // Private function to create the children scroller
     std::shared_ptr<GUI_Object>* GUI_Scroller::_create_scroller_children() {
@@ -778,16 +794,21 @@ namespace scls {
     // Scroll the scroller
     void GUI_Scroller::scroll_y(Fraction movement) {
         if(scroller_vertical_alignment() == Alignment_Vertical::V_Top || true) {
-            if(a_scroller_children->height_in_scale() > 1) {
+            if(a_scroller_children->height_in_scale() > 1 || a_inner_height > static_cast<int>(height_in_pixel())) {
                 movement *= Fraction(15);
-                Fraction final_pos = (a_scroller_children->y_in_pixel()) - movement;
-                a_scroller_children->set_y_in_pixel(final_pos);
+                a_y_offset += movement.to_double();
+                if(a_y_offset > 0){a_y_offset = 0;}
+
+                // Sets the y
                 check_scroller();
             }
             else {a_scroller_children->move_top_in_parent(1);}
         }
         set_should_render_during_this_frame(true);
     }
+
+    // Updates the object for the events
+    void GUI_Scroller::update_event() {GUI_Object::update_event();check_scroll();};
 
     //*********
     //
@@ -838,7 +859,7 @@ namespace scls {
         }
 
         // Check the scroller
-        if(scroller_children() != 0){scroller_children()->set_height_in_pixel(needed_height());}
+        set_inner_height(needed_height());
         GUI_Scroller::check_scroller(false);
     }
 
@@ -1032,6 +1053,9 @@ namespace scls {
     }
     int __generation = 0;std::string __GUI_Text_Metadatas::__create_text_block_object_name(){return name() + std::string("_gen_") + std::to_string(__generation++);};
 
+    // Deletes the blocks children
+    void __GUI_Text_Metadatas::delete_blocks_children() {for(int i = 0;i<static_cast<int>(a_blocks_children.size());i++){delete_child(a_blocks_children.at(i).get()->object());}a_blocks_children.clear();}
+
     // Updates the texture of the block
     void __GUI_Text_Metadatas::__GUI_Text_Block::update_texture(Text_Image_Block* block_to_apply, scls::Image_Generation_Type generation_type) {
         // Generate the image
@@ -1142,7 +1166,7 @@ namespace scls {
 
                 // Place the Y
                 if(texture_alignment_vertical() == scls::Alignment_Vertical::V_Top){
-                    int needed_y = height_in_pixel() - ((a_blocks_children[i].get()->height() + total_height) - a_offset_y);
+                    int needed_y = height_in_pixel() - ((total_height + a_blocks_children[i].get()->height()) - a_offset_y);
                     a_blocks_children[i].get()->object()->set_y_in_pixel(needed_y + a_blocks_children[i].get()->style().margin_top());
                 }
                 else{a_blocks_children[i].get()->object()->set_y_in_object_scale(scls::Fraction(1, 2));}
@@ -1194,7 +1218,7 @@ namespace scls {
     }
 
     // Sets the text from plain text
-    void __GUI_Text_Metadatas::set_plain_text(std::string new_text) {if(new_text == plain_text()){return;}new_text=scls::format_string_break_line(scls::format_string_from_plain_text(new_text), std::string("</br>"));update_text_image_block_style();attached_text_image_block()->set_text(new_text);update_texture();};
+    void __GUI_Text_Metadatas::set_plain_text(std::string new_text) {if(new_text == plain_text()){return;}new_text=scls::format_string_break_line(scls::format_string_from_plain_text(new_text), std::string("</br>"));update_text_image_block_style();attached_text_image_block()->set_text(new_text);};
 
     // Handle an attribute from XML
     void __GUI_Text_Metadatas::set_xml_attribute(std::shared_ptr<__XML_Text_Base> text, std::string event) {
@@ -1307,8 +1331,8 @@ namespace scls {
     }
 
     // Updates text image block
-    void __GUI_Text_Metadatas::update_text_image_block(){String temp=text();attached_text_image_block()->free_memory();set_text(temp);};
-    void __GUI_Text_Metadatas::update_text_image_block_style(){attached_text_image_block()->global_style().merge_style(a_global_style);};
+    void __GUI_Text_Metadatas::update_text_image_block(){String temp=text();attached_text_image_block()->free_memory();set_text(temp);set_should_update_texture(true);};
+    void __GUI_Text_Metadatas::update_text_image_block_style(){attached_text_image_block()->global_style().merge_style(a_global_style);set_should_update_texture(true);};
 
     // Updates the event
     void __GUI_Text_Metadatas::update_event(){
@@ -1321,6 +1345,9 @@ namespace scls {
         }
     }
 
+    // Updates the texture when needed
+    void __GUI_Text_Metadatas::update_texture() {update_text_texture();GUI_Object::update_texture();};
+
     // Update the texture of the text
     void __GUI_Text_Metadatas::update_text_texture(scls::Image_Generation_Type generation_type) {
         if(text() != "") {
@@ -1329,7 +1356,7 @@ namespace scls {
 
             // Add lines if needed
             int block_offset = 0;
-            delete_children();
+            delete_blocks_children();
             a_blocks_children.clear();
 
             int cursor_pos = 0;if(attached_text_image() != 0){cursor_pos = attached_text_image()->cursor_position_in_plain_text();}
@@ -1345,16 +1372,18 @@ namespace scls {
                 }
             }
 
+            // TEMP. ENABLED
             // Delete the useless children in more
-            for(int i = 0;i<static_cast<int>(children().size()) - total_lines;i++) {children().pop_back();}
+            //for(int i = 0;i<static_cast<int>(children().size()) - total_lines;i++) {children().pop_back();}
 
             // Delete empty children
-            for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i].get() == 0) {children().erase(children().begin() + i);i--;}}
+            //for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i].get() == 0) {children().erase(children().begin() + i);i--;}}
 
             place_blocks();
             a_generation++;
+
         }
-        else {delete_children();texture()->set_image(0);}
+        else {delete_blocks_children();texture()->set_image(0);}
         set_should_render_during_this_frame(true);
     }
 

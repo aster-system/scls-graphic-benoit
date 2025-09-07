@@ -372,4 +372,20 @@ namespace scls {
         else if(__current_style_transformation()->y_definition_to_apply() == _Size_Definition::Object_Scale_Size) current_transformation.get()->set_y_in_object_scale(__current_style_transformation()->y_to_apply());
         else if(__current_style_transformation()->y_definition_to_apply() == _Size_Definition::Pixel_Size){current_transformation.get()->set_y_in_pixel(__current_style_transformation()->y_to_apply());}
     }
+
+    void __GUI_Object_Core::__attach_object_in_parent(std::weak_ptr<__GUI_Object_Core> another_object, bool is_vertical){
+        if(is_vertical) {
+            if(a_transform_attachment.attached_object_vertical.lock().get() != 0) {
+                a_transform_attachment.attached_object_vertical.lock().get()->__delete_attached_object(this);
+            }
+            a_transform_attachment.attached_object_vertical = another_object;
+        }
+        else {
+            if(a_transform_attachment.attached_object_horizontal != 0) {
+                a_transform_attachment.attached_object_horizontal->__delete_attached_object(this);
+            }
+            a_transform_attachment.attached_object_horizontal = another_object.lock().get();
+        }
+        if(another_object.lock().get() != 0 && !another_object.lock().get()->__contains_attached_object(this)){another_object.lock().get()->a_attached_object.push_back(this_object_core());}
+    };
 }

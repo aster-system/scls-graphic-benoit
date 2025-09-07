@@ -135,8 +135,8 @@ namespace scls {
         virtual void update(){ for(int i = 0;i<static_cast<int>(children().size());i++){if(children()[i] != 0 && children()[i]->visible()){children()[i]->update();}}};
         // Update the object for the events
         virtual void update_event();
-        // Update the texture when needed
-        virtual void update_texture() {for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] != 0 && children()[i]->visible())children()[i]->update_texture();}};
+        // Updates the texture when needed
+        virtual void update_texture();
 
         // Getters and setters (ONLY WITH ATRIBUTES)
         inline Color background_color() {return current_style()->a_background_color;};
@@ -148,6 +148,7 @@ namespace scls {
         inline void set_border_color(Color new_color) {current_style()->set_border_color(new_color);set_should_render_during_this_frame(true);};
         inline void set_loaded(bool new_loaded){a_loaded=new_loaded;};
         inline void set_ignore_click(bool new_ignore_click) {a_ignore_click = new_ignore_click;};
+        inline void set_should_update_texture(bool new_should_update_texture){a_should_update_texture = new_should_update_texture;if(new_should_update_texture){set_should_render_during_this_frame(true);}}
         inline void set_use_extremums(bool new_use_extremums) {a_use_extremums = new_use_extremums;};
         inline void set_visible(bool new_visible, bool with_children) {a_visible = new_visible;set_should_render_during_this_frame(true);if(a_visible&&!a_loaded){load_from_xml(std::string(""));for(int i = 0;i<static_cast<int>(a_children.size());i++){if((a_children[i].get()->visible() || with_children) && !a_children[i].get()->a_loaded){a_children[i].get()->set_visible(true);}}}};
         inline void set_visible(bool new_visible) {set_visible(new_visible, false);};
@@ -214,9 +215,10 @@ namespace scls {
         // Returns the position of the mouse in scale
         glm::vec2 mouse_position_in_scale();
 
-        // Getters
+        // Getters and setters
         inline GUI_Object* parent() const {return a_parent.lock().get();};
         inline std::weak_ptr<GUI_Object> parent_weak_ptr() const {return a_parent;};
+        void set_parent(std::weak_ptr<GUI_Object> new_parent);
 
         //*********
         //
@@ -252,8 +254,8 @@ namespace scls {
         inline void unload_texture() {a_texture.reset();};
 
         // Getters and setters
-        inline __Image_Base* image() const {return texture()->get_image();};
-        inline bool resize_texture() const {return texture()->use_resize();};
+        inline __Image_Base* image() {return texture()->get_image();};
+        inline bool resize_texture() {return texture()->use_resize();};
         inline void set_should_render_during_this_frame(bool new_should_render) {if(!a_rendered_during_this_frame && new_should_render && parent() != 0){parent()->set_should_render_during_this_frame(true);}a_rendered_during_this_frame = new_should_render;};
         inline void set_texture(std::shared_ptr<__Image_Base> new_texture, bool remove_last_texture = true) {std::shared_ptr<Texture> needed_texture = std::make_shared<Texture>();needed_texture.get()->set_image(new_texture);set_texture(needed_texture, remove_last_texture);};
         inline void set_texture(std::shared_ptr<Texture> new_texture, bool remove_last_texture = true) {if(remove_last_texture) {window_struct().remove_texture(texture());}a_texture = new_texture;};
@@ -270,14 +272,14 @@ namespace scls {
         inline void set_vao(std::shared_ptr<VAO> new_vao){a_vao = new_vao;};
         inline bool should_render_during_this_frame() const {return a_rendered_during_this_frame;};
         inline std::vector<std::shared_ptr<GUI_Object>>& sub_pages() {if(a_sub_page.size() <= 0){a_sub_page.push_back(std::vector<std::shared_ptr<GUI_Object>>());}return a_sub_page[0];};
-        inline Texture* texture() const {return a_texture.get();};
+        inline Texture* texture() {if(a_should_update_texture){update_texture();}return a_texture.get();};
         inline Alignment_Texture texture_alignment() const {return a_texture_alignment;};
         inline Alignment_Horizontal texture_alignment_horizontal() const {return a_texture_alignment_horizontal;};
         inline Alignment_Vertical texture_alignment_vertical() const {return a_texture_alignment_vertical;};
         inline double texture_scale_x() const {return a_texture_scale_x;};
         inline double texture_scale_y() const {return a_texture_scale_y;};
         inline bool texture_fill_object() const {return a_texture_fill_object;};
-        inline std::shared_ptr<Texture>& texture_shared_ptr() {return a_texture;};
+        inline std::shared_ptr<Texture> texture_shared_ptr() {if(a_should_update_texture){update_texture();}return a_texture;};
         inline VAO* vao() const {return a_vao.get();};
 
     protected:
@@ -293,6 +295,9 @@ namespace scls {
         std::weak_ptr<GUI_Object> a_parent;
         // Weak pointer to this object
         std::weak_ptr<GUI_Object> a_this_object;
+
+        // Weak_ptr to this object
+        virtual std::weak_ptr<scls::__GUI_Object_Core> this_object_core(){return a_this_object;};
 
         //*********
         //
@@ -362,6 +367,8 @@ namespace scls {
         //
         //*********
 
+        // If the texture should be updated or not
+        bool a_should_update_texture = true;
         // Texture of this object
         std::shared_ptr<Texture> a_texture;
         // Type of alignment of the texture
@@ -444,17 +451,20 @@ namespace scls {
         // Scroll the scroller on the Y axis
         void scroll_y(Fraction movement);
 
+        // Adds an object in the scroller
+        void add_object_in_scroller(std::shared_ptr<GUI_Object> new_object);
         // Add a child object to the scroller with its position
         template<typename O>
         std::shared_ptr<O>* new_object_in_scroller(std::string name, unsigned int x, unsigned int y);
         // Add a child object to the scroller
         template<typename O>
         std::shared_ptr<O>* new_object_in_scroller(std::string name);
-        // Update the object for the events
-        virtual void update_event() {GUI_Object::update_event();check_scroll();};
+        // Updates the object for the events
+        virtual void update_event();
 
         // Getters and setters
         inline Alignment_Vertical scroller_vertical_alignment() const {return a_scroller_vertical_alignment;};
+        inline void set_inner_height(int new_inner_height){a_inner_height = new_inner_height;};
 
     protected:
 
@@ -474,6 +484,11 @@ namespace scls {
         // GUI_Scroller main attributes
         //
         //*********
+
+        // Inner height of the scroller
+        int a_inner_height = 0;
+        // Y offset of the scroller
+        double a_y_offset = 0;
 
         // Private function to create the children scroller
         std::shared_ptr<GUI_Object>* _create_scroller_children();
@@ -526,13 +541,13 @@ namespace scls {
         // Function called after that the window is resized
         virtual void after_resizing();
         // Reset the text and the text image
-        void reset() {delete_children();a_offset_y = 0;};
+        void reset() {delete_blocks_children();a_offset_y = 0;};
         // Soft reset the text
         virtual void soft_reset() {GUI_Object::soft_reset();a_text_modified_during_this_frame = false;};
         // Updates the event
         virtual void update_event();
         // Updates the texture when needed
-        virtual void update_texture() {GUI_Object::update_texture();update_text_texture();};
+        virtual void update_texture();
         // Updates the texture of the text
         void update_text_texture(scls::Image_Generation_Type generation_type);
         void update_text_texture(){update_text_texture(scls::Image_Generation_Type::IGT_Full);};
@@ -544,6 +559,8 @@ namespace scls {
         virtual std::shared_ptr<__GUI_Text_Metadatas::__GUI_Text_Block> __create_text_block_object(Text_Image_Block* block_to_apply);
         virtual std::shared_ptr<__GUI_Text_Metadatas::__GUI_Text_Block> __create_text_block_object(Text_Image_Line* line_to_apply);
         std::string __create_text_block_object_name();
+        // Deletes the blocks children
+        void delete_blocks_children();
         // Generates a text block from a block of text
         virtual void __generate_text_block_object(Text_Image_Line* block_to_apply, scls::Image_Generation_Type generation_type, unsigned int& total_height);
         virtual void __generate_text_block_object(Text_Image_Block* block_to_apply, scls::Image_Generation_Type generation_type, unsigned int& total_height);
@@ -577,9 +594,9 @@ namespace scls {
         inline void set_font_family(std::string new_font_family) {a_global_style.set_font(get_system_font(new_font_family));update_text_image_block();};
         inline void set_font_size(unsigned short new_font_size) {a_global_style.set_font_size(new_font_size);update_text_image_block();};
         inline void set_max_width(int new_max_width) {a_global_style.set_max_width(new_max_width);};
-        virtual void set_text(std::string new_text) {if(new_text == text()){return;}update_text_image_block_style();attached_text_image_block()->set_text(new_text);update_texture();};
+        virtual void set_text(std::string new_text) {if(new_text == text()){return;}update_text_image_block_style();attached_text_image_block()->set_text(new_text);set_should_update_texture(true);};
         void set_plain_text(std::string new_text);
-        virtual void set_xml_text(std::shared_ptr<__XML_Text_Base> new_text) {update_text_image_block_style();attached_text_image_block()->set_xml_text(new_text);update_texture();};
+        virtual void set_xml_text(std::shared_ptr<__XML_Text_Base> new_text) {update_text_image_block_style();attached_text_image_block()->set_xml_text(new_text);set_should_update_texture(true);};
         inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {global_style().set_alignment_horizontal(new_text_alignment_horizontal);update_text_image_block();};
         virtual void set_text_image_type(Block_Type new_text_image_type) {a_text_image_type = new_text_image_type;};
         inline void set_text_offset(double new_text_offset) {a_global_style.set_text_offset_x(new_text_offset);a_global_style.set_text_offset_y(new_text_offset);a_global_style.set_text_offset_width(new_text_offset);a_global_style.set_text_offset_height(new_text_offset);};

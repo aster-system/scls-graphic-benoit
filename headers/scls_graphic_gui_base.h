@@ -311,6 +311,7 @@ namespace scls {
         // Returns the x of the object in absolute pixel plan
         inline int x_in_absolute_pixel() const {if(parent()==0)return x_in_pixel();return x_in_pixel() + parent()->x_in_absolute_pixel();};
         // Returns the y of the object in absolute pixel plan
+        inline int y_from_top_in_absolute_pixel(){int absolute_top = y_in_absolute_pixel() + height_in_pixel();return window_height() - absolute_top;};
         inline int y_in_absolute_pixel() {if(!a_y_position_in_absolute_pixel_calculated){if(parent()==0){a_y_position_in_absolute_pixel = y_in_pixel();}else{a_y_position_in_absolute_pixel = y_in_pixel() + parent()->y_in_absolute_pixel();}a_y_position_in_absolute_pixel_calculated=true;}return a_y_position_in_absolute_pixel;};
 
         // Setters
@@ -516,7 +517,7 @@ namespace scls {
         // Calculate the transformation of the object
         void _apply_calculate_transformation(std::shared_ptr<__GUI_Transformation> current_transformation);
         // Calculate the transformation of the object
-        void __calculate_transformation_attached_objects() {for(int i = 0;i<static_cast<int>(a_attached_object.size());i++) {if(a_attached_object.at(i) != this){a_attached_object[i]->calculate_transformation();}}};
+        void __calculate_transformation_attached_objects() {for(int i = 0;i<static_cast<int>(a_attached_object.size());i++) {if(a_attached_object.at(i).lock().get() != this && a_attached_object.at(i).lock().get() != 0){a_attached_object.at(i).lock().get()->calculate_transformation();}}};
         virtual void calculate_transformation(bool force = false, bool with_children = true) {__calculate_transformation_attached_objects();};
 
         // Getters
@@ -594,6 +595,7 @@ namespace scls {
         int x_in_pixel() {if(a_transformation_updated)calculate_transformation();return a_transformation.get()->x_in_pixel();};
         // Returns the y of the object in absolute pixel plan
         inline int y_in_absolute_pixel() {if(a_transformation_updated)calculate_transformation();return a_transformation.get()->y_in_absolute_pixel();};
+        inline int y_from_top_in_absolute_pixel() {if(a_transformation_updated)calculate_transformation();return a_transformation.get()->y_from_top_in_absolute_pixel();};
         // Returns the y of the object in pixel plan
         int y_in_pixel() {if(a_transformation_updated)calculate_transformation();return a_transformation.get()->y_in_pixel();};
         // Setters
@@ -683,23 +685,9 @@ namespace scls {
         };
 
         // Attach the object
-        inline bool __contains_attached_object(__GUI_Object_Core* another_object) {for(int i = 0;i<static_cast<int>(a_attached_object.size());i++){if(a_attached_object[i]==another_object)return true;} return false;};
-        inline void __delete_attached_object(__GUI_Object_Core* another_object) {for(int i = 0;i<static_cast<int>(a_attached_object.size());i++){if(a_attached_object[i]==another_object){a_attached_object.erase(a_attached_object.begin()+i);return;}}};
-        inline void __attach_object_in_parent(std::weak_ptr<__GUI_Object_Core> another_object, bool is_vertical = true){
-            if(is_vertical) {
-                if(a_transform_attachment.attached_object_vertical.lock().get() != 0) {
-                    a_transform_attachment.attached_object_vertical.lock().get()->__delete_attached_object(this);
-                }
-                a_transform_attachment.attached_object_vertical = another_object;
-            }
-            else {
-                if(a_transform_attachment.attached_object_horizontal != 0) {
-                    a_transform_attachment.attached_object_horizontal->__delete_attached_object(this);
-                }
-                a_transform_attachment.attached_object_horizontal = another_object.lock().get();
-            }
-            if(another_object.lock().get() != 0 && !another_object.lock().get()->__contains_attached_object(this)){another_object.lock().get()->a_attached_object.push_back(this);}
-        };
+        inline bool __contains_attached_object(__GUI_Object_Core* another_object) {for(int i = 0;i<static_cast<int>(a_attached_object.size());i++){if(a_attached_object.at(i).lock().get()==another_object)return true;} return false;};
+        inline void __delete_attached_object(__GUI_Object_Core* another_object) {for(int i = 0;i<static_cast<int>(a_attached_object.size());i++){if(a_attached_object.at(i).lock().get()==another_object){a_attached_object.erase(a_attached_object.begin()+i);return;}}};
+        void __attach_object_in_parent(std::weak_ptr<__GUI_Object_Core> another_object, bool is_vertical = true);
         // Attach the object at the bottom of its parent
         inline void attach_bottom_in_parent(Fraction offset = Fraction(0)) {__move_bottom_in_parent(offset.to_double());a_transformation_updated = true;a_transform_attachment.attachment_vertical_offset = offset;a_transform_attachment.attachment_vertical_type = 2;};
         // Attach the object bottom of another in the parent
@@ -808,6 +796,8 @@ namespace scls {
         //
         //*********
 
+        // Weak_ptr to this object
+        virtual std::weak_ptr<scls::__GUI_Object_Core> this_object_core(){return std::weak_ptr<scls::__GUI_Object_Core>();};
         // If the adapted scale is updated or not
         bool a_transformation_updated = true;
 
@@ -835,7 +825,7 @@ namespace scls {
             char attachment_vertical_type = 0;
         } a_transform_attachment;
         // Each object attached to this one
-        std::vector<__GUI_Object_Core*> a_attached_object = std::vector<__GUI_Object_Core*>();
+        std::vector<std::weak_ptr<__GUI_Object_Core>> a_attached_object = std::vector<std::weak_ptr<__GUI_Object_Core>>();
 
         //*********
         //
