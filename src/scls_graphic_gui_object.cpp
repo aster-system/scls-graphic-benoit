@@ -1187,12 +1187,10 @@ namespace scls {
                 a_blocks_children[i].get()->object()->set_x_in_pixel(a_blocks_children[i].get()->word_datas()->x_position());
 
                 // Place the Y
-                if(texture_alignment_vertical() == scls::Alignment_Vertical::V_Top){
-                    int needed_y = height_in_pixel() - ((total_height + a_blocks_children[i].get()->height()) - a_offset_y);
-                    a_blocks_children[i].get()->object()->set_y_in_pixel(needed_y + a_blocks_children[i].get()->style().margin_top());
-                }
-                else{a_blocks_children[i].get()->object()->set_y_in_object_scale(scls::Fraction(1, 2));}
-                total_height += a_blocks_children[i].get()->height();
+                int current_offset_y = 0;
+                if(texture_alignment_vertical() == Alignment_Vertical::V_Center){int total_height = attached_text_image()->total_height();current_offset_y = height_in_pixel() / 2 - total_height / 2;}
+                int needed_y = height_in_pixel() - (current_offset_y + a_blocks_children[i].get()->height() + a_blocks_children[i].get()->word_datas()->y_position() + a_offset_y);
+                a_blocks_children[i].get()->object()->set_y_in_pixel(needed_y + a_blocks_children[i].get()->style().margin_top());
             }
         }
 
