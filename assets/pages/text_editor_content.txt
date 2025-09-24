@@ -4,4 +4,6 @@
 	<width value=1 type=scale>
 	<x value=0>
 	<y value=0>
+
+	<content src="test.txt"></content>
 </gui_object>

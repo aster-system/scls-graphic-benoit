@@ -136,8 +136,7 @@ namespace scls {
         // Create a new 2D page to the Window and return it
         template <typename _P> std::shared_ptr<_P> new_page_2d(std::string page_name);
         // Create a new 3D page to the Window and return it
-        template <typename _P>
-        std::shared_ptr<_P>* new_page_3d(std::string page_name);
+        template <typename _P> std::shared_ptr<_P>* new_page_3d(std::string page_name);
 
         // If the window should render during this frame
         bool should_render_during_this_frame();
@@ -153,6 +152,8 @@ namespace scls {
         inline void display_page_3d(std::string new_page_3d) {if(new_page_3d != "" && !contains_page_3d(new_page_3d)){scls::print("Warning", "SCLS Window", "The \"" + new_page_3d + "\" 3D page you want to display does not exists.");}else if(!contains_displayed_page_3d(new_page_3d)){displayed_pages_3d_names().push_back(new_page_3d);}};
         virtual void hide_all_pages_2d() {for(int i = 0;i<static_cast<int>(displayed_pages_2d_names().size());i++) {pages_2d()[displayed_pages_2d_names()[i]].get()->after_hiding();} displayed_pages_2d_names().clear();a_displayed_pages_2d_modified_during_this_frame=true;};
         inline std::shared_ptr<Object>* page_2d(std::string page_name) {if(contains_page_2d(page_name)){return &pages_2d()[page_name];}scls::print("Warning", "SCLS Window", "The \"" + page_name + "\" page you want to get does not exists.");return 0;};
+        inline Object* page_3d_by_name(std::string page_name) {return page_3d_by_name_shared_ptr(page_name).get();};
+        inline std::shared_ptr<Object> page_3d_by_name_shared_ptr(std::string page_name) {if(contains_page_3d(page_name)){return pages_3d()[page_name];}scls::print("Warning", "SCLS Window", "The \"" + page_name + "\" 3D page you want to get does not exists.");return std::shared_ptr<Object>();};
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline bool displayed_pages_2d_modified_during_this_frame() const {return a_displayed_pages_2d_modified_during_this_frame;};

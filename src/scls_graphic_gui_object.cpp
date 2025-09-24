@@ -1020,10 +1020,11 @@ namespace scls {
                 unsigned int cursor_position = attached_text_image()->cursor_position_in_full_text();
                 int new_line = count_string(text_to_add, "</br>");
                 for(int i = 0;i<new_line;i++) {
-                    if((attached_text_image()->line_number_at_position(cursor_position) - line_offset()) < static_cast<int>(children().size())) {
+                    /*if((attached_text_image()->line_number_at_position(cursor_position) - line_offset()) < static_cast<int>(children().size())) {
                         children().insert(children().begin() + (attached_text_image()->line_number_at_position(cursor_position) - line_offset()) + 1, 0);
                     }
                     else {children().push_back(0);}
+                    //*/
                 }
 
                 // Update the text
@@ -1046,11 +1047,6 @@ namespace scls {
         temp.get()->object()->set_ignore_click(true);
         return temp;
     }
-    std::shared_ptr<__GUI_Text_Metadatas::__GUI_Text_Block> __GUI_Text_Metadatas::__create_text_block_object(Text_Image_Line* line_to_apply) {
-        std::shared_ptr<__GUI_Text_Metadatas::__GUI_Text_Block> temp = __create_text_block_object();
-        temp.get()->object()->set_ignore_click(true);
-        return temp;
-    }
     std::shared_ptr<__GUI_Text_Metadatas::__GUI_Text_Block> __GUI_Text_Metadatas::__create_text_block_object(Text_Image_Word* word_to_apply) {
         std::shared_ptr<__GUI_Text_Metadatas::__GUI_Text_Block> temp = __create_text_block_object();
         temp.get()->object()->set_ignore_click(true);
@@ -1062,20 +1058,10 @@ namespace scls {
     void __GUI_Text_Metadatas::delete_blocks_children() {for(int i = 0;i<static_cast<int>(a_blocks_children.size());i++){delete_child(a_blocks_children.at(i).get()->object());}a_blocks_children.clear();}
 
     // Updates the texture of the block
-    void __GUI_Text_Metadatas::__GUI_Text_Block::update_texture(Text_Image_Block* block_to_apply, scls::Image_Generation_Type generation_type) {
+    void __GUI_Text_Metadatas::__GUI_Text_Block::update_texture(std::shared_ptr<Text_Image_Block> block_to_apply, scls::Image_Generation_Type generation_type) {
         // Generate the image
-        std::shared_ptr<__Image_Base> image_to_apply = block_to_apply->image_shared_pointer(generation_type);
-
-        // Update the object
-        if(image_to_apply.get() != 0) {
-            object()->set_height_in_pixel(image_to_apply.get()->height());
-            object()->set_width_in_pixel(image_to_apply.get()->width());
-            object()->texture()->set_image(image_to_apply);
-        }
-    }
-    void __GUI_Text_Metadatas::__GUI_Text_Block::update_texture(Text_Image_Line* line_to_apply, scls::Image_Generation_Type generation_type) {
-        // Generate the image
-        std::shared_ptr<__Image_Base> image_to_apply = line_to_apply->image_shared_ptr(generation_type);
+        std::shared_ptr<__Image_Base> image_to_apply = block_to_apply.get()->image_shared_pointer(generation_type);
+        a_block = block_to_apply;
 
         // Update the object
         if(image_to_apply.get() != 0) {
@@ -1107,19 +1093,9 @@ namespace scls {
         // Place the children
         a_blocks_children.push_back(new_block);
     }
-    void __GUI_Text_Metadatas::__generate_text_block_object(Text_Image_Line* line_to_apply, scls::Image_Generation_Type generation_type, unsigned int& total_height) {
+    void __GUI_Text_Metadatas::__generate_text_block_object(std::shared_ptr<Text_Image_Block> block_to_apply, scls::Image_Generation_Type generation_type, unsigned int& total_height) {
         // Generate the object for the line
-        std::shared_ptr<GUI_Text::__GUI_Text_Block> new_block = __create_text_block_object(line_to_apply);
-        new_block.get()->set_style(line_to_apply->global_style());
-        new_block.get()->update_texture(line_to_apply, generation_type);
-
-        // Place the children
-        a_blocks_children.push_back(new_block);
-        total_height += new_block.get()->height();
-    }
-    void __GUI_Text_Metadatas::__generate_text_block_object(Text_Image_Block* block_to_apply, scls::Image_Generation_Type generation_type, unsigned int& total_height) {
-        // Generate the object for the line
-        std::shared_ptr<GUI_Text::__GUI_Text_Block> new_block = __create_text_block_object(block_to_apply);
+        std::shared_ptr<GUI_Text::__GUI_Text_Block> new_block = __create_text_block_object(block_to_apply.get());
         new_block.get()->set_style(block_to_apply->global_style());
         new_block.get()->update_texture(block_to_apply, generation_type);
 
@@ -1161,20 +1137,20 @@ namespace scls {
             current_object = a_blocks_children.at(a_blocks_children.size() - 1).get()->object();
         }
 
-        move_cursor(attached_text_image()->cursor_position_in_plain_text_at_line_and_x(i + line_offset(), position[0] * width_in_pixel()) - cursor_position_in_formatted_text());
+        //move_cursor(attached_text_image()->cursor_position_in_plain_text_at_line_and_x(i + line_offset(), position[0] * width_in_pixel()) - cursor_position_in_formatted_text());
     }
 
     // Moves the cursor in the Y axis
     void __GUI_Text_Metadatas::move_cursor_y(int movement) {
         if(attached_text_image() == 0) return;
 
-        Text_Image_Line* cursor_line = attached_text_image()->cursor_line();
+        /*Text_Image_Line* cursor_line = attached_text_image()->cursor_line();
         if(cursor_line != 0) {
             int cursor_number = (cursor_line->datas().line_number) + movement;
             if(cursor_number < 0) {move_cursor(-cursor_position_in_formatted_text());}
             else if(cursor_number >= static_cast<int>(attached_text_image()->lines().size())) {move_cursor(plain_text_size() - cursor_position_in_formatted_text());}
             else {move_cursor(attached_text_image()->cursor_position_in_plain_text_at_line_and_x(cursor_number, cursor_line->cursor_x()) - cursor_position_in_formatted_text());}
-        }
+        }//*/
     }
 
     // Places the blocks in the text
@@ -1184,12 +1160,12 @@ namespace scls {
         for(int i = 0;i<static_cast<int>(a_blocks_children.size());i++) {
             if(a_blocks_children[i].get() != 0) {
                 // Place the X
-                a_blocks_children[i].get()->object()->set_x_in_pixel(a_blocks_children[i].get()->word_datas()->x_position());
+                a_blocks_children[i].get()->object()->set_x_in_pixel(a_blocks_children[i].get()->x_position());
 
                 // Place the Y
                 int current_offset_y = 0;
                 if(texture_alignment_vertical() == Alignment_Vertical::V_Center){int total_height = attached_text_image()->total_height();current_offset_y = height_in_pixel() / 2 - total_height / 2;}
-                int needed_y = height_in_pixel() - (current_offset_y + a_blocks_children[i].get()->height() + a_blocks_children[i].get()->word_datas()->y_position() + a_offset_y);
+                int needed_y = height_in_pixel() - (current_offset_y + a_blocks_children[i].get()->height() + a_blocks_children[i].get()->y_position() + a_offset_y);
                 a_blocks_children[i].get()->object()->set_y_in_pixel(needed_y + a_blocks_children[i].get()->style().margin_top());
             }
         }
@@ -1206,21 +1182,21 @@ namespace scls {
     void __GUI_Text_Metadatas::remove_text(unsigned int size_to_delete) {
         if(size_to_delete == 0){return;}
 
-        // Preparate the needed datas
+        /*// Preparate the needed datas
         // Remove the text
         unsigned int line_to_delete = attached_text_image()->line_number_at_position(cursor_position_in_unformatted_text());
         unsigned int removed_lines = attached_text_image()->remove_text(size_to_delete);
         // Remove the needed children
         int final_size = static_cast<int>(children().size()) + line_offset();
         if(removed_lines > 0) {for(int i = line_to_delete;i<final_size;i++) { children().erase(children().begin() + line_to_delete);}}
-        update_text_texture();
+        update_text_texture();//*/
     }
 
     // Sets the new position of the cursor
     void __GUI_Text_Metadatas::set_cursor_position_in_formatted_text(unsigned int new_cursor_position_in_formatted_text) {
         if(new_cursor_position_in_formatted_text == cursor_position_in_formatted_text()) return;
 
-        if(attached_text_image() != 0) {
+        /*if(attached_text_image() != 0) {
             Text_Image_Line* line_to_modify = attached_text_image()->line_at_position_in_plain_text(cursor_position_in_formatted_text());
             if(line_to_modify != 0) {
                 line_to_modify->set_modified(true);
@@ -1231,7 +1207,7 @@ namespace scls {
             if(line_to_modify != 0) {
                 line_to_modify->set_modified(true);
             }
-        }
+        }//*/
 
         // Set the position
         attached_text_image()->set_cursor_position_in_plain_text(new_cursor_position_in_formatted_text);
@@ -1381,26 +1357,21 @@ namespace scls {
             int cursor_pos = 0;if(attached_text_image() != 0){cursor_pos = attached_text_image()->cursor_position_in_plain_text();}
             unsigned int total_height = 0;int total_lines = 0;attached_text_image()->generate_words();
             if(attached_text_image() != 0){attached_text_image()->set_cursor_position_in_plain_text(cursor_pos);}
+
+            // Load words
             for(int i = 0;i + block_offset<static_cast<int>(attached_text_image()->words_datas().size());i++) {
                 std::shared_ptr<scls::Text_Image_Word> new_word = attached_text_image()->generate_next_word(i);
-                if(new_word.get() != 0) __generate_text_block_object(new_word, generation_type, total_height);
-
-                /*
-                for(int j = 0;j<static_cast<int>(attached_text_image_block()->blocks().at(i).get()->lines().size());j++) {
-                    // Create the configuration for the line
-                    Text_Image_Line* line_to_apply = attached_text_image_block()->blocks().at(i).get()->lines().at(j);
-                    if(line_to_apply != 0) {__generate_text_block_object(line_to_apply, generation_type, total_height);}
-                    total_lines++;
-                }//*/
+                if(new_word.get() != 0){__generate_text_block_object(new_word, generation_type, total_height);}
             }
 
-            // TEMP. ENABLED
-            // Delete the useless children in more
-            //for(int i = 0;i<static_cast<int>(children().size()) - total_lines;i++) {children().pop_back();}
+            // Load blocks
+            for(int i = 0;i + block_offset<static_cast<int>(attached_text_image()->blocks_datas().size());i++) {
+                std::shared_ptr<scls::Text_Image_Block> new_block = attached_text_image()->generate_next_block(i);
+                if(new_block.get() != 0){__generate_text_block_object(new_block, generation_type, total_height);}
+            }
 
-            // Delete empty children
-            //for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i].get() == 0) {children().erase(children().begin() + i);i--;}}
-
+            // Place the block
+            attached_text_image()->place_datas();
             place_blocks();
             a_generation++;
 
@@ -1933,6 +1904,7 @@ namespace scls {
                     sub_paged = true;
                 }
             }
+
             // Get the content
             std::string final_path = path_parent(loader.window_file_path) + "/" + src;
             if(std::filesystem::exists(final_path)) {

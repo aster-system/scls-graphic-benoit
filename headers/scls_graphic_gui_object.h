@@ -512,18 +512,23 @@ namespace scls {
             // Returns the height of the block
             inline int height()const{return a_object.get()->height_in_pixel() + style().margin_bottom() + style().margin_top();};
             // Updates the texture of the block
-            virtual void update_texture(Text_Image_Block* block_to_apply, scls::Image_Generation_Type generation_type);
-            virtual void update_texture(Text_Image_Line* line_to_apply, scls::Image_Generation_Type generation_type);
+            virtual void update_texture(std::shared_ptr<Text_Image_Block> block_to_apply, scls::Image_Generation_Type generation_type);
             virtual void update_texture(std::shared_ptr<Text_Image_Word> word_to_apply, scls::Image_Generation_Type generation_type);
 
+            // Datas from the block / word
+            int x_position(){if(word_datas() != 0){return word_datas()->x_position();}else if(block_datas() != 0){return block_datas()->x_position();}return 0;};
+            int y_position(){if(word_datas() != 0){return word_datas()->y_position();}else if(block_datas() != 0){return block_datas()->y_position();}return 0;};
+
             // Getters and setters
+            inline Block_Datas* block_datas() const {if(a_block.get() == 0){return 0;}return a_block.get()->datas();};
             inline GUI_Object* object()const{return a_object.get();};
             inline void set_style(Text_Style new_style) {a_style = new_style;};
             inline Text_Style style() const {return a_style;};
-            inline Word_Datas* word_datas(){return a_word.get()->datas();};
+            inline Word_Datas* word_datas(){if(a_word.get() == 0){return 0;}return a_word.get()->datas();};
 
         private:
-            // Word in the object
+            // Blocl / word in the object
+            std::shared_ptr<Text_Image_Block> a_block;
             std::shared_ptr<Text_Image_Word> a_word;
 
             // Lines in the block object
@@ -562,15 +567,13 @@ namespace scls {
         // Creates a text block from a block of text
         template <typename S = __GUI_Text_Metadatas::__GUI_Text_Block, typename T = GUI_Object> std::shared_ptr<__GUI_Text_Metadatas::__GUI_Text_Block> __create_text_block_object() {return std::make_shared<S>(*new_object<T>(__create_text_block_object_name()));};
         virtual std::shared_ptr<__GUI_Text_Metadatas::__GUI_Text_Block> __create_text_block_object(Text_Image_Block* block_to_apply);
-        virtual std::shared_ptr<__GUI_Text_Metadatas::__GUI_Text_Block> __create_text_block_object(Text_Image_Line* line_to_apply);
         virtual std::shared_ptr<__GUI_Text_Metadatas::__GUI_Text_Block> __create_text_block_object(Text_Image_Word* word_to_apply);
         std::string __create_text_block_object_name();
         // Deletes the blocks children
         void delete_blocks_children();
         // Generates a text block from a block of text
         virtual void __generate_text_block_object(std::shared_ptr<Text_Image_Word> block_to_apply, scls::Image_Generation_Type generation_type, unsigned int& total_height);
-        virtual void __generate_text_block_object(Text_Image_Line* block_to_apply, scls::Image_Generation_Type generation_type, unsigned int& total_height);
-        virtual void __generate_text_block_object(Text_Image_Block* block_to_apply, scls::Image_Generation_Type generation_type, unsigned int& total_height);
+        virtual void __generate_text_block_object(std::shared_ptr<Text_Image_Block> block_to_apply, scls::Image_Generation_Type generation_type, unsigned int& total_height);
         // Merges the current object with a specific style
         virtual void merge_style(GUI_Style* new_style);
         // Places the blocks in the text

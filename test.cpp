@@ -20,19 +20,9 @@ SCLS_INIT
 
 // Main function in the program
 int main(int argc, char* argv[]) {
-    // Exemple
-    std::string redaction = std::string();
-    scls::Formula test = scls::string_to_formula("sqrt(3x*x + 2x)");
-    test.set_redaction(&redaction);
-    test *= scls::string_to_formula("sqrt(3x*x + x)");
-    test *= scls::string_to_formula("sqrt(9x*x*x*x + 6*x*x*x + 3x*x*x + 2x*x)");
-    std::cout << redaction << std::endl << test.to_std_string(0) << std::endl;
-
-    /*// Create a test window
+    // Create a test window
     std::shared_ptr<scls::Window> window = std::make_shared<scls::Window>(800, 800, argv[0]);
-    std::shared_ptr<scls::GUI_Page> page = *window.get()->new_page_2d<scls::GUI_Page>("gui");
-    page.get()->load_from_xml(std::string("assets/choice.txt"), false); page.get()->after_xml_loading();
-    window.get()->display_page_2d("gui");
+    window.get()->load_from_xml("assets/window.txt");
 
     // Main loop
     while(window.get()->run()) {

@@ -256,7 +256,7 @@ namespace scls {
 
     // Render the scene
     std::vector<std::shared_ptr<Object>> to_display;
-    void Window::render(){if(should_render_during_this_frame()){__render();}else{render_always();}};
+    void Window::render(){if(should_render_during_this_frame() || a_displayed_pages_3d.size() > 0){__render();}else{render_always();}};
     void Window::render_always(){
         // Update the cursor texture
         if(cursor_changed() && cursor() != 0) {glfwSetCursor(window(), cursor());}
@@ -539,18 +539,9 @@ namespace scls {
                 for(int j = 0;j<static_cast<int>(cutted[i].get()->xml_balise_attributes().size());j++) {
                     std::string current_attribute_name = cutted[i].get()->xml_balise_attributes()[j].name;
                     std::string current_attribute_value = cutted[i].get()->xml_balise_attributes()[j].value;
-                    if(current_attribute_name == "name") {
-                        // Get the name of the object
-                        page_name = current_attribute_value;
-                    }
-                    else if(current_attribute_name == "type") {
-                        // Get the type of the object
-                        page_type = current_attribute_value;
-                    }
-                    else if(current_attribute_name == "display" || current_attribute_name == "displayed") {
-                        // Display the page
-                        display_page = true;
-                    }
+                    if(current_attribute_name == "name") {page_name = current_attribute_value;}
+                    else if(current_attribute_name == "type") {page_type = current_attribute_value;}
+                    else if(current_attribute_name == "display" || current_attribute_name == "displayed") {display_page = true;}
                 }
 
                 // Add the page
