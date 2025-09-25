@@ -1368,6 +1368,7 @@ namespace scls {
             for(int i = 0;i + block_offset<static_cast<int>(attached_text_image()->blocks_datas().size());i++) {
                 std::shared_ptr<scls::Text_Image_Block> new_block = attached_text_image()->generate_next_block(i);
                 if(new_block.get() != 0){__generate_text_block_object(new_block, generation_type, total_height);}
+                if(total_height > height_in_pixel() * 2){break;}
             }
 
             // Place the block
