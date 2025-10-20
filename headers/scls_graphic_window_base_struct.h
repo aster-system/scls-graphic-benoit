@@ -411,7 +411,7 @@ namespace scls {
 
         private:
             // Attached variable
-            struct __Variable {std::string content = std::string();std::string name = std::string();};
+            struct __Variable {__Variable(std::string c, std::string n):content(c),name(n){};__Variable(){};std::string content = std::string();std::string name = std::string();};
             std::shared_ptr<__Variable> a_variable;
         };
 

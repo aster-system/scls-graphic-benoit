@@ -273,6 +273,7 @@ namespace scls {
         inline bool should_render_during_this_frame() const {return a_rendered_during_this_frame;};
         inline std::vector<std::shared_ptr<GUI_Object>>& sub_pages() {if(a_sub_page.size() <= 0){a_sub_page.push_back(std::vector<std::shared_ptr<GUI_Object>>());}return a_sub_page[0];};
         inline Texture* texture() {if(a_should_update_texture){update_texture();}return a_texture.get();};
+        inline Texture* texture_direct() const {return a_texture.get();};
         inline Alignment_Texture texture_alignment() const {return a_texture_alignment;};
         inline Alignment_Horizontal texture_alignment_horizontal() const {return a_texture_alignment_horizontal;};
         inline Alignment_Vertical texture_alignment_vertical() const {return a_texture_alignment_vertical;};

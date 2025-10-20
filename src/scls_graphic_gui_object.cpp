@@ -1345,7 +1345,7 @@ namespace scls {
 
     // Update the texture of the text
     void __GUI_Text_Metadatas::update_text_texture(scls::Image_Generation_Type generation_type) {
-        if(text() != "") {
+        if(text() != std::string()) {
             // Update the text
             update_text_image_block_style();
 
@@ -1377,7 +1377,7 @@ namespace scls {
             a_generation++;
 
         }
-        else {delete_blocks_children();texture()->set_image(0);}
+        else {delete_blocks_children();texture_direct()->set_image(0);}
         set_should_render_during_this_frame(true);
     }
 
