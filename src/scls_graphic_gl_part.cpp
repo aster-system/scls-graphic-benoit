@@ -1094,13 +1094,8 @@ namespace scls {
     // Render the VAO
     void VAO::render(glm::vec3 scale) {
         bind(scale);
-        if (get_vbo()->is_using_ebo()) // Render the VAO with a different function if the VBO use EBOs or not
-        {
-            glDrawElements(GL_TRIANGLES, get_vbo()->get_indices().size(), GL_UNSIGNED_INT, 0);
-        }
-        else {
-            glDrawArrays(GL_TRIANGLES, 0, triangle_number() * 3.0);
-        }
+        if (get_vbo()->is_using_ebo()){glDrawElements(GL_TRIANGLES, get_vbo()->get_indices().size(), GL_UNSIGNED_INT, 0);}
+        else {glDrawArrays(GL_TRIANGLES, 0, triangle_number() * 3.0);}
     }
 
     // Returns the number of triangle to draw

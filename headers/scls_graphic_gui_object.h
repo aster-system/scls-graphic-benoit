@@ -139,6 +139,7 @@ namespace scls {
         virtual void update_texture();
 
         // Getters and setters (ONLY WITH ATRIBUTES)
+        inline bool absolute_visible() {return a_visible && (parent() == 0 || parent()->absolute_visible());};
         inline Color background_color() {return current_style()->a_background_color;};
         inline Color border_color() {return current_style()->border_color();};
         inline glm::vec4 border_width_in_pixel(){return glm::vec4(current_style()->global_text_style.border_top_width(), current_style()->global_text_style.border_left_width(), current_style()->global_text_style.border_bottom_width(), current_style()->global_text_style.border_right_width());};
@@ -684,7 +685,7 @@ namespace scls {
         //*********
 
         // Most basic GUI_Object constructor
-        GUI_Text_Base(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent):__GUI_Text_Metadatas(window, name, parent){a_text_image.reset(window_struct().text_image_generator()->new_text_image_block<Text>(""));};
+        GUI_Text_Base(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent):__GUI_Text_Metadatas(window, name, parent){a_text_image = window_struct().text_image_generator()->new_text_image_block_shared_ptr<Text>("");};
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         virtual Text_Image_Block* attached_text_image() const {return a_text_image.get();};
@@ -713,7 +714,7 @@ namespace scls {
         //*********
 
         // Most basic GUI_Text_Input_Base constructor
-        GUI_Text_Input_Base(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent):__GUI_Text_Metadatas(window, name, parent) {a_text_image.reset(window_struct().text_image_generator()->new_text_image_block<Text>(""));a_text_image.get()->set_use_cursor(true);};
+        GUI_Text_Input_Base(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent):__GUI_Text_Metadatas(window, name, parent) {a_text_image = window_struct().text_image_generator()->new_text_image_block_shared_ptr<Text>("");a_text_image.get()->set_use_cursor(true);};
 
         // Soft reset the input
         virtual void soft_reset() {__GUI_Text_Metadatas::soft_reset();a_input_during_this_frame = false;};

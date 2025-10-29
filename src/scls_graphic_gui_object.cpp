@@ -102,9 +102,7 @@ namespace scls {
         for(int i = 0;i<static_cast<int>(children().size());i++) { if(children()[i].get() == object) { children().erase(children().begin() + i); return true; } }
 
         // Check if the child is the child of a child
-        for(int i = 0;i<static_cast<int>(children().size());i++) {
-            if(children()[i].get()->delete_child(object)) return true;
-        }
+        for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i].get()->delete_child(object)){return true;}}
         return false;
     }
 
@@ -148,13 +146,14 @@ namespace scls {
         vao()->get_shader_program()->set_uniform4f_value("texture_rect", needed_texture_rect);
 
         // Handle the texture and the VAO
-        if(texture() == 0){vao()->get_shader_program()->set_uniformb_value("texture_binded", false);}
+        if(texture() == 0 || texture()->image_shared_ptr().get() == 0){vao()->get_shader_program()->set_uniformb_value("texture_binded", false);}
         else{texture()->bind();vao()->get_shader_program()->set_uniformb_value("texture_binded", true);}
         vao()->get_shader_program()->set_uniform4fv_value("model", matrix);
         vao()->get_shader_program()->set_uniform4f_value("object_rect", glm::vec4(0, 0, width_in_pixel(), height_in_pixel()));
         vao()->get_shader_program()->set_uniform2f_value("scale", texture_scale_x(), texture_scale_y());
         vao()->render();
         set_should_render_during_this_frame(false);
+
 
         // Debug mode
         if(window_struct().debug_mode() >> 1){print(std::string("SCLS GUI Object \"") + name() + std::string("\""), std::string("Successful rendering."));}
@@ -1327,7 +1326,7 @@ namespace scls {
 
     // Updates text image block
     void __GUI_Text_Metadatas::update_text_image(){String temp=text();attached_text_image()->free_memory();set_text(temp);set_should_update_texture(true);};
-    void __GUI_Text_Metadatas::update_text_image_block_style(){attached_text_image()->global_style().merge_style(a_global_style);set_should_update_texture(true);};
+    void __GUI_Text_Metadatas::update_text_image_block_style(){attached_text_image()->global_style().merge_style(a_global_style);attached_text_image()->global_style().set_fixed_width(width_in_pixel());set_should_update_texture(true);};
 
     // Updates the event
     void __GUI_Text_Metadatas::update_event(){
