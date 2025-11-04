@@ -1322,6 +1322,9 @@ namespace scls {
         Text_Image_Word* needed_word = needed_line->word_at_position_in_pixel(x, y).get();
         if(needed_word == 0){return std::shared_ptr<__XML_Text_Base>();}
         return needed_word->datas()->balise_parent();//*/
+
+        // TEMP
+        return std::shared_ptr<__XML_Text_Base>();
     }
 
     // Updates text image block
