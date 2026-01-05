@@ -31,6 +31,7 @@ namespace scls {
 
     // Possibles alignment of a texture
     enum Alignment_Texture {
+        T_Direct,
         T_Fill,
         T_Fit,
         T_Fit_Horizontally,

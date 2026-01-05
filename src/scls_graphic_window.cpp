@@ -254,6 +254,14 @@ namespace scls {
     //
     //*********
 
+    // Clears the window
+    void Window::clear_window() {
+        // Clear OpenGL window
+        glClearColor(background_color().red() / 255.0, background_color().green() / 255.0, background_color().blue() / 255.0, background_color().alpha() / 255.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        a_cleared = true;
+    }
+
     // Render the scene
     std::vector<std::shared_ptr<Object>> to_display;
     void Window::render(){if(should_render_during_this_frame() || a_displayed_pages_3d.size() > 0){__render();}else{render_always();}};
@@ -283,9 +291,8 @@ namespace scls {
         a_displayed_pages_2d_modified_during_this_frame = false;
     };
     void Window::__render() {
-        // Clear OpenGL window
-        glClearColor(background_color().red() / 255.0, background_color().green() / 255.0, background_color().blue() / 255.0, background_color().alpha() / 255.0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        // Clear the window
+        if(!a_cleared){clear_window();};
 
         // Debug mode
         if(debug_mode() & 1){scls::print(std::string("SCLS GUI Window"), std::string("Start rendering 3D pages..."));}
@@ -314,7 +321,7 @@ namespace scls {
 
         // Update OpenGL
         a_should_render_during_this_frame = false;
-        glfwSwapBuffers(window());
+        glfwSwapBuffers(window());a_cleared = false;
         render_always();
     }
 

@@ -116,12 +116,13 @@ namespace scls {
         std::shared_ptr<O>* new_object(std::string name, unsigned int x, unsigned int y);
         // Render the object
         virtual void render(bool render_children, glm::vec3 scale_multiplier);
-        // Sets an object in the last place of the hierarchy
+        // Sets an object in the first / last place of the hierarchy
+        void set_first_in_hierarchy(std::shared_ptr<GUI_Object> object){delete_child(object.get());a_children.push_back(object);};
         void set_last_in_hierarchy(std::shared_ptr<GUI_Object> object){delete_child(object.get());a_children.insert(a_children.begin(), object);};
 
         // Hierarchy functions
         // Function called after the creation of the object
-        virtual void after_creation(){};
+        virtual void after_creation();
         // Function called after that the window is resized
         virtual void after_resizing_window_early(){a_transformation_updated=true;};
         void __after_resizing_window_early_children(){after_resizing_window_early();for(int i = 0;i<static_cast<int>(a_children.size());i++){a_children[i].get()->__after_resizing_window_early_children();}};
@@ -227,6 +228,8 @@ namespace scls {
         //
         //*********
 
+        // Returns the rect of the direct texture
+        glm::vec4 direct_texture_rect();
         // Returns the rect of the fitted texture
         glm::vec4 fitted_texture_rect();
         // Returns the rect of the horizontally fitted texture
@@ -236,17 +239,7 @@ namespace scls {
         // Returns the height of the texture in scale of the object
         inline Fraction texture_height_in_scale() { return Fraction(image()->height(), height_in_pixel()); };
         // Returns the rect of the texture
-        inline glm::vec4 texture_rect() {
-            glm::vec4 final_texture_rect = glm::vec4(1);
-            if(texture()->get_image() != 0) {
-                if(texture_alignment() == Alignment_Texture::T_User_Defined) final_texture_rect = user_defined_texture_rect();
-                else if(texture_alignment() == Alignment_Texture::T_Fit) final_texture_rect = fitted_texture_rect();
-                else if(texture_alignment() == Alignment_Texture::T_Fit_Horizontally) final_texture_rect = fitted_horizontally_texture_rect();
-                else if(texture_alignment() == Alignment_Texture::T_Fit_Vertically) final_texture_rect = fitted_vertically_texture_rect();
-                else if(texture_alignment() == Alignment_Texture::T_Fill) final_texture_rect = glm::vec4(0, 0, 1, 1);
-            }
-            return final_texture_rect;
-        };
+        glm::vec4 texture_rect();
         // Returns the width of the texture in scale of the object
         inline Fraction texture_width_in_scale() {return Fraction(image()->width(), width_in_pixel()); };
         // Returns the rect of user defined texture
@@ -259,17 +252,20 @@ namespace scls {
         inline bool resize_texture() {return texture()->use_resize();};
         inline void set_should_render_during_this_frame(bool new_should_render) {if(!a_rendered_during_this_frame && new_should_render && parent() != 0){parent()->set_should_render_during_this_frame(true);}a_rendered_during_this_frame = new_should_render;};
         inline void set_texture(std::shared_ptr<__Image_Base> new_texture, bool remove_last_texture = true) {std::shared_ptr<Texture> needed_texture = std::make_shared<Texture>();needed_texture.get()->set_image(new_texture);set_texture(needed_texture, remove_last_texture);};
-        inline void set_texture(std::shared_ptr<Texture> new_texture, bool remove_last_texture = true) {if(remove_last_texture) {window_struct().remove_texture(texture());}a_texture = new_texture;};
+        inline void set_texture(std::shared_ptr<Texture> new_texture, bool remove_last_texture = true) {if(remove_last_texture) {window_struct().remove_texture(texture());}a_texture = new_texture;set_should_render_during_this_frame(true);};
         inline void set_texture(std::string texture_name, bool remove_last_texture = true) {
             std::shared_ptr<Texture>* new_texture = window_struct().texture_shared_ptr(texture_name);
             if(new_texture != 0) set_texture(*new_texture, remove_last_texture);
-            else print("Warning", "SCLS GUI Object \"" + name() + "\"", "The texture \"" + texture_name + "\" you want to set as the object texture does not exist.");
+            else{print("Warning", "SCLS GUI Object \"" + name() + "\"", "The texture \"" + texture_name + "\" you want to set as the object texture does not exist.");}
         };
+        inline void set_texture() {a_texture.reset();set_should_render_during_this_frame(true);};
         inline void set_texture_alignment(Alignment_Texture new_texture_alignment) {a_texture_alignment = new_texture_alignment;};
         virtual void set_texture_alignment_horizontal(Alignment_Horizontal new_texture_alignment_horizontal) {a_texture_alignment_horizontal = new_texture_alignment_horizontal;};
         virtual void set_texture_alignment_vertical(Alignment_Vertical new_texture_alignment_vertical) {a_texture_alignment_vertical = new_texture_alignment_vertical;};
         inline void set_texture_scale_x(double new_texture_scale_x) {a_texture_scale_x = new_texture_scale_x;};
         inline void set_texture_scale_y(double new_texture_scale_y) {a_texture_scale_y = new_texture_scale_y;};
+        inline void set_user_defined_texture_x_in_scale(double new_user_defined_texture_x_in_scale){a_user_defined_texture_x_in_scale = new_user_defined_texture_x_in_scale;};
+        inline void set_user_defined_texture_y_in_scale(double new_user_defined_texture_y_in_scale){a_user_defined_texture_y_in_scale = new_user_defined_texture_y_in_scale;};
         inline void set_vao(std::shared_ptr<VAO> new_vao){a_vao = new_vao;};
         inline bool should_render_during_this_frame() const {return a_rendered_during_this_frame;};
         inline std::vector<std::shared_ptr<GUI_Object>>& sub_pages() {if(a_sub_page.size() <= 0){a_sub_page.push_back(std::vector<std::shared_ptr<GUI_Object>>());}return a_sub_page[0];};
@@ -280,8 +276,9 @@ namespace scls {
         inline Alignment_Vertical texture_alignment_vertical() const {return a_texture_alignment_vertical;};
         inline double texture_scale_x() const {return a_texture_scale_x;};
         inline double texture_scale_y() const {return a_texture_scale_y;};
-        inline bool texture_fill_object() const {return a_texture_fill_object;};
         inline std::shared_ptr<Texture> texture_shared_ptr() {if(a_should_update_texture){update_texture();}return a_texture;};
+        inline double user_defined_texture_x_in_scale() const {return a_user_defined_texture_x_in_scale;};
+        inline double user_defined_texture_y_in_scale() const {return a_user_defined_texture_y_in_scale;};
         inline VAO* vao() const {return a_vao.get();};
 
     protected:
@@ -381,8 +378,9 @@ namespace scls {
         Alignment_Vertical a_texture_alignment_vertical = Alignment_Vertical::V_Center;
         // Scales of the texture
         double a_texture_scale_x = 1;double a_texture_scale_y = 1;
-        // If the texture fill the object or not
-        bool a_texture_fill_object = false;
+        // Scales of the texture
+        double a_user_defined_texture_x_in_scale = 0;
+        double a_user_defined_texture_y_in_scale = 0;
         // VAO of this object (GUI)
         std::shared_ptr<VAO> a_vao = 0;
     };
@@ -650,6 +648,10 @@ namespace scls {
         inline void set_use_cursor(bool new_use_cursor) {attached_text_image()->set_use_cursor(new_use_cursor);};
         inline bool use_cursor() const {return attached_text_image()->use_cursor();};
 
+    protected:
+         // Cursor for the object
+        void create_cursor();
+
     private:
 
         //*********
@@ -672,6 +674,9 @@ namespace scls {
         Block_Type a_text_image_type = Block_Type::BT_Always_Free_Memory;
         // If the text has been modified during this frame
         bool a_text_modified_during_this_frame = false;
+
+        // Cursor for the object
+        std::shared_ptr<GUI_Object> a_cursor;
     };
 
     template <typename Text = Text_Image_Block> class GUI_Text_Base : public __GUI_Text_Metadatas {
@@ -716,6 +721,9 @@ namespace scls {
         // Most basic GUI_Text_Input_Base constructor
         GUI_Text_Input_Base(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent):__GUI_Text_Metadatas(window, name, parent) {a_text_image = window_struct().text_image_generator()->new_text_image_block_shared_ptr<Text>("");a_text_image.get()->set_use_cursor(true);};
 
+        // Hierarchy functions
+        // Function called after the creation of the object
+        virtual void after_creation(){__GUI_Text_Metadatas::after_creation();create_cursor();};
         // Soft reset the input
         virtual void soft_reset() {__GUI_Text_Metadatas::soft_reset();a_input_during_this_frame = false;};
 
@@ -1035,19 +1043,9 @@ namespace scls {
         //*********
 
         // Set the good displayer object
-        template <typename T = GUI_Text> void set_displayer_object(std::string object_name, std::string object_text) {
-            // Create the object
-            std::shared_ptr<T>* current_object = scroller_children()->new_object<T>(object_name);
-            current_object->get()->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
-            current_object->get()->set_x_in_object_scale(scls::Fraction(1, 2));
-            current_object->get()->set_height_in_pixel(current_object->get()->font_size() + 4);
-            current_object->get()->set_width_in_scale(1);
-            a_displayer_object = *current_object;
-
-            // Apply the needed style
-            current_object->get()->set_overflighted_cursor(a_unselected_objects_style.cursor);
-            current_object->get()->set_text(object_text);
-        };
+        template <typename T = GUI_Text> std::shared_ptr<__GUI_Text_Metadatas> __create_displayer_object(std::string object_name) {std::shared_ptr<T>* current_object = scroller_children()->new_object<T>(object_name);return *current_object;};
+        void __set_displayer_object(std::shared_ptr<__GUI_Text_Metadatas> object, std::string object_text);
+        template <typename T = GUI_Text> void set_displayer_object(std::string object_name, std::string object_text) {__set_displayer_object(__create_displayer_object<T>(object_name), object_text);};
 
         // If the object is displayed or not
         bool a_displayed = true;
@@ -1247,24 +1245,30 @@ namespace scls {
 
     // Add a child object to the object
     template<typename O> std::shared_ptr<O>* GUI_Object::new_object(std::string name){return new_object<O>(name, 0, 0);}
-    template<typename O> std::shared_ptr<O>* GUI_Object::new_object(std::string name, unsigned int x, unsigned int y) {
+    template<typename O> std::shared_ptr<O>* GUI_Object::new_object(std::string object_name, unsigned int x, unsigned int y) {
+        // Possible problem to print
+        if(a_this_object.lock().get() == 0){scls::print("Warning", std::string("SCLS Graphic"), std::string("The object \"") + name() + std::string("\" where you want to create an object \"") + object_name + std::string("\" is not fully configurated yet."));}
+
         // Create the child
         std::shared_ptr<O> new_ptr;
         std::shared_ptr<O>* to_return = 0;
         if(a_created_objects_parent.get() == 0) {
              children().push_back(new_ptr);
+             new_ptr = std::make_shared<O>(window_struct(), object_name, std::shared_ptr<GUI_Object>());
              to_return = reinterpret_cast<std::shared_ptr<O>*>(&children()[children().size() - 1]);
-             *to_return = std::make_shared<O>(window_struct(), name, a_this_object);
+             *to_return = new_ptr;
         }
         else {
             a_created_objects_parent.get()->children().push_back(new_ptr);
+            new_ptr = std::make_shared<O>(window_struct(), object_name, std::shared_ptr<GUI_Object>());
             to_return = reinterpret_cast<std::shared_ptr<O>*>(&a_created_objects_parent.get()->children()[a_created_objects_parent.get()->children().size() - 1]);
-            *to_return = std::make_shared<O>(window_struct(), name, a_created_objects_parent);
+            *to_return = new_ptr;
         }
 
         // Configurate the child
         O* new_object = to_return->get();
         new_object->a_this_object = *to_return;
+        if(a_created_objects_parent.get() == 0){new_object->set_parent(a_this_object);}else{new_object->set_parent(a_created_objects_parent);}
         new_object->set_position_in_pixel(x, y);
         new_object->after_creation();
 

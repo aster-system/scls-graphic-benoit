@@ -26,6 +26,7 @@ namespace scls {
         // Create the base shaders
         Shader_Program shader_to_add = Shader_Program(); add_shader_program("default", shader_to_add);
         a_shaders_programs["gui_default"] = Shader_Program(Shader_Program::HUD_Default);
+        a_shaders_programs["gui_simplified"] = Shader_Program(Shader_Program::GUI_Simplified);
         a_shaders_programs["curved"] = Shader_Program(Shader_Program::Curved);
 
         // Create a base texture
@@ -42,6 +43,8 @@ namespace scls {
         std::shared_ptr<VBO> gui_vbo = std::make_shared<VBO>(gui_attributes, VBO::gui_vbo(gui_attributes), false); add_vbo("gui_default", gui_vbo);
         vaos()["gui_default"] = std::make_shared<VAO>(a_shaders_programs["gui_default"], gui_vbo);
         vaos()["gui_default"].get()->load_vao();
+        vaos()["gui_simplified"] = std::make_shared<VAO>(a_shaders_programs["gui_simplified"], gui_vbo);
+        vaos()["gui_simplified"].get()->load_vao();
         // Cube VAO
         //std::shared_ptr<VBO> cube_vbo = std::make_shared<VBO>(object_3d_attributes, VBO::cube_vbo(), false); add_vbo("cube", cube_vbo);
         //vaos()["cube"] = std::make_shared<VAO>(a_shaders_programs["default"], object_3d_attributes, cube_vbo);

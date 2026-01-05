@@ -94,7 +94,11 @@ namespace scls {
     GUI_Object::GUI_Object(_Window_Advanced_Struct& window, std::string name, std::weak_ptr<GUI_Object> parent) : __GUI_Object_Core(window, name, parent.lock().get()), a_parent(parent) {
         a_texture = (*window.new_texture_shared_ptr(name, 1, 1, Color(255, 255, 255, 0)));
         a_vao = (*window.vao_shared_ptr("gui_default"));
+        //a_vao = (*window.vao_shared_ptr("gui_simplified"));
     }
+
+    // Function called after the creation of the object
+    void GUI_Object::after_creation(){}
 
     // Deletes a child of the object and returns if the child has been correctly deleted
     bool GUI_Object::delete_child(GUI_Object* object) {
@@ -102,7 +106,7 @@ namespace scls {
         for(int i = 0;i<static_cast<int>(children().size());i++) { if(children()[i].get() == object) { children().erase(children().begin() + i); return true; } }
 
         // Check if the child is the child of a child
-        for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i].get()->delete_child(object)){return true;}}
+        for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i].get() != 0 && children()[i].get()->delete_child(object)){return true;}}
         return false;
     }
 
@@ -114,12 +118,29 @@ namespace scls {
         // Asserts
         if(y_in_absolute_pixel() > window_struct().window_height() || y_in_absolute_pixel() + height_in_pixel() < 0){return;}
 
+        // Pre-rendering
         if(a_transformation_updated){calculate_transformation(true);}
         if(a_should_update_texture){update_texture();}
 
-        // Handle the extremum
-        if(use_extremums()){if(!apply_extremum(vao())){return;}}
-        else{vao()->get_shader_program()->set_uniform4f_value("object_extremum", glm::vec4(0, 0, 1, 1));}
+        bool simplified = false;
+        if(!simplified) {
+            // Handle the extremum
+            if(use_extremums()){if(!apply_extremum(vao())){return;}}
+            else{vao()->get_shader_program()->set_uniform4f_value("object_extremum", glm::vec4(0, 0, 1, 1));}
+
+            // Handle the background color
+            vao()->get_shader_program()->set_uniform4f_value("background_color", background_color());
+
+            // Handle the border
+            vao()->get_shader_program()->set_uniform4f_value("border_color", border_color());
+            vao()->get_shader_program()->set_uniform4f_value("border_width", border_width_in_scale());
+
+            // Texturing
+            if(texture() == 0 || texture()->image_shared_ptr().get() == 0){vao()->get_shader_program()->set_uniformb_value("texture_binded", false);}
+            else{texture()->bind();vao()->get_shader_program()->set_uniformb_value("texture_binded", true);}
+            vao()->get_shader_program()->set_uniform4f_value("object_rect", glm::vec4(0, 0, width_in_pixel(), height_in_pixel()));
+            vao()->get_shader_program()->set_uniform2f_value("scale", texture_scale_x(), texture_scale_y());
+        }
 
         // Debug mode
         if(window_struct().debug_mode() & 2){print(std::string("SCLS GUI Object \"") + name() + std::string("\""), std::string("Start rendering..."));}
@@ -134,23 +155,12 @@ namespace scls {
         matrix = glm::translate(matrix, glm::vec3(absolute_position_to_apply[0], absolute_position_to_apply[1], 0));
         matrix = glm::scale(matrix, glm::vec3(absolute_scale_to_apply[0], absolute_scale_to_apply[1], 1));
 
-        // Handle the background color
-        vao()->get_shader_program()->set_uniform4f_value("background_color", background_color());
-
-        // Handle the border
-        vao()->get_shader_program()->set_uniform4f_value("border_color", border_color());
-        vao()->get_shader_program()->set_uniform4f_value("border_width", border_width_in_scale());
-
         // Handle the rect of the texture
         glm::vec4 needed_texture_rect = texture_rect();
         vao()->get_shader_program()->set_uniform4f_value("texture_rect", needed_texture_rect);
 
         // Handle the texture and the VAO
-        if(texture() == 0 || texture()->image_shared_ptr().get() == 0){vao()->get_shader_program()->set_uniformb_value("texture_binded", false);}
-        else{texture()->bind();vao()->get_shader_program()->set_uniformb_value("texture_binded", true);}
         vao()->get_shader_program()->set_uniform4fv_value("model", matrix);
-        vao()->get_shader_program()->set_uniform4f_value("object_rect", glm::vec4(0, 0, width_in_pixel(), height_in_pixel()));
-        vao()->get_shader_program()->set_uniform2f_value("scale", texture_scale_x(), texture_scale_y());
         vao()->render();
         set_should_render_during_this_frame(false);
 
@@ -292,13 +302,11 @@ namespace scls {
                 std::string current_attribute_name = current_attribute.name;
                 std::string current_attribute_value = current_attribute.value;
 
-                if(current_attribute_name == "name") {
-                    // Value of the name
-                    texture_name = current_attribute_value;
-                }
+                if(current_attribute_name == "name") {texture_name = current_attribute_value;}
                 else if(current_attribute_name == "alignment") {
                     // Alignment of the texture
-                    if(current_attribute_value == "fill") texture_alignment = Alignment_Texture::T_Fill;
+                    if(current_attribute_value == "direct") texture_alignment = Alignment_Texture::T_Direct;
+                    else if(current_attribute_value == "fill") texture_alignment = Alignment_Texture::T_Fill;
                     else if(current_attribute_value == "fit") texture_alignment = Alignment_Texture::T_Fit;
                     else if(current_attribute_value == "fit_horizontally") texture_alignment = Alignment_Texture::T_Fit_Horizontally;
                     else if(current_attribute_value == "fit_vertically") texture_alignment = Alignment_Texture::T_Fit_Vertically;
@@ -597,6 +605,20 @@ namespace scls {
     // Delete the children of an object
     void GUI_Object::delete_children() { children().clear(); }
 
+    // Returns the rect of the direct texture
+    glm::vec4 GUI_Object::direct_texture_rect()  {
+        // Get the good size and X position
+        Fraction height_texture = Fraction(Fraction(texture()->image_shared_ptr().get()->height(), height_in_pixel()));
+        Fraction width_texture = Fraction(Fraction(texture()->image_shared_ptr().get()->width(), width_in_pixel()));
+        Fraction x_texture = Fraction(0);
+        // Get the good Y position
+        Fraction y_texture = Fraction(0);
+        if(texture_alignment_vertical() == Alignment_Vertical::V_Center) y_texture = Fraction(1, 2) - height_texture / 2.0;
+        else if(texture_alignment_vertical() == Alignment_Vertical::V_Top) y_texture = Fraction(1) - height_texture;
+
+        return glm::vec4(x_texture.to_double(), y_texture.to_double(), width_texture.to_double(), height_texture.to_double());
+    }
+
     // Returns the rect of the fitted texture
     glm::vec4 GUI_Object::fitted_texture_rect() {if(texture()->image_ratio() > (width_in_absolute_scale() / height_in_absolute_scale_and_window())) {return fitted_horizontally_texture_rect();}return fitted_vertically_texture_rect();}
 
@@ -639,18 +661,35 @@ namespace scls {
 
     // Sets the new parent
     void GUI_Object::set_parent(std::weak_ptr<GUI_Object> new_parent){
+        // Prepare the datas
+        GUI_Object* new_parent_ptr = new_parent.lock().get();
+
         // Removes the last parent
         if(parent() != 0){parent()->delete_child(this);}
 
         // Sets the good parent
         a_parent = new_parent;
-        if(parent() != 0){
-            if(a_created_objects_parent.get()==0){parent()->delete_child(this);parent()->children().push_back(a_this_object.lock());}
-            else{parent()->a_created_objects_parent.get()->delete_child(this);a_created_objects_parent.get()->children().push_back(a_this_object.lock());}
+        if(new_parent_ptr != 0){
+            if(new_parent_ptr->a_created_objects_parent.get()==0){new_parent_ptr->delete_child(this);new_parent_ptr->children().push_back(a_this_object.lock());}
+            else{new_parent_ptr->a_created_objects_parent.get()->delete_child(this);new_parent_ptr->a_created_objects_parent.get()->children().push_back(a_this_object.lock());}
         }
 
         // Finish the result
         a_transformation_updated = true;
+    };
+
+    // Returns the rect of the texture
+    glm::vec4 GUI_Object::texture_rect() {
+        glm::vec4 final_texture_rect = glm::vec4(1);
+        if(texture() != 0 && texture()->get_image() != 0) {
+            if(texture_alignment() == Alignment_Texture::T_User_Defined) final_texture_rect = user_defined_texture_rect();
+            else if(texture_alignment() == Alignment_Texture::T_Direct){final_texture_rect = direct_texture_rect();}
+            else if(texture_alignment() == Alignment_Texture::T_Fit) final_texture_rect = fitted_texture_rect();
+            else if(texture_alignment() == Alignment_Texture::T_Fit_Horizontally) final_texture_rect = fitted_horizontally_texture_rect();
+            else if(texture_alignment() == Alignment_Texture::T_Fit_Vertically) final_texture_rect = fitted_vertically_texture_rect();
+            else if(texture_alignment() == Alignment_Texture::T_Fill) final_texture_rect = glm::vec4(0, 0, 1, 1);
+        }
+        return final_texture_rect;
     };
 
     // Returns the rect of user defined texture
@@ -659,11 +698,12 @@ namespace scls {
         Fraction width_texture = texture_width_in_scale();
         Fraction x_texture = Fraction(0);
         Fraction y_texture = Fraction(0);
-        if(texture_alignment_horizontal() == Alignment_Horizontal::H_Center){x_texture = Fraction(1, 2) - width_texture / Fraction(2);}
+        /*if(texture_alignment_horizontal() == Alignment_Horizontal::H_Center){x_texture = Fraction(1, 2) - width_texture / Fraction(2);}
         else if(texture_alignment_horizontal() == Alignment_Horizontal::H_Right){x_texture = Fraction(1) - width_texture;}
         if(texture_alignment_vertical() == Alignment_Vertical::V_Center){y_texture = Fraction(1, 2) - height_texture /Fraction(2);}
-        else if(texture_alignment_vertical() == Alignment_Vertical::V_Top){y_texture = Fraction(1) - height_texture;}
-        return glm::vec4(x_texture.to_double(), y_texture.to_double(), width_texture.to_double(), height_texture.to_double());
+        else if(texture_alignment_vertical() == Alignment_Vertical::V_Top){y_texture = Fraction(1) - height_texture;}//*/
+
+        return glm::vec4(a_user_defined_texture_x_in_scale, a_user_defined_texture_y_in_scale, 1, 1);
     }
 
     //*********
@@ -892,6 +932,20 @@ namespace scls {
         }
     };
 
+    // Set the good displayer object
+    void GUI_Scroller_Choice::__set_displayer_object(std::shared_ptr<__GUI_Text_Metadatas> object, std::string object_text) {
+        // Basic configuration
+        object.get()->set_texture_alignment_horizontal(scls::Alignment_Horizontal::H_Left);
+        object.get()->set_x_in_object_scale(scls::Fraction(1, 2));
+        object.get()->set_height_in_pixel(object.get()->font_size() + 4);
+        object.get()->set_width_in_scale(1);
+        a_displayer_object = object;
+
+        // Apply the needed style
+        object.get()->set_overflighted_cursor(a_unselected_objects_style.cursor);
+        object.get()->set_text(object_text);
+    };
+
     // Handles styles
     void GUI_Scroller_Choice::set_selected_objects_style_color(Color new_color){a_selected_objects_style.a_background_color = new_color;};
 
@@ -1038,7 +1092,14 @@ namespace scls {
     };
 
     // Function called after that the window is resized
-    void __GUI_Text_Metadatas::after_resizing(){GUI_Object::after_resizing();if(max_width() != -1) {set_max_width(width_in_pixel());update_text_texture(scls::Image_Generation_Type::IGT_Size);}}
+    void __GUI_Text_Metadatas::after_resizing(){GUI_Object::after_resizing();if(max_width() != -1) {set_max_width(width_in_pixel());if(visible()){update_text_texture(scls::Image_Generation_Type::IGT_Size);}}}
+
+    // Cursor for the object
+    void __GUI_Text_Metadatas::create_cursor() {
+        // Create the cursor
+        a_cursor = *new_object<GUI_Object>(name() +  "-cursor");
+        a_cursor.get()->set_background_color(scls::Color(0, 0, 0, 255));
+    }
 
     // Creates a text block from a block of text
     std::shared_ptr<__GUI_Text_Metadatas::__GUI_Text_Block> __GUI_Text_Metadatas::__create_text_block_object(Text_Image_Block* block_to_apply) {
@@ -1169,6 +1230,12 @@ namespace scls {
             }
         }
 
+        // Cursor
+        if(a_cursor.get() != 0) {
+            a_cursor.get()->set_width_in_pixel(2);a_cursor.get()->set_height_in_pixel(font_size());
+            a_cursor.get()->set_x_in_pixel(attached_text_image()->cursor_x());a_cursor.get()->set_y_in_pixel(height_in_pixel() - (attached_text_image()->cursor_y() + font_size()));
+        }
+
         // Update the view
         set_should_render_during_this_frame(true);
     }
@@ -1181,10 +1248,12 @@ namespace scls {
     void __GUI_Text_Metadatas::remove_text(unsigned int size_to_delete) {
         if(size_to_delete == 0){return;}
 
-        /*// Preparate the needed datas
-        // Remove the text
+        // Preparate the needed datas
+
+        /*// Remove the text
         unsigned int line_to_delete = attached_text_image()->line_number_at_position(cursor_position_in_unformatted_text());
         unsigned int removed_lines = attached_text_image()->remove_text(size_to_delete);
+
         // Remove the needed children
         int final_size = static_cast<int>(children().size()) + line_offset();
         if(removed_lines > 0) {for(int i = line_to_delete;i<final_size;i++) { children().erase(children().begin() + line_to_delete);}}
@@ -1372,6 +1441,9 @@ namespace scls {
                 if(new_block.get() != 0){__generate_text_block_object(new_block, generation_type, total_height);}
                 if(total_height > height_in_pixel() * 2){break;}
             }
+
+            // Cursor
+            if(a_cursor.get() != 0){set_first_in_hierarchy(a_cursor);}
 
             // Place the block
             attached_text_image()->place_datas();

@@ -63,7 +63,7 @@ namespace scls {
         to_return += Shader_Program::default_gui_extremum_handling();
         to_return += "vec4 final_color = background_color;";
         to_return += Shader_Program::default_gui_border_handling();
-        to_return += "else if(texture_binded){";
+        to_return += "else if(texture_binded && tex_pos[0] >= texture_rect[0] && tex_pos[1] >= texture_rect[1] && tex_pos[0] < texture_rect[0] + texture_rect[2] && tex_pos[1] < texture_rect[1] + texture_rect[3]){";
         // TEMPORARAY DISABLED && tex_pos[0] >= texture_rect[0] && tex_pos[1] >= texture_rect[1] && tex_pos[0] < texture_rect[0] + texture_rect[2] && tex_pos[1] < texture_rect[1] + texture_rect[3]
 
         // Object texture
@@ -73,11 +73,35 @@ namespace scls {
         to_return += std::string("final_tex_pos -= texture_rect.xy;");
         //to_return += "while(final_tex_pos.x > texture_rect.z)final_tex_pos.x -= texture_rect.z;";
         //to_return += "while(final_tex_pos.y > 1.0/texture_rect.w){final_tex_pos.y -= 1.0/texture_rect.w;}";
-        //to_return += "final_tex_pos /= texture_rect.zw;\n";
+        to_return += "final_tex_pos /= texture_rect.zw;\n";
         //to_return += std::string("while(final_tex_pos.y < 0.0){final_tex_pos.y += 1.0;}while(final_tex_pos.y > 1.0){final_tex_pos.y -= 1.0;}");
 
         to_return += "final_color = blend_colors(texture(texture_0, final_tex_pos), final_color);}"; //*/
         to_return += "FragColor = final_color;}";
+        return to_return;
+    };
+    std::string gui_simplified_fragment_shader() {
+        std::string to_return = "#version 330 core\n";
+        to_return += "in vec2 tex_pos;"; // Uniform / in/out variables
+        to_return += "out vec4 FragColor;";
+        to_return += "uniform sampler2D texture_0;";
+        to_return += "uniform vec4 texture_rect;";
+
+        // Blend function
+        to_return += Shader_Program::default_gui_blend_colors();
+
+        // Main function
+        to_return += "void main(){";
+        to_return += "vec4 final_color = vec4(1,1,1,0);";
+        to_return += "if(tex_pos[0] >= texture_rect[0] && tex_pos[1] >= texture_rect[1] && tex_pos[0] < texture_rect[0] + texture_rect[2] && tex_pos[1] < texture_rect[1] + texture_rect[3]){";
+
+        // Object texture
+        to_return += "vec2 final_tex_pos = tex_pos;";
+        to_return += std::string("final_tex_pos -= texture_rect.xy;");
+        to_return += "final_tex_pos /= texture_rect.zw;\n";
+        to_return += "final_color = texture(texture_0, final_tex_pos);}";
+        to_return += "FragColor = final_color;}";
+
         return to_return;
     };
 

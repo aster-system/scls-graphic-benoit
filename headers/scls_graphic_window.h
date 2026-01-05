@@ -174,6 +174,8 @@ namespace scls {
         virtual void after_window_resizing(glm::vec2 last_size){apply_window_resizing(last_size);a_should_render_during_this_frame=true;};
         // Hidden function to call the children that there has been a resizing
         inline void apply_window_resizing(glm::vec2 last_size){for(std::map<std::string, std::shared_ptr<Object>>::iterator it = pages_2d().begin(); it != pages_2d().end(); it++) {it->second->after_window_resizing(last_size);}};
+        // Clears the window
+        void clear_window();
         // Render the scene
         void render_always();
         void render();
@@ -253,7 +255,10 @@ namespace scls {
         //
         //*********
 
-        double a_last_frame_time = 0; // Time when the last frame occurs, for calculating delta_time and FPS
+        // If the window is cleared or not
+        bool a_cleared = false;
+        // Time when the last frame occurs, for calculating delta_time and FPS
+        double a_last_frame_time = 0;
         // Last height of the window
         unsigned short a_last_window_height = 0;
         // Last width of the window
