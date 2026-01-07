@@ -403,6 +403,7 @@ glad.c
 dev_part/
 matix/
 mods_hidden/
+.idea
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
