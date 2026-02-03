@@ -510,8 +510,8 @@ namespace scls {
 
         // Get the XML analyser
         if(window_loading_balises.get() == 0){window_loading_balises = std::make_shared<__Balise_Container>();window_loading_balises.get()->__load_built_in_balises_window();}
-        std::shared_ptr<__XML_Text_Base> xml_text = xml(window_loading_balises, remove_comment_out_of(read_file(window_path), "\""));
-        std::vector<std::shared_ptr<__XML_Text_Base>>& cutted = xml_text.get()->sub_texts();
+        std::shared_ptr<XML_Text_Base> xml_text = xml(window_loading_balises, remove_comment_out_of(read_file(window_path), "\""));
+        std::vector<std::shared_ptr<XML_Text_Base>>& cutted = xml_text.get()->sub_texts();
         window_path = path_parent(window_path);
 
         // Check each balises
@@ -621,7 +621,7 @@ namespace scls {
     }
 
     // Load an object in a page from XML
-    void Window::__load_object_from_xml(std::string object_name, std::string object_type, std::shared_ptr<__XML_Text_Base> object_content, std::shared_ptr<Window_Loader> loader) {
+    void Window::__load_object_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text_Base> object_content, std::shared_ptr<Window_Loader> loader) {
         // Create the object
         std::shared_ptr<Object> object = __create_loaded_object_from_type(object_name, object_type);
         loader.get()->created_objects[object_name] = object;
@@ -635,7 +635,7 @@ namespace scls {
     }
 
     // Load a 3D page from XML
-    void Window::__load_page_3d_from_xml(std::string object_name, std::string object_type, std::shared_ptr<__XML_Text_Base> object_content, std::shared_ptr<Window_Loader> loader) {
+    void Window::__load_page_3d_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text_Base> object_content, std::shared_ptr<Window_Loader> loader) {
         // Create the 3D page
         std::shared_ptr<Object> object = __create_loaded_page_3d_from_type(object_name, object_type);
         loader.get()->created_objects[object_name] = object;

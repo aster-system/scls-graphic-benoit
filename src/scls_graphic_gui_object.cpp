@@ -20,7 +20,7 @@
 namespace scls {
 
     // Get datas about a border from an XML loading system
-    void border_from_xml(std::shared_ptr<__XML_Text_Base> text, scls::Color& border_color, scls::Fraction& border_bottom, scls::Fraction& border_left, scls::Fraction& border_right, scls::Fraction& border_top) {
+    void border_from_xml(std::shared_ptr<XML_Text_Base> text, scls::Color& border_color, scls::Fraction& border_bottom, scls::Fraction& border_left, scls::Fraction& border_right, scls::Fraction& border_top) {
         for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
             XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
             std::string current_attribute_name = current_attribute.name;
@@ -41,17 +41,17 @@ namespace scls {
             }
         }
     }
-    void border_from_xml(std::shared_ptr<__XML_Text_Base> text, scls::Color& border_color, glm::vec4& border){
+    void border_from_xml(std::shared_ptr<XML_Text_Base> text, scls::Color& border_color, glm::vec4& border){
         scls::Fraction bottom = 0;scls::Fraction left = 0;scls::Fraction right = 0;scls::Fraction top = 0;
         border_from_xml(text, border_color, bottom, left, right, top);
         border.x = bottom.to_double();border.y = left.to_double();border.z = right.to_double();border.w = top.to_double();
     }
-    void border_from_xml(std::shared_ptr<__XML_Text_Base> text, std::shared_ptr<__Image_Base> img) {
+    void border_from_xml(std::shared_ptr<XML_Text_Base> text, std::shared_ptr<__Image_Base> img) {
         scls::Color border_color;scls::Fraction bottom; scls::Fraction left; scls::Fraction right; scls::Fraction top;
         border_from_xml(text, border_color, bottom, left, right, top);
         img.get()->draw_border(bottom.to_double(), left.to_double(), right.to_double(), top.to_double(), border_color);
     }
-    void border_from_xml(std::shared_ptr<__XML_Text_Base> text, scls::Text_Style style){
+    void border_from_xml(std::shared_ptr<XML_Text_Base> text, scls::Text_Style style){
         scls::Fraction bottom = 0;
         scls::Color border_color;
         scls::Fraction left = 0;
@@ -66,7 +66,7 @@ namespace scls {
     }
 
     // Get datas about a padding from an XML loading system
-    void padding_from_xml(std::shared_ptr<__XML_Text_Base> text, scls::Fraction& border_bottom, scls::Fraction& border_left, scls::Fraction& border_right, scls::Fraction& border_top) {
+    void padding_from_xml(std::shared_ptr<XML_Text_Base> text, scls::Fraction& border_bottom, scls::Fraction& border_left, scls::Fraction& border_right, scls::Fraction& border_top) {
         for(int j = 0;j<static_cast<int>(text.get()->xml_balise_attributes().size());j++) {
             XML_Attribute& current_attribute = text.get()->xml_balise_attributes()[j];
             std::string current_attribute_name = current_attribute.name;
@@ -78,7 +78,7 @@ namespace scls {
             else if(current_attribute_name == "top") {border_top = Fraction::from_std_string(current_attribute_value);}
         }
     }
-    void padding_from_xml(std::shared_ptr<__XML_Text_Base> text, scls::Text_Style style){
+    void padding_from_xml(std::shared_ptr<XML_Text_Base> text, scls::Text_Style style){
         scls::Fraction bottom = 0; scls::Fraction left = 0; scls::Fraction right = 0; scls::Fraction top = 0;
         padding_from_xml(text, bottom, left, right, top);
         style.set_padding_bottom(bottom.to_double());style.set_padding_left(left.to_double());style.set_padding_right(right.to_double());style.set_padding_top(top.to_double());
@@ -204,14 +204,14 @@ namespace scls {
         for(int i = 0;i<static_cast<int>(a_loading_parts.size());i++){if(a_loading_parts[i].content.get()->xml_balise_name() != std::string("content")){set_xml_attribute(a_loading_parts[i].content, a_loading_parts[i].event);a_loading_parts.erase(a_loading_parts.begin() + i);i--;}}
         for(int i = 0;i<static_cast<int>(a_loading_parts.size());i++){set_xml_attribute(a_loading_parts[i].content, a_loading_parts[i].event);a_loading_parts.erase(a_loading_parts.begin() + i);i--;}
     }
-    void GUI_Object::load_from_xml(std::shared_ptr<__XML_Text_Base> text, std::string event) {
+    void GUI_Object::load_from_xml(std::shared_ptr<XML_Text_Base> text, std::string event) {
         if(text.get() == 0){return;}
         set_loaded(true);
 
         // Parse the content
         std::vector<__Loading_Part>& needed_part = a_loading_parts;
         for(int i = 0;i<static_cast<int>(text.get()->sub_texts().size());i++) {
-            std::shared_ptr<__XML_Text_Base> current_text = text.get()->sub_texts()[i];
+            std::shared_ptr<XML_Text_Base> current_text = text.get()->sub_texts()[i];
             std::string current_balise_name = current_text.get()->xml_balise_name();
 
             // Apply the XML balise
@@ -247,7 +247,7 @@ namespace scls {
     }
 
     // Handle an attribute from XML
-    void GUI_Object::set_xml_attribute(std::shared_ptr<__XML_Text_Base> text, std::string event) {
+    void GUI_Object::set_xml_attribute(std::shared_ptr<XML_Text_Base> text, std::string event) {
         std::string xml_attribute_name = text.get()->xml_balise_name();
         if(xml_attribute_name == "cursor") {
             if(event == "overflighted") {
@@ -496,7 +496,7 @@ namespace scls {
     }
 
     // Set the XML attributs for a style
-    void GUI_Object::set_xml_attribute_style(std::shared_ptr<__XML_Text_Base> text, GUI_Style* needed_style) {
+    void GUI_Object::set_xml_attribute_style(std::shared_ptr<XML_Text_Base> text, GUI_Style* needed_style) {
         std::string xml_attribute_name = text.get()->xml_balise_name();
         if(xml_attribute_name == "background_color") {needed_style->a_background_color = Color::from_xml(text);}
         else if(xml_attribute_name == "border") {border_from_xml(text, needed_style->global_text_style);}
@@ -862,7 +862,7 @@ namespace scls {
     GUI_Scroller_Choice::~GUI_Scroller_Choice() {}
 
     // Loads the choice from an XML test
-    void GUI_Scroller_Choice::load_choices_from_xml(std::shared_ptr<__XML_Text_Base> text) {}
+    void GUI_Scroller_Choice::load_choices_from_xml(std::shared_ptr<XML_Text_Base> text) {}
 
     // Loads the object from XML
     void GUI_Scroller_Choice::__load_from_xml_apply(std::string event) {
@@ -998,7 +998,7 @@ namespace scls {
     }
 
     // Handle an attribute from XML
-    void GUI_Scroller_Choice::set_xml_attribute(std::shared_ptr<__XML_Text_Base> text, std::string event) {
+    void GUI_Scroller_Choice::set_xml_attribute(std::shared_ptr<XML_Text_Base> text, std::string event) {
         std::string xml_attribute_name = text.get()->xml_balise_name();
         if(xml_attribute_name == "choice") {
             // Get each attributes
@@ -1285,7 +1285,7 @@ namespace scls {
     void __GUI_Text_Metadatas::set_plain_text(std::string new_text) {if(new_text == plain_text()){return;}new_text=scls::format_string_break_line(scls::format_string_from_plain_text(new_text), std::string("</br>"));update_text_image_block_style();attached_text_image()->set_text(new_text);};
 
     // Handle an attribute from XML
-    void __GUI_Text_Metadatas::set_xml_attribute(std::shared_ptr<__XML_Text_Base> text, std::string event) {
+    void __GUI_Text_Metadatas::set_xml_attribute(std::shared_ptr<XML_Text_Base> text, std::string event) {
         std::string xml_attribute_name = text.get()->xml_balise_name();
         if(xml_attribute_name == "content") {
             // Get each attributes
@@ -1322,7 +1322,7 @@ namespace scls {
             // Get the content of the text
             needed_text = scls::format_string_tabulations(scls::format_string_break_line(needed_text, " "), "");
             if(max_width() != -1) {set_max_width(width_in_pixel());}
-            std::shared_ptr<__XML_Text_Base> final_text = xml(window_struct().balises_shared_ptr(), needed_text);
+            std::shared_ptr<XML_Text_Base> final_text = xml(window_struct().balises_shared_ptr(), needed_text);
             final_text.get()->check_include(needed_text_src);
             set_xml_text(final_text);
         }
@@ -1368,8 +1368,8 @@ namespace scls {
     }
 
     // Returns the word clicked at a certain position in the text
-    std::shared_ptr<__XML_Text_Base> __GUI_Text_Metadatas::text_clicked_at_position(int x, int y) {
-        if(a_blocks_children.size() <= 0){return std::shared_ptr<__XML_Text_Base>();}
+    std::shared_ptr<XML_Text_Base> __GUI_Text_Metadatas::text_clicked_at_position(int x, int y) {
+        if(a_blocks_children.size() <= 0){return std::shared_ptr<XML_Text_Base>();}
 
         // Get the good children
         __GUI_Text_Block* current_object = a_blocks_children[0].get(); unsigned int i = 0;
@@ -1389,11 +1389,11 @@ namespace scls {
         Text_Image_Line* needed_line = attached_text_image()->line_at_position_in_pixel(x, needed_height - y, needed_y);
         y = (needed_height - y) - needed_y;
         Text_Image_Word* needed_word = needed_line->word_at_position_in_pixel(x, y).get();
-        if(needed_word == 0){return std::shared_ptr<__XML_Text_Base>();}
+        if(needed_word == 0){return std::shared_ptr<XML_Text_Base>();}
         return needed_word->datas()->balise_parent();//*/
 
         // TEMP
-        return std::shared_ptr<__XML_Text_Base>();
+        return std::shared_ptr<XML_Text_Base>();
     }
 
     // Updates text image block
@@ -1960,7 +1960,7 @@ namespace scls {
     void GUI_Page::render(){parent_object()->render(true, absolute_scale());};
 
     // Handle an attribute from XML
-    void GUI_Page::set_xml_attribute(std::shared_ptr<__XML_Text_Base> text, std::shared_ptr<__XML_Loader> loader_shared_ptr, int& i) {
+    void GUI_Page::set_xml_attribute(std::shared_ptr<XML_Text_Base> text, std::shared_ptr<__XML_Loader> loader_shared_ptr, int& i) {
         __XML_Loader& loader = *loader_shared_ptr.get();
         if(text.get()->xml_balise_name() == "content") {
             // Load the content of the page
@@ -2033,11 +2033,11 @@ namespace scls {
     };
 
     // Loads an object in a page from XML and returns it
-    std::shared_ptr<GUI_Object> GUI_Page::__load_object_from_xml(std::string object_name, std::string object_type, std::shared_ptr<__XML_Text_Base> content, bool load_content) {
+    std::shared_ptr<GUI_Object> GUI_Page::__load_object_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text_Base> content, bool load_content) {
         // Search the parent
         GUI_Object* current_parent = parent_object();
         for(int i = 0;i<static_cast<int>(content.get()->sub_texts().size());i++) {
-            std::shared_ptr<__XML_Text_Base> current_text = content.get()->sub_texts()[i];
+            std::shared_ptr<XML_Text_Base> current_text = content.get()->sub_texts()[i];
 
             if(current_text.get()->xml_balise_name() == "parent") {
                 // Load the parent
@@ -2069,10 +2069,10 @@ namespace scls {
     }
 
     // Load objects in a page from XML
-    void GUI_Page::__load_objects_from_xml(std::shared_ptr<__XML_Text_Base> content, bool sub_paged) {
+    void GUI_Page::__load_objects_from_xml(std::shared_ptr<XML_Text_Base> content, bool sub_paged) {
         // Analyse each balises
         for(int i = 0;i<static_cast<int>(content.get()->sub_texts().size());i++) {
-            std::shared_ptr<__XML_Text_Base> current_text = content.get()->sub_texts()[i];
+            std::shared_ptr<XML_Text_Base> current_text = content.get()->sub_texts()[i];
             std::string current_balise_name = current_text.get()->xml_balise_name();
 
             // Add a GUI object
@@ -2139,7 +2139,7 @@ namespace scls {
         a_loader = std::make_shared<__GUI_Page_Loader>(); a_loader.get()->path = path;
 
         // Load the balises
-        std::shared_ptr<__XML_Text_Base> content = scls::xml(gui_loading_balises, content_to_parse);
+        std::shared_ptr<XML_Text_Base> content = scls::xml(gui_loading_balises, content_to_parse);
         content.get()->check_include(path);
         __load_objects_from_xml(content, sub_paged);
     }

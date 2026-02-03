@@ -61,13 +61,13 @@ namespace scls {
     };
 
     // Get datas about a border from an XML loading system
-    void border_from_xml(std::shared_ptr<__XML_Text_Base> text, scls::Color& border_color, scls::Fraction& border_bottom, scls::Fraction& border_left, scls::Fraction& border_right, scls::Fraction& border_top);
-    void border_from_xml(std::shared_ptr<__XML_Text_Base> text, scls::Color& border_color, glm::vec4& border);
-    void border_from_xml(std::shared_ptr<__XML_Text_Base> text, std::shared_ptr<__Image_Base> img);
-    void border_from_xml(std::shared_ptr<__XML_Text_Base> text, scls::Text_Style style);
+    void border_from_xml(std::shared_ptr<XML_Text_Base> text, scls::Color& border_color, scls::Fraction& border_bottom, scls::Fraction& border_left, scls::Fraction& border_right, scls::Fraction& border_top);
+    void border_from_xml(std::shared_ptr<XML_Text_Base> text, scls::Color& border_color, glm::vec4& border);
+    void border_from_xml(std::shared_ptr<XML_Text_Base> text, std::shared_ptr<__Image_Base> img);
+    void border_from_xml(std::shared_ptr<XML_Text_Base> text, scls::Text_Style style);
     // Get datas about a padding from an XML loading system
-    void padding_from_xml(std::shared_ptr<__XML_Text_Base> text, scls::Fraction& border_bottom, scls::Fraction& border_left, scls::Fraction& border_right, scls::Fraction& border_top);
-    void padding_from_xml(std::shared_ptr<__XML_Text_Base> text, scls::Text_Style style);
+    void padding_from_xml(std::shared_ptr<XML_Text_Base> text, scls::Fraction& border_bottom, scls::Fraction& border_left, scls::Fraction& border_right, scls::Fraction& border_top);
+    void padding_from_xml(std::shared_ptr<XML_Text_Base> text, scls::Text_Style style);
 
     //*********
     //
@@ -180,14 +180,14 @@ namespace scls {
         //*********
 
         // Loads the object from XML
-        inline void set_xml_loading_datas(std::shared_ptr<__XML_Text_Base> text, std::shared_ptr<__GUI_Page_Loader> loader){a_loading_datas=text;a_loader=loader;};
-        void load_from_xml(std::shared_ptr<__XML_Text_Base> text, std::string event);
+        inline void set_xml_loading_datas(std::shared_ptr<XML_Text_Base> text, std::shared_ptr<__GUI_Page_Loader> loader){a_loading_datas=text;a_loader=loader;};
+        void load_from_xml(std::shared_ptr<XML_Text_Base> text, std::string event);
         inline void load_from_xml(std::string event){load_from_xml(a_loading_datas, event);};
         virtual void __load_from_xml_apply(std::string event);
         // Handle an attribute from XML
-        virtual void set_xml_attribute(std::shared_ptr<__XML_Text_Base> text, std::string event);
+        virtual void set_xml_attribute(std::shared_ptr<XML_Text_Base> text, std::string event);
         // Set the XML attributs for a style
-        void set_xml_attribute_style(std::shared_ptr<__XML_Text_Base> text, GUI_Style*needed_style);
+        void set_xml_attribute_style(std::shared_ptr<XML_Text_Base> text, GUI_Style*needed_style);
 
         //*********
         //
@@ -307,7 +307,7 @@ namespace scls {
         // Loader of the software
         std::shared_ptr<__GUI_Page_Loader> a_loader;
         // XML parts to load the object
-        struct __Loading_Part{std::shared_ptr<__XML_Text_Base> content;std::string event;};
+        struct __Loading_Part{std::shared_ptr<XML_Text_Base> content;std::string event;};
         std::vector<__Loading_Part> a_loading_parts;
 
     private:
@@ -335,7 +335,7 @@ namespace scls {
         //*********
 
         // XML text containing the datas about the object
-        std::shared_ptr<__XML_Text_Base> a_loading_datas;
+        std::shared_ptr<XML_Text_Base> a_loading_datas;
 
         //*********
         //
@@ -585,7 +585,7 @@ namespace scls {
         // Remove a text to the input at the cursor position
         void remove_text(unsigned int size_to_delete_in_plain_text);
         // Returns the word clicked at a certain position in the text
-        std::shared_ptr<__XML_Text_Base> text_clicked_at_position(int x, int y);
+        std::shared_ptr<XML_Text_Base> text_clicked_at_position(int x, int y);
         // Updates text image block
         void update_text_image();
         void update_text_image_block_style();
@@ -605,7 +605,7 @@ namespace scls {
         inline void set_max_width(int new_max_width) {a_global_style.set_max_width(new_max_width);};
         virtual void set_text(std::string new_text) {if(new_text == text()){return;}update_text_image_block_style();attached_text_image()->set_text(new_text);set_should_update_texture(true);};
         void set_plain_text(std::string new_text);
-        virtual void set_xml_text(std::shared_ptr<__XML_Text_Base> new_text) {update_text_image_block_style();attached_text_image()->set_text(new_text);set_should_update_texture(true);};
+        virtual void set_xml_text(std::shared_ptr<XML_Text_Base> new_text) {update_text_image_block_style();attached_text_image()->set_text(new_text);set_should_update_texture(true);};
         inline void set_text_alignment_horizontal(Alignment_Horizontal new_text_alignment_horizontal) {global_style().set_alignment_horizontal(new_text_alignment_horizontal);update_text_image();};
         virtual void set_text_image_type(Block_Type new_text_image_type) {a_text_image_type = new_text_image_type;};
         inline void set_text_offset(double new_text_offset) {a_global_style.set_text_offset_x(new_text_offset);a_global_style.set_text_offset_y(new_text_offset);a_global_style.set_text_offset_width(new_text_offset);a_global_style.set_text_offset_height(new_text_offset);};
@@ -623,7 +623,7 @@ namespace scls {
         //*********
 
         // Handle an attribute from XML
-        virtual void set_xml_attribute(std::shared_ptr<__XML_Text_Base> text, std::string event);
+        virtual void set_xml_attribute(std::shared_ptr<XML_Text_Base> text, std::string event);
 
         //*********
         //
@@ -1006,11 +1006,11 @@ namespace scls {
         //*********
 
         // Loads the choice from an XML test
-        void load_choices_from_xml(std::shared_ptr<__XML_Text_Base> text);
+        void load_choices_from_xml(std::shared_ptr<XML_Text_Base> text);
         // Loads the object from XML
         virtual void __load_from_xml_apply(std::string event);
         // Handle an attribute from XML
-        virtual void set_xml_attribute(std::shared_ptr<__XML_Text_Base> text, std::string event);
+        virtual void set_xml_attribute(std::shared_ptr<XML_Text_Base> text, std::string event);
 
     private:
 
@@ -1210,12 +1210,12 @@ namespace scls {
         // Load the page from XML
         void load_from_xml(const std::string& content_to_parse, bool sup_paged = false) {load_objects_from_xml(content_to_parse, "", sup_paged);};
         // Load an object in a page from XML
-        std::shared_ptr<GUI_Object> __load_object_from_xml(std::string object_name, std::string object_type, std::shared_ptr<__XML_Text_Base> content, bool load_content);
+        std::shared_ptr<GUI_Object> __load_object_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text_Base> content, bool load_content);
         // Load objects in a page from XML
-        void __load_objects_from_xml(std::shared_ptr<__XML_Text_Base> content, bool sub_paged);
+        void __load_objects_from_xml(std::shared_ptr<XML_Text_Base> content, bool sub_paged);
         void load_objects_from_xml(const std::string& content_to_parse, std::string path, bool sub_paged);
         // Handle an attribute from XML
-        virtual void set_xml_attribute(std::shared_ptr<__XML_Text_Base> text, std::shared_ptr<__XML_Loader> loader_shared_ptr, int& i);
+        virtual void set_xml_attribute(std::shared_ptr<XML_Text_Base> text, std::shared_ptr<__XML_Loader> loader_shared_ptr, int& i);
 
         //*********
         //
