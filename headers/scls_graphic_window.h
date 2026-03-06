@@ -196,6 +196,7 @@ namespace scls {
         // Create an page 3D from a type
         virtual std::shared_ptr<Object> __create_loaded_page_3d_from_type(std::string object_name, std::string object_type);
         // Load the page from XML
+        void load_from_xml_balise(std::shared_ptr<XML_Text_Base> current_balise, std::shared_ptr<Window_Loader> loader, std::string window_path);
         std::shared_ptr<Window_Loader> load_from_xml(std::string window_path);
         // Load an object in a page from XML
         void __load_object_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text_Base> object_content, std::shared_ptr<Window_Loader> loader);
