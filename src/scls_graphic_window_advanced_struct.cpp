@@ -52,8 +52,11 @@ namespace scls {
         // One faced cube VAO
         std::shared_ptr<VBO> one_faced_cube_vbo = std::make_shared<VBO>();
         one_faced_cube_vbo.get()->load_from_binary(model_maker::regular_polygon_3d(4).get()->binary_vbo_complete().get()->datas());
-        add_vbo("one_faced_cube", one_faced_cube_vbo); new_vao("one_faced_cube", "one_faced_cube", "default");
-        vaos()["cube"] = vaos()["one_faced_cube"];
+        add_vbo("one_faced_cube", one_faced_cube_vbo);
+        new_vao("one_faced_cube", "one_faced_cube", "default");
+        std::shared_ptr<VBO> cube_vbo = std::make_shared<VBO>(object_3d_attributes, VBO::cube_vbo(), false);
+        add_vbo("cube", cube_vbo);
+        new_vao("cube", "cube", "default");
         // Curved one faced cube VAO
         std::shared_ptr<VBO> one_faced_cube_vbo_curved = std::make_shared<VBO>();
         std::shared_ptr<model_maker::Solid> needed_solid = model_maker::regular_polygon_3d(4); needed_solid.get()->set_x(0.5);

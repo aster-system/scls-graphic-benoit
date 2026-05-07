@@ -29,7 +29,7 @@ namespace scls {
     // Returns the base shader program variable for a 3D form
     inline std::vector<Shader_Program_Variable> _base_3d_shader_program_variables() {
         // Create base Shader_Program_Variable for the shader program
-        std::vector<Shader_Program_Variable> base_3d_attributes = std::vector<Shader_Program_Variable>();
+        std::vector<Shader_Program_Variable> base_3d_attributes = std::vector<Shader_Program_Variable>(5);
         Shader_Program_Variable v1 = Shader_Program_Variable();
         Shader_Program_Variable v2 = Shader_Program_Variable();
         Shader_Program_Variable v3 = Shader_Program_Variable();
@@ -40,11 +40,11 @@ namespace scls {
         v3.vector_size = 2;
         v4.vector_size = 4;
         v5.vector_size = 3;
-        base_3d_attributes.push_back(v1);
-        base_3d_attributes.push_back(v2);
-        base_3d_attributes.push_back(v3);
-        base_3d_attributes.push_back(v4);
-        base_3d_attributes.push_back(v5);
+        base_3d_attributes[0] = v1;
+        base_3d_attributes[1] = v2;
+        base_3d_attributes[2] = v3;
+        base_3d_attributes[3] = v4;
+        base_3d_attributes[4] = v5;
 
         return base_3d_attributes;
     };
@@ -115,6 +115,7 @@ namespace scls {
         Texture* new_texture(std::string name, unsigned short width, unsigned short height, Color color) {std::shared_ptr<Texture>* current_ptr = new_texture_shared_ptr(name, width, height, color);if(current_ptr == 0){return 0;} return current_ptr->get();};
         Texture* new_texture(std::string name);
         std::shared_ptr<Texture>* new_texture_shared_ptr(std::string name, std::shared_ptr<__Image_Base> image, bool texture_resize);
+        inline Texture* new_texture(std::string name, Image image){return new_texture(name, image.image_shared_ptr());};
         inline Texture* new_texture(std::string name, std::shared_ptr<__Image_Base> image){std::shared_ptr<Texture>* temp = new_texture_shared_ptr(name, image, true);if(temp==0){return 0;}return temp->get();};
         inline Texture* new_texture(std::string name, std::shared_ptr<__Image_Base> image, bool texture_resize){std::shared_ptr<Texture>* temp = new_texture_shared_ptr(name, image, texture_resize);if(temp==0){return 0;}return temp->get();};
         // Create a new VAO into the window with the most basic constructor

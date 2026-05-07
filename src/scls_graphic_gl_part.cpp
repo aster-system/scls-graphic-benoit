@@ -405,439 +405,55 @@ namespace scls {
 
     // Returns the datas for a cube vbo
     std::vector<double> VBO::cube_vbo() {
-        std::vector<double> a_datas = std::vector<double>();
-        a_datas.push_back(-0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.66667);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.66667);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(1.0);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.66667);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.66667);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.66667);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.66667);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.66667);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(1.0);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.66667);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(1.0);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.66667);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.75);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.75);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.66667);
-        a_datas.push_back(1.0);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.75);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(1.0);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.75);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.75);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.75);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.66667);
-        a_datas.push_back(0.75);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.75);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.66667);
-        a_datas.push_back(1.0);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.75);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.66667);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.66667);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.66667);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.66667);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.75);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.66667);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.75);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.66667);
-        a_datas.push_back(0.75);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.66667);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.66667);
-        a_datas.push_back(0);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.5);
-        a_datas.push_back(0.66667);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(0.0);
-        a_datas.push_back(0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(-0.5);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0);
-        a_datas.push_back(0.33333);
-        a_datas.push_back(0.25);
-        a_datas.push_back(1.0);
-        a_datas.push_back(-1.0);
-        a_datas.push_back(0.0);
+        std::vector<double> a_datas = {
+                                        // Z+
+                                        -0.5, -0.5, 0.5, 0, 0, 0, 0, 1, 0.66667, 0.0, 0.33333, 0.5, 0.0, 1.0, -1.0,
+                                        0.5, 0.5, 0.5, 0, 0, 0, 1, 0, 0.66667, 0.0, 0.33333, 0.5, 0.0, 1.0, -1.0,
+                                        -0.5, 0.5, 0.5, 0, 0, 0, 0, 0, 0.66667, 0.0, 0.33333, 0.5, 0.0, 1.0, -1.0,
+                                        -0.5, -0.5, 0.5, 0, 0, 0, 0, 1, 0.66667, 0.0, 0.33333, 0.5, 0.0, 1.0, -1.0,
+                                        0.5, -0.5, 0.5, 0, 0, 0, 1, 1, 0.66667, 0.0, 0.33333, 0.5, 0.0, 1.0, -1.0,
+                                        0.5, 0.5, 0.5, 0, 0, 0, 1, 0, 0.66667, 0.0, 0.33333, 0.5, 0.0, 1.0, -1.0,
+
+                                        // X+
+                                        0.5, -0.5, 0.5, 0, 0, 0, 0, 1, 0.0, 0.0, 0.33333, 0.5, -1.0, 1.0, 0.0,
+                                        0.5, 0.5, -0.5, 0, 0, 0, 1, 0, 0.0, 0.0, 0.33333, 0.5, -1.0, 1.0, 0.0,
+                                        0.5, 0.5, 0.5, 0, 0, 0, 0, 0, 0.0, 0.0, 0.33333, 0.5, -1.0, 1.0, 0.0,
+                                        0.5, -0.5, 0.5, 0, 0, 0, 0, 1, 0.0, 0.0, 0.33333, 0.5, -1.0, 1.0, 0.0,
+                                        0.5, -0.5, -0.5, 0, 0, 0, 1, 1, 0.0, 0.0, 0.33333, 0.5, -1.0, 1.0, 0.0,
+                                        0.5, 0.5, -0.5, 0, 0, 0, 1, 0, 0.0, 0.0, 0.33333, 0.5, -1.0, 1.0, 0.0,
+
+                                        // Z-
+                                        0.5, -0.5, -0.5, 0, 0, 0, 0, 1, 0.66667, 0.5, 0.33333, 0.5, 0.0, 1.0, -1.0,
+                                        -0.5, -0.5, -0.5, 0, 0, 0, 1, 1, 0.66667, 0.5, 0.33333, 0.5, 0.0, 1.0, -1.0,
+                                        -0.5, 0.5, -0.5, 0, 0, 0, 1, 0, 0.66667, 0.5, 0.33333, 0.5, 0.0, 1.0, -1.0,
+                                        -0.5, 0.5, -0.5, 0, 0, 0, 1, 0, 0.66667, 0.5, 0.33333, 0.5, 0.0, 1.0, -1.0,
+                                        0.5, 0.5, -0.5, 0, 0, 0, 0, 0, 0.66667, 0.5, 0.33333, 0.5, 0.0, 1.0, -1.0,
+                                        0.5, -0.5, -0.5, 0, 0, 0, 0, 1, 0.66667, 0.5, 0.33333, 0.5, 0.0, 1.0, -1.0,
+
+                                        // X-
+                                        -0.5, 0.5, 0.5, 0, 0, 0, 1, 0, 0.0, 0.5, 0.33333, 0.5, -1.0, 1.0, 0.0,
+                                        -0.5, 0.5, -0.5, 0, 0, 0, 0, 0, 0.0, 0.5, 0.33333, 0.5, -1.0, 1.0, 0.0,
+                                        -0.5, -0.5, -0.5, 0, 0, 0, 0, 1, 0.0, 0.5, 0.33333, 0.5, -1.0, 1.0, 0.0,
+                                        -0.5, 0.5, 0.5, 0, 0, 0, 1, 0, 0.0, 0.5, 0.33333, 0.5, -1.0, 1.0, 0.0,
+                                        -0.5, -0.5, -0.5, 0, 0, 0, 0, 1, 0.0, 0.5, 0.33333, 0.5, -1.0, 1.0, 0.0,
+                                        -0.5, -0.5, 0.5, 0, 0, 0, 1, 1, 0.0, 0.5, 0.33333, 0.5, -1.0, 1.0, 0.0,
+
+                                        // Y+
+                                        -0.5, 0.5, 0.5, 0, 0, 0, 0, 0, 0.33333, 0.5, 0.33333, 0.5, 1.0, -1.0, 0.0,
+                                        -0.5, 0.5, -0.5, 0, 0, 0, 1, 0, 0.33333, 0.5, 0.33333, 0.5, 1.0, -1.0, 0.0,
+                                        0.5, 0.5, -0.5, 0, 0, 0, 1, 1, 0.33333, 0.5, 0.33333, 0.5, 1.0, -1.0, 0.0,
+                                        -0.5, 0.5, 0.5, 0, 0, 0, 0, 0, 0.33333, 0.5, 0.33333, 0.5, 1.0, -1.0, 0.0,
+                                        0.5, 0.5, -0.5, 0, 0, 0, 1, 1, 0.33333, 0.5, 0.33333, 0.5, 1.0, -1.0, 0.0,
+                                        0.5, 0.5, 0.5, 0, 0, 0, 0, 1, 0.33333, 0.5, 0.33333, 0.5, 1.0, -1.0, 0.0,
+
+                                        // Y-
+                                        -0.5, -0.5, 0.5, 0, 0, 0, 0, 1, 0.33333, 0, 0.33333, 0.5, 1.0, -1.0, 0.0,
+                                        0.5, -0.5, -0.5, 0, 0, 0, 1, 0, 0.33333, 0, 0.33333, 0.5, 1.0, -1.0, 0.0,
+                                        0.5, -0.5, 0.5, 0, 0, 0, 0, 0, 0.33333, 0, 0.33333, 0.5, 1.0, -1.0, 0.0,
+                                        -0.5, -0.5, 0.5, 0, 0, 0, 0, 1, 0.33333, 0, 0.33333, 0.5, 1.0, -1.0, 0.0,
+                                        -0.5, -0.5, -0.5, 0, 0, 0, 1, 1, 0.33333, 0, 0.33333, 0.5, 1.0, -1.0, 0.0,
+                                        0.5, -0.5, -0.5, 0, 0, 0, 1, 0, 0.33333, 0, 0.33333, 0.5, 1.0, -1.0, 0.0};
+
         return a_datas;
     }
 
