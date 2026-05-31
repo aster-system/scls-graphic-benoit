@@ -224,8 +224,8 @@ namespace scls {
     //*********
 
     // Returns pointers to the displayed 2D pages
-    std::vector<std::shared_ptr<Object>> Window::displayed_pages_2d() {
-        std::vector<std::shared_ptr<Object>> to_return = std::vector<std::shared_ptr<Object>>();
+    std::vector<std::shared_ptr<GL_Object>> Window::displayed_pages_2d() {
+        std::vector<std::shared_ptr<GL_Object>> to_return = std::vector<std::shared_ptr<GL_Object>>();
         if(displayed_pages_2d_names().size() > 0) {
             for(int i = 0;i<static_cast<int>(displayed_pages_2d_names().size());i++) {
                 to_return.push_back(pages_2d()[displayed_pages_2d_names()[i]]);
@@ -263,7 +263,7 @@ namespace scls {
     }
 
     // Render the scene
-    std::vector<std::shared_ptr<Object>> to_display;
+    std::vector<std::shared_ptr<GL_Object>> to_display;
     void Window::render(){if(should_render_during_this_frame() || a_displayed_pages_3d.size() > 0){__render();}else{render_always();}};
     void Window::render_always(){
         // Update the cursor texture
@@ -300,7 +300,7 @@ namespace scls {
         // Render 3D pages
         glDepthFunc(GL_LESS);
         if (displayed_pages_3d_names().size() > 0) {
-            std::vector<std::shared_ptr<Object>> to_display = displayed_pages_3d();
+            std::vector<std::shared_ptr<GL_Object>> to_display = displayed_pages_3d();
             for(int i = 0;i<static_cast<int>(to_display.size());i++) {
                 to_display[i].get()->render();
             }
@@ -332,7 +332,7 @@ namespace scls {
 
         // Update 2D pages
         if (displayed_pages_2d_names().size() > 0) {
-            std::vector<std::shared_ptr<Object>> to_display = displayed_pages_2d();
+            std::vector<std::shared_ptr<GL_Object>> to_display = displayed_pages_2d();
             for(int i = 0;i<static_cast<int>(to_display.size());i++) {
                 to_display[i].get()->update();
             }
@@ -343,7 +343,7 @@ namespace scls {
 
         // Update 3D pages
         if (displayed_pages_3d_names().size() > 0) {
-            std::vector<std::shared_ptr<Object>> to_display = displayed_pages_3d();
+            std::vector<std::shared_ptr<GL_Object>> to_display = displayed_pages_3d();
             for(int i = 0;i<static_cast<int>(to_display.size());i++) {
                 to_display[i].get()->update();
             }
@@ -456,7 +456,7 @@ namespace scls {
 
         // Update the event of the 2D pages
         if (displayed_pages_2d_names().size() > 0) {
-            std::vector<std::shared_ptr<Object>> to_display = displayed_pages_2d();
+            std::vector<std::shared_ptr<GL_Object>> to_display = displayed_pages_2d();
             for(int i = 0;i<static_cast<int>(to_display.size());i++) {
                 to_display[i].get()->update_event();
             }
@@ -466,7 +466,7 @@ namespace scls {
 
         // Update the event of the 3D pages
         if (displayed_pages_3d_names().size() > 0) {
-            std::vector<std::shared_ptr<Object>> to_display = displayed_pages_3d();
+            std::vector<std::shared_ptr<GL_Object>> to_display = displayed_pages_3d();
             for(int i = 0;i<static_cast<int>(to_display.size());i++) {
                 to_display[i].get()->update_event();
             }
@@ -482,18 +482,18 @@ namespace scls {
     //*********
 
     // Create an object from a type
-    std::shared_ptr<Object> Window::__create_loaded_object_from_type(std::string object_name, std::string object_type) {
+    std::shared_ptr<GL_Object> Window::__create_loaded_object_from_type(std::string object_name, std::string object_type) {
         if(object_type == "gui") {
-            std::shared_ptr<Object> to_return = new_page_2d<GUI_Page>(object_name);
+            std::shared_ptr<GL_Object> to_return = new_page_2d<GUI_Page>(object_name);
             return to_return;
         }
         if(object_type == "") print("Warning", "SCLS Graphic Benoit", "Unspecified type for object \"" + object_name + "\".");
         else print("Warning", "SCLS Graphic Benoit", "Unrecognized type \"" + object_type + "\" for object \"" + object_name + "\".");
-        return new_page_2d<Object>(object_name);
+        return new_page_2d<GL_Object>(object_name);
     }
 
     // Create an page 3D from a type
-    std::shared_ptr<Object> Window::__create_loaded_page_3d_from_type(std::string object_name, std::string object_type) { return *new_page_3d<Object>(object_name); }
+    std::shared_ptr<GL_Object> Window::__create_loaded_page_3d_from_type(std::string object_name, std::string object_type) { return *new_page_3d<GL_Object>(object_name); }
 
     // Load the page from XML
     void Window::load_from_xml_balise(std::shared_ptr<XML_Text_Base> current_balise, std::shared_ptr<Window_Loader> loader, std::string window_path) {
@@ -612,7 +612,7 @@ namespace scls {
         if(loader.get()->created_objects.size() > 0) {
             while(loader.get()->created_objects_stack.size() > 0) {
                 // Handle the stack
-                std::shared_ptr<Object> object = loader.get()->created_objects_stack.top();
+                std::shared_ptr<GL_Object> object = loader.get()->created_objects_stack.top();
                 loader.get()->created_objects_stack.pop();
 
                 // Handle the object
@@ -627,7 +627,7 @@ namespace scls {
     // Load an object in a page from XML
     void Window::__load_object_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text_Base> object_content, std::shared_ptr<Window_Loader> loader) {
         // Create the object
-        std::shared_ptr<Object> object = __create_loaded_object_from_type(object_name, object_type);
+        std::shared_ptr<GL_Object> object = __create_loaded_object_from_type(object_name, object_type);
         loader.get()->created_objects[object_name] = object;
         loader.get()->created_objects_stack.push(object);
 
@@ -641,7 +641,7 @@ namespace scls {
     // Load a 3D page from XML
     void Window::__load_page_3d_from_xml(std::string object_name, std::string object_type, std::shared_ptr<XML_Text_Base> object_content, std::shared_ptr<Window_Loader> loader) {
         // Create the 3D page
-        std::shared_ptr<Object> object = __create_loaded_page_3d_from_type(object_name, object_type);
+        std::shared_ptr<GL_Object> object = __create_loaded_page_3d_from_type(object_name, object_type);
         loader.get()->created_objects[object_name] = object;
         loader.get()->created_objects_stack.push(object);
 

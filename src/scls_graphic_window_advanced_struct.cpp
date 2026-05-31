@@ -22,6 +22,7 @@ namespace scls {
     //*********
 
     // Loads the VAOs in the advanced struct
+    std::vector<Shader_Program_Variable> object_3d_attributes;
     void _Window_Advanced_Struct::load_VAOs() {
         // Create the base shaders
         Shader_Program shader_to_add = Shader_Program(); add_shader_program("default", shader_to_add);
@@ -35,7 +36,7 @@ namespace scls {
         textures()["white"] = std::make_shared<Texture>(5, 5, glm::vec4(255, 255, 255, 255));
 
         // Define attributes for VAOs
-        std::vector<Shader_Program_Variable> object_3d_attributes = _base_3d_shader_program_variables();
+        object_3d_attributes = _base_3d_shader_program_variables();
         std::vector<Shader_Program_Variable> gui_attributes = _base_hud_shader_program_variables();
 
         // Create VAOs
@@ -189,6 +190,24 @@ namespace scls {
     }
 
     // Create a new VBO into the game
+    std::shared_ptr<VBO>* _Window_Advanced_Struct::new_vbo(std::string name, model_maker::Solid_Group* solid) {
+        if (!contains_vbo(name)) {
+            std::shared_ptr<VBO> vbo = std::make_shared<VBO>();
+            vbo.get()->load_from_binary(solid->binary_vbo().get()->datas());
+            return add_vbo(name, vbo);
+        }
+        print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to add already exists.");
+        return 0;
+    }
+    std::shared_ptr<VBO>* _Window_Advanced_Struct::new_vbo(std::string name, model_maker::Solid* solid) {
+        if (!contains_vbo(name)) {
+            std::shared_ptr<VBO> vbo = std::make_shared<VBO>();
+            vbo.get()->load_from_binary(solid->binary_vbo_complete().get()->datas());
+            return add_vbo(name, vbo);
+        }
+        print("Warning", "SCLS Window", "The \"" + name + "\" texture you want to add already exists.");
+        return 0;
+    }
     std::shared_ptr<VBO>* _Window_Advanced_Struct::new_vbo(std::string name) {
         if (!contains_vbo(name)) {
             std::shared_ptr<VBO> vbo = std::make_shared<VBO>();

@@ -124,6 +124,8 @@ namespace scls {
         inline VAO* new_vao(std::string name, std::string vbo, std::string shader = "default"){return new_vao_shared_ptr(name, vbo, shader)->get();};
         std::shared_ptr<VAO>* new_vao_shared_ptr(std::string name, std::string vbo, std::string shader = "default");
         // Create a new VBO into the game
+        std::shared_ptr<VBO>* new_vbo(std::string name, model_maker::Solid_Group* solid);
+        std::shared_ptr<VBO>* new_vbo(std::string name, model_maker::Solid* solid);
         std::shared_ptr<VBO>* new_vbo(std::string name);
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)

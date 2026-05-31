@@ -21,35 +21,35 @@ namespace scls {
 
     //*********
     //
-    // Object main functions
+    // GL_Object main functions
     //
     //*********
 
-    // Object constructor used to do a page
-    Object::Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name) : a_name(name), a_window_struct(window_struct) {
-        a_transform = new Transform_Object(transform_parent);
+    // GL_Object constructor used to do a page
+    GL_Object::GL_Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name) : a_name(name), a_window_struct(window_struct) {
+        a_transform = std::make_shared<Transform_Object>(transform_parent);
         a_type.push_back("object");
     }
 
-    // Object most basic constructor with a name
-    Object::Object(_Window_Advanced_Struct* window_struct, std::string name) : Object(window_struct, 0, name) {
+    // GL_Object most basic constructor with a name
+    GL_Object::GL_Object(_Window_Advanced_Struct* window_struct, std::string name) : GL_Object(window_struct, 0, name) {
 
     }
 
-    // Object blank constructor
-    Object::Object(_Window_Advanced_Struct* window_struct) : Object(window_struct, "") {}
+    // GL_Object blank constructor
+    GL_Object::GL_Object(_Window_Advanced_Struct* window_struct) : GL_Object(window_struct, "") {}
 
-    // Object most basic constructor with a transform parent
-    Object::Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent) : Object(window_struct, transform_parent, "") {}
+    // GL_Object most basic constructor with a transform parent
+    GL_Object::GL_Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent) : GL_Object(window_struct, transform_parent, "") {}
 
-    // Most parent Object constructor used for displaying
-    Object::Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : Object(window_struct, transform_parent, name) {
+    // Most parent GL_Object constructor used for displaying
+    GL_Object::GL_Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name) : GL_Object(window_struct, transform_parent, name) {
         if(texture_name != "")a_texture = *window_struct->texture_shared_ptr(texture_name);
         a_vao = window_struct->vao(vao_name);
     }
 
-    // Object constructor used for displaying
-    Object::Object(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name) : Object(window_struct, parent->transform(), name) {
+    // GL_Object constructor used for displaying
+    GL_Object::GL_Object(_Window_Advanced_Struct* window_struct, GL_Object* parent, std::string name, std::string texture_name, std::string vao_name) : GL_Object(window_struct, parent->transform(), name) {
         a_name = name;
         if(texture_name != "")a_texture = *window_struct->texture_shared_ptr(texture_name);
         a_vao = window_struct->vao(vao_name);
@@ -57,8 +57,8 @@ namespace scls {
         set_parent(parent);
     }
 
-    // Object destructor
-    Object::~Object() {
+    // GL_Object destructor
+    GL_Object::~GL_Object() {
         if(only_texture_use()) {
             window_struct()->remove_texture(texture());
         }
@@ -68,11 +68,10 @@ namespace scls {
         }
 
         delete_children();
-        delete a_transform; a_transform = 0;
     }
 
     // Delete a child of the object
-    void Object::delete_child(Object* child) {
+    void GL_Object::delete_child(GL_Object* child) {
         if(child == 0) return;
 
         for(int i = 0;i<static_cast<int>(children().size());i++) {
@@ -85,16 +84,16 @@ namespace scls {
     }
 
     // Delete all children of the object
-    void Object::delete_children() {for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] != 0) delete children()[i];}children().clear();}
+    void GL_Object::delete_children() {for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] != 0) delete children()[i];}children().clear();}
 
     //*********
     //
-    // Object graphic functions
+    // GL_Object graphic functions
     //
     //*********
 
     // Hidden parts of the render object
-    void Object::_render(glm::mat4 matrix) {
+    void GL_Object::_render(glm::mat4 matrix) {
         if(vao() != 0) {
             // Write some uniform variables into the shader
             vao()->get_shader_program()->set_uniform4fv_value("model", matrix);
@@ -117,31 +116,31 @@ namespace scls {
         }
 
         for(int i = 0;i<static_cast<int>(children().size());i++) {
-            Object* ob = children()[i];
+            GL_Object* ob = children()[i];
             if(ob->visible()) {
                 ob->render();
             }
         }
     }
-    void Object::render() {glm::mat4 matrix = transform()->get_model_matrix();_render(matrix);}
+    void GL_Object::render() {glm::mat4 matrix = transform()->get_model_matrix();_render(matrix);}
 
     // Function called after every updates
-    void Object::last_update() {};
+    void GL_Object::last_update() {};
     // Reset the object without changing it
-    void Object::soft_reset() {for(int i = 0;i<static_cast<int>(children().size());i++){children()[i]->soft_reset();}};
+    void GL_Object::soft_reset() {for(int i = 0;i<static_cast<int>(children().size());i++){children()[i]->soft_reset();}};
     // Function called during every updates
-    void Object::update() {for(int i = 0;i<static_cast<int>(children().size());i++){children()[i]->update();}};
+    void GL_Object::update() {for(int i = 0;i<static_cast<int>(children().size());i++){children()[i]->update();}};
     // Function called when the events are updated
-    void Object::update_event(){for(int i = 0;i<static_cast<int>(children().size());i++){children()[i]->update_event();}};
+    void GL_Object::update_event(){for(int i = 0;i<static_cast<int>(children().size());i++){children()[i]->update_event();}};
 
     //*********
     //
-    // Object heritage functions
+    // GL_Object heritage functions
     //
     //*********
 
     // Clone the object
-    void* Object::clone(Object* parent, std::string name, std::string texture_name, std::string vao_name) {Object* to_return = new Object(window_struct(), parent, name, texture_name, vao_name);return to_return;}
+    void* GL_Object::clone(GL_Object* parent, std::string name, std::string texture_name, std::string vao_name) {GL_Object* to_return = new GL_Object(window_struct(), parent, name, texture_name, vao_name);return to_return;}
 
     //*********
     //
@@ -150,5 +149,5 @@ namespace scls {
     //*********
 
     // Handle an attribute from XML
-    void Object::set_xml_attribute(std::shared_ptr<XML_Text_Base> text, std::shared_ptr<__XML_Loader> loader_shared_ptr, int& i) {}
+    void GL_Object::set_xml_attribute(std::shared_ptr<XML_Text_Base> text, std::shared_ptr<__XML_Loader> loader_shared_ptr, int& i) {}
 }

@@ -1158,7 +1158,7 @@ namespace scls {
         std::vector<std::shared_ptr<scls::GUI_Text>> a_top_bar_buttons = std::vector<std::shared_ptr<scls::GUI_Text>>();
     };
 
-    class GUI_Page : public Object {
+    class GUI_Page : public GL_Object {
         // Class representing an GUI page to display on the window
     public:
 
@@ -1176,17 +1176,17 @@ namespace scls {
         // Function called when the object is displayed
         virtual void after_displaying() {parent_object()->set_should_render_during_this_frame(true);};
         // Function called after that the window is resized
-        virtual void after_window_resizing(glm::vec2 last_scale){Object::after_window_resizing(last_scale);parent_object()->__after_resizing_window_early_children();parent_object()->__after_resizing_children();};
+        virtual void after_window_resizing(glm::vec2 last_scale){GL_Object::after_window_resizing(last_scale);parent_object()->__after_resizing_window_early_children();parent_object()->__after_resizing_children();};
         // Function called after an XML loading
-        virtual void after_xml_loading() {a_parent_object.get()->after_xml_loading();Object::after_xml_loading();};
+        virtual void after_xml_loading() {a_parent_object.get()->after_xml_loading();GL_Object::after_xml_loading();};
         // Render the page
         virtual void render();
         // Soft reset the page
-        virtual void soft_reset(){parent_object()->soft_reset();Object::soft_reset();};
+        virtual void soft_reset(){parent_object()->soft_reset();GL_Object::soft_reset();};
         // Update the event of the page
         virtual void update_event();
         // Update the page
-        virtual void update(){Object::update();parent_object()->update();};
+        virtual void update(){GL_Object::update();parent_object()->update();};
 
         // Add a child object to the object
         template<typename O> std::shared_ptr<O>* new_object(std::string name) {return a_parent_object.get()->new_object<O>(name, 0, 0); }

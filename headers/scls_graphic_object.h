@@ -44,37 +44,37 @@ namespace scls {
 
     //*********
     //
-    // The Object class
+    // The GL_Object class
     //
     //*********
 
-    class Object {
+    class GL_Object {
         // Class representing an object displayed into the window
     public:
 
         //*********
         //
-        // Object main functions
+        // GL_Object main functions
         //
         //*********
 
-        // Object constructor used to do a page
-        Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name);
-        // Object most basic constructor with a name
-        Object(_Window_Advanced_Struct* window_struct, std::string name);
-        // Object blank constructor
-        Object(_Window_Advanced_Struct* window_struct);
-        // Object most basic constructor with a transform parent
-        Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent);
-        // Most parent Object constructor used for displaying (used for new_object)
-        Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name = "hud_default");
-        // Object constructor used for displaying
-        Object(_Window_Advanced_Struct* window_struct, Object* parent, std::string name, std::string texture_name, std::string vao_name = "hud_default");
-        // Object destructor
-        virtual ~Object();
+        // GL_Object constructor used to do a page
+        GL_Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name);
+        // GL_Object most basic constructor with a name
+        GL_Object(_Window_Advanced_Struct* window_struct, std::string name);
+        // GL_Object blank constructor
+        GL_Object(_Window_Advanced_Struct* window_struct);
+        // GL_Object most basic constructor with a transform parent
+        GL_Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent);
+        // Most parent GL_Object constructor used for displaying (used for new_object)
+        GL_Object(_Window_Advanced_Struct* window_struct, Transform_Object* transform_parent, std::string name, std::string texture_name, std::string vao_name = "hud_default");
+        // GL_Object constructor used for displaying
+        GL_Object(_Window_Advanced_Struct* window_struct, GL_Object* parent, std::string name, std::string texture_name, std::string vao_name = "hud_default");
+        // GL_Object destructor
+        virtual ~GL_Object();
 
         // Delete a child of the object
-        void delete_child(Object* child);
+        void delete_child(GL_Object* child);
         // Delete all children of the object
         void delete_children();
         // Creates an object into the page and returns it
@@ -82,20 +82,20 @@ namespace scls {
         O* new_object(std::string object_name, std::string object_texture = "");
 
         // Returns a child by its name
-        inline Object* child_by_name(std::string child) { for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i]->name() == child) {return children()[i];}}return 0;};
+        inline GL_Object* child_by_name(std::string child) { for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i]->name() == child) {return children()[i];}}return 0;};
 
         // Getters and setters (ONLY WITHOUT ATTRIBUTES)
-        inline bool contains_child(Object* child) { for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] == child) {return true;}}return false;};
+        inline bool contains_child(GL_Object* child) { for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i] == child) {return true;}}return false;};
         inline bool contains_child_by_name(std::string child) { for(int i = 0;i<static_cast<int>(children().size());i++) {if(children()[i]->name() == child) {return true;}}return false;};
         inline bool contains_tag(std::string tag) { for (int i = 0; i < static_cast<int>(tags().size()); i++) { if (tags()[i] == tag) { return true; } } return false; };
 
         // Getters and setters (ONLY WITH ATTRIBUTES)
         inline __Balise_Container* balises() const {return a_window_struct->balises();};
         inline std::shared_ptr<__Balise_Container> balises_shared_ptr() const {return a_window_struct->balises_shared_ptr();};
-        inline std::vector<Object*>& children() {return a_children;};
-        inline Object* parent() const {return a_parent;};
+        inline std::vector<GL_Object*>& children() {return a_children;};
+        inline GL_Object* parent() const {return a_parent;};
         inline std::string name() const { return a_name; };
-        inline void set_parent(Object* new_parent) {
+        inline void set_parent(GL_Object* new_parent) {
             if(parent() != 0) {
                 parent()->_remove_child(this);
             }
@@ -108,7 +108,7 @@ namespace scls {
         };
         inline void set_visible(bool new_visible) {a_visible = new_visible;};
         inline std::vector<std::string>& tags() { return a_tags; };
-        inline Transform_Object* transform() { return a_transform; };
+        inline Transform_Object* transform() { return a_transform.get(); };
         inline std::vector<std::string> type() {return a_type;};
         inline std::string type(unsigned short position) {if(position >= a_type.size())return "";return a_type[position];};
         inline bool visible() const {return a_visible;};
@@ -116,7 +116,7 @@ namespace scls {
 
         //*********
         //
-        // Object graphic functions
+        // GL_Object graphic functions
         //
         //*********
 
@@ -157,7 +157,7 @@ namespace scls {
 
         //*********
         //
-        // Object heritage functions
+        // GL_Object heritage functions
         //
         //*********
 
@@ -166,9 +166,9 @@ namespace scls {
         // Function called after an XML loading
         virtual void after_xml_loading() {};
         // Function called when a child is deleted
-        virtual void child_deleted(Object* child) { parent()->child_deleted(child); };
+        virtual void child_deleted(GL_Object* child) { parent()->child_deleted(child); };
         // Clone the object
-        virtual void* clone(Object* parent, std::string a_name, std::string texture_name, std::string vao_name = "hud_default");
+        virtual void* clone(GL_Object* parent, std::string a_name, std::string texture_name, std::string vao_name = "hud_default");
         // Function called after every updates
         virtual void last_update();
         // Reset the object without changing it
@@ -180,7 +180,7 @@ namespace scls {
 
         //*********
         //
-        // Object transformation facilities
+        // GL_Object transformation facilities
         //
         //*********
 
@@ -205,7 +205,7 @@ namespace scls {
         bool a_only_texture_user = false;
     private:
         // Remove a children
-        inline void _remove_child(Object* child) {
+        inline void _remove_child(GL_Object* child) {
             for(int i = 0;i<static_cast<int>(children().size());i++) {
                 if(children()[i] == child) {
                     children().erase(children().begin() + i);
@@ -216,9 +216,9 @@ namespace scls {
 
         // Basic object descriptor
         // Children of this object
-        std::vector<Object*> a_children = std::vector<Object*>();
+        std::vector<GL_Object*> a_children = std::vector<GL_Object*>();
         // Parent of the object
-        Object* a_parent = 0;
+        GL_Object* a_parent = 0;
         // Name of the object
         std::string a_name = "";
         // Tags about the object
@@ -228,7 +228,7 @@ namespace scls {
 
         // Basic object must-have
         // Transform object attached
-        Transform_Object* a_transform = 0;
+        std::shared_ptr<Transform_Object> a_transform;
         // Base struct in the game
         _Window_Advanced_Struct* a_window_struct = 0;
 
@@ -239,7 +239,7 @@ namespace scls {
 
     // Creates an object into the page and returns it
     template <typename O>
-    O* Object::new_object(std::string object_name, std::string object_texture) {
+    O* GL_Object::new_object(std::string object_name, std::string object_texture) {
         if(contains_child_by_name(object_name)) {
             scls::print("Warning", "SCLS Page", "The \"" + object_name + "\" object you want to add in the page \"" + name() + "\" already exist.");
             return 0;

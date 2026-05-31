@@ -62,6 +62,8 @@ namespace scls {
         void set_uniformb_value(std::string name, bool v); // Change the value of a uniform bool value
         void set_uniform1f_value(std::string name, float v1); // Change the value of a uniform float value
         void set_uniform2f_value(std::string name, float v1, float v2); // Change the value of a uniform vec2 float value
+        void set_uniform3f_value(std::string name, Point_3D p);
+        void set_uniform3f_value(std::string name, glm::vec3 p);
         void set_uniform3f_value(std::string name, float v1, float v2, float v3); // Change the value of a uniform vec3 float value
         void set_uniform4f_value(std::string name, float v1, float v2, float v3, float v4); // Change the value of a uniform vec4 float value
         void set_uniform4f_value(std::string name, glm::vec4 v); // Change the value of a uniform vec4 float value

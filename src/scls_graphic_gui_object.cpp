@@ -1946,7 +1946,7 @@ namespace scls {
     std::shared_ptr<__Balise_Container> gui_loading_balises;
 
     // GUI_Page most basic constructor
-    GUI_Page::GUI_Page(_Window_Advanced_Struct* window_struct, std::string name) : Object(window_struct, name) {
+    GUI_Page::GUI_Page(_Window_Advanced_Struct* window_struct, std::string name) : GL_Object(window_struct, name) {
         set_scale(glm::vec3(2, 2, 1));
 
         a_parent_object = std::make_shared<GUI_Main_Object>(*window_struct, "main_" + name);
@@ -1992,11 +1992,11 @@ namespace scls {
                 print("Warning", "SCLS Graphic Benoit page \"" + name() + "\"", "The path \"" + final_path + "\" you want to load as the content of this page does not exist.");
             }
         }
-        else {Object::set_xml_attribute(text, loader_shared_ptr, i);}
+        else {GL_Object::set_xml_attribute(text, loader_shared_ptr, i);}
     }
 
     // Update the event of the page
-    void GUI_Page::update_event() {Object::update_event();parent_object()->update_event();}
+    void GUI_Page::update_event() {GL_Object::update_event();parent_object()->update_event();}
 
     //*********
     //
