@@ -1070,7 +1070,7 @@ namespace scls {
             if(attached_text_image() == 0) {set_text(text_to_add);set_cursor_position_in_formatted_text(plain_text_size());}
             else {
                 // Add the lines if needed
-                unsigned int cursor_position = attached_text_image()->cursor_position_in_full_text();
+                //unsigned int cursor_position = attached_text_image()->cursor_position_in_full_text();
                 int new_line = count_string(text_to_add, "</br>");
                 for(int i = 0;i<new_line;i++) {
                     /*if((attached_text_image()->line_number_at_position(cursor_position) - line_offset()) < static_cast<int>(children().size())) {
@@ -1216,7 +1216,7 @@ namespace scls {
     // Places the blocks in the text
     void __GUI_Text_Metadatas::place_blocks() {
         // Place each children
-        unsigned int total_height = 0;
+        //unsigned int total_height = 0;
         for(int i = 0;i<static_cast<int>(a_blocks_children.size());i++) {
             if(a_blocks_children[i].get() != 0) {
                 // Place the X
@@ -1426,7 +1426,9 @@ namespace scls {
             a_blocks_children.clear();
 
             int cursor_pos = 0;if(attached_text_image() != 0){cursor_pos = attached_text_image()->cursor_position_in_plain_text();}
-            unsigned int total_height = 0;int total_lines = 0;attached_text_image()->generate_words();
+            unsigned int total_height = 0;
+            //int total_lines = 0;
+            attached_text_image()->generate_words();
             if(attached_text_image() != 0){attached_text_image()->set_cursor_position_in_plain_text(cursor_pos);}
 
             // Load words

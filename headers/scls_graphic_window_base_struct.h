@@ -354,6 +354,9 @@ namespace scls {
         inline int window_height() const { return a_window_height; };
         inline int window_width() const { return a_window_width; };
 
+        // FPS (TEMP, TO AVOID ABSOLUTELY)
+        inline void set_delta_time(double new_delta_time) { a_delta_time = new_delta_time; };
+
         //*********
         //
         // SCLS Text generator
@@ -438,9 +441,6 @@ namespace scls {
         //*********
 
         // Getters and setters
-
-        // FPS
-        inline void set_delta_time(double new_delta_time) { a_delta_time = new_delta_time; };
 
         // Keyboard
         inline std::map<std::string, Key_State>& keys_state() { return a_keys_state; };

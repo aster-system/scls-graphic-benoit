@@ -72,7 +72,7 @@ namespace scls {
 
         // Add an existing shader program into the game
         inline Shader_Program* add_shader_program(std::string shader_program_name, const Shader_Program& shader_program) {
-            if (!contains_shader_program(shader_program_name)) {a_shaders_programs[shader_program_name] = shader_program;return &a_shaders_programs[shader_program_name];}
+            if (!contains_shader_program(shader_program_name)) {a_shaders_programs[shader_program_name] = std::make_shared<Shader_Program>(shader_program);return a_shaders_programs[shader_program_name].get();}
             else print("Warning", "SCLS Window", "The \"" + shader_program_name + "\" Shader Program you want to add already exists.");
             return 0;
         };
@@ -84,7 +84,7 @@ namespace scls {
         };
 
         // Returns if the struct contains a shader program
-        inline bool contains_shader_program(std::string name) {for (std::map<std::string, Shader_Program>::iterator it = a_shaders_programs.begin(); it != a_shaders_programs.end(); it++) {if (it->first == name) return true;}return false;};
+        inline bool contains_shader_program(std::string name) {for (std::map<std::string, std::shared_ptr<Shader_Program>>::iterator it = a_shaders_programs.begin(); it != a_shaders_programs.end(); it++) {if (it->first == name){return true;}}return false;};
         // Returns if the struct contains a textures
         inline bool contains_texture(std::string name) {for (std::map<std::string, std::shared_ptr<Texture>>::iterator it = textures().begin(); it != textures().end(); it++) {if (it->first == name) return true;}return false;};
         // Returns if the struct contains a VAO
@@ -109,6 +109,8 @@ namespace scls {
         void unload_vbos();
 
         // Create new models
+        // Create a new shader program
+        std::shared_ptr<Shader_Program> new_shader_program(std::string name, std::string vertex_shader, std::string fragment_shader);
         // Create a texture to the window
         Texture* new_texture(std::string name, std::string path, bool texture_resize = false);
         std::shared_ptr<Texture>* new_texture_shared_ptr(std::string name, unsigned short width, unsigned short height, Color color);
@@ -146,7 +148,7 @@ namespace scls {
         //*********
 
         // Each shaders, with their name as key, in the window
-        std::map<std::string, Shader_Program> a_shaders_programs = std::map<std::string, Shader_Program>();
+        std::map<std::string, std::shared_ptr<Shader_Program>> a_shaders_programs = std::map<std::string, std::shared_ptr<Shader_Program>>();
         // Each Textures, with their name as key, in the window
         std::map<std::string, std::shared_ptr<Texture>> a_textures = std::map<std::string, std::shared_ptr<Texture>>();
         // Each VAOs, with their name as key, in the window

@@ -69,7 +69,7 @@ namespace scls {
         void set_uniform4f_value(std::string name, glm::vec4 v); // Change the value of a uniform vec4 float value
         // Change the value of a uniform color value
         inline void set_uniform4f_value(std::string name, scls::Color color){set_uniform4f_value(name, static_cast<double>(color.red()) / 255.0, static_cast<double>(color.green()) / 255.0, static_cast<double>(color.blue()) / 255.0, static_cast<double>(color.alpha()) / 255.0);};
-        void set_uniform4fv_value(std::string name, glm::mat4 fv); // Change the value of a uniform mat4 float value
+        void set_uniform4fv_value(std::string name, glm::mat4 fv);
         void use(); // Start using the shader
         ~Shader_Program(); // Shader_Program destructor
 
@@ -81,6 +81,8 @@ namespace scls {
         // Return the default shaders
         static std::string curved_vertex_shader();
         static std::string default_fragment_shader();
+        static std::string default_fragment_shader_base_end();
+        static std::string default_fragment_shader_base_start();
         static std::string default_gui_blend_colors();
         static std::string default_gui_border_handling() {return std::string("if(tex_pos[0] < border_width.y || tex_pos[1] < border_width.z || tex_pos[0] > 1.0 - border_width.w || tex_pos[1] > 1.0 - border_width.x){final_color = blend_colors(border_color, final_color);}");};
         static std::string default_gui_extremum_handling() {return std::string("if(tex_pos.x > object_extremum.z || tex_pos.x < object_extremum.x || tex_pos.y > object_extremum.w || tex_pos.y < object_extremum.y){discard;}");};
@@ -190,7 +192,7 @@ namespace scls {
 
 
         // Getters and setters
-        inline Shader_Program* get_shader_program() { return a_shader_program; };
+        inline Shader_Program* get_shader_program() { return a_shader_program.get(); };
         inline unsigned int& get_vao() { return vao; };
         inline VBO* get_vbo() { return a_vbo.get(); };
         inline bool loaded() {return a_loaded;};
@@ -200,9 +202,9 @@ namespace scls {
         unsigned int vao = 0; // Handle to the VAO
 
         // Pointer to the shader program
-        Shader_Program *a_shader_program = 0;
+        std::shared_ptr<Shader_Program> a_shader_program;
         // Shared pointer to the VBO
-        std::shared_ptr<VBO> a_vbo = 0;
+        std::shared_ptr<VBO> a_vbo;
     };
 
     //*********

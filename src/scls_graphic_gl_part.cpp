@@ -142,49 +142,56 @@ namespace scls {
     };
 
     // Returns the default fragment and vertex shader
-    std::string Shader_Program::default_fragment_shader() {
-            std::string to_return = "#version 330 core\n";
+    std::string Shader_Program::default_fragment_shader_base_end() {std::string to_return = std::string();return to_return;}
+    std::string Shader_Program::default_fragment_shader_base_start() {
+        std::string to_return = "#version 330 core\n";
             to_return += "in vec3 frag_pos;\n";
             to_return += "in vec3 normal;\n";
             to_return += "in vec3 tex_multiplier;\n";
             to_return += "in vec2 tex_pos;\n";
             to_return += "in vec4 tex_rect;\n";
             to_return += "out vec4 FragColor;\n";
+            to_return += "uniform float passed_time;\n";
             to_return += "uniform bool reverse_texture_x;\n";
             to_return += "uniform bool reverse_texture_y;\n";
             to_return += "uniform vec3 scale;\n";
             to_return += "uniform sampler2D texture_0;\n";
             to_return += "uniform bool texture_binded;\n";
 
-            // Use the lighting function
-            //to_return += shader_content::lighting_function();
-
-            // Get the good position of the object
-            to_return += "void main(){\n";
-            to_return += "vec4 final_color = vec4(0, 0, 0, 0);\n";
-            to_return += "if(texture_binded){";
-            to_return += "  vec2 final_tex_pos = tex_pos * tex_rect.zw;";
-            to_return += "  if(reverse_texture_x){final_tex_pos.x = 1.0 - final_tex_pos.x;}";
-            to_return += "  if(reverse_texture_y){final_tex_pos.y = 1.0 - final_tex_pos.y;}";
-            to_return += "  if (tex_multiplier.x == 1) final_tex_pos.x = final_tex_pos.x * scale.x;";
-            to_return += "  else if (tex_multiplier.x == 2) final_tex_pos.y = final_tex_pos.y * scale.x;";
-            to_return += "  if (tex_multiplier.y == 1) final_tex_pos.x = final_tex_pos.x * scale.y;";
-            to_return += "  else if (tex_multiplier.y == 2) final_tex_pos.y = final_tex_pos.y * scale.y;\n";
-            to_return += "  if(tex_multiplier.z == 1) final_tex_pos.x = final_tex_pos.x * scale.z;\n";
-            to_return += "  else if (tex_multiplier.z == 2)final_tex_pos.y = final_tex_pos.y * scale.z;\n";
-            to_return += "  while(final_tex_pos.x > tex_rect[2])final_tex_pos.x -= tex_rect[2];\n";
-            to_return += "  while(final_tex_pos.y > tex_rect[3])final_tex_pos.y -= tex_rect[3];\n";
-            to_return += "  final_color = texture(texture_0, tex_rect.xy + final_tex_pos);\n";
-            to_return += "} else {";
-            to_return += "final_color = vec4(1, 0, 0, 1);";
-            to_return += "}";
-
-            // Edit the color as necesary with lighting
-            //to_return += "final_color = apply_lighting(final_color);\n";
-            to_return += "FragColor = final_color;\n";
-            to_return += "}";
             return to_return;
-        };
+    }
+    std::string Shader_Program::default_fragment_shader() {
+        std::string to_return = default_fragment_shader_base_start();
+
+        // Use the lighting function
+        //to_return += shader_content::lighting_function();
+
+        // Get the good position of the object
+        to_return += "void main(){\n";
+        to_return += "vec4 final_color = vec4(0, 0, 0, 0);\n";
+        to_return += "if(texture_binded){";
+        to_return += "  vec2 final_tex_pos = tex_pos * tex_rect.zw;";
+        to_return += "  if(reverse_texture_x){final_tex_pos.x = 1.0 - final_tex_pos.x;}";
+        to_return += "  if(reverse_texture_y){final_tex_pos.y = 1.0 - final_tex_pos.y;}";
+        to_return += "  if (tex_multiplier.x == 1) final_tex_pos.x = final_tex_pos.x * scale.x;";
+        to_return += "  else if (tex_multiplier.x == 2) final_tex_pos.y = final_tex_pos.y * scale.x;";
+        to_return += "  if (tex_multiplier.y == 1) final_tex_pos.x = final_tex_pos.x * scale.y;";
+        to_return += "  else if (tex_multiplier.y == 2) final_tex_pos.y = final_tex_pos.y * scale.y;\n";
+        to_return += "  if(tex_multiplier.z == 1) final_tex_pos.x = final_tex_pos.x * scale.z;\n";
+        to_return += "  else if (tex_multiplier.z == 2)final_tex_pos.y = final_tex_pos.y * scale.z;\n";
+        to_return += "  while(final_tex_pos.x > tex_rect[2])final_tex_pos.x -= tex_rect[2];\n";
+        to_return += "  while(final_tex_pos.y > tex_rect[3])final_tex_pos.y -= tex_rect[3];\n";
+        to_return += "  final_color = texture(texture_0, tex_rect.xy + final_tex_pos);\n";
+        to_return += "} else {";
+        to_return += "final_color = vec4(1, 0, 0, 1);";
+        to_return += "}";
+
+        // Edit the color as necesary with lighting
+        //to_return += "final_color = apply_lighting(final_color);\n";
+        to_return += "FragColor = final_color;\n";
+        to_return += "}";
+        return to_return;
+    };
     std::string Shader_Program::default_vertex_shader() {
         std::string to_return = "#version 330 core\n";
         to_return += "layout(location = 1) in vec3 in_normal;\n";
@@ -674,7 +681,7 @@ namespace scls {
     VAO::VAO(const std::shared_ptr<VBO>& vbo) : a_vbo(vbo) {}
 
     // Most usefull VAO constructor
-    VAO::VAO(Shader_Program shader_program, const std::shared_ptr<VBO>& vbo) : VAO(vbo) {a_shader_program = shader_program.new_copy();}
+    VAO::VAO(Shader_Program shader_program, const std::shared_ptr<VBO>& vbo) : VAO(vbo) {a_shader_program = std::shared_ptr<Shader_Program>(shader_program.new_copy());}
 
     // VAO constructor
     VAO::VAO(std::string shader_path, const std::shared_ptr<VBO>& vbo) : VAO(load_shader_program(shader_path), vbo) {}
@@ -752,7 +759,7 @@ namespace scls {
     unsigned int VAO::triangle_number() {return get_vbo()->get_vertice_number() / 3.0;}
 
     // VAO destructor
-    VAO::~VAO() {delete get_shader_program(); a_shader_program = 0;glDeleteVertexArrays(1, &vao);}
+    VAO::~VAO() {glDeleteVertexArrays(1, &vao);}
 
     //*********
     //

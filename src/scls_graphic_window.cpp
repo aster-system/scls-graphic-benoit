@@ -362,9 +362,9 @@ namespace scls {
         double current_time = scls::time_ns() / 1000000000.0;
         set_delta_time(current_time - a_last_frame_time);
         a_last_frame_time = current_time;
-        a_execution_time += delta_time();
 
         if (delta_time() > 1.0){set_delta_time(0);}
+        a_execution_time += delta_time();
 
         // FPS calculation
         a_time_since_last_fps_calculation += delta_time();
