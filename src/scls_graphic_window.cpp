@@ -292,7 +292,7 @@ namespace scls {
     };
     void Window::__render() {
         // Clear the window
-        if(!a_cleared){clear_window();};
+        if(!a_cleared){clear_window();}
 
         // Debug mode
         if(debug_mode() & 1){scls::print(std::string("SCLS GUI Window"), std::string("Start rendering 3D pages..."));}
