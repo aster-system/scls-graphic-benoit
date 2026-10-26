@@ -31,40 +31,45 @@ namespace scls {
         a_shaders_programs["curved"] = std::make_shared<Shader_Program>(Shader_Program::Curved);
 
         // Create a base texture
-        textures()["black"] = std::make_shared<Texture>(5, 5, glm::vec4(0, 0, 0, 255));
-        textures()["transparent"] = std::make_shared<Texture>(5, 5, glm::vec4(0, 0, 0, 0));
-        textures()["white"] = std::make_shared<Texture>(5, 5, glm::vec4(255, 255, 255, 255));
+        textures()["black"] = std::make_shared<Texture>("black", 5, 5, glm::vec4(0, 0, 0, 255));
+        textures()["transparent"] = std::make_shared<Texture>("transparent", 5, 5, glm::vec4(0, 0, 0, 0));
+        textures()["white"] = std::make_shared<Texture>("white", 5, 5, glm::vec4(255, 255, 255, 255));
 
         // Define attributes for VAOs
         object_3d_attributes = _base_3d_shader_program_variables();
         std::vector<Shader_Program_Variable> gui_attributes = _base_hud_shader_program_variables();
 
         // Create VAOs
+
         // GUI VAO
         std::shared_ptr<VBO> gui_vbo = std::make_shared<VBO>(gui_attributes, VBO::gui_vbo(gui_attributes), false); add_vbo("gui_default", gui_vbo);
-        vaos()["gui_default"] = std::make_shared<VAO>(*a_shaders_programs["gui_default"].get(), gui_vbo);
+        vaos()["gui_default"] = std::make_shared<VAO>("gui_default", *a_shaders_programs["gui_default"].get(), gui_vbo);
         vaos()["gui_default"].get()->load_vao();
-        vaos()["gui_simplified"] = std::make_shared<VAO>(*a_shaders_programs["gui_simplified"].get(), gui_vbo);
+        vaos()["gui_simplified"] = std::make_shared<VAO>("gui_simplified", *a_shaders_programs["gui_simplified"].get(), gui_vbo);
         vaos()["gui_simplified"].get()->load_vao();
-        // Cube VAO
-        //std::shared_ptr<VBO> cube_vbo = std::make_shared<VBO>(object_3d_attributes, VBO::cube_vbo(), false); add_vbo("cube", cube_vbo);
-        //vaos()["cube"] = std::make_shared<VAO>(a_shaders_programs["default"], object_3d_attributes, cube_vbo);
-        //vaos()["cube"].get()->load_vao();
+
         // One faced cube VAO
         std::shared_ptr<VBO> one_faced_cube_vbo = std::make_shared<VBO>();
         one_faced_cube_vbo.get()->load_from_binary(model_maker::regular_polygon_3d(4).get()->binary_vbo_complete().get()->datas());
         add_vbo("one_faced_cube", one_faced_cube_vbo);
         new_vao("one_faced_cube", "one_faced_cube", "default");
+
+        // Cube VAO
         std::shared_ptr<VBO> cube_vbo = std::make_shared<VBO>(object_3d_attributes, VBO::cube_vbo(), false);
         add_vbo("cube", cube_vbo);
         new_vao("cube", "cube", "default");
+
         // Curved one faced cube VAO
         std::shared_ptr<VBO> one_faced_cube_vbo_curved = std::make_shared<VBO>();
         std::shared_ptr<model_maker::Solid> needed_solid = model_maker::regular_polygon_3d(4); needed_solid.get()->set_x(0.5);
         one_faced_cube_vbo_curved.get()->load_from_binary(needed_solid.get()->binary_vbo_complete(model_maker::Point::_VT_Curved).get()->datas());
         add_vbo("one_faced_cube_curved", one_faced_cube_vbo_curved); new_vao("one_faced_cube_curved", "one_faced_cube_curved", "curved");
         vaos()["cube_curved"] = vaos()["one_faced_cube_curved"];
-        //int* a = 0; *a += 5;
+
+        // Plane VAO
+        std::shared_ptr<VBO> plane_vbo = std::make_shared<VBO>(object_3d_attributes, VBO::plane_vbo(), false);
+        add_vbo("plane", plane_vbo);
+        new_vao("plane", "plane", "default");
     }
 
     // Create a new shader program
@@ -111,7 +116,7 @@ namespace scls {
     Texture* _Window_Advanced_Struct::new_texture(std::string name, std::string path, bool texture_resize) {
         if(std::filesystem::exists(path)) {
             if (!contains_texture(name)) {
-                std::shared_ptr<Texture> texture = std::make_shared<Texture>(path, texture_resize);
+                std::shared_ptr<Texture> texture = std::make_shared<Texture>(name, path, texture_resize);
                 texture.get()->change_texture();
                 textures()[name] = texture;
 
@@ -125,7 +130,7 @@ namespace scls {
     }
     std::shared_ptr<Texture>* _Window_Advanced_Struct::new_texture_shared_ptr(std::string name, unsigned short width, unsigned short height, Color color) {
         if (!contains_texture(name)) {
-            std::shared_ptr<Texture> texture = std::make_shared<Texture>(width, height, color);
+            std::shared_ptr<Texture> texture = std::make_shared<Texture>(name, width, height, color);
             texture.get()->change_texture();
             textures()[name] = texture;
             return &textures()[name];
@@ -136,7 +141,7 @@ namespace scls {
     Texture* _Window_Advanced_Struct::new_texture(std::string name) {
         if (!contains_texture(name))
         {
-            std::shared_ptr<Texture> texture = std::make_shared<Texture>();
+            std::shared_ptr<Texture> texture = std::make_shared<Texture>(name);
             textures()[name] = texture;
             return texture.get();
         }
@@ -145,7 +150,7 @@ namespace scls {
     }
     std::shared_ptr<Texture>* _Window_Advanced_Struct::new_texture_shared_ptr(std::string name, std::shared_ptr<__Image_Base> image, bool texture_resize) {
         if (!contains_texture(name)) {
-            std::shared_ptr<Texture> texture = std::make_shared<Texture>(image, texture_resize);
+            std::shared_ptr<Texture> texture = std::make_shared<Texture>(name, image, texture_resize);
             texture.get()->change_texture();
             textures()[name] = texture;
             return &textures()[name];
@@ -188,7 +193,7 @@ namespace scls {
             }
             if(!contains_shader_program(shader)) {print("Warning", "SCLS Window", "The \"" + name + "\" VAO use the \"" + shader + "\" Shader, which does not exist.");}
 
-            vaos()[name] = std::make_shared<VAO>(*a_shaders_programs[shader].get(), vbos()[vbo]);
+            vaos()[name] = std::make_shared<VAO>(name, *a_shaders_programs[shader].get(), vbos()[vbo]);
             vaos()[name].get()->load_vao();
             return &vaos()[name];
         }

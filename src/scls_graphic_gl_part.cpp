@@ -606,6 +606,147 @@ namespace scls {
     }
     std::vector<double> VBO::gui_vbo(){std::vector<Shader_Program_Variable> attributes = std::vector<Shader_Program_Variable>(5);return gui_vbo(attributes);};
 
+    // Returns the datas for a plane vbo
+    std::vector<double> VBO::plane_vbo(){std::vector<Shader_Program_Variable> attributes = std::vector<Shader_Program_Variable>(5);return plane_vbo(attributes);};
+    std::vector<double> VBO::plane_vbo(std::vector<Shader_Program_Variable> attributes) {
+    	std::vector<double> a_datas = std::vector<double>();
+		a_datas.push_back(0.5);
+		a_datas.push_back(0);
+		a_datas.push_back(0.5);
+
+		a_datas.push_back(0);
+		a_datas.push_back(1.0);
+		a_datas.push_back(0);
+
+		a_datas.push_back(1.0);
+		a_datas.push_back(1.0);
+
+		if (attributes.size() > 2) {
+			a_datas.push_back(0.0);
+			a_datas.push_back(0.0);
+			a_datas.push_back(1.0);
+			a_datas.push_back(1.0);
+
+			a_datas.push_back(0.0);
+			a_datas.push_back(-1.0);
+			a_datas.push_back(1.0);
+		}
+
+		a_datas.push_back(-0.5);
+		a_datas.push_back(0);
+		a_datas.push_back(0.5);
+
+		a_datas.push_back(0);
+		a_datas.push_back(1.0);
+		a_datas.push_back(0);
+
+		a_datas.push_back(0.0);
+		a_datas.push_back(1.0);
+
+		if (attributes.size() > 2) {
+			a_datas.push_back(0.0);
+			a_datas.push_back(0.0);
+			a_datas.push_back(1.0);
+			a_datas.push_back(1.0);
+
+			a_datas.push_back(0.0);
+			a_datas.push_back(-1.0);
+			a_datas.push_back(1.0);
+		}
+
+		a_datas.push_back(0.5);
+		a_datas.push_back(0);
+		a_datas.push_back(-0.5);
+
+		a_datas.push_back(0);
+		a_datas.push_back(1.0);
+		a_datas.push_back(0);
+
+		a_datas.push_back(1.0);
+		a_datas.push_back(0.0);
+
+		if (attributes.size() > 2) {
+			a_datas.push_back(0.0);
+			a_datas.push_back(0.0);
+			a_datas.push_back(1.0);
+			a_datas.push_back(1.0);
+
+			a_datas.push_back(0.0);
+			a_datas.push_back(-1.0);
+			a_datas.push_back(1.0);
+		}
+
+		// Triangle 2
+
+		a_datas.push_back(0.5);
+		a_datas.push_back(0);
+		a_datas.push_back(-0.5);
+
+		a_datas.push_back(0);
+		a_datas.push_back(1.0);
+		a_datas.push_back(0);
+
+		a_datas.push_back(1.0);
+		a_datas.push_back(0.0);
+
+		if (attributes.size() > 2) {
+			a_datas.push_back(0.0);
+			a_datas.push_back(0.0);
+			a_datas.push_back(1.0);
+			a_datas.push_back(1.0);
+
+			a_datas.push_back(0.0);
+			a_datas.push_back(-1.0);
+			a_datas.push_back(1.0);
+		}
+
+		a_datas.push_back(-0.5);
+		a_datas.push_back(0);
+		a_datas.push_back(0.5);
+
+		a_datas.push_back(0);
+		a_datas.push_back(1.0);
+		a_datas.push_back(0);
+
+		a_datas.push_back(0.0);
+		a_datas.push_back(1.0);
+
+		if (attributes.size() > 2) {
+			a_datas.push_back(0.0);
+			a_datas.push_back(0.0);
+			a_datas.push_back(1.0);
+			a_datas.push_back(1.0);
+
+			a_datas.push_back(0.0);
+			a_datas.push_back(-1.0);
+			a_datas.push_back(1.0);
+		}
+
+		a_datas.push_back(-0.5);
+		a_datas.push_back(0);
+		a_datas.push_back(-0.5);
+
+		a_datas.push_back(0);
+		a_datas.push_back(1.0);
+		a_datas.push_back(0);
+
+		a_datas.push_back(0.0);
+		a_datas.push_back(0.0);
+
+		if (attributes.size() > 2) {
+			a_datas.push_back(0.0);
+			a_datas.push_back(0.0);
+			a_datas.push_back(1.0);
+			a_datas.push_back(1.0);
+
+			a_datas.push_back(0.0);
+			a_datas.push_back(-1.0);
+			a_datas.push_back(1.0);
+		}
+
+		return a_datas;
+    }
+
     // Load the VBO from binary
     void VBO::load_from_binary(char* binary) {
         unsigned int cursor_pos = 0;
@@ -678,13 +819,13 @@ namespace scls {
     //*********
 
     // Most basic VAO constructor
-    VAO::VAO(const std::shared_ptr<VBO>& vbo) : a_vbo(vbo) {}
+    VAO::VAO(std::string name, const std::shared_ptr<VBO>& vbo) : a_name(name), a_vbo(vbo) {}
 
     // Most usefull VAO constructor
-    VAO::VAO(Shader_Program shader_program, const std::shared_ptr<VBO>& vbo) : VAO(vbo) {a_shader_program = std::shared_ptr<Shader_Program>(shader_program.new_copy());}
+    VAO::VAO(std::string name, Shader_Program shader_program, const std::shared_ptr<VBO>& vbo) : VAO(name, vbo) {a_shader_program = std::shared_ptr<Shader_Program>(shader_program.new_copy());}
 
     // VAO constructor
-    VAO::VAO(std::string shader_path, const std::shared_ptr<VBO>& vbo) : VAO(load_shader_program(shader_path), vbo) {}
+    VAO::VAO(std::string name, std::string shader_path, const std::shared_ptr<VBO>& vbo) : VAO(name, load_shader_program(shader_path), vbo) {}
 
     // Bind the VAO into the GPU memory
     void VAO::bind(glm::vec3 scale) {a_shader_program->use();glBindVertexArray(vao);a_shader_program->set_uniform3f_value("scale", scale.x, scale.y, scale.z);}
@@ -768,12 +909,12 @@ namespace scls {
     //*********
 
     // Texture constructor
-    Texture::Texture(std::string a_texture_path, bool a_resize): a_image(new __Image_Base()), resize(a_resize), texture_path(a_texture_path) {if(a_texture_path != std::string()){get_image()->load_from_path(texture_path);get_image()->flip_x();load_texture();}}
-    Texture::Texture(std::shared_ptr<__Image_Base> image, bool a_resize) : Texture("", false) {a_image=image;load_texture();}
-    Texture::Texture(unsigned short width, unsigned short height, glm::vec4 color, bool a_resize) : Texture("", false) {a_image.reset(new __Image_Base(width, height, color[0], color[1], color[2], color[3]));load_texture();}
-    Texture::Texture(unsigned short width, unsigned short height, scls::Color color, bool a_resize) : Texture("", false) {a_image.reset(new __Image_Base(width, height, color));load_texture();}
-    Texture::Texture() : Texture(1, 1, scls::Color(255, 0, 0), false) {}
-    Texture::Texture(Texture& texture_to_copy) : Texture(texture_to_copy.width, texture_to_copy.height, glm::vec4(0, 0, 0, 0), texture_to_copy.use_resize()) {get_image()->paste(texture_to_copy.get_image(), 0, 0, 1.0); change_texture();texture_to_copy.a_copy_count++;}
+    Texture::Texture(std::string name, std::string a_texture_path, bool a_resize): a_image(new __Image_Base()), a_name(name), resize(a_resize), texture_path(a_texture_path) {if(a_texture_path != std::string()){get_image()->load_from_path(texture_path);get_image()->flip_x();load_texture();}}
+    Texture::Texture(std::string name, std::shared_ptr<__Image_Base> image, bool a_resize) : Texture(name, "", false) {a_image=image;load_texture();}
+    Texture::Texture(std::string name, unsigned short width, unsigned short height, glm::vec4 color, bool a_resize) : Texture(name, "", false) {a_image.reset(new __Image_Base(width, height, color[0], color[1], color[2], color[3]));load_texture();}
+    Texture::Texture(std::string name, unsigned short width, unsigned short height, scls::Color color, bool a_resize) : Texture(name, "", false) {a_image.reset(new __Image_Base(width, height, color));load_texture();}
+    Texture::Texture(std::string name) : Texture(name, 1, 1, scls::Color(255, 0, 0), false) {}
+    Texture::Texture(Texture& texture_to_copy) : Texture(texture_to_copy.a_name, texture_to_copy.width, texture_to_copy.height, glm::vec4(0, 0, 0, 0), texture_to_copy.use_resize()) {get_image()->paste(texture_to_copy.get_image(), 0, 0, 1.0); change_texture();texture_to_copy.a_copy_count++;}
 
     // Bind the texture into the GPU memory
     void Texture::bind() { glBindTexture(GL_TEXTURE_2D, texture_id); }

@@ -136,7 +136,7 @@ namespace scls {
         // Create a new 2D page to the Window and return it
         template <typename _P> std::shared_ptr<_P> new_page_2d(std::string page_name);
         // Create a new 3D page to the Window and return it
-        template <typename _P> std::shared_ptr<_P>* new_page_3d(std::string page_name);
+        template <typename _P> std::shared_ptr<_P> new_page_3d(std::string page_name);
 
         // If the window should render during this frame
         bool should_render_during_this_frame();
@@ -288,18 +288,16 @@ namespace scls {
 
     // Create a new 3D page to the Window and return it
     template <typename _P>
-    std::shared_ptr<_P>* Window::new_page_3d(std::string page_name) {
+    std::shared_ptr<_P> Window::new_page_3d(std::string page_name) {
         if(contains_page_3d(page_name)) {
             scls::print("Warning", "SCLS Window", "The \"" + page_name + "\" 3D page you want to add in the window already exist.");
             return 0;
         }
 
+        // Create the page
         std::shared_ptr<_P> page = std::make_shared<_P>(this, page_name);
         pages_3d()[page_name] = page;
-
-        // Return the static pointer
-        std::shared_ptr<_P>* to_return = reinterpret_cast<std::shared_ptr<_P>*>(&pages_3d()[page_name]);
-        return to_return;
+        return page;
     };
 }
 

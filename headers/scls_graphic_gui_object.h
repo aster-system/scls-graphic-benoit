@@ -251,7 +251,7 @@ namespace scls {
         inline __Image_Base* image() {return texture()->get_image();};
         inline bool resize_texture() {return texture()->use_resize();};
         inline void set_should_render_during_this_frame(bool new_should_render) {if(!a_rendered_during_this_frame && new_should_render && parent() != 0){parent()->set_should_render_during_this_frame(true);}a_rendered_during_this_frame = new_should_render;};
-        inline void set_texture(std::shared_ptr<__Image_Base> new_texture, bool remove_last_texture = true) {std::shared_ptr<Texture> needed_texture = std::make_shared<Texture>();needed_texture.get()->set_image(new_texture);set_texture(needed_texture, remove_last_texture);};
+        inline void set_texture(std::shared_ptr<__Image_Base> new_texture, bool remove_last_texture = true) {std::shared_ptr<Texture> needed_texture = std::make_shared<Texture>(name());needed_texture.get()->set_image(new_texture);set_texture(needed_texture, remove_last_texture);};
         inline void set_texture(std::shared_ptr<Texture> new_texture, bool remove_last_texture = true) {if(remove_last_texture) {window_struct().remove_texture(texture());}a_texture = new_texture;set_should_render_during_this_frame(true);};
         inline void set_texture(std::string texture_name, bool remove_last_texture = true) {
             std::shared_ptr<Texture>* new_texture = window_struct().texture_shared_ptr(texture_name);

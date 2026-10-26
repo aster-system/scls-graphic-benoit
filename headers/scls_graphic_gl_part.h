@@ -143,9 +143,14 @@ namespace scls {
         // Built-in VBOs
         // Returns the datas for a cube vbo
         static std::vector<double> cube_vbo();
+
         // Returns the datas for a gui vbo
         static std::vector<double> gui_vbo(std::vector<Shader_Program_Variable> attributes);
         static std::vector<double> gui_vbo();
+
+        // Returns the datas for a plane vbo
+        static std::vector<double> plane_vbo(std::vector<Shader_Program_Variable> attributes);
+        static std::vector<double> plane_vbo();
 
         // Getters and setters
         inline std::vector<Shader_Program_Variable> *get_attributes() { return &a_attributes; };
@@ -176,10 +181,9 @@ namespace scls {
         // Class representing a VAO interface
     public:
         // Most basic VAO constructor
-        VAO(const std::shared_ptr<VBO>& vbo);
-        // Most usefull VAO constructor
-        VAO(Shader_Program shader_program, const std::shared_ptr<VBO>& vbo);
-        VAO(std::string shader_path, const std::shared_ptr<VBO>& vbo);
+        VAO(std::string name, const std::shared_ptr<VBO>& vbo);
+        VAO(std::string name, Shader_Program shader_program, const std::shared_ptr<VBO>& vbo);
+        VAO(std::string name, std::string shader_path, const std::shared_ptr<VBO>& vbo);
 
         // Bind the VAO into the GPU memory
         virtual void bind(glm::vec3 scale = glm::vec3(1.0, 1.0, 1.0));
@@ -196,10 +200,14 @@ namespace scls {
         inline unsigned int& get_vao() { return vao; };
         inline VBO* get_vbo() { return a_vbo.get(); };
         inline bool loaded() {return a_loaded;};
+        inline std::string name() const {return a_name;};
         inline std::shared_ptr<VBO>& vbo_shared_ptr() {return a_vbo;};
     protected:
         bool a_loaded = false; //If the VAO is loaded or not
         unsigned int vao = 0; // Handle to the VAO
+
+        // Name of the VAO
+        std::string a_name = std::string();
 
         // Pointer to the shader program
         std::shared_ptr<Shader_Program> a_shader_program;
@@ -216,14 +224,14 @@ namespace scls {
     class Texture {
         // Class representing a texture interface
     public:
-        Texture(std::string a_texture_path, bool a_resize = true);
-        Texture(std::shared_ptr<__Image_Base> image, bool a_resize);
-        Texture(std::shared_ptr<__Image_Base> image):Texture(image, true){};
-        Texture(unsigned short width, unsigned short height, glm::vec4 color, bool a_resize = true);
-        Texture(unsigned short width, unsigned short height, scls::Color color, bool a_resize = true);
+        Texture(std::string name, std::string a_texture_path, bool a_resize = true);
+        Texture(std::string name, std::shared_ptr<__Image_Base> image, bool a_resize);
+        Texture(std::string name, std::shared_ptr<__Image_Base> image):Texture(name, image, true){};
+        Texture(std::string name, unsigned short width, unsigned short height, glm::vec4 color, bool a_resize = true);
+        Texture(std::string name, unsigned short width, unsigned short height, scls::Color color, bool a_resize = true);
         Texture(Texture& texture_to_copy);
         // Most basic texture constructor
-        Texture();
+        Texture(std::string name);
         void bind(); // Bind the texture into the GPU memory
         void change_texture(); // Change the texture of the texture according to image
         // Load the texture into the GPU memory
@@ -243,6 +251,7 @@ namespace scls {
         inline std::string get_texture_path() { return texture_path; };
         inline std::shared_ptr<__Image_Base>& image_shared_ptr() { return a_image; };
         inline bool loaded() {return a_loaded;};
+        inline std::string name() const {return a_name;};
         inline void set_image(__Image_Base* new_image) {
             if(new_image == 0 && get_image() != 0) {
                 glDeleteTextures(1, &texture_id);
@@ -275,6 +284,7 @@ namespace scls {
         // SCLS image of this texture
         std::shared_ptr<__Image_Base> a_image;
         bool a_loaded = false;
+        std::string a_name = std::string();
         bool resize = true; // If the shader resize the texture or not
         unsigned int texture_id = 0; // Handle to the texture
         std::string texture_path = std::string(); // Path of the texture

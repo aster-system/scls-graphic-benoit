@@ -493,7 +493,7 @@ namespace scls {
     }
 
     // Create an page 3D from a type
-    std::shared_ptr<GL_Object> Window::__create_loaded_page_3d_from_type(std::string object_name, std::string object_type) { return *new_page_3d<GL_Object>(object_name); }
+    std::shared_ptr<GL_Object> Window::__create_loaded_page_3d_from_type(std::string object_name, std::string object_type) {scls::print("Warning", "SCLS Window", "Trying to create a 3D page in a non-3D window."); return new_page_3d<GL_Object>(object_name); }
 
     // Load the page from XML
     void Window::load_from_xml_balise(std::shared_ptr<XML_Text_Base> current_balise, std::shared_ptr<Window_Loader> loader, std::string window_path) {
